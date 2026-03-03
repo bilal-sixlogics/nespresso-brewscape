@@ -1,22 +1,25 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+import { useLanguage } from '@/context/LanguageContext';
+
 interface IntensityBarProps {
     intensity: number;
 }
 
 export function IntensityBar({ intensity }: IntensityBarProps) {
+    const { t } = useLanguage();
     return (
         <div className="flex flex-col gap-1.5 mt-3">
             <div className="flex items-center justify-between w-full">
-                <span className="text-[9px] text-gray-500 font-bold tracking-[0.2em] uppercase">Intensity</span>
+                <span className="text-[9px] text-gray-500 font-bold tracking-[0.2em] uppercase">{t('intensity')}</span>
                 <span className="text-[10px] font-bold text-sb-black">{intensity} <span className="text-gray-400 font-normal">/ 13</span></span>
             </div>
             <div className="flex items-center gap-[3px] h-4">
                 {[...Array(13)].map((_, j) => {
                     const isActive = j < intensity;
 
-                    // The Café Malin intensity scale often goes from light yellow to dark brown/red.
+                    // The Cafrezzo intensity scale often goes from light yellow to dark brown/red.
                     // We'll calculate a color gradient based on the intensity level.
                     const hue = 40 - (j * 2.5); // 40 (gold/yellow) to 5 (red/brown)
                     const saturation = 70 + (j * 2); // 70% to 96%

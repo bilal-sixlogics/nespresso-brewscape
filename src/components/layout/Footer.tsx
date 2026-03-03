@@ -1,9 +1,13 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
 import { Coffee } from 'lucide-react';
 import { AppConfig } from '@/lib/config';
+import { useLanguage } from '@/context/LanguageContext';
 
 export function Footer() {
+    const { t } = useLanguage();
     return (
         <footer className="bg-sb-black text-white relative z-20 pt-40 px-4 pb-10">
             {/* <div className="torn-paper-black-up z-20 h-[30px] absolute top-[-29px] left-0 w-full"
@@ -22,7 +26,7 @@ export function Footer() {
                             <span className="text-base font-sans font-bold tracking-[0.2em] opacity-80 mt-1 block">{AppConfig.brand.tagline}</span>
                         </h1>
                         <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
-                            {AppConfig.brand.description}
+                            {t('brandDescription')}
                         </p>
                         <div className="flex space-x-3">
                             {AppConfig.socials.map((social) => (
@@ -35,20 +39,20 @@ export function Footer() {
 
                     {/* Quick Links */}
                     <div>
-                        <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-white">Quick Links</h4>
+                        <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-white">{t('quickLinks')}</h4>
                         <ul className="space-y-4 flex flex-col items-start">
-                            <li><Link href="/" className="text-gray-400 hover:text-sb-green transition-colors text-sm">Home</Link></li>
-                            <li><Link href="/visit-shop" className="text-gray-400 hover:text-sb-green transition-colors text-sm">Visit Shop</Link></li>
-                            <li><Link href="/brew-guide" className="text-gray-400 hover:text-sb-green transition-colors text-sm">Brew Guide</Link></li>
-                            <li><Link href="/shop" className="text-gray-400 hover:text-sb-green transition-colors text-sm">Shop</Link></li>
-                            <li><Link href="/wholesale" className="text-gray-400 hover:text-sb-green transition-colors text-sm">Wholesale</Link></li>
-                            <li><Link href="/blog" className="text-gray-400 hover:text-sb-green transition-colors text-sm">Blog</Link></li>
+                            <li><Link href="/" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('navHome')}</Link></li>
+                            <li><Link href="/visit-shop" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('navVisitShop')}</Link></li>
+                            <li><Link href="/brew-guide" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('navBrewGuide')}</Link></li>
+                            <li><Link href="/shop" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('navShop')}</Link></li>
+                            <li><Link href="/wholesale" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('navWholesale')}</Link></li>
+                            <li><Link href="/blog" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('navBlog')}</Link></li>
                         </ul>
                     </div>
 
                     {/* Support */}
                     <div>
-                        <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-white">Support</h4>
+                        <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-white">{t('support')}</h4>
                         <ul className="space-y-4">
                             {AppConfig.supportLinks.map((link) => (
                                 <li key={link.label}><Link href={link.url} className="text-gray-400 hover:text-sb-green transition-colors text-sm">{link.label}</Link></li>
@@ -58,12 +62,12 @@ export function Footer() {
 
                     {/* Newsletter */}
                     <div>
-                        <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-white">Stay Connected</h4>
-                        <p className="text-gray-400 text-sm leading-relaxed mb-6">Subscribe to get special offers, early access & brewing tips.</p>
+                        <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-white">{t('stayConnected')}</h4>
+                        <p className="text-gray-400 text-sm leading-relaxed mb-6">{t('subscribeHero')}</p>
                         <div className="flex">
-                            <input type="email" placeholder="Your email" className="flex-1 bg-white/5 border border-white/10 rounded-l-full px-5 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-sb-green transition-colors" />
+                            <input type="email" placeholder={t('emailPlaceholder')} className="flex-1 bg-white/5 border border-white/10 rounded-l-full px-5 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-sb-green transition-colors" />
                             <button className="bg-sb-green hover:bg-[#2C6345] text-white px-6 py-3 rounded-r-full text-xs font-bold tracking-widest uppercase transition-colors">
-                                Join
+                                {t('join')}
                             </button>
                         </div>
                         <div className="mt-8 flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5">
@@ -71,8 +75,8 @@ export function Footer() {
                                 <Coffee className="w-5 h-5 text-sb-green" />
                             </div>
                             <div>
-                                <div className="text-sm font-bold">Free Shipping</div>
-                                <div className="text-xs text-gray-500">On orders over $50</div>
+                                <div className="text-sm font-bold">{t('freeShipping')}</div>
+                                <div className="text-xs text-gray-500">{t('freeShippingDesc')}</div>
                             </div>
                         </div>
                     </div>
@@ -80,11 +84,11 @@ export function Footer() {
 
                 {/* Bottom Bar */}
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
-                    <p className="text-gray-500 text-xs tracking-widest uppercase">© {AppConfig.brand.copyrightYear} {AppConfig.brand.name}. All Rights Reserved.</p>
+                    <p className="text-gray-500 text-xs tracking-widest uppercase">© {AppConfig.brand.copyrightYear} {AppConfig.brand.name}. {t('copyright')}</p>
                     <div className="flex space-x-8 mt-4 md:mt-0">
-                        {['Privacy', 'Terms', 'Cookies'].map((link) => (
-                            <button key={link} className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{link}</button>
-                        ))}
+                        <button className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{t('privacy')}</button>
+                        <button className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{t('terms')}</button>
+                        <button className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{t('cookies')}</button>
                     </div>
                 </div>
             </div>

@@ -7,23 +7,65 @@ import Image from "next/image";
 import Link from "next/link";
 import { AppConfig } from "@/lib/config";
 import { useCart } from "@/store/CartContext";
-import { mockProducts, machinesData, accessoriesData, apparelData, giftsData } from "@/lib/mockData";
+import { allProducts, productDatabase } from "@/lib/productsData";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
+import { useLanguage } from "@/context/LanguageContext";
 
 const wholeBeans = [
-  { name: 'Master Origin', namePart2: 'Colombia', roast: 'Medium', roastLevel: 3, origin: 'Colombia', price: 9.50, color: 'from-[#c4a36e] to-[#8a6d3b]', notes: ['Winey', 'Red Beans'], desc: 'Late harvest Arabica. A highly fermentative process creates a winey profile with notes of red fruits.', image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=300&auto=format&fit=crop' },
-  { name: 'Master Origin', namePart2: 'India', roast: 'Dark', roastLevel: 5, origin: 'India', price: 9.50, color: 'from-[#5b8c5a] to-[#2d5a30]', notes: ['Intense', 'Spicy'], desc: 'Monsooned Robusta. Exposed to wet monsoon winds for intense, woody, and spicy aromatic notes.', image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?q=80&w=300&auto=format&fit=crop' },
-  { name: 'Master Origin', namePart2: 'Ethiopia', roast: 'Light', roastLevel: 2, origin: 'Ethiopia', price: 9.50, color: 'from-[#e07a5f] to-[#b6533a]', notes: ['Fruit Jam', 'Orange Blossom'], desc: 'Sun-dried Arabica. Drying coffee inside the cherry brings decadent fruit jam aromas and orange blossom notes.', image: 'https://images.unsplash.com/photo-1587734195503-904fca47e0e9?q=80&w=300&auto=format&fit=crop' },
-  { name: 'Master Origin', namePart2: 'Indonesia', roast: 'Medium', roastLevel: 4, origin: 'Indonesia', price: 9.50, color: 'from-[#1a3a2a] to-[#0d1f16]', notes: ['Woody', 'Tobacco'], desc: 'Wet-hulled Arabica. The unique wet-hulling method in high humidity produces a rich, velvety body with woody notes.', image: 'https://images.unsplash.com/photo-1611564494260-6f21b80af7ea?q=80&w=300&auto=format&fit=crop' },
+  {
+    name: 'Master Origin', nameEn: 'Master Origin',
+    namePart2: 'Colombia', namePart2En: 'Colombia',
+    roast: 'Medium', roastLevel: 3,
+    origin: 'Colombia', price: 9.50,
+    color: 'from-[#c4a36e] to-[#8a6d3b]',
+    notes: ['Winey', 'Red Beans'],
+    desc: 'Late harvest Arabica. A highly fermentative process creates a winey profile with notes of red fruits.',
+    descEn: 'Late harvest Arabica. A highly fermentative process creates a winey profile with notes of red fruits.',
+    image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=300&auto=format&fit=crop'
+  },
+  {
+    name: 'Master Origin', nameEn: 'Master Origin',
+    namePart2: 'India', namePart2En: 'India',
+    roast: 'Dark', roastLevel: 5,
+    origin: 'India', price: 9.50,
+    color: 'from-[#5b8c5a] to-[#2d5a30]',
+    notes: ['Intense', 'Spicy'],
+    desc: 'Monsooned Robusta. Exposed to wet monsoon winds for intense, woody, and spicy aromatic notes.',
+    descEn: 'Monsooned Robusta. Exposed to wet monsoon winds for intense, woody, and spicy aromatic notes.',
+    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?q=80&w=300&auto=format&fit=crop'
+  },
+  {
+    name: 'Master Origin', nameEn: 'Master Origin',
+    namePart2: 'Ethiopia', namePart2En: 'Ethiopia',
+    roast: 'Light', roastLevel: 2,
+    origin: 'Ethiopia', price: 9.50,
+    color: 'from-[#e07a5f] to-[#b6533a]',
+    notes: ['Fruit Jam', 'Orange Blossom'],
+    desc: 'Sun-dried Arabica. Drying coffee inside the cherry brings decadent fruit jam aromas and orange blossom notes.',
+    descEn: 'Sun-dried Arabica. Drying coffee inside the cherry brings decadent fruit jam aromas and orange blossom notes.',
+    image: 'https://images.unsplash.com/photo-1587734195503-904fca47e0e9?q=80&w=300&auto=format&fit=crop'
+  },
+  {
+    name: 'Master Origin', nameEn: 'Master Origin',
+    namePart2: 'Indonesia', namePart2En: 'Indonesia',
+    roast: 'Medium', roastLevel: 4,
+    origin: 'Indonesia', price: 9.50,
+    color: 'from-[#1a3a2a] to-[#0d1f16]',
+    notes: ['Woody', 'Tobacco'],
+    desc: 'Wet-hulled Arabica. The unique wet-hulling method in high humidity produces a rich, velvety body with woody notes.',
+    descEn: 'Wet-hulled Arabica. The unique wet-hulling method in high humidity produces a rich, velvety body with woody notes.',
+    image: 'https://images.unsplash.com/photo-1611564494260-6f21b80af7ea?q=80&w=300&auto=format&fit=crop'
+  },
 ];
 
-const allProductsCombined = [...mockProducts, ...machinesData, ...accessoriesData, ...apparelData, ...giftsData];
+const allProductsCombined = allProducts;
 // Navigation is now handled by Next.js router
 
 export default function Home() {
   const carouselRef = useRef<HTMLDivElement>(null);
-  const [selectedProduct, setSelectedProduct] = useState<typeof mockProducts[0] | null>(null);
+  const { t, language } = useLanguage();
+  const [selectedProduct, setSelectedProduct] = useState<typeof allProducts[0] | null>(null);
   // Navigation logic extracted to app router
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const { addToCart, cartCount } = useCart();
@@ -32,11 +74,16 @@ export default function Home() {
   const [openAccordion, setOpenAccordion] = useState<string>('description');
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'All') return mockProducts;
-    if (selectedCategory === 'Espresso') return mockProducts.filter(p => p.brewSizes?.includes('Espresso'));
-    if (selectedCategory === 'Blonde') return mockProducts.filter(p => (p.intensity || 0) < 7);
-    if (selectedCategory === 'Dark Roast') return mockProducts.filter(p => (p.intensity || 0) >= 8);
-    return mockProducts;
+    if (selectedCategory === 'All') return allProducts.slice(0, 50);
+    const catData = productDatabase[selectedCategory];
+    if (catData) return catData;
+
+    // Fallback for Nespresso-style filters
+    if (selectedCategory === 'Espresso') return allProducts.filter(p => p.brewSizes?.includes('Espresso')).slice(0, 40);
+    if (selectedCategory === 'Blonde') return allProducts.filter(p => (p.intensity || 0) < 7).slice(0, 40);
+    if (selectedCategory === 'Dark Roast') return allProducts.filter(p => (p.intensity || 0) >= 8).slice(0, 40);
+
+    return allProducts.slice(0, 40);
   }, [selectedCategory]);
 
   // Prevent scrolling when panel is open
@@ -100,7 +147,7 @@ export default function Home() {
                   </div>
                   <div className="flex flex-col pl-4">
                     <span className="font-display text-2xl lg:text-3xl leading-tight">1M+</span>
-                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Satisfied Customer</span>
+                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">{t('satisfiedCustomers')}</span>
                   </div>
                 </motion.div>
 
@@ -108,7 +155,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
                   className="text-gray-500 max-w-[280px] text-sm leading-relaxed z-10 relative"
                 >
-                  We're all about creating better coffee experiences for everyone who's come to the party. Fuel your day with our exquisite coffee creations.
+                  {t('heroSubtitle')}
                 </motion.p>
               </div>
 
@@ -139,18 +186,21 @@ export default function Home() {
                   onClick={() => setSelectedProduct({
                     id: "999",
                     name: "DAILY",
+                    nameEn: "DAILY",
                     namePart2: "PICK",
+                    namePart2En: "PICK",
                     price: 5.50,
                     intensity: 0,
                     brewSizes: ['Cold'],
                     image: "https://www.starbucks.com/weblx/images/rewards/reward-tiers/400.png",
-                    desc: "A chilled coffee drink, perfect for a refreshing afternoon boost.",
+                    desc: "Un café glacé rafraîchissant, parfait pour l'après-midi.",
+                    descEn: "A chilled coffee drink, perfect for a refreshing afternoon boost.",
                   })}
                   className="flex items-center space-x-6 mr-4 bg-white/70 backdrop-blur-md p-4 rounded-3xl border border-white/80 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)] group cursor-pointer hover:bg-white/90 hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] transition-all duration-300"
                 >
                   <div className="flex flex-col text-right">
-                    <span className="font-bold text-sm tracking-wide text-sb-black group-hover:text-sb-green transition-colors">Daily Pick</span>
-                    <span className="text-xs text-gray-500">Chilled Coffee Drink</span>
+                    <span className="font-bold text-sm tracking-wide text-sb-black group-hover:text-sb-green transition-colors">{t('dailyPick')}</span>
+                    <span className="text-xs text-gray-500">{language === 'en' ? 'Chilled Coffee Drink' : 'Boisson au café glacé'}</span>
                   </div>
                   <div className="w-16 h-20 bg-[#E1CDA4] rounded-xl p-1 relative shadow-inner transform group-hover:rotate-12 transition-transform duration-500">
                     <div className="w-full h-full border border-black/5 rounded-lg"></div>
@@ -165,7 +215,7 @@ export default function Home() {
                     whileTap={{ scale: 0.95 }}
                     className="bg-[#3C7A58] text-white px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase shadow-xl hover:shadow-[#3C7A58]/50 transition-all duration-300 flex items-center cursor-pointer"
                   >
-                    Shop Now
+                    {t('shopNow')}
                     <div className="w-1.5 h-1.5 ml-3 bg-white rounded-full"></div>
                   </motion.div>
                 </Link>
@@ -186,14 +236,14 @@ export default function Home() {
                 initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
                 className="w-full lg:w-1/2 text-left"
               >
-                <div className="text-[10px] bg-white/10 text-white font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-8 border border-white/20">Our Heritage</div>
+                <div className="text-[10px] bg-white/10 text-white font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-8 border border-white/20">{t('heritageSubtitle')}</div>
                 <h2 className="font-display text-6xl md:text-7xl lg:text-8xl text-white uppercase tracking-tight mb-8 drop-shadow-md leading-[0.9]">
-                  CRAFTING<br />
-                  <span className="text-[#E5D5B8] opacity-90">THE PERFECT</span><br />
-                  POUR
+                  {language === 'en' ? 'THE ART OF' : "L'ART DU"}<br />
+                  <span className="text-[#E5D5B8] opacity-90">{language === 'en' ? 'FRENCH' : "CAFÉ"}</span><br />
+                  {language === 'en' ? 'COFFEE' : "FRANÇAIS"}
                 </h2>
                 <p className="text-[#E5D5B8] text-base lg:text-lg font-medium leading-relaxed max-w-lg opacity-80 mb-10">
-                  From the highest altitude farms to the precise temperature of the roast. We control every variable so you don't have to. Every pod is hermetically sealed to preserve the volatile aromas of the freshly ground coffee.
+                  {t('heritageDesc')}
                 </p>
                 <Link
                   href="/brew-guide"
@@ -292,10 +342,10 @@ export default function Home() {
           <div className="max-w-[1200px] mx-auto flex justify-center">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-16 w-full lg:w-2/3">
               {[
-                { num: '46', label: 'YEARS OF\nEXPERIENCE' },
-                { num: '1M+', label: 'HAPPY\nCLIENTS' },
-                { num: '84', label: 'COUNTRIES\nOPERATING' },
-                { num: '1K+', label: 'PRODUCTS\nAVAILABLE' },
+                { num: '46', label: t('statExperience') },
+                { num: '1M+', label: t('statClients') },
+                { num: '84', label: t('statCountries') },
+                { num: '1K+', label: t('statProducts') },
               ].map((stat) => (
                 <div key={stat.num} className="flex flex-col items-center lg:items-start text-center lg:text-left relative">
                   <motion.div
@@ -321,9 +371,9 @@ export default function Home() {
         <section className="bg-sb-white py-32 px-8">
           <div className="max-w-[1400px] mx-auto">
             <div className="text-center mb-4">
-              <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-sb-green mb-4">Premium Selection</div>
-              <h2 className="font-display text-5xl md:text-6xl text-sb-black uppercase mb-4">WHOLE BEANS</h2>
-              <p className="text-gray-400 max-w-md mx-auto text-sm">Hand-selected, sustainably sourced, precision-roasted. Discover your signature blend.</p>
+              <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-sb-green mb-4">{t('premiumSelection')}</div>
+              <h2 className="font-display text-5xl md:text-6xl text-sb-black uppercase mb-4">{t('wholeBeans')}</h2>
+              <p className="text-gray-400 max-w-md mx-auto text-sm">{t('wholeBeansSubtitle')}</p>
             </div>
 
             {/* Swipeable Cards + Details Layout */}
@@ -348,8 +398,11 @@ export default function Home() {
                             <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-4 border border-white/10">
                               <Coffee className="w-5 h-5 text-white" />
                             </div>
-                            <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-white/70 mb-2">{bean.roast} Roast</div>
-                            <h4 className="font-display text-2xl text-white uppercase leading-none drop-shadow-md">{bean.name}<br /><span className="text-white/70">{bean.namePart2}</span></h4>
+                            <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/70 mb-2">{language === 'en' ? 'Medium' : 'Moyenne'} Roast</div>
+                            <h4 className="font-display text-2xl text-white uppercase leading-none drop-shadow-md">
+                              {language === 'en' && bean.nameEn ? bean.nameEn : bean.name}<br />
+                              <span className="text-white/70">{language === 'en' && bean.namePart2En ? bean.namePart2En : bean.namePart2}</span>
+                            </h4>
                           </div>
 
                           <div className="relative z-10">
@@ -374,7 +427,7 @@ export default function Home() {
                     <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${activeBeanIndex === i ? 'w-6 bg-sb-green' : 'w-1.5 bg-gray-200'}`} />
                   ))}
                 </div>
-                <div className="text-[10px] text-gray-400 text-center mt-3 font-bold tracking-[0.2em] uppercase">Drag to explore · Click to select</div>
+                <div className="text-[10px] text-gray-400 text-center mt-3 font-bold tracking-[0.2em] uppercase">{t('dragExplore')}</div>
               </div>
 
               {/* Right - Product Detail (Reactive) */}
@@ -387,9 +440,9 @@ export default function Home() {
                     exit={{ opacity: 0, y: -15 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-sb-green mb-2">Featured Blend</div>
+                    <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-sb-green mb-2">{t('featuredBlend')}</div>
                     <h3 className="font-display text-3xl md:text-4xl text-sb-black uppercase leading-tight mb-2">
-                      {wholeBeans[activeBeanIndex].name} {wholeBeans[activeBeanIndex].namePart2}
+                      {language === 'en' && wholeBeans[activeBeanIndex].nameEn ? wholeBeans[activeBeanIndex].nameEn : wholeBeans[activeBeanIndex].name} {language === 'en' && wholeBeans[activeBeanIndex].namePart2En ? wholeBeans[activeBeanIndex].namePart2En : wholeBeans[activeBeanIndex].namePart2}
                     </h3>
                     <div className="flex items-center gap-3 mb-8">
                       <span className="text-[10px] bg-sb-green/10 text-sb-green font-bold tracking-widest uppercase px-3 py-1.5 rounded-full">{wholeBeans[activeBeanIndex].roast} Roast</span>
@@ -399,7 +452,7 @@ export default function Home() {
 
                     {/* Roast Level with Coffee Gradient Mapping */}
                     <div className="mb-8 p-5 bg-gray-50 rounded-2xl border border-gray-100">
-                      <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-3">Roast Level</div>
+                      <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-3">{t('roastLevel')}</div>
                       <div className="flex items-center gap-2">
                         {[1, 2, 3, 4, 5].map((level) => {
                           const isActive = level <= wholeBeans[activeBeanIndex].roastLevel;
@@ -418,8 +471,8 @@ export default function Home() {
                         })}
                       </div>
                       <div className="flex justify-between mt-3">
-                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em]">Light</span>
-                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em]">Dark</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em]">{t('light')}</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em]">{t('dark')}</span>
                       </div>
                     </div>
 
@@ -429,7 +482,7 @@ export default function Home() {
                         className="flex justify-between items-center cursor-pointer group"
                         onClick={() => setOpenAccordion(openAccordion === 'description' ? '' : 'description')}
                       >
-                        <span className="font-bold text-sm tracking-widest uppercase">Description</span>
+                        <span className="font-bold text-sm tracking-widest uppercase">{t('description')}</span>
                         <span className="text-gray-400 group-hover:text-sb-green transition-colors text-lg">
                           {openAccordion === 'description' ? '−' : '+'}
                         </span>
@@ -440,7 +493,7 @@ export default function Home() {
                             initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                             className="text-gray-500 text-sm leading-relaxed mt-3 overflow-hidden"
                           >
-                            {wholeBeans[activeBeanIndex].desc}
+                            {language === 'en' && wholeBeans[activeBeanIndex].descEn ? wholeBeans[activeBeanIndex].descEn : wholeBeans[activeBeanIndex].desc}
                           </motion.p>
                         )}
                       </AnimatePresence>
@@ -451,7 +504,7 @@ export default function Home() {
                         className="flex justify-between items-center cursor-pointer group"
                         onClick={() => setOpenAccordion(openAccordion === 'origin' ? '' : 'origin')}
                       >
-                        <span className="font-bold text-sm tracking-widest uppercase">Origin & Sourcing</span>
+                        <span className="font-bold text-sm tracking-widest uppercase">{t('originSourcing')}</span>
                         <span className="text-gray-400 group-hover:text-sb-green transition-colors text-lg">
                           {openAccordion === 'origin' ? '−' : '+'}
                         </span>
@@ -473,7 +526,7 @@ export default function Home() {
                         className="flex justify-between items-center cursor-pointer group"
                         onClick={() => setOpenAccordion(openAccordion === 'brewing' ? '' : 'brewing')}
                       >
-                        <span className="font-bold text-sm tracking-widest uppercase">Brewing Tips</span>
+                        <span className="font-bold text-sm tracking-widest uppercase">{t('brewTips')}</span>
                         <span className="text-gray-400 group-hover:text-sb-green transition-colors text-lg">
                           {openAccordion === 'brewing' ? '−' : '+'}
                         </span>
@@ -495,7 +548,7 @@ export default function Home() {
                     {/* Price & Add to Cart */}
                     <div className="flex justify-between items-center mt-10">
                       <div>
-                        <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">Price</div>
+                        <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">{t('priceTitle')}</div>
                         <div className="font-display text-4xl font-bold text-sb-black">${wholeBeans[activeBeanIndex].price}</div>
                       </div>
                       <div className="flex items-center gap-4">
@@ -505,13 +558,13 @@ export default function Home() {
                           <button className="text-gray-400 hover:text-sb-black transition-colors font-bold text-lg active:scale-90">+</button>
                         </div>
                         <button className="bg-gradient-to-r from-sb-green to-[#2a7a4a] hover:shadow-xl hover:shadow-sb-green/40 text-white font-bold py-4 px-10 rounded-2xl text-xs uppercase tracking-[0.15em] transition-all duration-300 shadow-lg shadow-sb-green/25 active:scale-95">
-                          Add To Cart
+                          {t('addToCart')}
                         </button>
                       </div>
                     </div>
 
                     <Link href="/shop" className="block w-full text-center mt-8 py-4 border-2 border-sb-green text-sb-green rounded-2xl text-xs font-bold tracking-[0.15em] uppercase hover:bg-sb-green hover:text-white transition-all duration-300">
-                      View All Whole Beans
+                      {t('viewAllWholeBeans')}
                     </Link>
                   </motion.div>
                 </AnimatePresence>

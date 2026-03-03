@@ -1,9 +1,12 @@
+"use client";
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 import { useCart } from '@/store/CartContext';
 import { IntensityBar } from './IntensityBar';
 import { Product } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ProductCardProps {
     product: Product;
@@ -13,6 +16,10 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onClick, index }: ProductCardProps) {
     const { addToCart } = useCart();
+    const { language } = useLanguage();
+
+    const displayName = language === 'en' && product.nameEn ? product.nameEn : product.name;
+    const displayNamePart2 = language === 'en' && product.namePart2En ? product.namePart2En : product.namePart2;
 
     return (
         <motion.div
@@ -48,16 +55,21 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                     className="h-[85%] object-contain drop-shadow-[0_30px_30px_rgba(0,0,0,0.5)] z-10"
                 />
             </div>
-            <div className="px-4 flex flex-col flex-1 justify-between pb-2">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h3 className="font-display text-2xl uppercase leading-tight group-hover:text-sb-green transition-colors">
-                            {product.name} {product.namePart2 && <><br /> {product.namePart2}</>}
+            <div className="px-4 flex flex-col flex-1 justify-between pb-2 h-full">
+                <div>
+                    <div className="min-h-[70px] flex flex-col justify-start">
+                        <h3 className="font-display text-2xl uppercase leading-tight group-hover:text-sb-green transition-colors line-clamp-2">
+                            {displayName} {displayNamePart2 && <><br className="hidden md:block" /> {displayNamePart2}</>}
                         </h3>
-                        {/* Premium Intensity Scale */}
+                    </div>
+                    {/* Premium Intensity Scale */}
+                    <div className="mt-1 mb-4">
                         <IntensityBar intensity={product.intensity} />
                     </div>
-                    <div className="text-2xl font-bold text-sb-green">${product.price.toFixed(2)}</div>
+
+                    <div className="flex justify-end items-center mt-auto">
+                        <div className="text-2xl font-bold text-sb-green tracking-tighter">${product.price.toFixed(2)}</div>
+                    </div>
                 </div>
 
                 <div className="flex justify-between items-center border-t border-gray-100 pt-6">

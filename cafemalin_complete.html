@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaféMalin - Catalogue Complet 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dark-brown: #4a1e0a;
+            --medium-brown: #8b5e3c;
+            --gold: #d4a853;
+            --cream: #f5f0e8;
+            --light-gray: #f9f7f3;
+            --text-dark: #2c1810;
+            --badge-red: #dc3545;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: linear-gradient(135deg, var(--dark-brown) 0%, var(--medium-brown) 100%);
+            color: var(--cream);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-contact {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .header-contact div {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .product-count-badge {
+            background: var(--gold);
+            color: var(--dark-brown);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* Search */
+        .search-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            color: var(--text-dark);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--medium-brown);
+            box-shadow: 0 0 0 3px rgba(74, 30, 10, 0.1);
+        }
+
+        /* Table of Contents */
+        .toc-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .toc-container h3 {
+            color: var(--dark-brown);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .toc-container a {
+            color: var(--medium-brown);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container a:hover {
+            color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        /* Category Sections */
+        .category-section {
+            margin: 4rem 0;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--gold);
+        }
+
+        .category-header h2 {
+            color: var(--dark-brown);
+            font-size: 2rem;
+        }
+
+        .product-count {
+            background: var(--gold);
+            color: var(--dark-brown);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .view-all-link {
+            color: var(--medium-brown);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .view-all-link:hover {
+            color: var(--gold);
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(74, 30, 10, 0.15);
+        }
+
+        .product-image-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            overflow: hidden;
+            background: var(--light-gray);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .out-of-stock-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--badge-red);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-name {
+            color: var(--dark-brown);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+            flex-grow: 1;
+        }
+
+        .product-price {
+            color: var(--gold);
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .product-btn {
+            background: linear-gradient(135deg, var(--dark-brown) 0%, var(--medium-brown) 100%);
+            color: var(--cream);
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .product-btn:hover {
+            background: linear-gradient(135deg, var(--medium-brown) 0%, var(--dark-brown) 100%);
+            box-shadow: 0 4px 12px rgba(74, 30, 10, 0.3);
+        }
+
+        /* Blog Section */
+        .blog-section {
+            margin: 4rem 0;
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .blog-section h2 {
+            color: var(--dark-brown);
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .blog-category {
+            margin-bottom: 3rem;
+        }
+
+        .blog-category h3 {
+            color: var(--medium-brown);
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gold);
+        }
+
+        .blog-articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .blog-card {
+            background: var(--light-gray);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--gold);
+            transition: all 0.3s ease;
+        }
+
+        .blog-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(212, 168, 83, 0.2);
+        }
+
+        .blog-date {
+            color: var(--medium-brown);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .blog-card h4 {
+            color: var(--dark-brown);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .blog-link {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .blog-link:hover {
+            color: var(--dark-brown);
+        }
+
+        /* Info Sections */
+        .info-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+
+        .info-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-top: 4px solid var(--gold);
+        }
+
+        .info-card h3 {
+            color: var(--dark-brown);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .info-card p {
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .info-card a {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .info-card a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, var(--dark-brown) 0%, var(--medium-brown) 100%);
+            color: var(--cream);
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: var(--cream);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--gold);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--gold);
+            color: var(--dark-brown);
+            border-radius: 50%;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--cream);
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(212, 168, 83, 0.2);
+            padding-top: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .payment-methods span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .category-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 1rem;
+            }
+
+            .toc-container ul {
+                grid-template-columns: 1fr;
+            }
+
+            .header-contact {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Hidden for search */
+        .hidden-product {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo">☕ CaféMalin</a>
+            <div class="header-contact">
+                <div>
+                    <strong>Téléphone</strong>
+                    <span>+33 1 39 85 85 65</span>
+                </div>
+                <div>
+                    <strong>Email</strong>
+                    <span>contact@cafemalin.com</span>
+                </div>
+                <div class="product-count-badge">
+                    102 produits
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Rechercher un produit...">
+    </div>
+
+    <div class="toc-container">
+        <h3>Table des matières</h3>
+        <ul>
+            <li><a href="#section-grain-et-moulu">Café en Grains</a></li>
+<li><a href="#section-cafe-moulu">Café Moulu</a></li>
+<li><a href="#section-capsules-de-cafe">Capsules de Café</a></li>
+<li><a href="#section-machines-a-cafe">Machines à Café</a></li>
+<li><a href="#section-pack">Packs</a></li>
+<li><a href="#section-vending">Vending</a></li>
+<li><a href="#section-boissons-chaudes">Thé & Boissons</a></li>
+<li><a href="#section-accessoires-autour-du-cafe-2">Accessoires</a></li>
+<li><a href="#section-friandise">Friandises</a></li>
+            <li><a href="#section-blog">📰 Blog</a></li>
+            <li><a href="#section-info">ℹ️ Informations</a></li>
+        </ul>
+    </div>
+
+    <main>
+        
+    <section id="section-grain-et-moulu" class="category-section">
+        <div class="category-header">
+            <h2>Café en Grains</h2>
+            <span class="product-count">19 produits</span>
+            <a href="https://cafemalin.com/product-category/grain-et-moulu/" class="view-all-link" target="_blank">Voir tous sur CaféMalin.com →</a>
+        </div>
+        <div class="products-grid">
+            
+    <div class="product-card" data-product-name="café en grains lavazza crema & aroma expert – 1 kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2023/12/p_1_5_6_156-Cafe-en-Grains-Lavazza-Crema-Aroma-VENDING-1-Kg1-400x400.jpg" alt="Café en Grains Lavazza Crema & Aroma Expert – 1 Kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café en Grains Lavazza Crema & Aroma Expert – 1 Kg</h3>
+            <p class="product-price">€19.90 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-lavazza-crema-aroma-expert-1-kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café en grains delta cafes gold 1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/Screenshot-2025-04-01-at-11-26-14-Cafe-en-grains-DELTA-CAFES-GOLD-1-kgn-400x400.jpg" alt="Café en grains DELTA CAFES GOLD 1kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café en grains DELTA CAFES GOLD 1kg</h3>
+            <p class="product-price">€25.50 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-delta-cafes-food-service-1-kg-2/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café en grains delta platinum 1 kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/Screenshot-2025-04-01-at-11-28-21-Acheter-Cafe-en-grains-Delta-PLATINUM-1kg-en-ligne-Cafeengrains365.fr_-400x400.jpg" alt="Café en grains DELTA PLATINUM 1 kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café en grains DELTA PLATINUM 1 kg</h3>
+            <p class="product-price">€26.50 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-delta-platinium-1-kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="3kg – café en grains lavazza crema & aroma expert">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2020/04/p_1_5_8_158-Cafe-en-Grains-Lavazza-Crema-Aroma-3-Kg1-400x400.jpg" alt="3kg – Café en Grains Lavazza Crema & Aroma Expert" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">3kg – Café en Grains Lavazza Crema & Aroma Expert</h3>
+            <p class="product-price">€57.89 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-lavazza-crema-aroma-1-kg-2/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café en grain covim – granbar – 1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/cafe-en-grain-covim-granbar-1-kg-400x400.jpg" alt="Café en grain Covim – Granbar – 1Kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café en grain Covim – Granbar – 1Kg</h3>
+            <p class="product-price">€15.50 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grain-covim-granbar-1kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="20kg- café en grains delta cafes gold">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/paquet-de-10kg-delta-gold-400x400.jpg" alt="20Kg- Café en grains DELTA CAFES GOLD" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">20Kg- Café en grains DELTA CAFES GOLD</h3>
+            <p class="product-price">Contacter</p>
+            <a href="https://cafemalin.com/product/20kg-cafe-en-grains-delta-cafes-gold/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta cafés en grain – bio coffee 1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/bio-coffee-400x400.jpg" alt="Delta cafés en grain – BIO COFFEE 1kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta cafés en grain – BIO COFFEE 1kg</h3>
+            <p class="product-price">€18.80 TTC</p>
+            <a href="https://cafemalin.com/product/delta-cafes-bio-coffee-1kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="6kg – café en grains lavazza crema & aroma expert">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2020/04/p_1_6_1_161-Cafe-en-Grains-Lavazza-Crema-Aroma-VENDING-6-Kg1-400x400.jpg" alt="6kg – Café en Grains Lavazza Crema & Aroma Expert" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">6kg – Café en Grains Lavazza Crema & Aroma Expert</h3>
+            <p class="product-price">€108.62 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-lavazza-crema-aroma-1-kg-3/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="5kg – café en grains delta cafés gran crema">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/gran-crema-400x400.jpg" alt="5kg – Café En Grains DELTA CAFÉS Gran Crema" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">5kg – Café En Grains DELTA CAFÉS Gran Crema</h3>
+            <p class="product-price">Sur devis</p>
+            <a href="https://cafemalin.com/product/5kg-cafe-en-grains-delta-cafes-gran-crema/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta cafés en grain – colombia 500g">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/c2ea9ee4d18d30efd126d345f4c4ef64-400x400.webp" alt="Delta cafés en grain – COLOMBIA 500g" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta cafés en grain – COLOMBIA 500g</h3>
+            <p class="product-price">€14.80 TTC</p>
+            <a href="https://cafemalin.com/product/delta-cafes-en-grain-colombia-500g/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta cafés en grain – brazil 500g">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/939b5d5b6870e363843188e1b30cc592-400x400.webp" alt="Delta cafés en grain – BRAZIL 500g" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta cafés en grain – BRAZIL 500g</h3>
+            <p class="product-price">€13.75 TTC</p>
+            <a href="https://cafemalin.com/product/delta-cafes-en-grain-brazil-500g/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café moulu 250g méo – gastronomique">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/06/1484-400x400.jpg" alt="Café Moulu 250g Méo – Gastronomique" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café Moulu 250g Méo – Gastronomique</h3>
+            <p class="product-price">€4.90 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-moulu-250g-meo-gastronomique/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="pack 6kg – café en grain bristot classico intenso e cremoso">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/09/3-400x400.jpg" alt="Pack 6kg – Café en Grain Bristot Classico Intenso e Cremoso" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Pack 6kg – Café en Grain Bristot Classico Intenso e Cremoso</h3>
+            <p class="product-price">€101.85 TTC</p>
+            <a href="https://cafemalin.com/product/pack-6kg-cafe-en-grain-bristot-classico-intenso-e-cremoso/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café en grain espresso mix – 3×1 kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/131-2-400x400.jpg" alt="Café en grain ESPRESSO MIX – 3×1 KG" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café en grain ESPRESSO MIX – 3×1 KG</h3>
+            <p class="product-price">€62.57 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grain-espresso-mix-3x1-kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="20kg café en grains crema et aroma – lavazza">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/crema-et-aroma-30-KG-jpg-400x400.jpg" alt="20kg Café En Grains Crema Et Aroma – Lavazza" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">20kg Café En Grains Crema Et Aroma – Lavazza</h3>
+            <p class="product-price">€480.87 TTC</p>
+            <a href="https://cafemalin.com/product/20kg-cafe-en-grains-crema-et-aroma-lavazza/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kimbo superior blend – café en grain 1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/01/kimbo-superior-blend-espresso_600x6001-400x400.jpg" alt="KIMBO SUPERIOR BLEND – Café En Grain 1kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">KIMBO SUPERIOR BLEND – Café En Grain 1kg</h3>
+            <p class="product-price">€16.30 TTC</p>
+            <a href="https://cafemalin.com/product/kimbo-superior-blend-cafe-en-grain-1kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café en grains bristot americano dark roast 6x1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/12/PHOTOS-RODUITS-96-400x400.jpg" alt="Café en Grains Bristot Americano Dark Roast 6x1kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café en Grains Bristot Americano Dark Roast 6x1kg</h3>
+            <p class="product-price">€162.68 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-bristot-americano-dark-roast-6x1kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café en grains bristot americano dark roast 12x1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/12/PHOTOS-RODUITS-95-400x400.jpg" alt="Café en Grains Bristot Americano Dark Roast 12x1kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café en Grains Bristot Americano Dark Roast 12x1kg</h3>
+            <p class="product-price">€318.65 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-bristot-americano-dark-roast-12x1kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café en grains lavazza crema classica 3kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2022/03/p_3_5_35-3kg-Lavazza-Aroma-Top1-400x400.jpg" alt="Café en Grains Lavazza Crema Classica 3kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café en Grains Lavazza Crema Classica 3kg</h3>
+            <p class="product-price">€64.00 TTC</p>
+            <a href="https://cafemalin.com/product/3kg-lavazza-crema-classica/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+
+    <section id="section-cafe-moulu" class="category-section">
+        <div class="category-header">
+            <h2>Café Moulu</h2>
+            <span class="product-count">4 produits</span>
+            <a href="https://cafemalin.com/product-category/cafe-moulu/" class="view-all-link" target="_blank">Voir tous sur CaféMalin.com →</a>
+        </div>
+        <div class="products-grid">
+            
+    <div class="product-card" data-product-name="café moulu 250g gold – delta">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/10/cafemouldeltacafesgold250g-400x400.jpg" alt="Café Moulu 250g GOLD – DELTA" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café Moulu 250g GOLD – DELTA</h3>
+            <p class="product-price">€5.90 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-moulu-250g-gold-delta/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café moulu 250g méo – prestige">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/06/1488-400x400.jpg" alt="Café Moulu 250g Méo – Prestige" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café Moulu 250g Méo – Prestige</h3>
+            <p class="product-price">€4.90 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-moulu-250g-meo-prestige/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café moulu 250g méo – dégustation">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/06/1482-400x400.jpg" alt="Café Moulu 250g Méo – Dégustation" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café Moulu 250g Méo – Dégustation</h3>
+            <p class="product-price">€4.90 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-moulu-250g-meo-degustation/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café moulu 250g méo – gastronomique">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/06/1484-400x400.jpg" alt="Café Moulu 250g Méo – Gastronomique" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café Moulu 250g Méo – Gastronomique</h3>
+            <p class="product-price">€4.90 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-moulu-250g-meo-gastronomique/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+
+    <section id="section-capsules-de-cafe" class="category-section">
+        <div class="category-header">
+            <h2>Capsules de Café</h2>
+            <span class="product-count">35 produits</span>
+            <a href="https://cafemalin.com/product-category/capsules-de-cafe/" class="view-all-link" target="_blank">Voir tous sur CaféMalin.com →</a>
+        </div>
+        <div class="products-grid">
+            
+    <div class="product-card" data-product-name="lavazza passionale a modo mio x16 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/12/capsules-lavazza-a-modo-mio-cafe-espresso-passionale-16-capsules-400x400.jpg" alt="Lavazza Passionale A Modo Mio x16 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza Passionale A Modo Mio x16 capsules</h3>
+            <p class="product-price">€6.20 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-passionale-a-modo-mio-x-16-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lavazza soave a modo mio x16 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/10/capsules-lavazza-a-modo-mio-cafe-espresso-soave-16-capsules-400x400.jpg" alt="Lavazza SOAVE A Modo Mio x16 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza SOAVE A Modo Mio x16 capsules</h3>
+            <p class="product-price">€6.20 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-soave-a-modo-mio-x-32-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lavazza crema aroma gran espresso point x100 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/01/460-d-espresso_point_crema_aroma-100-400x400.jpg" alt="Lavazza Crema Aroma Gran Espresso Point x100 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza Crema Aroma Gran Espresso Point x100 capsules</h3>
+            <p class="product-price">€28.70 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-crema-aroma-gran-espresso-point-x100-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta q qharacter n°9 – 10 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/delta_q_10_qharacter-400x400.jpg" alt="Delta Q QHARACTER N°9 – 10 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta Q QHARACTER N°9 – 10 capsules</h3>
+            <p class="product-price">€3.45 TTC</p>
+            <a href="https://cafemalin.com/product/deltaq-qharacter-n9-10-capsules-de-cafe/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="pack capsules lavazza blue">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2022/02/16-1-400x400.jpg" alt="Pack Capsules Lavazza Blue" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Pack Capsules Lavazza Blue</h3>
+            <p class="product-price">Obtenez 5% de réduction</p>
+            <a href="https://cafemalin.com/product/pack-lavazza-blue/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lavazza blue ricco – x100 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/10/ricco-400x400.jpg" alt="Lavazza BLUE RICCO – x100 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza BLUE RICCO – x100 capsules</h3>
+            <p class="product-price">€32.00 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-blue-ricco-x100-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="100 capsules aluminium ristretto compatibles nespresso® – lavazza">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2023/06/Screenshot-400x400.jpg" alt="100 Capsules Aluminium RISTRETTO compatibles Nespresso® – LAVAZZA" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">100 Capsules Aluminium RISTRETTO compatibles Nespresso® – LAVAZZA</h3>
+            <p class="product-price">€26.34 TTC</p>
+            <a href="https://cafemalin.com/product/100-capsules-aluminium-ristretto-compatibles-nespresso-lavazza/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lavazza espresso point dek décafeiné x100 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/10/603-d-espresso_point-dek_maxi-400x400.jpg" alt="Lavazza Espresso Point Dek Décafeiné x100 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza Espresso Point Dek Décafeiné x100 capsules</h3>
+            <p class="product-price">€32.77 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-espresso-point-dek-decafeine-x100-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="grosse offre : 120 capsules delta q + machine delta q mini qool gris offerte">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/01/PHOTOS-RODUITS-62-400x400.jpg" alt="Grosse Offre : 120 Capsules Delta Q + Machine Delta Q Mini Qool Gris OFFERTE" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Grosse Offre : 120 Capsules Delta Q + Machine Delta Q Mini Qool Gris OFFERTE</h3>
+            <p class="product-price">€128.08 TTC</p>
+            <a href="https://cafemalin.com/product/grosse-offre-120-capsules-delta-q-machine-delta-q-mini-qool-gris-offerte/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta q colombia – 10 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/capsulesdeltaqcolombia10-400x400.jpg" alt="Delta Q Colombia – 10 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta Q Colombia – 10 capsules</h3>
+            <p class="product-price">€4.40 TTC</p>
+            <a href="https://cafemalin.com/product/deltaq-colombia/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta q vietnam – 10 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/capsulesdeltaqvietnam10-400x400.jpg" alt="Delta Q Vietnam – 10 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta Q Vietnam – 10 capsules</h3>
+            <p class="product-price">€4.40 TTC</p>
+            <a href="https://cafemalin.com/product/deltaq-vietnam/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta q qalidus n°10 – 40 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/40c-1-400x400.jpg" alt="Delta Q QALIDUS N°10 – 40 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta Q QALIDUS N°10 – 40 capsules</h3>
+            <p class="product-price">€14.65 TTC</p>
+            <a href="https://cafemalin.com/product/deltaq-qalidus-n10-40-capsules-de-cafe/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta q qharisma n°12 – 40 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/f_blanc_mar-1-400x400.jpg" alt="Delta Q QHARISMA N°12 – 40 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta Q QHARISMA N°12 – 40 capsules</h3>
+            <p class="product-price">€11.30 TTC</p>
+            <a href="https://cafemalin.com/product/deltaq-qharisma-n12-40-capsules-de-cafe/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="carte noire compatible nespresso espresso n°7 classique x30 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/Design-sans-titre-400x400.jpg" alt="Carte Noire Compatible Nespresso Espresso n°7 Classique x30 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Carte Noire Compatible Nespresso Espresso n°7 Classique x30 capsules</h3>
+            <p class="product-price">€9.70 TTC</p>
+            <a href="https://cafemalin.com/product/carte-noire-compatible-nespresso-espresso-n7-classique-x-30-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta q menthe chocolat – 10 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/capsuledeltaqcacaomenthex10visuel-400x400.jpg" alt="Delta Q Menthe chocolat – 10 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta Q Menthe chocolat – 10 capsules</h3>
+            <p class="product-price">€3.65 TTC</p>
+            <a href="https://cafemalin.com/product/deltaq-menthe-chocolat/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta q – pack découverte">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/Cafemalin.com-61-400x400.jpg" alt="Delta Q – Pack Découverte" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta Q – Pack Découverte</h3>
+            <p class="product-price">€8.08 TTC</p>
+            <a href="https://cafemalin.com/product/delta-q-pack-decouverte-boites/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lavazza espresso point bevanda bianca lait x50 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/10/espresso-dolce-1.jpg" alt="Lavazza Espresso Point Bevanda Bianca Lait x50 Capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza Espresso Point Bevanda Bianca Lait x50 Capsules</h3>
+            <p class="product-price">€14.78 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-espresso-point-bevanda-bianca-lait-x50-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit machine lavazza blue lb900 + 200 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2022/02/13-1-400x400.jpg" alt="Kit Machine Lavazza BLue LB900 + 200 Capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Machine Lavazza BLue LB900 + 200 Capsules</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/kit-machine-lavazza-blue-lb900-200-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit machine à café lavazza blue lb1050 classy milk + 200 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2022/02/14-1-1-400x400.jpg" alt="Kit Machine à café Lavazza BLue LB1050 Classy Milk + 200 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Machine à café Lavazza BLue LB1050 Classy Milk + 200 capsules</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/kit-machine-a-cafe-lavazza-blue-lb1050-classy-milk-200-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="100 capsules aluminium decaf compatibles nespresso® – lavazza">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/01/4000x2284-400x400.jpg" alt="100 Capsules Aluminium Decaf compatibles Nespresso® – LAVAZZA" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">100 Capsules Aluminium Decaf compatibles Nespresso® – LAVAZZA</h3>
+            <p class="product-price">€27.63 TTC</p>
+            <a href="https://cafemalin.com/product/100-capsules-aluminium-maestro-decaffeinato-compatibles-nespresso-10x10-lavazza/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="bristot compatibles nespresso® – 10 capsules lungo">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/12/PHOTOS-RODUITS-10-400x400.jpg" alt="Bristot Compatibles Nespresso® – 10 Capsules Lungo" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Bristot Compatibles Nespresso® – 10 Capsules Lungo</h3>
+            <p class="product-price">€2.55 TTC</p>
+            <a href="https://cafemalin.com/product/bristot-compatibles-nespresso-10-capsules-lungo/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="delta q qalidus n°10 – pack 10x10 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/128-400x400.jpg" alt="Delta Q QALIDUS N°10 – Pack 10x10 Capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Delta Q QALIDUS N°10 – Pack 10x10 Capsules</h3>
+            <p class="product-price">Sur devis</p>
+            <a href="https://cafemalin.com/product/delta-q-qalidus-n10-pack-10-x-10-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="pack capsules lavazza nespresso">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2023/07/nespresso-pt-lavazza-alu-100-0004-2-400x400.jpg" alt="Pack Capsules Lavazza Nespresso" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Pack Capsules Lavazza Nespresso</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/lavazza-nespresso/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="capsules illy iperespresso arabica selection colombie – 18 unités">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/139-400x400.jpg" alt="Capsules Illy Iperespresso Arabica Selection Colombie – 18 unités" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Capsules Illy Iperespresso Arabica Selection Colombie – 18 unités</h3>
+            <p class="product-price">€8.79 TTC</p>
+            <a href="https://cafemalin.com/product/capsules-illy-iperespresso-arabica-selection-colombie-18-unites/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="capsules illy iperespresso arabica selection india – 18 unités">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/131-400x400.jpg" alt="Capsules Illy Iperespresso Arabica Selection India – 18 unités" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Capsules Illy Iperespresso Arabica Selection India – 18 unités</h3>
+            <p class="product-price">€8.79 TTC</p>
+            <a href="https://cafemalin.com/product/capsules-illy-iperespresso-arabica-selection-india-18-unites/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kimbo compatible modo mio – capri – 50 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/02/PHOTOS-RODUITS-27-400x400.jpg" alt="Kimbo Compatible Modo Mio – Capri – 50 Capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kimbo Compatible Modo Mio – Capri – 50 Capsules</h3>
+            <p class="product-price">€16.00 TTC</p>
+            <a href="https://cafemalin.com/product/kimbo-compatible-modo-mio-capri-50-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="dosettes espresso illy e.s.e monodoses classico lungo – 18 dosettes">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/124-400x400.jpg" alt="Dosettes Espresso Illy E.S.E Monodoses Classico Lungo – 18 Dosettes" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Dosettes Espresso Illy E.S.E Monodoses Classico Lungo – 18 Dosettes</h3>
+            <p class="product-price">€8.05 TTC</p>
+            <a href="https://cafemalin.com/product/dosettes-espresso-illy-e-s-e-monodoses-classico-lungo-18-dosettes/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="capsules illy iperespresso arabica selection guatemala – 18 unités">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/138-400x400.jpg" alt="Capsules Illy Iperespresso Arabica Selection Guatemala – 18 unités" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Capsules Illy Iperespresso Arabica Selection Guatemala – 18 unités</h3>
+            <p class="product-price">€8.79 TTC</p>
+            <a href="https://cafemalin.com/product/capsules-illy-iperespresso-arabica-selection-guatemala-18-unites/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit complet machine lavazza espresso point ep mini + 200 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/44-400x400.jpg" alt="Kit Complet Machine Lavazza Espresso Point EP Mini + 200 Capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Complet Machine Lavazza Espresso Point EP Mini + 200 Capsules</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/full-kit-machine-lavazza-espresso-point-ep-mini-200-capsules-accessoires/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="dosettes espresso illy e.s.e monodoses décaféiné – 18 dosettes">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/123-400x400.jpg" alt="Dosettes Espresso Illy E.S.E Monodoses Décaféiné – 18 Dosettes" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Dosettes Espresso Illy E.S.E Monodoses Décaféiné – 18 Dosettes</h3>
+            <p class="product-price">€8.05 TTC</p>
+            <a href="https://cafemalin.com/product/dosettes-espresso-illy-e-s-e-monodoses-decafeine-18-dosettes/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit complet machine à café lavazza blue lb1050 + 200 capsules + accessoires">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/47-400x400.jpg" alt="Kit Complet Machine à café Lavazza BLue LB1050 + 200 capsules + Accessoires" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Complet Machine à café Lavazza BLue LB1050 + 200 capsules + Accessoires</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/full-kit-machine-a-cafe-lavazza-blue-lb1050-classy-milk-200-capsules-accessoires/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="bristot compatibles nespresso® – 10x10 capsules lungo">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/12/PHOTOS-RODUITS-93-400x400.jpg" alt="Bristot Compatibles Nespresso® – 10x10 Capsules Lungo" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Bristot Compatibles Nespresso® – 10x10 Capsules Lungo</h3>
+            <p class="product-price">Sur devis</p>
+            <a href="https://cafemalin.com/product/bristot-compatibles-nespresso-10-x-10-capsules-lungo/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit lavazza point 300 capsules + accessoires">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/18-400x400.jpg" alt="Kit Lavazza Point 300 Capsules + Accessoires" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Lavazza Point 300 Capsules + Accessoires</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/kit-lavazza-point-300-capsules-accessoires/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kimbo compatible nespresso – napoli – 10x10 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/02/PHOTOS-RODUITS-35-400x400.jpg" alt="Kimbo Compatible Nespresso – Napoli – 10x10 Capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kimbo Compatible Nespresso – Napoli – 10x10 Capsules</h3>
+            <p class="product-price">Sur devis</p>
+            <a href="https://cafemalin.com/product/kimbo-compatible-nespresso-napoli-10-x-10-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="dosettes espresso illy e.s.e monodoses forte – 180 dosettes">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/157-400x400.jpg" alt="Dosettes Espresso Illy E.S.E Monodoses Forte – 180 Dosettes" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Dosettes Espresso Illy E.S.E Monodoses Forte – 180 Dosettes</h3>
+            <p class="product-price">Sur devis</p>
+            <a href="https://cafemalin.com/product/dosettes-espresso-illy-e-s-e-monodoses-forte-180-dosettes/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+
+    <section id="section-machines-a-cafe" class="category-section">
+        <div class="category-header">
+            <h2>Machines à Café</h2>
+            <span class="product-count">10 produits</span>
+            <a href="https://cafemalin.com/product-category/machines-a-cafe/" class="view-all-link" target="_blank">Voir tous sur CaféMalin.com →</a>
+        </div>
+        <div class="products-grid">
+            
+    <div class="product-card" data-product-name="machine à café – lavazza blue lb900 compact">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2021/07/p_2_2_9_229-Machine-a-cafe-Lavazza-LB900-Compact1-400x400.jpg" alt="Machine à café – Lavazza Blue LB900 Compact" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Machine à café – Lavazza Blue LB900 Compact</h3>
+            <p class="product-price">€199.00 TTC</p>
+            <a href="https://cafemalin.com/product/machine-a-cafe-lavazza-lb900-compact/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="grosse offre : 120 capsules delta q + machine delta q mini qool gris offerte">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/01/PHOTOS-RODUITS-62-400x400.jpg" alt="Grosse Offre : 120 Capsules Delta Q + Machine Delta Q Mini Qool Gris OFFERTE" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Grosse Offre : 120 Capsules Delta Q + Machine Delta Q Mini Qool Gris OFFERTE</h3>
+            <p class="product-price">€128.08 TTC</p>
+            <a href="https://cafemalin.com/product/grosse-offre-120-capsules-delta-q-machine-delta-q-mini-qool-gris-offerte/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="machine à café – lavazza blue lb1050 classy milk">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/machine-a-cafe-lavazza-blue-lb1050-classy-custom-milk-pour-capsules-lavazza-blue-400x400.jpg" alt="Machine à café – Lavazza BLue LB1050 Classy Milk" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Machine à café – Lavazza BLue LB1050 Classy Milk</h3>
+            <p class="product-price">€239.00 TTC</p>
+            <a href="https://cafemalin.com/product/machine-a-cafe-lavazza-blue-lb1050-classy-milk/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="machine à café lavazza a modo mio – jolie plus silver">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/09/media-400x400.jpg" alt="Machine à Café Lavazza A Modo Mio – Jolie Plus Silver" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Machine à Café Lavazza A Modo Mio – Jolie Plus Silver</h3>
+            <p class="product-price">€119.00 TTC</p>
+            <a href="https://cafemalin.com/product/machine-a-cafe-lavazza-a-modo-mio-jolie-plus-silver/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit complet machine à café lavazza blue lb1050 classy milk + 200 capsules + accessoires">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/47-400x400.jpg" alt="Kit Complet Machine à café Lavazza BLue LB1050 Classy Milk + 200 capsules + Accessoires" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Complet Machine à café Lavazza BLue LB1050 Classy Milk + 200 capsules + Accessoires</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/full-kit-machine-a-cafe-lavazza-blue-lb1050-classy-milk-200-capsules-accessoires/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit complet machine lavazza espresso point ep mini + 200 capsules + accessoires">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/44-400x400.jpg" alt="Kit Complet Machine Lavazza Espresso Point EP Mini + 200 Capsules + Accessoires" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Complet Machine Lavazza Espresso Point EP Mini + 200 Capsules + Accessoires</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/full-kit-machine-lavazza-espresso-point-ep-mini-200-capsules-accessoires/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="machine à capsules illy iperespresso home x7.1 – noir">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/94-400x400.jpg" alt="Machine à Capsules Illy Iperespresso Home X7.1 – Noir" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Machine à Capsules Illy Iperespresso Home X7.1 – Noir</h3>
+            <p class="product-price">€199.50 TTC</p>
+            <a href="https://cafemalin.com/product/machine-a-capsules-illy-iperespresso-home-x7-1-noir/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="machine à capsules illy iperespresso home x7.1 – rouge">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/95-400x400.jpg" alt="Machine à Capsules Illy Iperespresso Home X7.1 – Rouge" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Machine à Capsules Illy Iperespresso Home X7.1 – Rouge</h3>
+            <p class="product-price">€199.50 TTC</p>
+            <a href="https://cafemalin.com/product/machine-a-capsules-illy-iperespresso-home-x7-1-rouge/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="machine à café illy iperespresso x1 anniversary eco mode – inox – 8 capsules offertes">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/103-400x400.jpg" alt="Machine à Café Illy Iperespresso X1 Anniversary Eco Mode – Inox – 8 Capsules Offertes" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Machine à Café Illy Iperespresso X1 Anniversary Eco Mode – Inox – 8 Capsules Offertes</h3>
+            <p class="product-price">€699.00 TTC</p>
+            <a href="https://cafemalin.com/product/machine-a-cafe-illy-iperespresso-x1-anniversary-eco-mode-inox-8-capsules-offerte/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="machine à café illy iperespresso x1 anniversary eco mode – rouge – 8 capsules offertes">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/10/104-400x400.jpg" alt="Machine à Café Illy Iperespresso X1 Anniversary Eco Mode – Rouge – 8 Capsules Offertes" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Machine à Café Illy Iperespresso X1 Anniversary Eco Mode – Rouge – 8 Capsules Offertes</h3>
+            <p class="product-price">€699.00 TTC</p>
+            <a href="https://cafemalin.com/product/machine-a-cafe-illy-iperespresso-x1-anniversary-eco-mode-rouge-8-capsules-offerte/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+
+    <section id="section-pack" class="category-section">
+        <div class="category-header">
+            <h2>Packs</h2>
+            <span class="product-count">12 produits</span>
+            <a href="https://cafemalin.com/product-category/pack/" class="view-all-link" target="_blank">Voir tous sur CaféMalin.com →</a>
+        </div>
+        <div class="products-grid">
+            
+    <div class="product-card" data-product-name="6kg – café en grains lavazza crema & aroma expert">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2020/04/p_1_6_1_161-Cafe-en-Grains-Lavazza-Crema-Aroma-VENDING-6-Kg1-400x400.jpg" alt="6kg – Café en Grains Lavazza Crema & Aroma Expert" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">6kg – Café en Grains Lavazza Crema & Aroma Expert</h3>
+            <p class="product-price">€108.62 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-lavazza-crema-aroma-1-kg-3/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="3kg – café en grains lavazza crema & aroma expert">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2020/04/p_1_5_8_158-Cafe-en-Grains-Lavazza-Crema-Aroma-3-Kg1-400x400.jpg" alt="3kg – Café en Grains Lavazza Crema & Aroma Expert" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">3kg – Café en Grains Lavazza Crema & Aroma Expert</h3>
+            <p class="product-price">€57.89 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-lavazza-crema-aroma-1-kg-2/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="3kg – café en grains gold selection – lavazza">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2021/02/p_2_2_4_224-Cafe-en-grains-GOLD-SELECTION-3kg-Lavazza1-400x400.jpg" alt="3kg – Café en grains GOLD SELECTION – Lavazza" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">3kg – Café en grains GOLD SELECTION – Lavazza</h3>
+            <p class="product-price">€84.38 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grains-gold-selection-3kg-lavazza/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="3kg lavazza crema classica">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2022/03/p_3_5_35-3kg-Lavazza-Aroma-Top1-400x400.jpg" alt="3kg Lavazza Crema Classica" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">3kg Lavazza Crema Classica</h3>
+            <p class="product-price">€64.00 TTC</p>
+            <a href="https://cafemalin.com/product/3kg-lavazza-crema-classica/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="pack capsules lavazza nespresso">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2023/07/nespresso-pt-lavazza-alu-100-0004-2-400x400.jpg" alt="Pack Capsules Lavazza Nespresso" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Pack Capsules Lavazza Nespresso</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/lavazza-nespresso/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="pack café en grain origine – delta cafés">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/Cafemalin.com-50-400x400.jpg" alt="Pack Café en Grain Origine – Delta Cafés" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Pack Café en Grain Origine – Delta Cafés</h3>
+            <p class="product-price">€27.90 TTC</p>
+            <a href="https://cafemalin.com/product/pack-cafe-en-grain-origine-delta-cafes/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="3kg – café en grain pronto crema lavazza">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/05/92-400x400.jpg" alt="3kg – Café en grain Pronto Crema Lavazza" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">3kg – Café en grain Pronto Crema Lavazza</h3>
+            <p class="product-price">€57.89 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grain-pronto-crema-lavazza-3kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="café en grain espresso mix – 6×1 kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/130-2-400x400.jpg" alt="Café en grain ESPRESSO MIX – 6×1 KG" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Café en grain ESPRESSO MIX – 6×1 KG</h3>
+            <p class="product-price">€122.55 TTC</p>
+            <a href="https://cafemalin.com/product/cafe-en-grain-espresso-mix-6x1-kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit lavazza blue 1000 capsules + accessoires">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/Cafemalin-Kit.jpg" alt="Kit Lavazza Blue 1000 Capsules + Accessoires" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Lavazza Blue 1000 Capsules + Accessoires</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/kit-lavazza-blue-1000-capsules-accessoires/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit lavazza point 600 capsules + accessoires">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/19-400x400.jpg" alt="Kit Lavazza Point 600 Capsules + Accessoires" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Lavazza Point 600 Capsules + Accessoires</h3>
+            <p class="product-price">€32.00 TTC</p>
+            <a href="https://cafemalin.com/product/kit-lavazza-point-600-capsules-accessoires/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="illy compatibles nespresso® – 10×10 capsules classico lungo">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/4-400x400.jpg" alt="ILLY compatibles Nespresso® – 10×10 Capsules classico Lungo" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">ILLY compatibles Nespresso® – 10×10 Capsules classico Lungo</h3>
+            <p class="product-price">€44.52 TTC</p>
+            <a href="https://cafemalin.com/product/illy-compatibles-nespresso-10x10-capsules-classico-lungo/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="kit lavazza point 300 capsules + accessoires">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/18-400x400.jpg" alt="Kit Lavazza Point 300 Capsules + Accessoires" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Kit Lavazza Point 300 Capsules + Accessoires</h3>
+            <p class="product-price">Obtenez 5% réduction</p>
+            <a href="https://cafemalin.com/product/kit-lavazza-point-300-capsules-accessoires/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+
+    <section id="section-vending" class="category-section">
+        <div class="category-header">
+            <h2>Vending</h2>
+            <span class="product-count">4 produits</span>
+            <a href="https://cafemalin.com/product-category/vending/" class="view-all-link" target="_blank">Voir tous sur CaféMalin.com →</a>
+        </div>
+        <div class="products-grid">
+            
+    <div class="product-card" data-product-name="chocolat instantané ristora – 1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/02/PHOTOS-RODUITS-55-400x400.jpg" alt="Chocolat Instantané Ristora – 1kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Chocolat Instantané Ristora – 1kg</h3>
+            <p class="product-price">€8.44 TTC</p>
+            <a href="https://cafemalin.com/product/chocolat-instantane-ristora-1kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lait écrémé en poudre sans sucre – régilait – 500g">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/06/lait-regilait-lait-ecreme-pour-distributeur-automatique-400x400.jpg" alt="Lait Écrémé en Poudre sans Sucre – Régilait – 500g" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lait Écrémé en Poudre sans Sucre – Régilait – 500g</h3>
+            <p class="product-price">€7.50 TTC</p>
+            <a href="https://cafemalin.com/product/lait-ecreme-en-poudre-sans-sucre-regilait-500g/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="boisson au thé citron soluble satro 1kg – vending">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/06/thecitronsatro2-png-400x400.jpg" alt="Boisson au thé citron soluble SATRO 1KG – Vending" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Boisson au thé citron soluble SATRO 1KG – Vending</h3>
+            <p class="product-price">€8.00 TTC</p>
+            <a href="https://cafemalin.com/product/boisson-au-the-citron-soluble-satro-1kg-vending/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lait écrémé en poudre – prolait">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/06/prolait-lait-ecreme-pour-distributeur-automatique-400x400.jpg" alt="Lait Écrémé en Poudre – PROLAIT" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lait Écrémé en Poudre – PROLAIT</h3>
+            <p class="product-price">€12.00 TTC</p>
+            <a href="https://cafemalin.com/product/lait-ecreme-en-poudre-prolait/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+
+    <section id="section-boissons-chaudes" class="category-section">
+        <div class="category-header">
+            <h2>Thé & Boissons</h2>
+            <span class="product-count">6 produits</span>
+            <a href="https://cafemalin.com/product-category/boissons-chaudes/" class="view-all-link" target="_blank">Voir tous sur CaféMalin.com →</a>
+        </div>
+        <div class="products-grid">
+            
+    <div class="product-card" data-product-name="chocolat instantané ristora – 1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/02/PHOTOS-RODUITS-55-400x400.jpg" alt="Chocolat Instantané Ristora – 1kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Chocolat Instantané Ristora – 1kg</h3>
+            <p class="product-price">€8.44 TTC</p>
+            <a href="https://cafemalin.com/product/chocolat-instantane-ristora-1kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lavazza expert cappuccino classique x10 doses">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2020/11/cappuccino-classique-lavazza-10-dosettes-individuelles-400x400.jpg" alt="Lavazza expert Cappuccino Classique x10 doses" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza expert Cappuccino Classique x10 doses</h3>
+            <p class="product-price">€3.80 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-expert-cappuccino-classique/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lavazza blue cioccolato fondente chocolat x50 capsules">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/10/espresso-dolce-1.jpg" alt="Lavazza Blue Cioccolato Fondente chocolat x50 capsules" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza Blue Cioccolato Fondente chocolat x50 capsules</h3>
+            <p class="product-price">€17.50 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-blue-cioccolato-fondente-chocolat-x50-capsules/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="cappucino vanille – 1kg – caprimo">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/02/caprimo-cappuccino-cafe-vanille-1-kg-400x400.png" alt="Cappucino Vanille – 1kg – Caprimo" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Cappucino Vanille – 1kg – Caprimo</h3>
+            <p class="product-price">€8.44 TTC</p>
+            <a href="https://cafemalin.com/product/cappucino-vanille-1kg-caprimo/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="thé au citron instantané ristora – 1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/02/PHOTOS-RODUITS-42-400x400.jpg" alt="Thé Au Citron Instantané Ristora – 1kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Thé Au Citron Instantané Ristora – 1kg</h3>
+            <p class="product-price">€5.49 TTC</p>
+            <a href="https://cafemalin.com/product/the-au-citron-instantane-ristora-1kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="chocolat instantané ristora – 10x1kg">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/02/PHOTOS-RODUITS-56-400x400.jpg" alt="Chocolat Instantané Ristora – 10x1kg" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Chocolat Instantané Ristora – 10x1kg</h3>
+            <p class="product-price">€93.05 TTC</p>
+            <a href="https://cafemalin.com/product/chocolat-instantane-ristora-10-x-1kg/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+
+    <section id="section-accessoires-autour-du-cafe-2" class="category-section">
+        <div class="category-header">
+            <h2>Accessoires</h2>
+            <span class="product-count">9 produits</span>
+            <a href="https://cafemalin.com/product-category/accessoires-autour-du-cafe-2/" class="view-all-link" target="_blank">Voir tous sur CaféMalin.com →</a>
+        </div>
+        <div class="products-grid">
+            
+    <div class="product-card" data-product-name="4 oz (12cl) gobelets en carton cafemalin x50">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/01/4oz-1-400x400.jpg" alt="4 Oz (12cl) Gobelets en carton Cafemalin x50" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">4 Oz (12cl) Gobelets en carton Cafemalin x50</h3>
+            <p class="product-price">€1.50 TTC</p>
+            <a href="https://cafemalin.com/product/gobelets-en-carton-10cl-x50/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="sucre bûchette 4gr saint louis x500">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/10/Screenshot-2025-02-03-at-15-16-41-sucre-buchettes-saint-louis-4g-x500.jpg-Image-JPEG-1100-%C3%97-1422-pixels-400x400.jpg" alt="Sucre bûchette 4gr Saint Louis x500" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Sucre bûchette 4gr Saint Louis x500</h3>
+            <p class="product-price">€10.90 TTC</p>
+            <a href="https://cafemalin.com/product/sucre-buchette-4gr-didon-x-600/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="agitateur café en bois (1000 pièces)">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2020/11/p_2_1_0_210-Agitateur-cafe-en-bois-200-pieces1-400x400.jpg" alt="Agitateur café en bois (1000 pièces)" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Agitateur café en bois (1000 pièces)</h3>
+            <p class="product-price">€6.00 TTC</p>
+            <a href="https://cafemalin.com/product/agitateur-cafe-en-bois-1000-pieces/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="sucre bûchette 4gr lavazza x200">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/01/sucre-400x400.jpg" alt="Sucre bûchette 4gr Lavazza x200" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Sucre bûchette 4gr Lavazza x200</h3>
+            <p class="product-price">€6.19 TTC</p>
+            <a href="https://cafemalin.com/product/sucre-buchette-4gr-lavazza-x-200/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="6.5 oz (20cl) gobelet cafemalin x50">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/01/6oz-1-400x400.jpg" alt="6.5 Oz (20cl) Gobelet Cafemalin x50" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">6.5 Oz (20cl) Gobelet Cafemalin x50</h3>
+            <p class="product-price">€1.92 TTC</p>
+            <a href="https://cafemalin.com/product/gobelets-en-carton-20cl-x50/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="8 oz (24cl) gobelets en carton cafemalin x50">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2019/01/8oz-1-400x400.jpg" alt="8 Oz (24cl) Gobelets en carton Cafemalin x50" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">8 Oz (24cl) Gobelets en carton Cafemalin x50</h3>
+            <p class="product-price">€2.04 TTC</p>
+            <a href="https://cafemalin.com/product/gobelets-en-carton-24cl-x50/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="sous-tasses lavazza en porcelaine – lot de 12 pour tasses espresso 70 ml">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/05/PHOTOS-RODUITS-83-400x400.jpg" alt="Sous-Tasses Lavazza en Porcelaine – Lot de 12 pour Tasses Espresso 70 ml" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Sous-Tasses Lavazza en Porcelaine – Lot de 12 pour Tasses Espresso 70 ml</h3>
+            <p class="product-price">€30.00 TTC</p>
+            <a href="https://cafemalin.com/product/sous-tasses-lavazza-en-porcelaine-lot-de-12-pour-tasses-espresso-70-ml/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="cartouche filtre brita purity c150 quell st">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/05/PHOTOS-RODUITS-70-400x400.jpg" alt="Cartouche Filtre Brita Purity C150 Quell ST" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Cartouche Filtre Brita Purity C150 Quell ST</h3>
+            <p class="product-price">€72.00 TTC</p>
+            <a href="https://cafemalin.com/product/cartouche-filtre-brita-purity-c150-quell-st-filtration-professionnelle-anti-calcaire-pour-machine-a-cafe/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="cartouche filtrante brita purity c500 finest">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2025/05/PHOTOS-RODUITS-69-400x400.jpg" alt="Cartouche Filtrante Brita Purity C500 Finest" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Cartouche Filtrante Brita Purity C500 Finest</h3>
+            <p class="product-price">€162.00 TTC</p>
+            <a href="https://cafemalin.com/product/cartouche-filtrante-brita-purity-c500-finest-filtration-premium-pour-machines-a-cafe-professionnelles/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+
+    <section id="section-friandise" class="category-section">
+        <div class="category-header">
+            <h2>Friandises</h2>
+            <span class="product-count">3 produits</span>
+            <a href="https://cafemalin.com/product-category/friandise/" class="view-all-link" target="_blank">Voir tous sur CaféMalin.com →</a>
+        </div>
+        <div class="products-grid">
+            
+    <div class="product-card" data-product-name="lavazza amande cacaotée – 500 chocolats – emballage individuelle">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/lavazza-amande-cacaotee-carton-de-500-chocolats-emballes-individuellement-400x400.jpg" alt="Lavazza Amande Cacaotée – 500 chocolats – Emballage individuelle" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza Amande Cacaotée – 500 chocolats – Emballage individuelle</h3>
+            <p class="product-price">€39.00 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-amande-cacaotee-500-chocolats-emballage-individuelle/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="lavazza speculoos 400 biscuits emballage individuel">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/04/4475-400x400.jpg" alt="Lavazza Speculoos 400 biscuits emballage individuel" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            <div class="out-of-stock-badge">Rupture de stock</div>
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">Lavazza Speculoos 400 biscuits emballage individuel</h3>
+            <p class="product-price">€25.98 TTC</p>
+            <a href="https://cafemalin.com/product/lavazza-speculoos-400-biscuits-emballage-individuel/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+    <div class="product-card" data-product-name="200 petites galettes pur beurre – st michel">
+        <div class="product-image-wrapper">
+            <img src="https://cafemalin.com/wp-content/uploads/2024/07/petites-galettes-au-bon-beurre-x200-400x400.jpg" alt="200 Petites Galettes Pur Beurre – St Michel" class="product-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f5f0e8%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%238b5e3c%22%3EImage%3C/text%3E%3C/svg%3E'">
+            
+        </div>
+        <div class="product-info">
+            <h3 class="product-name">200 Petites Galettes Pur Beurre – St Michel</h3>
+            <p class="product-price">€21.05 TTC</p>
+            <a href="https://cafemalin.com/product/200-petites-galettes-tout-au-beur/" target="_blank" class="product-btn">Voir le produit</a>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+    
+        
+        <section id="section-blog" class="blog-section">
+<h2>Blog CaféMalin</h2>
+<div class="blog-category">
+<h3>Bons plans</h3>
+<div class="blog-articles-grid">
+
+    <article class="blog-card">
+        <div class="blog-date">09/02/2026</div>
+        <h4>Profitez de -10 % sur tout Cafemalin – Offre limitée</h4>
+        <a href="https://cafemalin.com/profitez-de-10-sur-tout-cafemalin-offre-limitee/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            
+    <article class="blog-card">
+        <div class="blog-date">06/01/2026</div>
+        <h4>Soldes d'hiver Cafémalin : Jusqu'à 75 euros de réduction !</h4>
+        <a href="https://cafemalin.com/soldes-dhiver-cafemalin-jusqua-75-euros-de-reduction/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            </div>
+</div>
+<div class="blog-category">
+<h3>Fêtes</h3>
+<div class="blog-articles-grid">
+
+    <article class="blog-card">
+        <div class="blog-date">01/01/2026</div>
+        <h4>Bonne année 2026 : l'équipe Cafémalin vous souhaite une année pleine de saveurs</h4>
+        <a href="https://cafemalin.com/bonne-annee-2026-lequipe-cafemalin-vous-souhaite-une-annee-pleine-de-saveurs/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            
+    <article class="blog-card">
+        <div class="blog-date">26/12/2025</div>
+        <h4>Cafémalin vous souhaite un Joyeux Noël !</h4>
+        <a href="https://cafemalin.com/cafemalin-vous-souhaite-un-joyeux-noel/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            </div>
+</div>
+<div class="blog-category">
+<h3>Histoires du café</h3>
+<div class="blog-articles-grid">
+
+    <article class="blog-card">
+        <div class="blog-date">05/02/2026</div>
+        <h4>L'histoire des cafés viennois : refuges chaleureux contre le froid</h4>
+        <a href="https://cafemalin.com/lhistoire-des-cafes-viennois-refuges-chaleureux-contre-le-froid/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            
+    <article class="blog-card">
+        <div class="blog-date">15/01/2026</div>
+        <h4>Quand le café était interdit : censures, scandales et révolutions</h4>
+        <a href="https://cafemalin.com/quand-le-cafe-etait-interdit-censures-scandales-et-revolutions/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            </div>
+</div>
+<div class="blog-category">
+<h3>Life hacks</h3>
+<div class="blog-articles-grid">
+
+    <article class="blog-card">
+        <div class="blog-date">16/02/2026</div>
+        <h4>5 cafés qui boostent vraiment votre énergie en hiver et comment les préparer</h4>
+        <a href="https://cafemalin.com/5-cafes-qui-boostent-vraiment-votre-energie-en-hiver-et-comment-les-preparer/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            
+    <article class="blog-card">
+        <div class="blog-date">23/01/2026</div>
+        <h4>Café, lait, mousse : les meilleures combinaisons pour l'hiver</h4>
+        <a href="https://cafemalin.com/cafe-lait-mousse-les-meilleures-combinaisons-pour-lhiver/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            
+    <article class="blog-card">
+        <div class="blog-date">29/12/2025</div>
+        <h4>Café vs fatigue hivernale : les bonnes habitudes à adopter</h4>
+        <a href="https://cafemalin.com/cafe-vs-fatigue-hivernale/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            </div>
+</div>
+<div class="blog-category">
+<h3>Recettes</h3>
+<div class="blog-articles-grid">
+
+    <article class="blog-card">
+        <div class="blog-date">26/02/2026</div>
+        <h4>Crème brûlée au café intense : la recette gourmande et élégante</h4>
+        <a href="https://cafemalin.com/creme-brulee-au-cafe-intense-la-recette-gourmande-et-elegante/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            
+    <article class="blog-card">
+        <div class="blog-date">30/01/2026</div>
+        <h4>Cheesecake café–speculoos : l'alliance parfaite entre intensité et douceur</h4>
+        <a href="https://cafemalin.com/cheesecake-cafe-speculoos-lalliance-parfaite-entre-intensite-et-douceur/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            
+    <article class="blog-card">
+        <div class="blog-date">10/01/2026</div>
+        <h4>Gâteau marbré café–vanille : l'alliance parfaite entre douceur et caractère</h4>
+        <a href="https://cafemalin.com/gateau-marbre-cafe-vanille/" target="_blank" class="blog-link">Lire l'article →</a>
+    </article>
+            </div>
+</div>
+</section>
+
+        <section id="section-info" class="info-sections">
+            <div class="info-card">
+                <h3>📞 Contact</h3>
+                <p><strong>CaféMalin</strong></p>
+                <p>30 rue de l'Escouvrier, 95200 Sarcelles, France</p>
+                <p>Tél: <a href="tel:+33139858565">+33 1 39 85 85 65</a></p>
+                <p>Email: <a href="mailto:contact@cafemalin.com">contact@cafemalin.com</a></p>
+                <p><small>Horaires: Lundi–Vendredi 9h–17h</small></p>
+                <p><small>Note clients: 4.6/5 (1 519 avis)</small></p>
+            </div>
+
+            <div class="info-card">
+                <h3>🚚 Livraison</h3>
+                <p>Expédition 24h après paiement</p>
+                <p>Livraison GLS 24–72h avec suivi</p>
+                <p>UPS Extra disponible sur demande</p>
+                <p><strong>Livraison gratuite</strong> en point relais dès 99€</p>
+                <p><small>Frais calculés automatiquement selon poids et adresse</small></p>
+            </div>
+
+            <div class="info-card">
+                <h3>💳 Paiement</h3>
+                <p>Paiements 100% sécurisés</p>
+                <p><strong>Cartes acceptées:</strong></p>
+                <p>Visa • Mastercard • Apple Pay • PayPal (4x possible)</p>
+                <p><strong>Garantie:</strong> Satisfait ou remboursé 14 jours</p>
+            </div>
+
+            <div class="info-card">
+                <h3>ℹ️ FAQ</h3>
+                <p><strong>Délais livraison:</strong> 1 à 3 jours ouvrés</p>
+                <p><strong>Suivi:</strong> Lien GLS envoyé par email</p>
+                <p><strong>Retours:</strong> 14 jours pour articles non ouverts</p>
+                <p><strong>Erreur vendeur:</strong> Bordereau retour gratuit fourni</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>À propos</h3>
+                <p>CaféMalin - Les Nouveaux Mondes</p>
+                <p>Votre expert en café français depuis des années</p>
+                <p><small>Réalisé par Groupe Octopus</small></p>
+            </div>
+
+            <div class="footer-section">
+                <h3>Suivez-nous</h3>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/cafemalinfr/" target="_blank" title="Facebook">f</a>
+                    <a href="https://www.instagram.com/cafe.malin/" target="_blank" title="Instagram">📷</a>
+                    <a href="https://www.linkedin.com/company/cafemalin/" target="_blank" title="LinkedIn">in</a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Moyens de paiement</h3>
+                <div class="payment-methods">
+                    <span>💳 Visa</span>
+                    <span>💳 Mastercard</span>
+                    <span>🍎 Apple Pay</span>
+                    <span>🅿️ PayPal</span>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Liens rapides</h3>
+                <ul>
+                    <li><a href="https://cafemalin.com/contactez-nous/" target="_blank">Contact</a></li>
+                    <li><a href="https://cafemalin.com/tracking/" target="_blank">Suivi commande</a></li>
+                    <li><a href="https://cafemalin.com/" target="_blank">Site principal</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 CaféMalin. Tous droits réservés. | Réalisé par Groupe Octopus</p>
+        </div>
+    </footer>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const productCards = document.querySelectorAll('.product-card');
+
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            productCards.forEach(card => {
+                const productName = card.getAttribute('data-product-name');
+                
+                if (searchTerm === '' || productName.includes(searchTerm)) {
+                    card.classList.remove('hidden-product');
+                } else {
+                    card.classList.add('hidden-product');
+                }
+            });
+        });
+
+        // Smooth scroll for TOC links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({behavior: 'smooth', block: 'start'});
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

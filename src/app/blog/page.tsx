@@ -5,65 +5,17 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Clock, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
-const blogPosts = [
-    {
-        id: '1',
-        title: 'The Art of the Perfect Crema: Science and Passion',
-        excerpt: 'Discover why that golden layer on top of your espresso is the ultimate indicator of quality, freshness, and expert extraction.',
-        category: 'Coffee Science',
-        date: 'Oct 12, 2024',
-        readTime: '4 min read',
-        image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?q=80&w=1200&auto=format&fit=crop',
-        featured: true
-    },
-    {
-        id: '2',
-        title: 'Sustainably Sourced: Our Journey to Colombia',
-        excerpt: 'Travel with us to the high-altitude farms of Colombia where our Master Origin beans are meticulously cultivated.',
-        category: 'Sustainability',
-        date: 'Sep 28, 2024',
-        readTime: '6 min read',
-        image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=800&auto=format&fit=crop',
-        featured: false
-    },
-    {
-        id: '3',
-        title: 'Decoding Coffee Tasting Notes',
-        excerpt: 'From jasmine and bergamot to dark chocolate and tobacco. Here is your definitive guide to developing a barista palate.',
-        category: 'Tasting',
-        date: 'Sep 15, 2024',
-        readTime: '5 min read',
-        image: 'https://images.unsplash.com/photo-1587734195503-904fca47e0e9?q=80&w=800&auto=format&fit=crop',
-        featured: false
-    },
-    {
-        id: '4',
-        title: 'The Evolution of the Espresso Machine',
-        excerpt: 'Trace the history of the machines that revolutionized our mornings, from early steam pressure to modern micro-boilers.',
-        category: 'History',
-        date: 'Aug 30, 2024',
-        readTime: '8 min read',
-        image: 'https://images.unsplash.com/photo-1520206183501-b80df61043c2?q=80&w=800&auto=format&fit=crop',
-        featured: false
-    },
-    {
-        id: '5',
-        title: 'Pairing Coffee with Pastries',
-        excerpt: 'Elevate your afternoon fika by learning which roast profiles perfectly complement your favorite baked goods.',
-        category: 'Lifestyle',
-        date: 'Aug 14, 2024',
-        readTime: '3 min read',
-        image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=800&auto=format&fit=crop',
-        featured: false
-    }
-];
+import { blogPosts } from '@/lib/blogsData';
 
 import { usePagination } from '@/hooks/usePagination';
 import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function BlogPage() {
-    const featuredPost = blogPosts.find(p => p.featured) || blogPosts[0];
-    const standardPosts = blogPosts.filter(p => !p.featured);
+    const { t } = useLanguage();
+    const postsWithFeatured = blogPosts.map((p, i) => ({ ...p, featured: i === 0, readTime: '5 min read' }));
+    const featuredPost = postsWithFeatured.find(p => p.featured) || postsWithFeatured[0];
+    const standardPosts = postsWithFeatured.filter(p => !p.featured);
     const { displayedItems, hasMore, isLoading, loadMore, totalCount } = usePagination(standardPosts, 6);
 
     return (
@@ -74,12 +26,12 @@ export default function BlogPage() {
                 {/* Hero Section */}
                 <section className="bg-sb-green pt-20 pb-32 px-8 relative text-white">
                     <div className="max-w-[1400px] mx-auto text-center relative z-10">
-                        <div className="text-[10px] bg-white/10 text-white font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-6 border border-white/20 backdrop-blur-sm">The Journal</div>
+                        <div className="text-[10px] bg-white/10 text-white font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-6 border border-white/20 backdrop-blur-sm">{t('blogTitle')}</div>
                         <motion.h1 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight mb-6">
-                            Coffee Notes
+                            {t('blogTitle')}
                         </motion.h1>
                         <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="text-white/70 max-w-2xl mx-auto text-lg">
-                            Read our latest thoughts on coffee sourcing, roasting, brewing, and the culture that surrounds it.
+                            {t('blogSubtitle')}
                         </motion.p>
                     </div>
 
@@ -156,7 +108,7 @@ export default function BlogPage() {
                     <div className="mb-12 flex justify-between items-end border-b border-gray-200 pb-6">
                         <h3 className="font-display text-4xl uppercase tracking-tight text-sb-black">Latest Entries</h3>
                         <div className="hidden md:flex gap-4">
-                            {['All', 'Science', 'Origins', 'Culture'].map((filter, i) => (
+                            {['Tout', 'Bons plans', 'Fêtes', 'Histoires', 'Recettes'].map((filter, i) => (
                                 <button key={filter} className={`text-xs font-bold tracking-widest uppercase pb-2 border-b-2 transition-colors ${i === 0 ? 'border-sb-green text-sb-green' : 'border-transparent text-gray-400 hover:text-sb-black'}`}>
                                     {filter}
                                 </button>
