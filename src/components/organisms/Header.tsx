@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Search, Menu } from 'lucide-react';
 import { Typography } from '../atoms/Typography';
 import { cn } from '@/lib/utils';
+import { AppConfig } from '@/lib/config';
 
 export const Header = () => {
     const [scrolled, setScrolled] = useState(false);
@@ -24,7 +25,7 @@ export const Header = () => {
                 <div className="flex z-50 items-center space-x-4">
                     <Menu className="w-6 h-6 text-brand-black cursor-pointer md:hidden" />
                     <Typography variant="h3" className="uppercase tracking-widest text-brand-black">
-                        NESPRESSO
+                        {AppConfig.brand.nameUppercase}
                     </Typography>
                 </div>
 

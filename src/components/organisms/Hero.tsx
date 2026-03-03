@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Typography } from '../atoms/Typography';
 import { Button } from '../atoms/Button';
+import { AppConfig } from '@/lib/config';
 
 export const Hero = () => {
     return (
@@ -18,11 +19,11 @@ export const Hero = () => {
                     The art of espresso
                 </Typography>
                 <Typography variant="massive" className="text-brand-black mb-8 leading-[0.85] relative z-20 mix-blend-overlay text-brand-green drop-shadow-xl text-center flex flex-col items-center">
-                    <span>BREW</span>
-                    <span className="-mt-8 md:-mt-12">SCAPE</span>
+                    <span>{AppConfig.brand.heroLine1}</span>
+                    <span className="-mt-8 md:-mt-12">{AppConfig.brand.heroLine2}</span>
                 </Typography>
                 <Typography variant="h4" className="text-brand-black/80 max-w-xl mx-auto mb-10 font-normal">
-                    Experience the vibrant redesign of Nespresso. Meticulously crafted for the modern coffee aficionado.
+                    {AppConfig.brand.heroSubtitle}
                 </Typography>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <Button size="lg" variant="primary">Shop New Arrivals</Button>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { AppConfig } from '@/lib/config';
 
 export default function ContactPage() {
     return (
@@ -54,7 +55,7 @@ export default function ContactPage() {
                                 </p>
                                 <h4 className="font-bold uppercase tracking-widest text-sm mb-6">Contact Details</h4>
                                 <p className="text-gray-500 leading-relaxed">
-                                    hello@brewscape.com<br />
+                                    {AppConfig.brand.email}<br />
                                     +1 (800) 555-0199
                                 </p>
                             </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Archivo_Black } from "next/font/google";
 import "./globals.css";
+import { AppConfig } from "@/lib/config";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -14,8 +15,8 @@ const archivo = Archivo_Black({
 });
 
 export const metadata: Metadata = {
-  title: "Starbucks Brewscape",
-  description: "A visually identical clone of the Dribbble Brewscape shot.",
+  title: AppConfig.brand.seoTitle,
+  description: AppConfig.brand.seoDescription,
 };
 
 import { CartProvider } from "@/store/CartContext";

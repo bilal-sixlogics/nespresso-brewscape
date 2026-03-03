@@ -16,7 +16,7 @@ export function IntensityBar({ intensity }: IntensityBarProps) {
                 {[...Array(13)].map((_, j) => {
                     const isActive = j < intensity;
 
-                    // The Nespresso intensity scale often goes from light yellow to dark brown/red.
+                    // The Café Malin intensity scale often goes from light yellow to dark brown/red.
                     // We'll calculate a color gradient based on the intensity level.
                     const hue = 40 - (j * 2.5); // 40 (gold/yellow) to 5 (red/brown)
                     const saturation = 70 + (j * 2); // 70% to 96%
