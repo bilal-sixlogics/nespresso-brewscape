@@ -33,11 +33,11 @@ export function MobileCarousel({ children }: MobileCarouselProps) {
             <div
                 ref={scrollRef}
                 onScroll={handleScroll}
-                className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 gap-4 w-full py-12 -my-12 px-8 md:px-0 items-stretch"
+                className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-8 gap-4 w-full py-12 -my-12 px-8 md:px-0 items-stretch"
                 style={{ touchAction: 'pan-x' }}
             >
                 {React.Children.map(children, (child) => (
-                    <div className="w-[85vw] sm:w-[340px] shrink-0 snap-center md:w-auto md:shrink flex items-stretch">
+                    <div className="w-[calc(50vw-24px)] sm:w-[340px] shrink-0 snap-center md:w-auto md:shrink flex items-stretch">
                         {child}
                     </div>
                 ))}

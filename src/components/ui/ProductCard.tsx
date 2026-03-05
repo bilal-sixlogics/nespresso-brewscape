@@ -62,11 +62,11 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
             onClick={() => onClick(product)}
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}
-            className="bg-white rounded-[40px] p-4 border border-gray-200 shadow-sm hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] transition-all duration-500 relative group cursor-pointer z-10 hover:z-20 flex flex-col w-full h-full max-w-lg mx-auto"
+            className="bg-white rounded-2xl sm:rounded-[40px] p-2.5 sm:p-4 border border-gray-200 shadow-sm hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] transition-all duration-500 relative group cursor-pointer z-10 hover:z-20 flex flex-col w-full h-full max-w-lg mx-auto"
         >
             {/* ── Image Zone ─────────────────────────────────── */}
             <div
-                className="relative rounded-[32px] overflow-hidden shrink-0"
+                className="relative rounded-xl sm:rounded-[32px] overflow-hidden shrink-0"
                 style={{ aspectRatio: '1/1', background: 'linear-gradient(145deg, #f5f0eb 0%, #ede8e0 100%)' }}
                 onMouseMove={(e) => {
                     if (images.length > 1) {
@@ -100,20 +100,20 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
 
                 {/* Badges */}
                 {hasDiscount && (
-                    <div className="absolute top-4 left-4 z-20 bg-red-500 text-white text-[9px] font-black rounded-full px-2.5 py-1 shadow-lg">-{discountPct}%</div>
+                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-20 bg-red-500 text-white text-[8px] sm:text-[9px] font-black rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 shadow-lg">-{discountPct}%</div>
                 )}
                 {product.isNew && !hasDiscount && (
-                    <div className="absolute top-4 left-4 z-20 bg-sb-black text-white text-[9px] font-black rounded-full px-2.5 py-1">NEW</div>
+                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-20 bg-sb-black text-white text-[8px] sm:text-[9px] font-black rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1">NEW</div>
                 )}
                 {product.tags?.includes('best-seller') && (
-                    <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-amber-400/90 backdrop-blur-sm text-white text-[8px] font-black rounded-full px-2 py-1">
-                        <Star size={8} fill="white" /> #1
+                    <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 flex items-center gap-1 bg-amber-400/90 backdrop-blur-sm text-white text-[7px] sm:text-[8px] font-black rounded-full px-1.5 py-0.5 sm:px-2 sm:py-1">
+                        <Star size={8} fill="white" className="w-[6px] h-[6px] sm:w-2 sm:h-2" /> #1
                     </div>
                 )}
 
                 {/* Stock pill */}
-                <div className={`absolute top-4 ${product.tags?.includes('best-seller') ? 'right-16' : 'right-4'} z-20 flex items-center gap-1 px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-wider backdrop-blur-sm shadow-sm ${isInStock ? 'bg-emerald-500/90 text-white' : 'bg-red-500/90 text-white'}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isInStock ? 'bg-white' : 'bg-white/80'} animate-pulse`} />
+                <div className={`absolute top-2 sm:top-4 ${product.tags?.includes('best-seller') ? 'right-12 sm:right-16' : 'right-2 sm:right-4'} z-20 flex items-center gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[7px] sm:text-[8px] font-black uppercase tracking-wider backdrop-blur-sm shadow-sm ${isInStock ? 'bg-emerald-500/90 text-white' : 'bg-red-500/90 text-white'}`}>
+                    <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${isInStock ? 'bg-white' : 'bg-white/80'} animate-pulse`} />
                     {isInStock ? t('inStock') || 'In Stock' : t('outOfStock') || 'Out of Stock'}
                 </div>
 
@@ -131,14 +131,14 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                     initial={{ y: 16, opacity: 0 }}
                     animate={{ y: isHovered ? 0 : 16, opacity: isHovered ? 1 : 0 }}
                     transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="absolute bottom-4 left-4 right-4 z-20 flex gap-2"
+                    className="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-20 flex gap-1.5 sm:gap-2"
                 >
                     {/* Add to Cart */}
                     <motion.button
                         whileTap={{ scale: 0.94 }}
                         onClick={handleAddToCart}
                         disabled={!isInStock}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-xl transition-colors duration-200 ${isInStock
+                        className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-1.5 sm:py-2.5 rounded-full text-[8px] sm:text-[11px] font-black uppercase tracking-widest shadow-xl transition-colors duration-200 ${isInStock
                             ? 'bg-sb-green text-white hover:bg-[#2C6345]'
                             : 'bg-white/20 text-white/60 cursor-not-allowed backdrop-blur-sm'
                             }`}
@@ -146,7 +146,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                         <AnimatePresence mode="wait">
                             {isAdded
                                 ? <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="text-white font-black">✓ Added</motion.span>
-                                : <motion.span key="add" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-1.5"><ShoppingBag size={13} />{isInStock ? 'Add to Cart' : 'Sold Out'}</motion.span>
+                                : <motion.span key="add" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-1 sm:gap-1.5"><ShoppingBag size={12} className="w-3 h-3 sm:w-[13px] sm:h-[13px]" /> <span className="hidden sm:inline">{isInStock ? 'Add to Cart' : 'Sold Out'}</span><span className="inline sm:hidden">{isInStock ? 'Add' : 'Out'}</span></motion.span>
                             }
                         </AnimatePresence>
                     </motion.button>
@@ -155,32 +155,32 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                     <motion.button
                         whileTap={{ scale: 0.94 }}
                         onClick={(e) => { e.stopPropagation(); onClick(product); }}
-                        className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors"
+                        className="w-7 h-7 sm:w-10 sm:h-10 shrink-0 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors"
                     >
-                        <Eye size={15} className="text-white" />
+                        <Eye size={12} className="text-white w-3 h-3 sm:w-[15px] sm:h-[15px]" />
                     </motion.button>
                 </motion.div>
             </div>
 
             {/* ── Content ───────────────────────────────────── */}
-            <div className="px-3 pt-5 pb-2 flex flex-col flex-1 gap-2">
-                <h3 className="font-display text-[1.35rem] uppercase leading-tight group-hover:text-sb-green transition-colors duration-300 line-clamp-2">
+            <div className="px-1.5 sm:px-3 pt-3 sm:pt-5 pb-1 sm:pb-2 flex flex-col flex-1 gap-1.5 sm:gap-2">
+                <h3 className="font-display text-xs sm:text-base md:text-[1.35rem] uppercase leading-tight group-hover:text-sb-green transition-colors duration-300 line-clamp-2">
                     {displayName}
                     {displayNamePart2 && <span className="text-gray-300"> {displayNamePart2}</span>}
                 </h3>
                 {visibleNotes.length > 0 && (
-                    <div className="flex gap-1.5 flex-wrap">
+                    <div className="flex gap-1 sm:gap-1.5 flex-wrap">
                         {visibleNotes.map(note => (
-                            <span key={note} className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wider bg-sb-green/10 text-sb-green px-2 py-1 rounded-full border border-sb-green/20"><Tag size={8} />{note}</span>
+                            <span key={note} className="inline-flex items-center gap-0.5 sm:gap-1 text-[7px] sm:text-[8px] font-bold uppercase tracking-wider bg-sb-green/10 text-sb-green px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full border border-sb-green/20"><Tag size={8} className="w-[6px] h-[6px] sm:w-2 sm:h-2" />{note}</span>
                         ))}
                     </div>
                 )}
                 {product.intensity != null && product.intensity > 0 ? (
                     <IntensityBar intensity={product.intensity} />
-                ) : <div className="h-1" />}
-                <div className="flex items-baseline gap-2 mt-auto pt-2">
-                    <span className="text-2xl font-bold text-sb-green tracking-tighter">€{displayPrice.toFixed(2)}</span>
-                    {hasDiscount && <span className="text-sm text-gray-300 line-through">€{originalPrice!.toFixed(2)}</span>}
+                ) : <div className="h-0.5 sm:h-1" />}
+                <div className="flex items-baseline gap-1.5 sm:gap-2 mt-auto pt-1 sm:pt-2">
+                    <span className="text-sm sm:text-xl md:text-2xl font-bold text-sb-green tracking-tighter">€{displayPrice.toFixed(2)}</span>
+                    {hasDiscount && <span className="text-[10px] sm:text-sm text-gray-300 line-through">€{originalPrice!.toFixed(2)}</span>}
                 </div>
             </div>
         </motion.div>

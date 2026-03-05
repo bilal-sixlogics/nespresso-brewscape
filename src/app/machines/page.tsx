@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { enrichedProducts } from '@/lib/productsData';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
+import { MobileCarousel } from '@/components/ui/MobileCarousel';
 import { Product } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { Settings, Zap, Droplets, Coffee } from 'lucide-react';
@@ -127,7 +128,7 @@ export default function MachinesPage() {
 
                     {/* Product Grid */}
                     {filteredMachines.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        <MobileCarousel>
                             {filteredMachines.map((product, i) => (
                                 <ProductCard
                                     key={product.id}
@@ -136,7 +137,7 @@ export default function MachinesPage() {
                                     index={i}
                                 />
                             ))}
-                        </div>
+                        </MobileCarousel>
                     ) : (
                         <div className="text-center py-24">
                             <p className="text-6xl mb-4">☕</p>
