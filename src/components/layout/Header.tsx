@@ -122,7 +122,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
 }
 
 // ─── Language Toggle ────────────────────────────────────────────────────────
-function LanguageToggle() {
+function LanguageToggle({ direction = 'down' }: { direction?: 'up' | 'down' }) {
     const { language, setLanguage, currentLanguageMeta } = useLanguage();
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -154,11 +154,11 @@ function LanguageToggle() {
             <AnimatePresence>
                 {open && (
                     <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                        initial={{ opacity: 0, y: direction === 'down' ? 6 : -6, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                        exit={{ opacity: 0, y: direction === 'down' ? 4 : -4, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full mt-2 right-0 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden min-w-[150px] z-50"
+                        className={`absolute ${direction === 'down' ? 'top-full mt-2' : 'bottom-full mb-2'} right-0 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden min-w-[150px] z-50`}
                     >
                         {SUPPORTED_LANGUAGES.map(lang => (
                             <button
@@ -385,9 +385,9 @@ export function Header() {
                         </div>
 
                         <div className="p-6 border-t border-white/20 flex flex-col gap-4">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center relative z-[200]">
                                 <span className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Language</span>
-                                <LanguageToggle />
+                                <LanguageToggle direction="up" />
                             </div>
 
                             {!isAuthenticated ? (

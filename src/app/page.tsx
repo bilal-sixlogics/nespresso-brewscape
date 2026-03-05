@@ -145,14 +145,15 @@ function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: any) 
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
           {displayMachines.map((machine: any, i: number) => (
-            <ProductCard
-              key={machine.id}
-              product={machine}
-              index={i}
-              onClick={onProductClick}
-            />
+            <div key={machine.id} className="min-w-[85vw] snap-center shrink-0 md:min-w-0 md:shrink">
+              <ProductCard
+                product={machine}
+                index={i}
+                onClick={onProductClick}
+              />
+            </div>
           ))}
         </div>
 
@@ -463,14 +464,15 @@ export default function Home() {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
+            <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
               {filteredProducts.slice(0, 3).map((product, idx) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  index={idx}
-                  onClick={setSelectedProduct}
-                />
+                <div key={product.id} className="min-w-[85vw] snap-center shrink-0 md:min-w-0 md:shrink">
+                  <ProductCard
+                    product={product}
+                    index={idx}
+                    onClick={setSelectedProduct}
+                  />
+                </div>
               ))}
             </div>
 
