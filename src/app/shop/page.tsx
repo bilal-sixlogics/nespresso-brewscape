@@ -61,37 +61,6 @@ export default function ShopPage() {
         <div className="w-full relative bg-sb-white text-sb-black overflow-x-hidden min-h-screen">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
-                {/* ── Admin-Controlled Sitewide Flash Sale Banner ── */}
-                <AnimatePresence>
-                    {showSitewidesBanner && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white relative overflow-hidden"
-                        >
-                            <div className="max-w-[1400px] mx-auto px-6 py-3 flex items-center justify-center gap-3">
-                                <Tag size={16} className="shrink-0" />
-                                <p className="text-sm font-black tracking-wide text-center">
-                                    <span className="text-yellow-200">⚡ FLASH SALE — </span>
-                                    {language === 'fr'
-                                        ? `${sitewideDiscount.percentage}% de réduction sur toute la boutique — Appliqué automatiquement`
-                                        : `${sitewideDiscount.percentage}% off everything in the store — Applied automatically at checkout`
-                                    }
-                                </p>
-                                <button
-                                    onClick={() => setBannerDismissed(true)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors"
-                                >
-                                    <X size={16} />
-                                </button>
-                            </div>
-                            {/* Animated shimmer */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-[shimmer_2.5s_infinite]" />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
                 {/* Hero Banner */}
                 <section className="bg-sb-green pt-20 pb-32 px-8 relative text-white">
                     <div className="max-w-[1400px] mx-auto text-center">

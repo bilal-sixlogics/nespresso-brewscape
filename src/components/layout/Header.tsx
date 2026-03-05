@@ -192,15 +192,34 @@ export function Header() {
     const { t } = useLanguage();
     const [searchOpen, setSearchOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-
-    // Close search on ESC
     useEffect(() => {
-        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setSearchOpen(false); };
+        window.scrollTo(0, 0);
+        setMobileMenuOpen(false); // Close mobile menu on route change
+    }, [pathname]);
+
+    // Close search/menu on ESC
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setSearchOpen(false);
+                setMobileMenuOpen(false);
+            }
+        };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
     }, []);
+
+    // Prevent body scroll when mobile menu is open
+    useEffect(() => {
+        if (mobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [mobileMenuOpen]);
 
     const topRow: NavLink[] = [
         { href: '/', labelKey: 'navHome' },
@@ -225,22 +244,30 @@ export function Header() {
             <header className="bg-sb-green text-white relative z-[9999] pt-2 pb-[30px] -mb-[30px]">
                 <div className="max-w-[1600px] mx-auto w-full flex border-b border-white/20 relative z-[9999]">
 
-                    {/* ── Logo ──────────────────────────────────────────── */}
-                    <Link
-                        href="/"
-                        className="w-[200px] lg:w-[260px] p-4 lg:p-5 flex flex-col justify-center border-r border-white/20 hover:bg-white/5 transition-colors flex-shrink-0"
+                    {/* ── Mobile Menu Toggle ────────────────────────────── */}
+                    <button
+                        onClick={() => setMobileMenuOpen(true)}
+                        className="xl:hidden p-4 lg:p-5 flex items-center justify-center border-r border-white/20 hover:bg-white/10 transition-colors flex-shrink-0"
+                        aria-label="Open menu"
                     >
-                        <h1 className="font-display text-lg lg:text-2xl tracking-tight uppercase leading-none">
-                            {AppConfig.brand.name}
-                            <br />
-                            <span className="text-[10px] lg:text-xs font-sans font-bold tracking-[0.2em] opacity-80 mt-1 block">
-                                {t('brandTagline')}
-                            </span>
-                        </h1>
-                    </Link>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
+                    </button>
 
-                    {/* ── Navigation ────────────────────────────────────── */}
-                    <div className="flex-1 flex flex-col min-w-0">
+                    {/* ── Logo ──────────────────────────────────────────── */}
+                    <div className="flex-1 xl:flex-none flex items-center justify-center xl:justify-start xl:w-[260px] p-4 lg:p-5 border-r border-white/20 hover:bg-white/5 transition-colors">
+                        <Link href="/" className="flex flex-col text-center xl:text-left">
+                            <h1 className="font-display text-xl lg:text-2xl tracking-tight uppercase leading-none">
+                                {AppConfig.brand.name}
+                                <br />
+                                <span className="text-[9px] lg:text-xs font-sans font-bold tracking-[0.2em] opacity-80 mt-1 block">
+                                    {t('brandTagline')}
+                                </span>
+                            </h1>
+                        </Link>
+                    </div>
+
+                    {/* ── Desktop Navigation ────────────────────────────── */}
+                    <div className="hidden xl:flex flex-1 flex-col min-w-0">
                         {/* Top row */}
                         <div className="flex border-b border-white/20">
                             {topRow.map(link => (
@@ -257,7 +284,7 @@ export function Header() {
                                 </Link>
                             ))}
 
-                            {/* Language Toggle */}
+                            {/* Language Toggle Desktop */}
                             <div className="flex items-center justify-center px-5 border-l border-white/20">
                                 <LanguageToggle />
                             </div>
@@ -265,7 +292,7 @@ export function Header() {
                     </div>
 
                     {/* ── Right Icons ───────────────────────────────────── */}
-                    <div className="flex-shrink-0 flex items-center gap-1 px-4 border-l border-white/20 relative z-[100] pointer-events-auto">
+                    <div className="flex-shrink-0 flex items-center gap-1 sm:gap-2 px-3 sm:px-4 border-l-0 xl:border-l border-white/20 relative z-[100] pointer-events-auto">
                         <button
                             onClick={() => setSearchOpen(true)}
                             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-white"
@@ -276,7 +303,7 @@ export function Header() {
 
                         <button
                             onClick={() => isAuthenticated ? router.push('/account') : openLoginModal()}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors text-white"
+                            className="flex items-center gap-2 px-2 py-1.5 rounded-full hover:bg-white/10 transition-colors text-white"
                             aria-label="Account"
                         >
                             <User size={16} />
@@ -309,6 +336,80 @@ export function Header() {
                     </div>
                 </div>
             </header>
+
+            {/* ── Mobile Navigation Drawer ─────────────────────────── */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100000] bg-sb-green flex flex-col xl:hidden"
+                    >
+                        <div className="flex items-center justify-between p-4 border-b border-white/20">
+                            <h1 className="font-display text-xl uppercase tracking-tight text-white">Menu</h1>
+                            <button
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="w-10 h-10 flex items-center justify-center text-white bg-white/10 rounded-full"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-8">
+                            <div className="flex flex-col gap-4">
+                                <p className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Discover</p>
+                                {topRow.map((link) => (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className={`font-display text-3xl uppercase tracking-tight ${pathname === link.href ? 'text-white' : 'text-white/70 hover:text-white'}`}
+                                    >
+                                        {t(link.labelKey as Parameters<typeof t>[0])}
+                                    </Link>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                                <p className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Shop</p>
+                                {bottomRow.map((link) => (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className={`font-display text-3xl uppercase tracking-tight ${pathname === link.href ? 'text-white' : 'text-white/70 hover:text-white'}`}
+                                    >
+                                        {t(link.labelKey as Parameters<typeof t>[0])}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="p-6 border-t border-white/20 flex flex-col gap-4">
+                            <div className="flex justify-between items-center">
+                                <span className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Language</span>
+                                <LanguageToggle />
+                            </div>
+
+                            {!isAuthenticated ? (
+                                <button
+                                    onClick={() => { setMobileMenuOpen(false); openLoginModal(); }}
+                                    className="w-full py-4 bg-white text-sb-green rounded-full font-bold uppercase tracking-widest text-xs"
+                                >
+                                    Login / Register
+                                </button>
+                            ) : (
+                                <Link
+                                    href="/account"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="w-full py-4 border border-white/30 text-white rounded-full font-bold uppercase tracking-widest text-xs text-center"
+                                >
+                                    My Account
+                                </Link>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* ── Global Search Overlay ──────────────────────────────── */}
             <AnimatePresence>

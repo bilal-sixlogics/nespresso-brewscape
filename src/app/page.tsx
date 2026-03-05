@@ -315,14 +315,14 @@ export default function Home() {
               </div>
 
               {/* HERO CUP AND CIRCLE - Cup sits ON the circle, bottom in, top out */}
-              <div className="w-full lg:w-1/3 flex justify-center items-center relative z-[40] mt-10 lg:mt-0" style={{ height: '500px' }}>
+              <div className="w-full lg:w-1/3 flex justify-center items-center relative z-[40] mt-4 lg:mt-0 h-[350px] sm:h-[400px] lg:h-[500px]">
                 {/* The Green Circle - BEHIND the cup (z-10) */}
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
-                  className="absolute left-1/2 transform -translate-x-1/2 bg-[#439665] rounded-full z-[1]"
-                  style={{ width: '420px', height: '420px', top: '50%', marginTop: '-80px' }}
+                  className="absolute left-1/2 transform -translate-x-1/2 bg-[#439665] rounded-full z-[1] w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] lg:w-[420px] lg:h-[420px]"
+                  style={{ top: '50%', marginTop: '-80px' }}
                 />
                 {/* The Cup - ABOVE the circle (z-10), fixed size, transparent PNG */}
                 <motion.img
@@ -330,12 +330,11 @@ export default function Home() {
                   transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
                   src="/hero-cup.png"
                   alt="Iced Coffee Cup"
-                  className="absolute left-1/2 transform -translate-x-1/2 z-[2] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.35)]"
-                  style={{ width: '300px', height: '420px', top: '60px' }}
+                  className="absolute left-1/2 transform -translate-x-1/2 z-[2] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.35)] w-[200px] sm:w-[250px] lg:w-[300px] h-auto top-[40px] lg:top-[60px]"
                 />
               </div>
 
-              <div className="w-full lg:w-1/3 flex flex-col items-end mb-10 lg:mb-0 space-y-8 z-30">
+              <div className="w-full lg:w-1/3 flex flex-col items-end mb-10 lg:mb-0 space-y-8 z-[50]">
                 <motion.div
                   initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
                   onClick={() => setSelectedProduct(enrichedProducts.find(p => p.category === 'Capsules de Café') || enrichedProducts[0])}
@@ -380,7 +379,7 @@ export default function Home() {
                 className="w-full lg:w-1/2 text-left"
               >
                 <div className="text-[10px] bg-white/10 text-white font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-8 border border-white/20">{t('heritageSubtitle')}</div>
-                <h2 className="font-display text-6xl md:text-7xl lg:text-8xl text-white uppercase tracking-tight mb-8 drop-shadow-md leading-[0.9]">
+                <h2 className="font-display text-5xl md:text-6xl lg:text-8xl text-white uppercase tracking-tight mb-6 md:mb-8 drop-shadow-md leading-[0.9]">
                   {language === 'en' ? 'THE ART OF' : "L'ART DU"}<br />
                   <span className="text-[#E5D5B8] opacity-90">{language === 'en' ? 'FRENCH' : "CAFÉ"}</span><br />
                   {language === 'en' ? 'COFFEE' : "FRANÇAIS"}
@@ -397,7 +396,7 @@ export default function Home() {
               </motion.div>
 
               {/* Right Images (Asymmetrical Parallax Layout) */}
-              <div className="w-full lg:w-1/2 relative h-[500px] lg:h-[700px] flex items-center justify-center mt-10 lg:mt-0">
+              <div className="w-full lg:w-1/2 relative h-[350px] md:h-[500px] lg:h-[700px] flex items-center justify-center mt-10 lg:mt-0">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9, y: 30 }} whileInView={{ opacity: 1, scale: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }}
                   className="absolute top-0 right-10 w-[60%] lg:w-[50%] h-[70%] z-10 rounded-[40px] rounded-tr-[100px] rounded-bl-[100px] overflow-hidden shadow-2xl border border-white/10"
@@ -490,11 +489,11 @@ export default function Home() {
         </section>
 
         {/* STATS SECTION */}
-        <section className="bg-sb-green py-20 px-8 relative">
+        <section className="bg-sb-green py-20 px-4 md:px-8 relative">
           {/* Torn paper at top of stats - green tearing into white above */}
           <div className="torn-paper-green-up z-30"></div>
           <div className="max-w-[1200px] mx-auto flex justify-center">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-16 w-full lg:w-2/3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-16 w-full lg:w-[85%]">
               {[
                 { num: '46', label: t('statExperience') },
                 { num: '1M+', label: t('statClients') },
