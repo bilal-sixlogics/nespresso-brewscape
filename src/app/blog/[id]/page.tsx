@@ -1,7 +1,8 @@
+import { blogPosts } from '@/lib/blogsData';
 import BlogPostClient from './BlogPostClient';
 
 export function generateStaticParams() {
-    return [{ id: '1' }, { id: '2' }];
+    return blogPosts.map(post => ({ id: String(post.id) }));
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ id: string }> }) {
