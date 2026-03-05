@@ -8,6 +8,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { enrichedProducts } from '@/lib/productsData';
 
 export interface FilterState {
+    brands: string[];
     categories: string[];
     intensityRange: [number, number];
     priceRange: [number, number];
@@ -16,6 +17,7 @@ export interface FilterState {
 }
 
 const DEFAULT_FILTERS: FilterState = {
+    brands: [],
     categories: [],
     intensityRange: [1, 13],
     priceRange: [0, 500],
@@ -24,6 +26,7 @@ const DEFAULT_FILTERS: FilterState = {
 };
 
 const ALL_CATEGORIES = [...new Set(enrichedProducts.map(p => p.category).filter(Boolean))] as string[];
+const ALL_BRANDS = [...new Set(enrichedProducts.map(p => p.brand).filter(Boolean))] as string[];
 const ALL_TAGS = [...new Set(enrichedProducts.flatMap(p => p.tags ?? []))].slice(0, 10);
 
 function RangeSlider({ label, value, min, max, unit = '', onChange }: {
@@ -105,7 +108,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
     const { language } = useLanguage();
     const t = (fr: string, en: string) => language === 'fr' ? fr : en;
 
-    const activeCount = filters.categories.length + filters.tags.length +
+    const activeCount = filters.brands.length + filters.categories.length + filters.tags.length +
         (filters.inStockOnly ? 1 : 0) +
         (filters.intensityRange[0] !== 1 || filters.intensityRange[1] !== 13 ? 1 : 0) +
         (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 500 ? 1 : 0);
@@ -179,6 +182,26 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
                         </div>
                     </Section>
 
+                    {/* Brands */}
+                    {ALL_BRANDS.length > 0 && (
+                        <Section title={t('Marque', 'Brand')}>
+                            <div className="flex flex-wrap gap-2 pb-2">
+                                {ALL_BRANDS.map(brand => {
+                                    const active = filters.brands.includes(brand);
+                                    return (
+                                        <button
+                                            key={brand}
+                                            onClick={() => onChange({ ...filters, brands: toggle(filters.brands, brand) })}
+                                            className={`px-3.5 py-2 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all ${active ? 'bg-sb-black text-white shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-100 hover:border-gray-300'}`}
+                                        >
+                                            {brand === 'nespresso' ? 'Nespresso' : brand === 'starbucks' ? 'Starbucks' : brand}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </Section>
+                    )}
+
                     {/* Intensity */}
                     <Section title={t('Intensité', 'Intensity')}>
                         <div className="pb-2">
@@ -247,6 +270,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
 
 export function applyFilters(products: Product[], filters: FilterState): Product[] {
     return products.filter(p => {
+        if (filters.brands.length > 0 && !filters.brands.includes(p.brand ?? '')) return false;
         if (filters.categories.length > 0 && !filters.categories.includes(p.category ?? '')) return false;
         if (filters.inStockOnly && p.inStock === false) return false;
         if (p.intensity != null) {

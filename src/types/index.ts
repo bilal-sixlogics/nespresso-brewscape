@@ -37,6 +37,7 @@ export interface Product {
     id: string | number;
     slug?: string;
     category?: string;
+    brand?: string;
 
     // --- Names (Bilingual) ---
     name: string;
