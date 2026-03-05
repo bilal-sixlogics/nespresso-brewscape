@@ -62,7 +62,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
             onClick={() => onClick(product)}
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}
-            className="bg-white rounded-[40px] p-4 border border-gray-200 shadow-sm hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] transition-all duration-500 relative group cursor-pointer z-10 hover:z-20 flex flex-col w-full max-w-lg mx-auto"
+            className="bg-white rounded-[40px] p-4 border border-gray-200 shadow-sm hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] transition-all duration-500 relative group cursor-pointer z-10 hover:z-20 flex flex-col w-full h-full max-w-lg mx-auto"
         >
             {/* ── Image Zone ─────────────────────────────────── */}
             <div
@@ -178,7 +178,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                 {product.intensity != null && product.intensity > 0 ? (
                     <IntensityBar intensity={product.intensity} />
                 ) : <div className="h-1" />}
-                <div className="flex items-baseline gap-2 mt-1">
+                <div className="flex items-baseline gap-2 mt-auto pt-2">
                     <span className="text-2xl font-bold text-sb-green tracking-tighter">€{displayPrice.toFixed(2)}</span>
                     {hasDiscount && <span className="text-sm text-gray-300 line-through">€{originalPrice!.toFixed(2)}</span>}
                 </div>

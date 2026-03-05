@@ -10,6 +10,7 @@ import { useCart } from "@/store/CartContext";
 import { productDatabase, enrichedProducts } from "@/lib/productsData";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
+import { MobileCarousel } from "@/components/ui/MobileCarousel";
 import { TestimonialsSection } from '@/components/ui/TestimonialsSection';
 import { useLanguage } from "@/context/LanguageContext";
 import { Product } from "@/types";
@@ -145,17 +146,16 @@ function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: any) 
           </Link>
         </div>
 
-        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
+        <MobileCarousel>
           {displayMachines.map((machine: any, i: number) => (
-            <div key={machine.id} className="min-w-[85vw] snap-center shrink-0 md:min-w-0 md:shrink">
-              <ProductCard
-                product={machine}
-                index={i}
-                onClick={onProductClick}
-              />
-            </div>
+            <ProductCard
+              key={machine.id}
+              product={machine}
+              index={i}
+              onClick={onProductClick}
+            />
           ))}
-        </div>
+        </MobileCarousel>
 
         <div className="flex md:hidden justify-center mt-10">
           <Link href="/machines" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-sb-green border border-sb-green px-8 py-4 rounded-full">
@@ -464,17 +464,16 @@ export default function Home() {
             </div>
 
             {/* Grid */}
-            <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
+            <MobileCarousel>
               {filteredProducts.slice(0, 3).map((product, idx) => (
-                <div key={product.id} className="min-w-[85vw] snap-center shrink-0 md:min-w-0 md:shrink">
-                  <ProductCard
-                    product={product}
-                    index={idx}
-                    onClick={setSelectedProduct}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  index={idx}
+                  onClick={setSelectedProduct}
+                />
               ))}
-            </div>
+            </MobileCarousel>
 
             <div className="flex justify-center mt-14">
               <Link href="/shop" className="group">
