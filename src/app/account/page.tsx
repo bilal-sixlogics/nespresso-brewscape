@@ -9,20 +9,21 @@ import { useLanguage } from '@/context/LanguageContext';
 import {
     Package, Truck, CheckCircle2, Clock, LogOut, ChevronRight, ChevronLeft,
     MessageSquare, MapPin, User as UserIcon, Star, X, Plus, Edit2, Trash2,
-    AlertCircle, Shield, CreditCard, Home, Briefcase, ChevronDown, Camera, Save, Loader2
+    AlertCircle, Shield, CreditCard, Home, Briefcase, ChevronDown, Camera, Save, Loader2, Search, Heart
 } from 'lucide-react';
 import { Order, OrderStatus, OrderItem, Address } from '@/types';
 
 // ── Status helpers ─────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; bg: string }> = {
-    processing: { label: 'Processing', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+    pending: { label: 'Order Placed', color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200' },
+    processing: { label: 'Confirmed', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
     shipped: { label: 'Shipped', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' },
     delivered: { label: 'Delivered', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
     cancelled: { label: 'Cancelled', color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
 };
 
-function StatusBadge({ status }: { status: OrderStatus }) {
-    const cfg = STATUS_CONFIG[status];
+function StatusBadge({ status }: { status: string }) {
+    const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG['processing'];
     return (
         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${cfg.bg} ${cfg.color}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current" />
@@ -31,29 +32,32 @@ function StatusBadge({ status }: { status: OrderStatus }) {
     );
 }
 
-function StatusTimeline({ status }: { status: OrderStatus }) {
+function StatusTimeline({ status }: { status: string }) {
     const steps = [
-        { id: 'processing', label: 'Processing', icon: Clock },
+        { id: 'pending', label: 'Order Placed', icon: Package },
+        { id: 'processing', label: 'Confirmed', icon: CheckCircle2 },
         { id: 'shipped', label: 'Shipped', icon: Truck },
         { id: 'delivered', label: 'Delivered', icon: CheckCircle2 },
     ];
-    const currentIndex = steps.findIndex(s => s.id === status);
+    const ORDER = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+    const currentIndex = status === 'cancelled' ? -1 : steps.findIndex(s => s.id === status);
+    const progressPct = currentIndex <= 0 ? 0 : (currentIndex / (steps.length - 1)) * 100;
     return (
         <div className="relative flex justify-between pt-4 pb-2">
             <div className="absolute top-8 left-6 right-6 h-0.5 bg-gray-100 -z-10" />
             <div
                 className="absolute top-8 left-6 h-0.5 bg-sb-green -z-10 transition-all duration-1000"
-                style={{ width: `calc(${(currentIndex / (steps.length - 1)) * 100}% - 3rem)` }}
+                style={{ width: `calc(${progressPct}% - 3rem)` }}
             />
             {steps.map((step, idx) => {
-                const isActive = idx <= currentIndex;
+                const isActive = currentIndex >= 0 && idx <= currentIndex;
                 const Icon = step.icon;
                 return (
                     <div key={step.id} className="flex flex-col items-center gap-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isActive ? 'bg-sb-green text-white' : 'bg-white border-2 border-gray-100 text-gray-300'}`}>
                             <Icon size={14} />
                         </div>
-                        <span className={`text-[9px] font-bold uppercase tracking-wider ${isActive ? 'text-sb-black' : 'text-gray-400'}`}>
+                        <span className={`text-[9px] font-bold uppercase tracking-wider text-center max-w-14 ${isActive ? 'text-sb-black' : 'text-gray-400'}`}>
                             {step.label}
                         </span>
                     </div>
@@ -356,7 +360,7 @@ const MOCK_ORDERS: Order[] = [
     },
 ];
 
-type Tab = 'orders' | 'addresses' | 'profile';
+type Tab = 'orders' | 'addresses' | 'profile' | 'wishlist';
 type Filter = 'all' | 'active' | 'delivered' | 'cancelled';
 
 export default function AccountPage() {
@@ -366,6 +370,7 @@ export default function AccountPage() {
     const [reviewingItem, setReviewingItem] = useState<OrderItem | null>(null);
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
     const [filter, setFilter] = useState<Filter>('all');
+    const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState<Address | null>(null);
@@ -374,6 +379,9 @@ export default function AccountPage() {
     const addresses = user?.addresses ?? [];
 
     const filteredOrders = orders.filter(o => {
+        const matchesSearch = o.id.toLowerCase().includes(searchQuery.toLowerCase());
+        if (!matchesSearch) return false;
+
         if (filter === 'all') return true;
         if (filter === 'active') return o.status === 'processing' || o.status === 'shipped';
         if (filter === 'delivered') return o.status === 'delivered';
@@ -388,6 +396,7 @@ export default function AccountPage() {
 
     const TABS = [
         { id: 'orders' as Tab, label: 'My Orders', icon: Package },
+        { id: 'wishlist' as Tab, label: 'Saved Items', icon: Heart },
         { id: 'addresses' as Tab, label: 'Addresses', icon: MapPin },
         { id: 'profile' as Tab, label: 'Profile', icon: UserIcon },
     ];
@@ -469,16 +478,30 @@ export default function AccountPage() {
                                         {/* Header + Filters */}
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                                             <h2 className="font-display text-2xl uppercase">Order History</h2>
-                                            <div className="flex gap-2 flex-wrap">
-                                                {(['all', 'active', 'delivered', 'cancelled'] as Filter[]).map(f => (
-                                                    <button
-                                                        key={f}
-                                                        onClick={() => handleFilterChange(f)}
-                                                        className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-colors ${filter === f ? 'bg-sb-green text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-sb-green'}`}
-                                                    >
-                                                        {f}
-                                                    </button>
-                                                ))}
+
+                                            <div className="flex flex-col sm:flex-row gap-4 flex-1 justify-end">
+                                                <div className="relative w-full sm:max-w-xs">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search Order Number..."
+                                                        value={searchQuery}
+                                                        onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                                                        className="w-full pl-10 pr-4 py-2 bg-white rounded-full text-xs border-2 border-transparent focus:border-sb-green focus:outline-none shadow-sm transition-all"
+                                                    />
+                                                    <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                </div>
+
+                                                <div className="flex gap-2 flex-wrap bg-white p-1 rounded-full shadow-sm w-max">
+                                                    {(['all', 'active', 'delivered', 'cancelled'] as Filter[]).map(f => (
+                                                        <button
+                                                            key={f}
+                                                            onClick={() => handleFilterChange(f)}
+                                                            className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-colors ${filter === f ? 'bg-sb-green text-white shadow-md' : 'bg-transparent text-gray-500 hover:text-sb-black'}`}
+                                                        >
+                                                            {f}
+                                                        </button>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
 
@@ -667,6 +690,22 @@ export default function AccountPage() {
                                         <div className="mt-6 p-5 bg-sb-green/5 border border-sb-green/20 rounded-2xl flex items-start gap-3">
                                             <Shield size={16} className="text-sb-green flex-shrink-0 mt-0.5" />
                                             <p className="text-xs text-gray-600">Your addresses are saved locally for convenience. No payment card details are ever stored on our servers.</p>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {/* ══ WISHLIST TAB ══ */}
+                                {activeTab === 'wishlist' && (
+                                    <motion.div key="wishlist" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="font-display text-2xl uppercase">Saved Items</h2>
+                                        </div>
+                                        <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
+                                            <Heart size={40} className="text-gray-200 mx-auto mb-4" />
+                                            <p className="font-bold text-gray-400">Your wishlist is currently empty</p>
+                                            <button onClick={() => window.location.href = '/shop'} className="mt-4 px-6 py-2 bg-sb-green text-white rounded-full text-xs font-bold uppercase tracking-wider">
+                                                Explore Shop
+                                            </button>
                                         </div>
                                     </motion.div>
                                 )}

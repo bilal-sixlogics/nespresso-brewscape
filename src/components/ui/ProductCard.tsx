@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Star, Tag } from 'lucide-react';
-import Link from 'next/link';
+import { ShoppingBag, Star, Tag, Eye } from 'lucide-react';
 import { useCart } from '@/store/CartContext';
 import { IntensityBar } from './IntensityBar';
 import { Product } from '@/types';
@@ -20,25 +19,22 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
     const { language, t } = useLanguage();
     const [isAdded, setIsAdded] = useState(false);
     const [imgIdx, setImgIdx] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
 
-    // inStock defaults to true when undefined (backward-compatible)
     const isInStock = product.inStock !== false;
 
     const displayName = language === 'en' && product.nameEn ? product.nameEn : product.name;
     const displayNamePart2 = language === 'en' && product.namePart2En ? product.namePart2En : product.namePart2;
 
-    // Image gallery support: use images array if available, else fall back to single image
     const images = product.images && product.images.length > 0 ? product.images : [product.image];
     const currentImage = images[imgIdx] ?? product.image;
 
-    // Pricing
     const baseUnit = product.saleUnits?.[0];
     const displayPrice = baseUnit?.price ?? product.price;
     const originalPrice = baseUnit?.originalPrice ?? product.originalPrice;
     const hasDiscount = !!originalPrice && originalPrice > displayPrice;
     const discountPct = hasDiscount ? Math.round((1 - displayPrice / originalPrice!) * 100) : 0;
 
-    // First 2 aromatic notes (if any)
     const visibleNotes = product.notes?.slice(0, 2) ?? [];
 
     const handleAddToCart = (e: React.MouseEvent) => {
@@ -64,12 +60,14 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.55, delay: index * 0.12 }}
             onClick={() => onClick(product)}
-            className="bg-white rounded-[40px] p-4 border border-gray-200 shadow-sm hover:shadow-[0_20px_60px_rgba(0,0,0,0.10)] transition-all duration-500 relative group cursor-pointer z-10 hover:z-20 flex flex-col w-full max-w-lg mx-auto"
+            onHoverStart={() => setIsHovered(true)}
+            onHoverEnd={() => setIsHovered(false)}
+            className="bg-white rounded-[40px] p-4 border border-gray-200 shadow-sm hover:shadow-[0_24px_64px_rgba(0,0,0,0.12)] transition-all duration-500 relative group cursor-pointer z-10 hover:z-20 flex flex-col w-full max-w-lg mx-auto"
         >
             {/* ── Image Zone ─────────────────────────────────── */}
             <div
-                className="bg-[#60A17B] rounded-[32px] border border-white/30 relative flex items-center justify-center overflow-hidden transition-colors duration-500 group-hover:bg-sb-green shrink-0"
-                style={{ aspectRatio: '1/1' }}
+                className="relative rounded-[32px] overflow-hidden shrink-0"
+                style={{ aspectRatio: '1/1', background: 'linear-gradient(145deg, #f5f0eb 0%, #ede8e0 100%)' }}
                 onMouseMove={(e) => {
                     if (images.length > 1) {
                         const pct = e.nativeEvent.offsetX / e.currentTarget.clientWidth;
@@ -78,7 +76,29 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                 }}
                 onMouseLeave={() => setImgIdx(0)}
             >
-                <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent mix-blend-overlay pointer-events-none" />
+                {/* Image — scales up smoothly on hover */}
+                <AnimatePresence mode="wait">
+                    <motion.img
+                        key={currentImage}
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: isHovered ? 1.08 : 1 }}
+                        exit={{ opacity: 0, scale: 0.98 }}
+                        transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        src={currentImage}
+                        alt={displayName}
+                        className="absolute inset-0 h-full w-full object-cover"
+                    />
+                </AnimatePresence>
+
+                {/* Hover overlay — dark vignette fades in, revealing the action buttons */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: isHovered ? 1 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none"
+                />
+
+                {/* Badges */}
                 {hasDiscount && (
                     <div className="absolute top-4 left-4 z-20 bg-red-500 text-white text-[9px] font-black rounded-full px-2.5 py-1 shadow-lg">-{discountPct}%</div>
                 )}
@@ -90,48 +110,61 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                         <Star size={8} fill="white" /> #1
                     </div>
                 )}
+
+                {/* Stock pill */}
+                <div className={`absolute top-4 ${product.tags?.includes('best-seller') ? 'right-16' : 'right-4'} z-20 flex items-center gap-1 px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-wider backdrop-blur-sm shadow-sm ${isInStock ? 'bg-emerald-500/90 text-white' : 'bg-red-500/90 text-white'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isInStock ? 'bg-white' : 'bg-white/80'} animate-pulse`} />
+                    {isInStock ? t('inStock') || 'In Stock' : t('outOfStock') || 'Out of Stock'}
+                </div>
+
+                {/* Image dots (multi-image indicator) */}
                 {images.length > 1 && (
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-20">
+                    <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1 z-20">
                         {images.map((_, i) => (
-                            <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${i === imgIdx ? 'bg-white scale-125' : 'bg-white/40'}`} />
+                            <div key={i} className={`rounded-full transition-all duration-200 ${i === imgIdx ? 'bg-white w-4 h-1.5' : 'bg-white/40 w-1.5 h-1.5'}`} />
                         ))}
                     </div>
                 )}
 
-                {/* Stock badge */}
-                <div className={`absolute top-4 right-14 z-20 flex items-center gap-1 px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-wider backdrop-blur-sm shadow-sm ${isInStock
-                        ? 'bg-emerald-500/90 text-white'
-                        : 'bg-red-500/90 text-white'
-                    }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isInStock ? 'bg-white' : 'bg-white/80'} animate-pulse`} />
-                    {isInStock ? t('inStock') || 'In Stock' : t('outOfStock') || 'Out of Stock'}
-                </div>
-                <motion.button
-                    className={`w-10 h-10 shadow-xl border border-white/20 rounded-full flex items-center justify-center absolute bottom-4 right-4 z-20 transition-all duration-300 transform ${isInStock
-                            ? 'bg-white/20 backdrop-blur-md opacity-0 group-hover:opacity-100 hover:scale-110 cursor-pointer'
-                            : 'bg-black/20 backdrop-blur-md opacity-60 cursor-not-allowed'
-                        }`}
-                    whileHover={isInStock ? { scale: 1.12, backgroundColor: 'rgba(255,255,255,0.4)' } : {}}
-                    whileTap={isInStock ? { scale: 0.92 } : {}}
-                    onClick={handleAddToCart}
-                    disabled={!isInStock}
+                {/* Hover CTA — slides up from the bottom */}
+                <motion.div
+                    initial={{ y: 16, opacity: 0 }}
+                    animate={{ y: isHovered ? 0 : 16, opacity: isHovered ? 1 : 0 }}
+                    transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    className="absolute bottom-4 left-4 right-4 z-20 flex gap-2"
                 >
-                    <AnimatePresence mode="wait">
-                        {isAdded ? <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="text-white text-sm font-black">✓</motion.span> : <motion.div key="bag" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}><ShoppingBag className="w-4 h-4 text-white" /></motion.div>}
-                    </AnimatePresence>
-                </motion.button>
-                <AnimatePresence mode="wait">
-                    <motion.img
-                        key={currentImage}
-                        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.2 }}
-                        src={currentImage} alt={displayName} className="h-full w-full object-cover rounded-[inherit] drop-shadow-[0_30px_30px_rgba(0,0,0,0.5)] z-10 group-hover:scale-105 transition-transform duration-700"
-                    />
-                </AnimatePresence>
+                    {/* Add to Cart */}
+                    <motion.button
+                        whileTap={{ scale: 0.94 }}
+                        onClick={handleAddToCart}
+                        disabled={!isInStock}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-xl transition-colors duration-200 ${isInStock
+                            ? 'bg-sb-green text-white hover:bg-[#2C6345]'
+                            : 'bg-white/20 text-white/60 cursor-not-allowed backdrop-blur-sm'
+                            }`}
+                    >
+                        <AnimatePresence mode="wait">
+                            {isAdded
+                                ? <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="text-white font-black">✓ Added</motion.span>
+                                : <motion.span key="add" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-1.5"><ShoppingBag size={13} />{isInStock ? 'Add to Cart' : 'Sold Out'}</motion.span>
+                            }
+                        </AnimatePresence>
+                    </motion.button>
+
+                    {/* Quick Look */}
+                    <motion.button
+                        whileTap={{ scale: 0.94 }}
+                        onClick={(e) => { e.stopPropagation(); onClick(product); }}
+                        className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors"
+                    >
+                        <Eye size={15} className="text-white" />
+                    </motion.button>
+                </motion.div>
             </div>
 
             {/* ── Content ───────────────────────────────────── */}
             <div className="px-3 pt-5 pb-2 flex flex-col flex-1 gap-2">
-                <h3 className="font-display text-[1.35rem] uppercase leading-tight group-hover:text-sb-green transition-colors line-clamp-2">
+                <h3 className="font-display text-[1.35rem] uppercase leading-tight group-hover:text-sb-green transition-colors duration-300 line-clamp-2">
                     {displayName}
                     {displayNamePart2 && <span className="text-gray-300"> {displayNamePart2}</span>}
                 </h3>

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { SlidersHorizontal } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SlidersHorizontal, Tag, X, Clock } from 'lucide-react';
 import { enrichedProducts, categoriesList } from '@/lib/productsData';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
@@ -12,20 +12,26 @@ import { usePagination } from '@/hooks/usePagination';
 import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
-
+import { useRecentlyViewed } from '@/context/RecentlyViewedContext';
+import { AppConfig } from '@/lib/config';
 import { useDragScroll } from '@/hooks/useDragScroll';
-
-const txt = (language: string, fr: string, en: string) => language === 'fr' ? fr : en;
 
 export default function ShopPage() {
     const { t, language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const { recentlyViewed, addRecentlyViewed, clearRecentlyViewed } = useRecentlyViewed();
+
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [filterOpen, setFilterOpen] = useState(false);
     const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+    const [bannerDismissed, setBannerDismissed] = useState(false);
 
     const { scrollRef, onMouseDown, onMouseUp, onMouseMove } = useDragScroll();
+
+    // Admin-controlled sitewide discount banner — reads from AppConfig (backend-driven in production)
+    const { sitewideDiscount } = AppConfig.promo;
+    const showSitewidesBanner = sitewideDiscount.enabled && !bannerDismissed;
 
     const filteredProducts = useMemo(() => {
         let base = selectedCategory === 'all'
@@ -44,11 +50,48 @@ export default function ShopPage() {
 
     React.useEffect(() => { reset(); }, [selectedCategory, filters, reset]);
 
+    const handleProductClick = (product: Product) => {
+        addRecentlyViewed(product);
+        setSelectedProduct(product);
+    };
+
     const categoryLabel = selectedCategory === 'all' ? t('allProducts') : selectedCategory;
 
     return (
         <div className="w-full relative bg-sb-white text-sb-black overflow-x-hidden min-h-screen">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+
+                {/* ── Admin-Controlled Sitewide Flash Sale Banner ── */}
+                <AnimatePresence>
+                    {showSitewidesBanner && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white relative overflow-hidden"
+                        >
+                            <div className="max-w-[1400px] mx-auto px-6 py-3 flex items-center justify-center gap-3">
+                                <Tag size={16} className="shrink-0" />
+                                <p className="text-sm font-black tracking-wide text-center">
+                                    <span className="text-yellow-200">⚡ FLASH SALE — </span>
+                                    {language === 'fr'
+                                        ? `${sitewideDiscount.percentage}% de réduction sur toute la boutique — Appliqué automatiquement`
+                                        : `${sitewideDiscount.percentage}% off everything in the store — Applied automatically at checkout`
+                                    }
+                                </p>
+                                <button
+                                    onClick={() => setBannerDismissed(true)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                            {/* Animated shimmer */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-[shimmer_2.5s_infinite]" />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 {/* Hero Banner */}
                 <section className="bg-sb-green pt-20 pb-32 px-8 relative text-white">
                     <div className="max-w-[1400px] mx-auto text-center">
@@ -60,6 +103,48 @@ export default function ShopPage() {
 
                 <section className="bg-sb-white py-24 px-8">
                     <div className="max-w-[1400px] mx-auto">
+
+                        {/* ── Recently Viewed ── */}
+                        {recentlyViewed.length > 0 && (
+                            <div className="mb-12 pb-10 border-b border-gray-100">
+                                <div className="flex items-center justify-between mb-5">
+                                    <div className="flex items-center gap-2">
+                                        <Clock size={14} className="text-gray-400" />
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                            {tx('Récemment consultés', 'Recently Viewed')}
+                                        </h3>
+                                    </div>
+                                    <button
+                                        onClick={clearRecentlyViewed}
+                                        className="text-[9px] font-bold uppercase tracking-widest text-gray-300 hover:text-red-400 transition-colors"
+                                    >
+                                        {tx('Effacer', 'Clear')}
+                                    </button>
+                                </div>
+                                <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                                    {recentlyViewed.map((product) => (
+                                        <button
+                                            key={product.id}
+                                            onClick={() => handleProductClick(product)}
+                                            className="flex-shrink-0 flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-4 py-3 hover:border-sb-green hover:shadow-md transition-all group"
+                                        >
+                                            <img
+                                                src={product.images?.[0] ?? product.image}
+                                                alt={product.name}
+                                                className="w-10 h-10 object-cover rounded-xl"
+                                            />
+                                            <div className="text-left">
+                                                <p className="text-[10px] font-black uppercase tracking-wide text-sb-black group-hover:text-sb-green transition-colors line-clamp-1 max-w-28">
+                                                    {product.name}
+                                                </p>
+                                                <p className="text-[10px] text-sb-green font-bold">€{product.price.toFixed(2)}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Category tabs */}
                         <div
                             ref={scrollRef}
@@ -96,7 +181,6 @@ export default function ShopPage() {
                             ))}
                         </div>
 
-
                         {/* Results header */}
                         <div className="flex items-center justify-between mb-12">
                             <h3 className="font-display text-3xl uppercase text-sb-black">{categoryLabel}</h3>
@@ -124,7 +208,7 @@ export default function ShopPage() {
                                         key={`${product.id}-${idx}`}
                                         product={product as Product}
                                         index={idx}
-                                        onClick={setSelectedProduct}
+                                        onClick={handleProductClick}
                                     />
                                 ))}
                                 {isLoading && [...Array(4)].map((_, i) => (

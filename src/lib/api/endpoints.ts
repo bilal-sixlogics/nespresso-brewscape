@@ -1,0 +1,58 @@
+/**
+ * API Endpoints — all backend routes in one place.
+ * In production, BASE_URL comes from NEXT_PUBLIC_API_URL env variable.
+ * Keeping it centralised means a single change updates the whole app.
+ */
+
+const API_VERSION = 'v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.cafrezzo.com';
+
+export const API_BASE = `${BASE_URL}/api/${API_VERSION}`;
+
+export const Endpoints = {
+    // ── Store Config & CMS ───────────────────────────────────────────────
+    settings: `${API_BASE}/settings`,
+    shippingMethods: `${API_BASE}/shipping-methods`,
+    promoCodes: `${API_BASE}/promo-codes/validate`,
+    promoStrips: `${API_BASE}/promo-strips`,
+    heroBanners: `${API_BASE}/hero-banners`,
+    featuredCollections: (key: string) => `${API_BASE}/featured-collections/${key}`,
+
+    // ── Products ─────────────────────────────────────────────────────────
+    products: `${API_BASE}/products`,
+    product: (slug: string) => `${API_BASE}/products/${slug}`,
+    productReviews: (slug: string) => `${API_BASE}/products/${slug}/reviews`,
+
+    // ── Categories ───────────────────────────────────────────────────────
+    categories: `${API_BASE}/categories`,
+
+    // ── Blog ─────────────────────────────────────────────────────────────
+    blogPosts: `${API_BASE}/blog`,
+    blogPost: (id: string | number) => `${API_BASE}/blog/${id}`,
+
+    // ── Auth ─────────────────────────────────────────────────────────────
+    login: `${API_BASE}/auth/login`,
+    register: `${API_BASE}/auth/register`,
+    logout: `${API_BASE}/auth/logout`,
+    profile: `${API_BASE}/user/profile`,
+    socialLogin: (provider: 'google' | 'apple') => `${API_BASE}/auth/${provider}/redirect`,
+
+    // ── User Account ─────────────────────────────────────────────────────
+    addresses: `${API_BASE}/user/addresses`,
+    address: (id: string | number) => `${API_BASE}/user/addresses/${id}`,
+    notifications: `${API_BASE}/user/notifications`,
+    notification: (id: string | number) => `${API_BASE}/user/notifications/${id}`,
+    markAllRead: `${API_BASE}/user/notifications/mark-all-read`,
+    wishlist: `${API_BASE}/user/wishlist`,
+    wishlistItem: (productId: string) => `${API_BASE}/user/wishlist/${productId}`,
+    loyaltyPoints: `${API_BASE}/user/loyalty`,
+    newsletter: `${API_BASE}/newsletter/subscribe`,
+
+    // ── Orders ───────────────────────────────────────────────────────────
+    orders: `${API_BASE}/orders`,
+    order: (id: string) => `${API_BASE}/orders/${id}`,
+    placeOrder: `${API_BASE}/orders`,
+    cancelOrder: (id: string) => `${API_BASE}/orders/${id}/cancel`,
+    returns: `${API_BASE}/returns`,
+    return: (id: string) => `${API_BASE}/returns/${id}`,
+} as const;

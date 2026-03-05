@@ -14,10 +14,9 @@ const archivo = Archivo_Black({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: AppConfig.brand.seoTitle,
-  description: AppConfig.brand.seoDescription,
-};
+import { baseMetadata } from '@/lib/seo';
+
+export const metadata: Metadata = baseMetadata;
 
 import { CartProvider } from "@/store/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -25,6 +24,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
+import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { PromoStrip } from "@/components/layout/PromoStrip";
@@ -44,15 +44,17 @@ export default function RootLayout({
               <CartProvider>
                 <WishlistProvider>
                   <NotificationsProvider>
-                    <div className="bg-sb-white text-sb-black overflow-x-hidden">
-                      <PromoStrip />
-                      <Header />
-                      <main className="min-h-screen">
-                        {children}
-                      </main>
-                      <Footer />
-                    </div>
-                    <LoginModal />
+                    <RecentlyViewedProvider>
+                      <div className="bg-sb-white text-sb-black overflow-x-hidden">
+                        <PromoStrip />
+                        <Header />
+                        <main className="min-h-screen">
+                          {children}
+                        </main>
+                        <Footer />
+                      </div>
+                      <LoginModal />
+                    </RecentlyViewedProvider>
                   </NotificationsProvider>
                 </WishlistProvider>
               </CartProvider>
