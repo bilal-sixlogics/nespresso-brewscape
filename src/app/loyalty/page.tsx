@@ -38,7 +38,7 @@ export default function LoyaltyPage() {
     return (
         <div className="min-h-screen bg-[#FAF9F6] pt-20">
             {/* Hero */}
-            <section className="bg-sb-black pt-16 pb-32 px-8 relative overflow-hidden">
+            <section className="bg-sb-black pt-12 sm:pt-16 pb-20 sm:pb-28 md:pb-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.25),_transparent_60%)]" />
                 <div className="max-w-[1200px] mx-auto relative z-10">
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
@@ -46,7 +46,7 @@ export default function LoyaltyPage() {
                             <Gift size={12} className="text-sb-green" />
                             <p className="text-sb-green text-[10px] font-bold tracking-[0.3em] uppercase">Café Rewards</p>
                         </div>
-                        <h1 className="font-display text-6xl md:text-8xl uppercase text-white leading-[0.85] mb-4">
+                        <h1 className="font-display text-5xl sm:text-6xl md:text-8xl uppercase text-white leading-[0.85] mb-4">
                             {tx('Fidélité', 'Loyalty')}<br />
                             <span className="text-white/30">{tx('& Récompenses', '& Rewards')}</span>
                         </h1>
@@ -58,7 +58,7 @@ export default function LoyaltyPage() {
                 <div className="torn-paper-white-down z-20" />
             </section>
 
-            <section className="max-w-[1200px] mx-auto px-8 py-16">
+            <section className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-16">
                 {/* Coming Soon Banner */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

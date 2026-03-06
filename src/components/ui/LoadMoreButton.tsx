@@ -21,7 +21,7 @@ export function LoadMoreButton({
 
     if (!hasMore && totalCount && totalCount > 0) {
         return (
-            <div className="flex justify-center mt-20 mb-8 opacity-60">
+            <div className="flex justify-center mt-10 sm:mt-14 md:mt-20 mb-8 opacity-60">
                 <span className="text-xs font-bold tracking-widest uppercase text-gray-400">
                     {noMoreText}
                 </span>
@@ -34,11 +34,11 @@ export function LoadMoreButton({
     }
 
     return (
-        <div className="flex justify-center mt-20 mb-8">
+        <div className="flex justify-center mt-10 sm:mt-14 md:mt-20 mb-8">
             <button
                 onClick={onLoadMore}
                 disabled={isLoading}
-                className={`relative px-12 py-5 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 overflow-hidden 
+                className={`relative px-8 sm:px-10 md:px-12 py-4 sm:py-5 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 overflow-hidden
                     ${isLoading
                         ? 'bg-sb-green/10 text-sb-green border border-sb-green/20 cursor-wait'
                         : 'bg-transparent border border-gray-200 text-gray-500 hover:text-sb-black hover:border-sb-black opacity-100'

@@ -24,10 +24,10 @@ export default function BlogPage() {
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}
             >
                 {/* Hero Section */}
-                <section className="bg-sb-green pt-20 pb-32 px-8 relative text-white">
+                <section className="bg-sb-green pt-16 sm:pt-20 md:pt-24 pb-20 sm:pb-28 md:pb-32 px-4 sm:px-6 lg:px-8 relative text-white">
                     <div className="max-w-[1400px] mx-auto text-center relative z-10">
                         <div className="text-[10px] bg-white/10 text-white font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-6 border border-white/20 backdrop-blur-sm">{t('blogTitle')}</div>
-                        <motion.h1 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight mb-6">
+                        <motion.h1 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight mb-4 sm:mb-6">
                             {t('blogTitle')}
                         </motion.h1>
                         <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="text-white/70 max-w-2xl mx-auto text-lg">
@@ -36,8 +36,8 @@ export default function BlogPage() {
                     </div>
 
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#1A4531] rounded-full blur-3xl opacity-50 -ml-10 -mb-10"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-white/5 rounded-full blur-3xl -mr-10 sm:-mr-20 -mt-10 sm:-mt-20"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 sm:w-56 sm:h-56 md:w-64 md:h-64 bg-[#1A4531] rounded-full blur-3xl opacity-50 -ml-5 sm:-ml-10 -mb-5 sm:-mb-10"></div>
 
                     {/* Torn Paper effect transitioning to offwhite */}
                     <div className="torn-paper-offwhite-down z-20 absolute bottom-[-29px] left-0 w-full h-[30px]"
@@ -45,7 +45,7 @@ export default function BlogPage() {
                     </div>
                 </section>
 
-                <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-24 pb-40">
+                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 md:py-24 pb-16 sm:pb-24 md:pb-40">
 
                     {/* Featured Post */}
                     <motion.div
@@ -61,7 +61,7 @@ export default function BlogPage() {
 
                         <div className="flex flex-col lg:flex-row gap-0 lg:gap-12 items-center relative">
                             {/* Image side */}
-                            <div className="w-full lg:w-[65%] rounded-[40px] overflow-hidden relative z-0 shadow-2xl h-[400px] lg:h-[600px]">
+                            <div className="w-full lg:w-[65%] rounded-[28px] sm:rounded-[40px] overflow-hidden relative z-0 shadow-2xl h-[240px] sm:h-[360px] lg:h-[500px]">
                                 <img
                                     src={featuredPost.image}
                                     alt={featuredPost.title}
@@ -76,14 +76,14 @@ export default function BlogPage() {
                             </div>
 
                             {/* Content side (overlaps image on desktop) */}
-                            <div className="w-[90%] lg:w-[45%] bg-white rounded-[40px] p-10 lg:p-14 shadow-2xl relative z-10 -mt-20 lg:mt-0 lg:-ml-32 border border-gray-100 group-hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] transition-shadow duration-500">
+                            <div className="w-[92%] lg:w-[45%] bg-white rounded-[28px] sm:rounded-[40px] p-5 sm:p-8 lg:p-10 xl:p-14 shadow-2xl relative z-10 -mt-12 sm:-mt-20 lg:mt-0 lg:-ml-32 border border-gray-100 group-hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] transition-shadow duration-500">
                                 <div className="flex items-center gap-4 text-xs font-semibold text-gray-400 mb-6 uppercase tracking-wider">
                                     <div className="flex items-center gap-1"><Calendar size={14} className="text-sb-green" /> {featuredPost.date}</div>
                                     <span className="w-1 h-1 rounded-full bg-gray-300"></span>
                                     <div className="flex items-center gap-1"><Clock size={14} className="text-sb-green" /> {featuredPost.readTime}</div>
                                 </div>
 
-                                <h2 className="font-display text-4xl lg:text-5xl uppercase tracking-tight text-sb-black mb-6 leading-[1.1] group-hover:text-sb-green transition-colors">
+                                <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl xl:text-5xl uppercase tracking-tight text-sb-black mb-4 sm:mb-6 leading-[1.1] group-hover:text-sb-green transition-colors">
                                     {featuredPost.title}
                                 </h2>
 

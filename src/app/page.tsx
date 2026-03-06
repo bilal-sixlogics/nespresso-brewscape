@@ -115,7 +115,7 @@ function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: any) 
     .slice(0, 3);
 
   return (
-    <section className="py-14 px-8 bg-white text-sb-black relative overflow-hidden border-t border-gray-100">
+    <section className="py-10 sm:py-12 md:py-14 px-4 sm:px-6 lg:px-8 bg-white text-sb-black relative overflow-hidden border-t border-gray-100">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.04),_transparent_60%)] pointer-events-none" />
 
       <div className="max-w-[1400px] mx-auto relative z-10">

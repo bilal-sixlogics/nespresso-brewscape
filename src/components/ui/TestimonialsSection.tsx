@@ -44,7 +44,7 @@ export const TestimonialsSection = () => {
     const current = testimonials[active];
 
     return (
-        <section className="bg-[#FAF9F6] border-t border-black/5 py-14 px-6 lg:px-12 overflow-hidden">
+        <section className="bg-[#FAF9F6] border-t border-black/5 py-10 sm:py-12 lg:py-14 px-4 sm:px-6 lg:px-12 overflow-hidden">
             <div className="max-w-[1400px] mx-auto">
                 {/* Section label */}
                 <div className="flex items-center justify-between mb-10">
@@ -75,7 +75,7 @@ export const TestimonialsSection = () => {
                                 className="h-full flex flex-col gap-6"
                             >
                                 {/* Product image */}
-                                <div className="relative w-full aspect-[4/3] rounded-[24px] overflow-hidden bg-sb-green/10 shrink-0">
+                                <div className="relative w-full aspect-[4/3] rounded-[16px] sm:rounded-[24px] overflow-hidden bg-sb-green/10 shrink-0">
                                     <Image
                                         src={PRODUCT_IMAGES[active]}
                                         alt={current.product}

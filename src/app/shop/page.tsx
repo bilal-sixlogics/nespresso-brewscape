@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, Tag, X, Clock, ChevronDown } from 'lucide-react';
+import { SlidersHorizontal, Tag, X, Clock, ChevronDown, RotateCcw } from 'lucide-react';
 import { enrichedProducts, categoriesList } from '@/lib/productsData';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
@@ -63,6 +63,14 @@ export default function ShopPage() {
         (filters.intensityRange[0] !== 1 || filters.intensityRange[1] !== 13 ? 1 : 0) +
         (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 500 ? 1 : 0);
 
+    const hasActiveFilters = activeFilterCount > 0 || sortBy !== 'relevance' || selectedCategory !== 'all';
+
+    const resetAll = () => {
+        setFilters(DEFAULT_FILTERS);
+        setSortBy('relevance');
+        setSelectedCategory('all');
+    };
+
     const { displayedItems: displayedProducts, hasMore, isLoading, loadMore, reset } = usePagination(filteredProducts, 8);
 
     React.useEffect(() => { reset(); }, [selectedCategory, filters, reset]);
@@ -79,15 +87,15 @@ export default function ShopPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
                 {/* Hero Banner */}
-                <section className="bg-sb-green pt-20 pb-32 px-8 relative text-white">
+                <section className="bg-sb-green pt-16 sm:pt-20 pb-20 sm:pb-28 md:pb-32 px-4 sm:px-6 lg:px-8 relative text-white">
                     <div className="max-w-[1400px] mx-auto text-center">
-                        <motion.h2 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight mb-6">{t('shopTitle')}</motion.h2>
+                        <motion.h2 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight mb-6">{t('shopTitle')}</motion.h2>
                         <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/70 max-w-2xl mx-auto text-lg">{t('shopSubtitle')}</motion.p>
                     </div>
                     <div className="torn-paper-white-down z-20" />
                 </section>
 
-                <section className="bg-sb-white py-24 px-8">
+                <section className="bg-sb-white py-8 sm:py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
                     <div className="max-w-[1400px] mx-auto">
 
                         {/* ── Recently Viewed ── */}
@@ -138,10 +146,10 @@ export default function ShopPage() {
                                 {/* Filter button */}
                                 <button
                                     onClick={() => setFilterOpen(true)}
-                                    className="flex items-center gap-2 px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sb-black text-white hover:bg-gray-800 transition-colors relative"
+                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sb-black text-white hover:bg-gray-800 transition-colors relative"
                                 >
                                     <SlidersHorizontal size={12} />
-                                    {t('filters') || 'Filtres'}
+                                    <span className="hidden sm:inline">{t('filters') || 'Filtres'}</span>
                                     {activeFilterCount > 0 && (
                                         <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-sb-green text-white text-[8px] font-black rounded-full flex items-center justify-center">{activeFilterCount}</span>
                                     )}
@@ -151,7 +159,7 @@ export default function ShopPage() {
                                 <div className="relative">
                                     <button
                                         onClick={() => setSortOpen(!sortOpen)}
-                                        className="flex items-center gap-2 px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gray-50 text-gray-600 border border-gray-100 hover:border-gray-300 transition-colors"
+                                        className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gray-50 text-gray-600 border border-gray-100 hover:border-gray-300 transition-colors"
                                     >
                                         {sortBy === 'relevance' && tx('Pertinence', 'Relevance')}
                                         {sortBy === 'price_asc' && tx('Prix: Croissant', 'Price: Low to High')}
@@ -191,6 +199,22 @@ export default function ShopPage() {
                                 </div>
                             </div>
 
+                            {/* Reset button */}
+                            <AnimatePresence>
+                                {hasActiveFilters && (
+                                    <motion.button
+                                        initial={{ opacity: 0, scale: 0.85 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.85 }}
+                                        onClick={resetAll}
+                                        className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors"
+                                    >
+                                        <RotateCcw size={11} />
+                                        {tx('Réinitialiser', 'Reset')}
+                                    </motion.button>
+                                )}
+                            </AnimatePresence>
+
                             {/* Divider */}
                             <div className="hidden md:block w-px h-6 bg-gray-200 flex-shrink-0 mx-2" />
 
@@ -210,7 +234,7 @@ export default function ShopPage() {
                                     <button
                                         key={id}
                                         onClick={() => setSelectedCategory(id)}
-                                        className={`flex-shrink-0 px-8 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${selectedCategory === id ? 'bg-sb-green text-white shadow-xl shadow-sb-green/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-sb-black border border-gray-100 hover:border-gray-200'}`}
+                                        className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${selectedCategory === id ? 'bg-sb-green text-white shadow-xl shadow-sb-green/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-sb-black border border-gray-100 hover:border-gray-200'}`}
                                     >
                                         {label}
                                     </button>
@@ -219,8 +243,8 @@ export default function ShopPage() {
                         </div>
 
                         {/* Results header */}
-                        <div className="flex items-center justify-between mb-12">
-                            <h3 className="font-display text-3xl uppercase text-sb-black">{categoryLabel}</h3>
+                        <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-12">
+                            <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sb-black">{categoryLabel}</h3>
                             <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">
                                 {filteredProducts.length} {t('results') || 'résultats'}
                             </div>
@@ -232,14 +256,14 @@ export default function ShopPage() {
                                 <p className="text-6xl mb-4">🔍</p>
                                 <p className="font-bold text-xl mb-2">{tx('Aucun produit trouvé', 'No products found')}</p>
                                 <button
-                                    onClick={() => { setFilters(DEFAULT_FILTERS); setSelectedCategory('all'); }}
+                                    onClick={resetAll}
                                     className="text-sb-green font-bold text-sm underline mt-2"
                                 >
                                     {tx('Effacer les filtres', 'Clear filters')}
                                 </button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
                                 {displayedProducts.map((product, idx) => (
                                     <ProductCard
                                         key={`${product.id}-${idx}`}

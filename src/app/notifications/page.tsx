@@ -21,7 +21,7 @@ export default function NotificationsPage() {
     return (
         <div className="min-h-screen bg-[#FAF9F6] pt-20">
             {/* Hero */}
-            <section className="bg-sb-black pt-16 pb-32 px-8 relative overflow-hidden">
+            <section className="bg-sb-black pt-12 sm:pt-16 pb-20 sm:pb-28 md:pb-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.2),_transparent_60%)]" />
                 <div className="max-w-[1200px] mx-auto relative z-10">
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
@@ -29,7 +29,7 @@ export default function NotificationsPage() {
                             <Bell size={12} className="text-sb-green" />
                             <p className="text-sb-green text-[10px] font-bold tracking-[0.3em] uppercase">{tx('Centre de Notifications', 'Notification Center')}</p>
                         </div>
-                        <h1 className="font-display text-6xl md:text-8xl uppercase text-white leading-[0.85] mb-4">
+                        <h1 className="font-display text-5xl sm:text-6xl md:text-8xl uppercase text-white leading-[0.85] mb-4">
                             {tx('Notifications', 'Notifications')}
                         </h1>
                         <p className="text-white/40 text-lg">
@@ -42,7 +42,7 @@ export default function NotificationsPage() {
                 <div className="torn-paper-white-down z-20" />
             </section>
 
-            <section className="max-w-[800px] mx-auto px-8 py-16">
+            <section className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-16">
                 {/* Actions Bar */}
                 {unreadCount > 0 && (
                     <div className="flex justify-end mb-6">

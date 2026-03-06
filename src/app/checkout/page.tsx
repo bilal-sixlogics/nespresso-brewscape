@@ -625,7 +625,7 @@ export default function CheckoutPage() {
     // If cart is empty and not on confirmation, redirect
     if (items.length === 0 && step !== 'confirmation') {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAF9F6] gap-6 px-8">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAF9F6] gap-6 px-4 sm:px-6">
                 <ShoppingBag size={48} className="text-gray-200" />
                 <h1 className="font-display text-4xl uppercase">{tx('Panier vide', 'Empty Cart')}</h1>
                 <p className="text-gray-400">{tx('Ajoutez des produits avant de passer commande.', 'Add some products before checking out.')}</p>
@@ -639,7 +639,7 @@ export default function CheckoutPage() {
     return (
         <div className="bg-[#FAF9F6] min-h-screen">
             {/* Header */}
-            <div className="bg-white border-b border-gray-100 px-8 py-5 flex items-center justify-between">
+            <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex items-center justify-between">
                 <Link href="/shop" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-sb-green transition-colors">
                     <ArrowLeft size={14} />
                     {tx('Boutique', 'Shop')}
@@ -651,12 +651,12 @@ export default function CheckoutPage() {
                 </div>
             </div>
 
-            <div className="max-w-[1200px] mx-auto px-8 py-16">
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
                 <StepIndicator current={step} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-12 items-start">
                     {/* ── Left: Form ── */}
-                    <div className="bg-white rounded-[40px] border border-gray-100 p-8 shadow-sm">
+                    <div className="bg-white rounded-[28px] sm:rounded-[40px] border border-gray-100 p-5 sm:p-6 lg:p-8 shadow-sm">
                         <AnimatePresence mode="wait">
                             {step === 'shipping' && (
                                 <ShippingStep

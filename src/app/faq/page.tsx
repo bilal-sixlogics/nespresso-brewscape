@@ -154,13 +154,13 @@ export default function FAQPage() {
     return (
         <div className="w-full bg-sb-white text-sb-black min-h-screen">
             {/* Hero */}
-            <section className="bg-sb-black pt-24 pb-20 px-8 relative overflow-hidden">
+            <section className="bg-sb-black pt-16 sm:pt-20 md:pt-24 pb-14 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.2),_transparent_60%)] pointer-events-none" />
                 <div className="max-w-[900px] mx-auto relative z-10 text-center">
                     <p className="text-sb-green text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
                         {tx('Support', 'Support')}
                     </p>
-                    <h1 className="font-display text-6xl md:text-7xl uppercase text-white mb-6">
+                    <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase text-white mb-4 sm:mb-6">
                         {tx('Questions', 'Frequently')}
                         <span className="text-sb-green block">{tx('Fréquentes', 'Asked Questions')}</span>
                     </h1>
@@ -185,7 +185,7 @@ export default function FAQPage() {
             </section>
 
             {/* FAQ Accordions */}
-            <section className="max-w-[900px] mx-auto px-8 py-20">
+            <section className="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 md:py-20">
                 {filtered.length === 0 ? (
                     <div className="text-center py-16">
                         <p className="text-5xl mb-4">🔍</p>
@@ -223,7 +223,7 @@ export default function FAQPage() {
                 )}
 
                 {/* Contact CTA */}
-                <div className="mt-16 bg-sb-green rounded-[32px] p-10 text-center text-white relative overflow-hidden">
+                <div className="mt-12 sm:mt-16 bg-sb-green rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 lg:p-10 text-center text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
                     <p className="text-[10px] font-black tracking-[0.3em] uppercase opacity-70 mb-3">
                         {tx('Besoin d\'aide ?', 'Need help?')}

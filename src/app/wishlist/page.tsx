@@ -27,7 +27,7 @@ export default function WishlistPage() {
     return (
         <div className="min-h-screen bg-[#FAF9F6] pt-20">
             {/* Hero */}
-            <section className="bg-sb-black pt-16 pb-32 px-8 relative overflow-hidden">
+            <section className="bg-sb-black pt-12 sm:pt-16 pb-20 sm:pb-28 md:pb-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.2),_transparent_60%)]" />
                 <div className="max-w-[1400px] mx-auto relative z-10">
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
@@ -35,7 +35,7 @@ export default function WishlistPage() {
                             <Heart size={12} className="fill-sb-green" />
                             {tx('Mes Favoris', 'My Wishlist')}
                         </p>
-                        <h1 className="font-display text-6xl md:text-8xl uppercase text-white leading-[0.85] mb-4">
+                        <h1 className="font-display text-5xl sm:text-6xl md:text-8xl uppercase text-white leading-[0.85] mb-4">
                             {tx('Liste de Souhaits', 'Wishlist')}
                         </h1>
                         <p className="text-white/40 text-lg">
@@ -49,7 +49,7 @@ export default function WishlistPage() {
                 <div className="torn-paper-white-down z-20" />
             </section>
 
-            <section className="max-w-[1400px] mx-auto px-8 py-16">
+            <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-16">
                 <AnimatePresence mode="popLayout">
                     {wishlist.length === 0 ? (
                         <motion.div
@@ -74,7 +74,7 @@ export default function WishlistPage() {
                             </Link>
                         </motion.div>
                     ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
                             {wishlist.map((product, i) => {
                                 const displayName = language === 'en' && product.nameEn ? product.nameEn : product.name;
                                 const images = product.images?.length ? product.images : [product.image];

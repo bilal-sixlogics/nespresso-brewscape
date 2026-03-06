@@ -58,7 +58,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.55, delay: index * 0.12 }}
+            transition={{ duration: 0.55, delay: Math.min(index, 4) * 0.08 }}
             onClick={() => onClick(product)}
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}

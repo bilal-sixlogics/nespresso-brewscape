@@ -25,7 +25,7 @@ function PanelImageCarousel({ product }: { product: { image: string; images?: st
     }, [images.length]);
 
     return (
-        <div className="relative h-64 sm:h-72 bg-[#60A17B] flex items-center justify-center overflow-hidden mx-6 mt-6 rounded-[32px] shadow-sm border border-white/30 group">
+        <div className="relative h-56 sm:h-64 md:h-72 bg-[#60A17B] flex items-center justify-center overflow-hidden mx-4 sm:mx-6 mt-4 sm:mt-6 rounded-[24px] sm:rounded-[32px] shadow-sm border border-white/30 group">
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
             {hasDiscount && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white text-[9px] font-black rounded-full px-2.5 py-1 z-20 shadow-lg">-{discountPct}%</div>
@@ -196,7 +196,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                         className="fixed top-0 right-0 h-full w-full sm:w-[500px] lg:w-[600px] bg-[#FAF9F6] z-[110] shadow-2xl overflow-y-auto overflow-x-hidden border-l border-white/20 flex flex-col"
                     >
                         {/* ── Sticky Header ──────────────────────────── */}
-                        <div className="sticky top-0 bg-[#FAF9F6]/90 backdrop-blur-xl border-b border-gray-100 z-20 px-6 py-4 flex justify-between items-center flex-shrink-0">
+                        <div className="sticky top-0 bg-[#FAF9F6]/90 backdrop-blur-xl border-b border-gray-100 z-20 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center flex-shrink-0">
                             <button
                                 onClick={onClose}
                                 className="flex items-center gap-2 text-sb-black opacity-60 hover:opacity-100 transition-opacity group"
@@ -228,11 +228,11 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                             {/* Hero Image - multi-image carousel */}
                             <PanelImageCarousel product={product} />
 
-                            <div className="px-6 py-6 space-y-5">
+                            <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
                                 {/* ── Title & Price ── */}
                                 <div className="flex justify-between items-start gap-4">
                                     <div className="flex-1">
-                                        <h2 className="font-display text-3xl uppercase leading-[0.9] text-sb-black">
+                                        <h2 className="font-display text-2xl sm:text-3xl uppercase leading-[0.9] text-sb-black">
                                             {displayName}
                                             {displayPart2 && (
                                                 <span className="text-gray-300 block text-xl mt-1">{displayPart2}</span>
@@ -240,7 +240,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                         </h2>
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-display text-4xl text-sb-green leading-none">€{unitPrice.toFixed(2)}</div>
+                                        <div className="font-display text-3xl sm:text-4xl text-sb-green leading-none">€{unitPrice.toFixed(2)}</div>
                                         {hasDiscount && (
                                             <span className="text-sm text-gray-300 line-through">€{originalUnitPrice!.toFixed(2)}</span>
                                         )}
@@ -361,7 +361,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                         </div>
 
                         {/* ── Sticky Footer: Add to Cart ──────────────── */}
-                        <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 z-20 flex gap-3 items-center flex-shrink-0">
+                        <div className="sticky bottom-0 bg-white border-t border-gray-100 px-4 sm:px-6 py-3 sm:py-4 z-20 flex gap-2 sm:gap-3 items-center flex-shrink-0">
 
                             {/* Quantity */}
                             <div className="flex items-center border-2 border-gray-100 rounded-full p-1.5 bg-gray-50 flex-shrink-0">
