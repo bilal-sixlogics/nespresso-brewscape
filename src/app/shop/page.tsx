@@ -131,17 +131,10 @@ export default function ShopPage() {
                             </div>
                         )}
 
-                        {/* Category tabs */}
-                        <div
-                            ref={scrollRef}
-                            onMouseDown={onMouseDown}
-                            onMouseUp={onMouseUp}
-                            onMouseLeave={onMouseUp}
-                            onMouseMove={onMouseMove}
-                            className="flex gap-3 overflow-x-auto whitespace-nowrap no-scrollbar pb-8 mb-12 border-b border-gray-100 items-center w-full cursor-grab active:cursor-grabbing"
-                        >
-                            {/* Filter and Sort Group */}
-                            <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* Controls & Category tabs */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-12 border-b border-gray-100 pb-6">
+                            {/* Filter and Sort Group - NO overflow-x-auto to ensure dropdown is visible */}
+                            <div className="flex items-center gap-2 flex-shrink-0 z-50">
                                 {/* Filter button */}
                                 <button
                                     onClick={() => setFilterOpen(true)}
@@ -199,21 +192,30 @@ export default function ShopPage() {
                             </div>
 
                             {/* Divider */}
-                            <div className="w-px h-6 bg-gray-200 flex-shrink-0 mx-2" />
+                            <div className="hidden md:block w-px h-6 bg-gray-200 flex-shrink-0 mx-2" />
 
-                            {/* Category pills */}
-                            {[
-                                { id: 'all', label: t('allProducts') },
-                                ...categoriesList.map(cat => ({ id: cat, label: cat }))
-                            ].map(({ id, label }) => (
-                                <button
-                                    key={id}
-                                    onClick={() => setSelectedCategory(id)}
-                                    className={`flex-shrink-0 px-8 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${selectedCategory === id ? 'bg-sb-green text-white shadow-xl shadow-sb-green/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-sb-black border border-gray-100 hover:border-gray-200'}`}
-                                >
-                                    {label}
-                                </button>
-                            ))}
+                            {/* Category pills - Scrollable */}
+                            <div
+                                ref={scrollRef}
+                                onMouseDown={onMouseDown}
+                                onMouseUp={onMouseUp}
+                                onMouseLeave={onMouseUp}
+                                onMouseMove={onMouseMove}
+                                className="flex gap-3 overflow-x-auto whitespace-nowrap no-scrollbar items-center w-full cursor-grab active:cursor-grabbing pb-2 md:pb-0"
+                            >
+                                {[
+                                    { id: 'all', label: t('allProducts') },
+                                    ...categoriesList.map(cat => ({ id: cat, label: cat }))
+                                ].map(({ id, label }) => (
+                                    <button
+                                        key={id}
+                                        onClick={() => setSelectedCategory(id)}
+                                        className={`flex-shrink-0 px-8 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${selectedCategory === id ? 'bg-sb-green text-white shadow-xl shadow-sb-green/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-sb-black border border-gray-100 hover:border-gray-200'}`}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Results header */}
