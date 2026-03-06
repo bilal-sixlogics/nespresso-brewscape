@@ -134,103 +134,105 @@ export default function SweetsPage() {
                 <div className="max-w-[1400px] mx-auto">
 
                     {/* Controls bar */}
-                    <div
-                        ref={scrollRef}
-                        onMouseDown={onMouseDown}
-                        onMouseUp={onMouseUp}
-                        onMouseLeave={onMouseUp}
-                        onMouseMove={onMouseMove}
-                        className="flex gap-3 overflow-x-auto no-scrollbar pb-8 mb-8 border-b border-amber-100 items-center cursor-grab active:cursor-grabbing"
-                    >
-                        {/* Filter button */}
-                        <button
-                            onClick={() => setFilterOpen(true)}
-                            className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sb-black text-white hover:bg-gray-800 transition-colors relative"
-                        >
-                            <SlidersHorizontal size={12} />
-                            <span className="hidden sm:inline">{tx('Filtres', 'Filters')}</span>
-                            {activeFilterCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 text-white text-[8px] font-black rounded-full flex items-center justify-center">
-                                    {activeFilterCount}
-                                </span>
-                            )}
-                        </button>
-
-                        {/* Sort dropdown */}
-                        <div className="relative flex-shrink-0">
+                    <div className="flex flex-col gap-3 mb-8 border-b border-amber-100 pb-6">
+                        {/* Row 1: Filter + Sort + Reset (no overflow so dropdown is visible) */}
+                        <div className="flex items-center gap-2 flex-shrink-0 z-50">
+                            {/* Filter button */}
                             <button
-                                onClick={() => setSortOpen(!sortOpen)}
-                                className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-300 transition-colors"
+                                onClick={() => setFilterOpen(true)}
+                                className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sb-black text-white hover:bg-gray-800 transition-colors relative"
                             >
-                                {sortBy === 'relevance' && tx('Pertinence', 'Relevance')}
-                                {sortBy === 'price_asc' && tx('Prix: Croissant', 'Price: Low to High')}
-                                {sortBy === 'price_desc' && tx('Prix: Décroissant', 'Price: High to Low')}
-                                {sortBy === 'newest' && tx('Nouveautés', 'Newest')}
-                                {sortBy === 'popularity' && tx('Popularité', 'Popularity')}
-                                <ChevronDown size={12} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+                                <SlidersHorizontal size={12} />
+                                <span className="hidden sm:inline">{tx('Filtres', 'Filters')}</span>
+                                {activeFilterCount > 0 && (
+                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 text-white text-[8px] font-black rounded-full flex items-center justify-center">
+                                        {activeFilterCount}
+                                    </span>
+                                )}
                             </button>
 
+                            {/* Sort dropdown */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setSortOpen(!sortOpen)}
+                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-300 transition-colors"
+                                >
+                                    {sortBy === 'relevance' && tx('Pertinence', 'Relevance')}
+                                    {sortBy === 'price_asc' && tx('Prix: Croissant', 'Price: Low to High')}
+                                    {sortBy === 'price_desc' && tx('Prix: Décroissant', 'Price: High to Low')}
+                                    {sortBy === 'newest' && tx('Nouveautés', 'Newest')}
+                                    {sortBy === 'popularity' && tx('Popularité', 'Popularity')}
+                                    <ChevronDown size={12} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                <AnimatePresence>
+                                    {sortOpen && (
+                                        <>
+                                            <div className="fixed inset-0 z-[80]" onClick={() => setSortOpen(false)} />
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                                                className="absolute top-full left-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-amber-100 z-[90] overflow-hidden py-2"
+                                            >
+                                                {[
+                                                    { id: 'relevance', lbl: tx('Pertinence', 'Relevance') },
+                                                    { id: 'price_asc', lbl: tx('Prix: Croissant', 'Price: Low to High') },
+                                                    { id: 'price_desc', lbl: tx('Prix: Décroissant', 'Price: High to Low') },
+                                                    { id: 'newest', lbl: tx('Nouveautés', 'Newest') },
+                                                    { id: 'popularity', lbl: tx('Popularité', 'Popularity') },
+                                                ].map(opt => (
+                                                    <button
+                                                        key={opt.id}
+                                                        onClick={() => { setSortBy(opt.id as SortOption); setSortOpen(false); }}
+                                                        className={`block w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${sortBy === opt.id ? 'bg-amber-50 text-amber-600' : 'text-gray-500 hover:bg-amber-50 hover:text-sb-black'}`}
+                                                    >
+                                                        {opt.lbl}
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Reset button */}
                             <AnimatePresence>
-                                {sortOpen && (
-                                    <>
-                                        <div className="fixed inset-0 z-[80]" onClick={() => setSortOpen(false)} />
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                                            className="absolute top-full left-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-amber-100 z-[90] overflow-hidden py-2"
-                                        >
-                                            {[
-                                                { id: 'relevance', lbl: tx('Pertinence', 'Relevance') },
-                                                { id: 'price_asc', lbl: tx('Prix: Croissant', 'Price: Low to High') },
-                                                { id: 'price_desc', lbl: tx('Prix: Décroissant', 'Price: High to Low') },
-                                                { id: 'newest', lbl: tx('Nouveautés', 'Newest') },
-                                                { id: 'popularity', lbl: tx('Popularité', 'Popularity') },
-                                            ].map(opt => (
-                                                <button
-                                                    key={opt.id}
-                                                    onClick={() => { setSortBy(opt.id as SortOption); setSortOpen(false); }}
-                                                    className={`block w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${sortBy === opt.id ? 'bg-amber-50 text-amber-600' : 'text-gray-500 hover:bg-amber-50 hover:text-sb-black'}`}
-                                                >
-                                                    {opt.lbl}
-                                                </button>
-                                            ))}
-                                        </motion.div>
-                                    </>
+                                {hasActiveFilters && (
+                                    <motion.button
+                                        initial={{ opacity: 0, scale: 0.85 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.85 }}
+                                        onClick={resetAll}
+                                        className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors"
+                                    >
+                                        <RotateCcw size={11} />
+                                        {tx('Réinitialiser', 'Reset')}
+                                    </motion.button>
                                 )}
                             </AnimatePresence>
                         </div>
 
-                        {/* Reset button */}
-                        <AnimatePresence>
-                            {hasActiveFilters && (
-                                <motion.button
-                                    initial={{ opacity: 0, scale: 0.85 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.85 }}
-                                    onClick={resetAll}
-                                    className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors"
+                        {/* Row 2: Scrollable tag pills */}
+                        <div
+                            ref={scrollRef}
+                            onMouseDown={onMouseDown}
+                            onMouseUp={onMouseUp}
+                            onMouseLeave={onMouseUp}
+                            onMouseMove={onMouseMove}
+                            className="flex gap-3 overflow-x-auto no-scrollbar items-center cursor-grab active:cursor-grabbing pb-1"
+                        >
+                            {SWEET_TAGS.map(tag => (
+                                <button
+                                    key={tag.id}
+                                    onClick={() => setActiveTag(tag.id)}
+                                    className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${activeTag === tag.id
+                                        ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
+                                        : 'bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-600/30 hover:text-sb-black'
+                                        }`}
                                 >
-                                    <RotateCcw size={11} />
-                                    {tx('Réinitialiser', 'Reset')}
-                                </motion.button>
-                            )}
-                        </AnimatePresence>
-
-                        {/* Divider */}
-                        <div className="w-px h-6 bg-amber-100 flex-shrink-0 mx-1" />
-
-                        {/* Tag pills */}
-                        {SWEET_TAGS.map(tag => (
-                            <button
-                                key={tag.id}
-                                onClick={() => setActiveTag(tag.id)}
-                                className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${activeTag === tag.id
-                                    ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
-                                    : 'bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-600/30 hover:text-sb-black'
-                                    }`}
-                            >
-                                {language === 'fr' ? tag.label : tag.labelEn}
-                            </button>
-                        ))}
+                                    {language === 'fr' ? tag.label : tag.labelEn}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Results header */}
