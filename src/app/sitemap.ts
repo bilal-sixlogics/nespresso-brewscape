@@ -2,6 +2,8 @@ import { MetadataRoute } from 'next';
 import { enrichedProducts } from '@/lib/productsData';
 import { AppConfig } from '@/lib/config';
 
+export const dynamic = 'force-static';
+
 const BASE_URL = `https://${AppConfig.brand.domain}`;
 
 export default function sitemap(): MetadataRoute.Sitemap {
