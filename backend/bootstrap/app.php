@@ -7,12 +7,23 @@ use Illuminate\Foundation\Configuration\Middleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Sanctum stateful API (enables cookie-based auth for SPA)
+        $middleware->statefulApi();
+
+        // CORS — must run before routing resolves the request
+        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+
+        // Locale detection from Accept-Language / user profile / ?lang=
         $middleware->appendToGroup('api', \App\Http\Middleware\SetLocaleFromRequest::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\SetLocaleFromRequest::class);
+
+        // Rate limiting: 60 req/min per IP on API group
+        $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Return JSON for API routes with localized messages

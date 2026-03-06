@@ -47,5 +47,11 @@ class DatabaseSeeder extends Seeder
 
         // ── Products & Catalogue ───────────────────────────────────────────────
         $this->call(ProductSeeder::class);
+
+        // ── Mail Templates + Policy Pages ──────────────────────────────────────
+        $this->call(MailTemplateSeeder::class);
+
+        // ── Sample Promo Codes + Tax Settings ──────────────────────────────────
+        $this->call(PromoSeeder::class);
     }
 }

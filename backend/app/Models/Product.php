@@ -11,11 +11,18 @@ class Product extends Model {
         'tagline','tagline_en','description','description_en','price','original_price',
         'intensity','origin','roast_level','processing_method','weight',
         'average_rating','review_count','is_featured','is_new','in_stock','is_active',
+        // Product-level sale / discount
+        'is_on_sale','sale_discount_percent','sale_ends_at',
+        // Tax overrides
+        'tax_rate_override','is_tax_exempt',
     ];
     protected $casts = [
         'price' => 'decimal:2','original_price' => 'decimal:2',
         'average_rating' => 'decimal:2','is_featured' => 'boolean',
         'is_new' => 'boolean','in_stock' => 'boolean','is_active' => 'boolean',
+        'is_on_sale' => 'boolean','sale_discount_percent' => 'decimal:2',
+        'sale_ends_at' => 'datetime',
+        'tax_rate_override' => 'decimal:2','is_tax_exempt' => 'boolean',
     ];
     public function getActivitylogOptions(): LogOptions { return LogOptions::defaults()->logAll()->logOnlyDirty(); }
     public function category() { return $this->belongsTo(Category::class); }

@@ -124,33 +124,83 @@ class ProductResource extends Resource
                         ->collapsible(),
                 ]),
 
-                // ── Tab 3: Sale Units ──────────────────────────────────
+                // ── Tab 3: Sale Units ──────────────────────────────────────
                 Tab::make('Sale Units')->icon('heroicon-o-currency-euro')->schema([
                     Forms\Components\Repeater::make('saleUnits')
                         ->relationship()
                         ->schema([
-                            Forms\Components\Grid::make(2)->schema([
-                                Forms\Components\TextInput::make('sku_code')
-                                    ->label('SKU Code')->required()->unique('product_sale_units', 'sku_code', ignoreRecord: true),
-                                Forms\Components\TextInput::make('quantity')
-                                    ->label('Quantity')->numeric()->default(1)->required(),
+                            Forms\Components\Section::make('Basic Info')->schema([
+                                Forms\Components\Grid::make(3)->schema([
+                                    Forms\Components\TextInput::make('sku_code')
+                                        ->label('SKU Code')->required()
+                                        ->unique('product_sale_units', 'sku_code', ignoreRecord: true),
+                                    Forms\Components\TextInput::make('label')
+                                        ->label('Label (FR)')->required()->placeholder('1 kg'),
+                                    Forms\Components\TextInput::make('label_en')
+                                        ->label('Label (EN)')->placeholder('1 kg'),
+                                ]),
+                                Forms\Components\Grid::make(3)->schema([
+                                    Forms\Components\TextInput::make('price')
+                                        ->label('Price (€)')->numeric()->required()->prefix('€'),
+                                    Forms\Components\TextInput::make('original_price')
+                                        ->label('Original Price (€)')->numeric()->prefix('€')->nullable(),
+                                    Forms\Components\TextInput::make('quantity')
+                                        ->label('Quantity')->numeric()->default(1)->required(),
+                                ]),
+                                Forms\Components\Grid::make(2)->schema([
+                                    Forms\Components\Toggle::make('is_default')->label('Default Unit'),
+                                    Forms\Components\TextInput::make('sort_order')->numeric()->default(0)->label('Sort Order'),
+                                ]),
                             ]),
-                            Forms\Components\Grid::make(2)->schema([
-                                Forms\Components\TextInput::make('label')
-                                    ->label('Label (FR)')->required()->placeholder('1 kg'),
-                                Forms\Components\TextInput::make('label_en')
-                                    ->label('Label (EN)')->placeholder('1 kg'),
-                            ]),
-                            Forms\Components\Grid::make(2)->schema([
-                                Forms\Components\TextInput::make('price')
-                                    ->label('Price (€)')->numeric()->required()->prefix('€'),
-                                Forms\Components\TextInput::make('original_price')
-                                    ->label('Original Price (€)')->numeric()->prefix('€')->nullable(),
-                            ]),
-                            Forms\Components\Grid::make(2)->schema([
-                                Forms\Components\Toggle::make('is_default')->label('Default Unit'),
-                                Forms\Components\TextInput::make('sort_order')->numeric()->default(0)->label('Sort Order'),
-                            ]),
+
+                            Forms\Components\Section::make('Base Unit & Hierarchy')
+                                ->description('Define the base unit (e.g. kg) and how many base units this sale unit contains. For bundle/set packs, select a parent unit.')
+                                ->collapsed()
+                                ->schema([
+                                    Forms\Components\Grid::make(3)->schema([
+                                        Forms\Components\TextInput::make('base_unit')
+                                            ->label('Base Unit')->placeholder('kg, g, ml, pack')
+                                            ->helperText('e.g. "kg" means this unit contains X kg'),
+                                        Forms\Components\TextInput::make('base_quantity')
+                                            ->label('Base Quantity')->numeric()->placeholder('1.0')
+                                            ->helperText('How many base units (e.g. 10 for a 10kg pack)'),
+                                        Forms\Components\TextInput::make('weight_kg')
+                                            ->label('Gross Weight (kg)')->numeric()->placeholder('1.2')
+                                            ->helperText('For shipping calculation'),
+                                    ]),
+                                    Forms\Components\Grid::make(2)->schema([
+                                        Forms\Components\Select::make('parent_sale_unit_id')
+                                            ->label('Parent Sale Unit (for bundles)')
+                                            ->options(fn() => \App\Models\ProductSaleUnit::whereNull('parent_sale_unit_id')
+                                                ->get()->pluck('label', 'id'))
+                                            ->searchable()->nullable()
+                                            ->helperText('e.g. select "Pack 10kg" then set bundle count to 6 for "Set of 6 packs"'),
+                                        Forms\Components\TextInput::make('bundle_count')
+                                            ->label('Bundle Count')->numeric()->nullable()
+                                            ->helperText('How many of the parent unit are in this bundle (e.g. 6)'),
+                                    ]),
+                                ]),
+
+                            Forms\Components\Section::make('Discounts')
+                                ->description('Per-unit discount settings. Takes priority over product-level discount.')
+                                ->collapsed()
+                                ->schema([
+                                    Forms\Components\Grid::make(2)->schema([
+                                        Forms\Components\TextInput::make('discount_percent')
+                                            ->label('Discount %')->numeric()->suffix('%')->nullable()
+                                            ->helperText('e.g. 10 = 10% off this unit'),
+                                        Forms\Components\TextInput::make('discount_amount')
+                                            ->label('Fixed Discount (€)')->numeric()->prefix('€')->nullable()
+                                            ->helperText('Fixed euro amount off. Used instead of % if both set.'),
+                                    ]),
+                                    Forms\Components\Grid::make(2)->schema([
+                                        Forms\Components\Toggle::make('inherit_product_discount')
+                                            ->label('Inherit Product-Level Discount')->default(true)
+                                            ->helperText('Uncheck to exclude this unit from any product-level sale'),
+                                        Forms\Components\DateTimePicker::make('discount_expires_at')
+                                            ->label('Discount Expires At')->nullable(),
+                                    ]),
+                                ]),
                         ])
                         ->columns(1)
                         ->addActionLabel('Add Sale Unit')
@@ -249,6 +299,32 @@ class ProductResource extends Resource
                     Forms\Components\Placeholder::make('inventory_note')
                         ->label('')
                         ->content('Inventory levels are managed per sale unit. Use the Inventory section in the sidebar for full stock management and history.'),
+                ]),
+
+                // ── Tab 8: Pricing & Tax ───────────────────────────────────
+                Tab::make('Pricing & Tax')->icon('heroicon-o-calculator')->schema([
+                    Forms\Components\Section::make('Product-Level Sale')->schema([
+                        Forms\Components\Grid::make(3)->schema([
+                            Forms\Components\Toggle::make('is_on_sale')
+                                ->label('On Sale')->inline(false)
+                                ->helperText('Applies sale_discount_percent to all units unless overridden'),
+                            Forms\Components\TextInput::make('sale_discount_percent')
+                                ->label('Sale Discount %')->numeric()->suffix('%')->nullable()
+                                ->helperText('Applied to all sale units that have inherit_product_discount=true'),
+                            Forms\Components\DateTimePicker::make('sale_ends_at')
+                                ->label('Sale Ends At')->nullable(),
+                        ]),
+                    ]),
+                    Forms\Components\Section::make('Tax Override')->schema([
+                        Forms\Components\Grid::make(2)->schema([
+                            Forms\Components\TextInput::make('tax_rate_override')
+                                ->label('Tax Rate Override (%)')->numeric()->suffix('%')->nullable()
+                                ->helperText('Leave blank to use global tax rate from settings'),
+                            Forms\Components\Toggle::make('is_tax_exempt')
+                                ->label('Tax Exempt')->inline(false)
+                                ->helperText('If checked, no tax applied to this product regardless of global settings'),
+                        ]),
+                    ]),
                 ]),
 
             ])->columnSpanFull(),

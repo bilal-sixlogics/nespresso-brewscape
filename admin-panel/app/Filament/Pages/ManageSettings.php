@@ -39,6 +39,8 @@ class ManageSettings extends Page
             'color_primary', 'color_secondary', 'color_accent', 'color_text', 'color_background',
             // Checkout
             'checkout_guest_checkout', 'checkout_require_phone', 'checkout_order_prefix',
+            // Tax
+            'tax_enabled', 'tax_mode', 'tax_rate', 'tax_label', 'tax_label_en', 'tax_inclusive',
         ];
         foreach ($keys as $key) {
             $this->data[$key] = Setting::getValue($key, $this->defaults()[$key] ?? '');
@@ -58,6 +60,10 @@ class ManageSettings extends Page
             'checkout_order_prefix' => 'CAF',
             'free_shipping_threshold' => '50',
             'sitewide_discount_percent' => '0',
+            'tax_mode' => 'cart_total',
+            'tax_rate' => '0',
+            'tax_label' => 'TVA',
+            'tax_label_en' => 'VAT',
         ];
     }
 
@@ -119,6 +125,37 @@ class ManageSettings extends Page
                     Forms\Components\Toggle::make('checkout_guest_checkout')->label('Allow Guest Checkout'),
                     Forms\Components\Toggle::make('checkout_require_phone')->label('Require Phone Number'),
                     Forms\Components\TextInput::make('checkout_order_prefix')->label('Order Number Prefix'),
+                ]),
+
+                Forms\Components\Tabs\Tab::make('Tax')->icon('heroicon-o-receipt-percent')->schema([
+                    Forms\Components\Section::make('Tax Configuration')->schema([
+                        Forms\Components\Grid::make(2)->schema([
+                            Forms\Components\Toggle::make('tax_enabled')
+                                ->label('Enable Tax')
+                                ->helperText('Enable tax calculation at checkout'),
+                            Forms\Components\Toggle::make('tax_inclusive')
+                                ->label('Prices Include Tax')
+                                ->helperText('If enabled, listed prices already include tax (tax-inclusive pricing)'),
+                        ]),
+                        Forms\Components\Select::make('tax_mode')
+                            ->label('Tax Mode')
+                            ->options([
+                                'cart_total'  => 'Apply tax to entire cart total',
+                                'per_product' => 'Apply tax per product',
+                            ])
+                            ->helperText('Determines how tax is calculated at checkout'),
+                        Forms\Components\Grid::make(3)->schema([
+                            Forms\Components\TextInput::make('tax_rate')
+                                ->label('Tax Rate (%)')->numeric()->suffix('%')
+                                ->helperText('Global tax rate, e.g. 21 for 21%'),
+                            Forms\Components\TextInput::make('tax_label')
+                                ->label('Tax Label (FR)')->placeholder('TVA 21%')
+                                ->helperText('Displayed on invoices and checkout (French)'),
+                            Forms\Components\TextInput::make('tax_label_en')
+                                ->label('Tax Label (EN)')->placeholder('VAT 21%')
+                                ->helperText('Displayed on invoices and checkout (English)'),
+                        ]),
+                    ]),
                 ]),
 
             ])->columnSpanFull(),
