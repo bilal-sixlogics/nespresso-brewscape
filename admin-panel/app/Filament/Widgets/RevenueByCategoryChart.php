@@ -11,7 +11,7 @@ class RevenueByCategoryChart extends ApexChartWidget
     protected static ?string $chartId = 'revenueByCategoryChart';
     protected static ?string $heading = 'Revenue by Category';
     protected static ?int $sort = 3;
-    protected int|string|array $columnSpan = 1;
+    protected int|string|array $columnSpan = ['default' => 1, 'sm' => 1, 'lg' => 1];
 
     protected function getOptions(): array
     {

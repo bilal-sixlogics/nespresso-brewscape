@@ -10,7 +10,7 @@ class RecentOrdersWidget extends BaseWidget
 {
     protected static ?string $heading = 'Recent Orders';
     protected static ?int $sort = 4;
-    protected int|string|array $columnSpan = 2;
+    protected int|string|array $columnSpan = ['default' => 1, 'sm' => 2, 'lg' => 2];
 
     public function table(Table $table): Table
     {
