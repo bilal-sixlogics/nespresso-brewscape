@@ -1,0 +1,359 @@
+/* =====================================================
+   CAFREZZO ADMIN — ANIMATIONS & ENHANCED UI
+   ===================================================== */
+
+/* ── Keyframe Animations ─────────────────────────── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(60,122,88,0); }
+    50%       { box-shadow: 0 0 18px 4px rgba(60,122,88,0.22); }
+}
+@keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+@keyframes countUp {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
+@keyframes borderPulse {
+    0%, 100% { border-color: transparent; }
+    50%       { border-color: rgba(60,122,88,0.5); }
+}
+@keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+@keyframes floatUp {
+    0%   { transform: translateY(0px); }
+    50%  { transform: translateY(-4px); }
+    100% { transform: translateY(0px); }
+}
+
+/* ── Page entrance ───────────────────────────────── */
+.fi-main {
+    animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Sidebar ─────────────────────────────────────── */
+.fi-sidebar {
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s ease;
+}
+.fi-sidebar-nav-groups {
+    animation: fadeInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fi-sidebar-item > a,
+.fi-sidebar-item > button {
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+.fi-sidebar-item > a::before,
+.fi-sidebar-item > button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(60,122,88,0.08), transparent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.fi-sidebar-item > a:hover::before,
+.fi-sidebar-item > button:hover::before {
+    opacity: 1;
+}
+.fi-sidebar-item > a:hover,
+.fi-sidebar-item > button:hover {
+    transform: translateX(3px) !important;
+}
+.fi-sidebar-item-active > a,
+.fi-sidebar-item-active > button {
+    transform: translateX(3px) !important;
+    animation: borderPulse 2.5s ease infinite;
+}
+
+/* ── Topbar ──────────────────────────────────────── */
+.fi-topbar {
+    animation: slideInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── Stats Overview Cards ────────────────────────── */
+.fi-wi-stats-overview-stat {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.25s ease,
+                border-color 0.25s ease !important;
+    cursor: default;
+    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fi-wi-stats-overview-stat:nth-child(1) { animation-delay: 0.05s; }
+.fi-wi-stats-overview-stat:nth-child(2) { animation-delay: 0.10s; }
+.fi-wi-stats-overview-stat:nth-child(3) { animation-delay: 0.15s; }
+.fi-wi-stats-overview-stat:nth-child(4) { animation-delay: 0.20s; }
+.fi-wi-stats-overview-stat:nth-child(5) { animation-delay: 0.25s; }
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-5px) scale(1.02) !important;
+    box-shadow: 0 12px 32px -4px rgba(0,0,0,0.15), 0 0 20px rgba(60,122,88,0.15) !important;
+    border-color: rgba(60,122,88,0.4) !important;
+}
+.fi-wi-stats-overview-stat:hover .fi-wi-stats-overview-stat-value {
+    animation: countUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Widget cards ────────────────────────────────── */
+.fi-wi-chart,
+.fi-wi-table {
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: 0.3s;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.fi-wi-chart:hover,
+.fi-wi-table:hover {
+    box-shadow: 0 8px 24px -4px rgba(0,0,0,0.12) !important;
+    transform: translateY(-2px);
+}
+
+/* ── Section cards ───────────────────────────────── */
+.fi-section {
+    transition: box-shadow 0.25s ease, transform 0.2s ease !important;
+    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fi-section:hover {
+    box-shadow: 0 6px 20px -4px rgba(0,0,0,0.10) !important;
+}
+
+/* ── Table rows ──────────────────────────────────── */
+.fi-ta-row {
+    transition: background-color 0.15s ease, transform 0.15s ease !important;
+}
+.fi-ta-row:hover {
+    transform: translateX(2px);
+}
+
+/* ── Buttons ─────────────────────────────────────── */
+.fi-btn {
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    position: relative;
+    overflow: hidden;
+}
+.fi-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.12);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.fi-btn:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 6px 16px -2px rgba(0,0,0,0.18) !important;
+}
+.fi-btn:hover::after {
+    opacity: 1;
+}
+.fi-btn:active {
+    transform: translateY(0px) scale(0.98) !important;
+    box-shadow: none !important;
+    transition-duration: 0.08s !important;
+}
+
+/* Primary button glow */
+.fi-btn-color-primary:hover {
+    box-shadow: 0 6px 20px -2px rgba(60,122,88,0.45) !important;
+}
+
+/* ── Navigation groups ───────────────────────────── */
+.fi-sidebar-group-label {
+    transition: color 0.2s ease, letter-spacing 0.2s ease;
+}
+.fi-sidebar-group:hover .fi-sidebar-group-label {
+    letter-spacing: 0.06em;
+    color: rgb(var(--c-primary-500));
+}
+
+/* ── Breadcrumbs / page header ───────────────────── */
+.fi-header {
+    animation: slideInDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Badges ──────────────────────────────────────── */
+.fi-badge {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease !important;
+}
+.fi-badge:hover {
+    transform: scale(1.08) !important;
+}
+
+/* ── Table action icons ──────────────────────────── */
+.fi-ta-actions .fi-icon-btn {
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.fi-ta-actions .fi-icon-btn:hover {
+    transform: scale(1.2) rotate(-5deg) !important;
+}
+
+/* ── Notifications ───────────────────────────────── */
+.fi-no-notification {
+    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+/* ── Dropdown menus ──────────────────────────────── */
+[data-headlessui-state="open"] > .fi-dropdown-panel,
+.fi-dropdown-panel {
+    animation: fadeInUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform-origin: top center;
+}
+
+/* ── Modal ───────────────────────────────────────── */
+.fi-modal {
+    animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Forms ───────────────────────────────────────── */
+.fi-fo-field-wrp {
+    transition: transform 0.15s ease;
+}
+.fi-fo-field-wrp:focus-within {
+    transform: translateY(-1px);
+}
+.fi-input,
+.fi-select-input,
+.fi-textarea {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+.fi-input:focus,
+.fi-select-input:focus,
+.fi-textarea:focus {
+    box-shadow: 0 0 0 3px rgba(60,122,88,0.18) !important;
+}
+
+/* ── Toggle ──────────────────────────────────────── */
+.fi-toggle {
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* ── Avatar / user menu ──────────────────────────── */
+.fi-user-avatar {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease !important;
+}
+.fi-user-avatar:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 0 0 3px rgba(60,122,88,0.35) !important;
+}
+
+/* ── Brand logo ──────────────────────────────────── */
+.fi-logo {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease !important;
+}
+.fi-logo:hover {
+    transform: scale(1.04) !important;
+    opacity: 0.9 !important;
+}
+
+/* ── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(60,122,88,0.35);
+    border-radius: 99px;
+    transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(60,122,88,0.6);
+}
+
+/* ── Loading shimmer for skeleton ─────────────────── */
+.fi-ta-empty-state {
+    animation: fadeInUp 0.4s ease both;
+}
+
+/* ── ApexCharts custom ────────────────────────────── */
+.apexcharts-canvas {
+    transition: transform 0.3s ease;
+}
+.apexcharts-canvas:hover {
+    transform: scale(1.005);
+}
+
+/* ── Tabs ────────────────────────────────────────── */
+.fi-tabs-tab {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.fi-tabs-tab:hover:not([aria-selected="true"]) {
+    transform: translateY(-2px);
+    background: rgba(60,122,88,0.06) !important;
+}
+.fi-tabs-tab[aria-selected="true"] {
+    position: relative;
+}
+.fi-tabs-tab[aria-selected="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #3C7A58, transparent);
+    animation: shimmer 2s infinite;
+    background-size: 400px 100%;
+}
+
+/* ── Icon animations ─────────────────────────────── */
+.fi-wi-stats-overview-stat-description-icon {
+    animation: floatUp 3s ease-in-out infinite;
+}
+.fi-wi-stats-overview-stat:nth-child(2) .fi-wi-stats-overview-stat-description-icon {
+    animation-delay: 0.5s;
+}
+.fi-wi-stats-overview-stat:nth-child(3) .fi-wi-stats-overview-stat-description-icon {
+    animation-delay: 1s;
+}
+.fi-wi-stats-overview-stat:nth-child(4) .fi-wi-stats-overview-stat-description-icon {
+    animation-delay: 1.5s;
+}
+
+/* ── Dark mode enhancements ──────────────────────── */
+.dark .fi-sidebar {
+    background: linear-gradient(180deg, #18181b 0%, #111112 100%) !important;
+}
+.dark .fi-topbar {
+    background: rgba(24,24,27,0.85) !important;
+    border-bottom-color: rgba(255,255,255,0.06) !important;
+}
+.dark .fi-wi-stats-overview-stat:hover {
+    box-shadow: 0 12px 32px -4px rgba(0,0,0,0.4), 0 0 20px rgba(60,122,88,0.2) !important;
+}
+
+/* ── Light mode ──────────────────────────────────── */
+:root:not(.dark) .fi-sidebar {
+    background: linear-gradient(180deg, #fafafa 0%, #f4f4f5 100%) !important;
+}
+:root:not(.dark) .fi-topbar {
+    background: rgba(255,255,255,0.85) !important;
+    backdrop-filter: blur(8px);
+}
+
+/* ── Responsive tweaks ───────────────────────────── */
+@media (max-width: 768px) {
+    .fi-wi-stats-overview-stat:hover {
+        transform: translateY(-2px) scale(1.01) !important;
+    }
+}

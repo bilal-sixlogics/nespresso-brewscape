@@ -127,7 +127,7 @@ class ManageSettings extends Page
                     Forms\Components\TextInput::make('checkout_order_prefix')->label('Order Number Prefix'),
                 ]),
 
-                Forms\Components\Tabs\Tab::make('Tax')->icon('heroicon-o-receipt-percent')->schema([
+                Forms\Components\Tabs\Tab::make('Tax')->icon('heroicon-o-calculator')->schema([
                     Forms\Components\Section::make('Tax Configuration')->schema([
                         Forms\Components\Grid::make(2)->schema([
                             Forms\Components\Toggle::make('tax_enabled')

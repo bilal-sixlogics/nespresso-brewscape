@@ -49,9 +49,9 @@ class ViewProduct extends ViewRecord
                                 ->icon('heroicon-o-currency-euro')->color('success'),
                             TextEntry::make('original_price')->money('EUR')->label('Original Price')
                                 ->icon('heroicon-o-currency-euro')->color('gray'),
-                            TextEntry::make('discount_percent')
+                            TextEntry::make('sale_discount_percent')
                                 ->label('Discount')
-                                ->getStateUsing(fn($record) => $record->discount_percent ? $record->discount_percent . '%' : '—')
+                                ->getStateUsing(fn($record) => $record->sale_discount_percent ? $record->sale_discount_percent . '%' : '—')
                                 ->color('danger'),
                         ]),
                         Grid::make(4)->schema([

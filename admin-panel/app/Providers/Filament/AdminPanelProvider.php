@@ -30,25 +30,31 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->passwordReset()
             ->profile(\App\Filament\Pages\EditProfile::class)
             ->darkMode(true)
             ->brandName('Cafrezzo')
+            ->brandLogo(fn () => view('filament.brand'))
+            ->favicon(asset('favicon.ico'))
             ->colors([
                 'primary'   => Color::hex('#3C7A58'),
-                'gray'      => Color::Slate,
-                'info'      => Color::Blue,
+                'gray'      => Color::Zinc,
+                'info'      => Color::Sky,
                 'success'   => Color::Emerald,
                 'warning'   => Color::Amber,
-                'danger'    => Color::Red,
+                'danger'    => Color::Rose,
             ])
             ->navigationGroups([
-                NavigationGroup::make('Catalog')->icon('heroicon-o-shopping-bag'),
-                NavigationGroup::make('Inventory')->icon('heroicon-o-archive-box'),
-                NavigationGroup::make('Orders')->icon('heroicon-o-clipboard-document-list'),
-                NavigationGroup::make('Content')->icon('heroicon-o-document-text'),
-                NavigationGroup::make('Commerce')->icon('heroicon-o-tag'),
-                NavigationGroup::make('Analytics')->icon('heroicon-o-chart-bar'),
-                NavigationGroup::make('Settings')->icon('heroicon-o-cog-6-tooth'),
+                NavigationGroup::make('Catalog'),
+                NavigationGroup::make('Inventory'),
+                NavigationGroup::make('Orders'),
+                NavigationGroup::make('Content'),
+                NavigationGroup::make('Commerce'),
+                NavigationGroup::make('Analytics'),
+                NavigationGroup::make('Settings'),
+            ])
+            ->plugins([
+                \Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin::make(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -74,6 +80,14 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn () => Blade::render('<style>{!! \Illuminate\Support\Facades\File::get(resource_path("css/cafrezzo-admin.css")) !!}</style>')
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => Blade::render('<script>{!! \Illuminate\Support\Facades\File::get(resource_path("js/cafrezzo-admin.js")) !!}</script>')
+            )
             ->renderHook(
                 PanelsRenderHook::TOPBAR_END,
                 fn () => Blade::render('

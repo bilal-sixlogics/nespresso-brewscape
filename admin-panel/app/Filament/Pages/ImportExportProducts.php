@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ImportExportProducts extends Page
 {
-    protected static ?string $navigationIcon  = 'heroicon-o-arrow-up-down';
+    protected static ?string $navigationIcon  = 'heroicon-o-arrows-up-down';
     protected static ?string $navigationGroup = 'Catalog';
     protected static ?string $navigationLabel = 'Import / Export';
     protected static ?int    $navigationSort  = 5;
