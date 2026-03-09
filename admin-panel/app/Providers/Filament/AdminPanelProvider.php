@@ -64,7 +64,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                // AccountWidget removed — user info + logout already live in the topbar avatar menu
             ])
             ->middleware([
                 EncryptCookies::class,
