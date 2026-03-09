@@ -1,0 +1,202 @@
+{
+  "info": {
+    "name": "Cafrezzo REST API",
+    "description": "Full REST API collection for Cafrezzo coffee e-commerce platform.\n\n**Setup:**\n1. Set `baseUrl` variable to `http://localhost:8000/api/v1` (local) or `https://api.cafrezzo.com/api/v1` (production)\n2. Run `POST /auth/login` — the collection auto-saves the token to `authToken`\n3. All authenticated requests use `{{authToken}}` automatically",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",   "value": "http://localhost:8000/api/v1", "type": "string" },
+    { "key": "authToken", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Jean Dupont\",\n  \"email\": \"jean@example.com\",\n  \"password\": \"secret123\",\n  \"password_confirmation\": \"secret123\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('authToken', pm.response.json().token); }"] } }]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"jean@example.com\",\n  \"password\": \"secret123\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { pm.collectionVariables.set('authToken', pm.response.json().token); }"] } }]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}" }] },
+            "method": "POST", "url": "{{baseUrl}}/auth/logout",
+            "header": [{ "key": "Accept", "value": "application/json" }]
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/forgot-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"jean@example.com\"\n}" }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/reset-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"PASTE_TOKEN_FROM_EMAIL\",\n  \"email\": \"jean@example.com\",\n  \"password\": \"newpassword123\",\n  \"password_confirmation\": \"newpassword123\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/public/products?page=1&per_page=20", "host": ["{{baseUrl}}"], "path": ["public","products"], "query": [{"key":"page","value":"1"},{"key":"per_page","value":"20"},{"key":"category","value":"","disabled":true},{"key":"brand","value":"","disabled":true},{"key":"search","value":"","disabled":true},{"key":"sort","value":"newest","disabled":true}] },
+            "header": [{ "key": "Accept-Language", "value": "fr" }]
+          }
+        },
+        {
+          "name": "Get Product by Slug",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/public/products/cafrezzo-espresso-bio",
+            "header": [{ "key": "Accept-Language", "value": "fr" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": { "method": "GET", "url": "{{baseUrl}}/public/categories", "header": [{ "key": "Accept-Language", "value": "fr" }] }
+        }
+      ]
+    },
+    {
+      "name": "Brands",
+      "item": [
+        {
+          "name": "List Brands",
+          "request": { "method": "GET", "url": "{{baseUrl}}/public/brands" }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        { "name": "Brand Settings",    "request": { "method": "GET", "url": "{{baseUrl}}/public/settings/brand" } },
+        { "name": "Promo Settings",    "request": { "method": "GET", "url": "{{baseUrl}}/public/settings/promo" } },
+        { "name": "Checkout Settings", "request": { "method": "GET", "url": "{{baseUrl}}/public/settings/checkout" } },
+        { "name": "Tax / VAT Config",  "request": { "method": "GET", "url": "{{baseUrl}}/public/settings/tax" } }
+      ]
+    },
+    {
+      "name": "Promo Codes",
+      "item": [
+        {
+          "name": "Validate Promo Code",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/public/promo-codes/validate",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"BIENVENUE10\",\n  \"cart_total\": 89.90,\n  \"customer_email\": \"jean@example.com\",\n  \"items\": [\n    { \"product_id\": 1, \"sale_unit_id\": 2, \"quantity\": 2, \"price\": 19.90 }\n  ]\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Content",
+      "item": [
+        { "name": "List Blog Posts",         "request": { "method": "GET", "url": "{{baseUrl}}/public/blog-posts", "header": [{"key":"Accept-Language","value":"fr"}] } },
+        { "name": "Get Blog Post by Slug",   "request": { "method": "GET", "url": "{{baseUrl}}/public/blog-posts/my-post-slug", "header": [{"key":"Accept-Language","value":"fr"}] } },
+        { "name": "List Testimonials",       "request": { "method": "GET", "url": "{{baseUrl}}/public/testimonials" } },
+        { "name": "Get Privacy Policy (FR)", "request": { "method": "GET", "url": "{{baseUrl}}/public/policy/privacy_policy", "header": [{"key":"Accept-Language","value":"fr"}] } },
+        { "name": "Get Terms (EN)",          "request": { "method": "GET", "url": "{{baseUrl}}/public/policy/terms_conditions", "header": [{"key":"Accept-Language","value":"en"}] } }
+      ]
+    },
+    {
+      "name": "Orders (Auth Required)",
+      "item": [
+        {
+          "name": "List My Orders",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}" }] },
+            "method": "GET", "url": "{{baseUrl}}/orders",
+            "header": [{ "key": "Accept", "value": "application/json" }]
+          }
+        },
+        {
+          "name": "Place Order",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}" }] },
+            "method": "POST", "url": "{{baseUrl}}/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"items\": [\n    { \"sale_unit_id\": 1, \"quantity\": 2 },\n    { \"sale_unit_id\": 4, \"quantity\": 1 }\n  ],\n  \"promo_code\": \"BIENVENUE10\",\n  \"delivery_type_id\": 1,\n  \"payment_method_id\": 1,\n  \"shipping_address\": {\n    \"name\": \"Jean Dupont\",\n    \"address1\": \"12 Rue de la Paix\",\n    \"city\": \"Paris\",\n    \"postcode\": \"75001\",\n    \"country\": \"FR\",\n    \"phone\": \"+33600000000\"\n  },\n  \"notes\": \"Please leave at door\"\n}" }
+          }
+        },
+        {
+          "name": "Get Order Detail",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}" }] },
+            "method": "GET", "url": "{{baseUrl}}/orders/1",
+            "header": [{ "key": "Accept", "value": "application/json" }]
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}" }] },
+            "method": "POST", "url": "{{baseUrl}}/orders/1/cancel",
+            "header": [{ "key": "Accept", "value": "application/json" }]
+          }
+        },
+        {
+          "name": "Download Receipt PDF",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}" }] },
+            "method": "GET", "url": "{{baseUrl}}/orders/1/receipt"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account (Auth Required)",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}" }] },
+            "method": "GET", "url": "{{baseUrl}}/account/profile",
+            "header": [{ "key": "Accept", "value": "application/json" }]
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{authToken}}" }] },
+            "method": "PUT", "url": "{{baseUrl}}/account/profile",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Jean Dupont\",\n  \"phone\": \"+33600000000\",\n  \"locale\": \"fr\"\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}

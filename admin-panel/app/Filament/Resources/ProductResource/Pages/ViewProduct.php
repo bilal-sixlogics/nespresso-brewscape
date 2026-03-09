@@ -98,15 +98,15 @@ class ViewProduct extends ViewRecord
             Section::make('Taste Profile')->schema([
                 Grid::make(5)->schema([
                     TextEntry::make('tasteProfile.bitterness')->label('Bitterness')
-                        ->getStateUsing(fn($r) => $r->tasteProfile?->bitterness . '/5'),
+                        ->getStateUsing(fn($record) => $record->tasteProfile?->bitterness . '/5'),
                     TextEntry::make('tasteProfile.acidity')->label('Acidity')
-                        ->getStateUsing(fn($r) => $r->tasteProfile?->acidity . '/5'),
+                        ->getStateUsing(fn($record) => $record->tasteProfile?->acidity . '/5'),
                     TextEntry::make('tasteProfile.roastiness')->label('Roastiness')
-                        ->getStateUsing(fn($r) => $r->tasteProfile?->roastiness . '/5'),
+                        ->getStateUsing(fn($record) => $record->tasteProfile?->roastiness . '/5'),
                     TextEntry::make('tasteProfile.body')->label('Body')
-                        ->getStateUsing(fn($r) => $r->tasteProfile?->body . '/5'),
+                        ->getStateUsing(fn($record) => $record->tasteProfile?->body . '/5'),
                     TextEntry::make('tasteProfile.sweetness')->label('Sweetness')
-                        ->getStateUsing(fn($r) => $r->tasteProfile?->sweetness . '/5'),
+                        ->getStateUsing(fn($record) => $record->tasteProfile?->sweetness . '/5'),
                 ]),
             ]),
             // Activity / Audit history

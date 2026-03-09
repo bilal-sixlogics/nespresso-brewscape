@@ -1,0 +1,516 @@
+openapi: 3.0.3
+info:
+  title: Cafrezzo REST API
+  version: "1.0.0"
+  description: |
+    Backend REST API for **Cafrezzo** — premium coffee e-commerce platform.
+
+    ### Base URL
+    - Local: `http://localhost:8000/api/v1`
+    - Production: `https://api.cafrezzo.com/api/v1`
+
+    ### Authentication
+    Most endpoints are public. Authenticated endpoints require a **Bearer token**
+    obtained from `POST /auth/login`. Pass it as: `Authorization: Bearer {token}`
+
+    ### Localization
+    Add `Accept-Language: fr|en|de|ru|nl` header for localized responses.
+  contact:
+    email: dev@cafrezzo.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: https://api.cafrezzo.com/api/v1
+    description: Production
+
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: Token from POST /auth/login
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:          { type: integer }
+        slug:        { type: string }
+        name:        { type: string }
+        name_en:     { type: string }
+        tagline:     { type: string }
+        description: { type: string }
+        price:       { type: number, format: float }
+        original_price: { type: number, format: float, nullable: true }
+        intensity:   { type: integer, nullable: true }
+        origin:      { type: string }
+        roast_level: { type: string, enum: [light, medium, dark, espresso] }
+        is_featured: { type: boolean }
+        is_new:      { type: boolean }
+        in_stock:    { type: boolean }
+        is_on_sale:  { type: boolean }
+        sale_discount_percent: { type: number, nullable: true }
+        average_rating: { type: number }
+        review_count:   { type: integer }
+        category:    { $ref: '#/components/schemas/Category' }
+        brand:       { $ref: '#/components/schemas/Brand' }
+        images:      { type: array, items: { $ref: '#/components/schemas/ProductImage' } }
+        saleUnits:   { type: array, items: { $ref: '#/components/schemas/SaleUnit' } }
+
+    SaleUnit:
+      type: object
+      properties:
+        id:           { type: integer }
+        sku_code:     { type: string }
+        label:        { type: string }
+        label_en:     { type: string }
+        price:        { type: number }
+        original_price: { type: number, nullable: true }
+        quantity:     { type: integer }
+        is_default:   { type: boolean }
+        discount_percent: { type: number, nullable: true }
+        discount_amount:  { type: number, nullable: true }
+
+    ProductImage:
+      type: object
+      properties:
+        path:       { type: string }
+        is_primary: { type: boolean }
+        sort_order: { type: integer }
+
+    Category:
+      type: object
+      properties:
+        id:   { type: integer }
+        name: { type: string }
+        slug: { type: string }
+
+    Brand:
+      type: object
+      properties:
+        id:     { type: integer }
+        name:   { type: string }
+        slug:   { type: string }
+        logo:   { type: string, nullable: true }
+
+    Order:
+      type: object
+      properties:
+        id:             { type: integer }
+        order_number:   { type: string }
+        status:         { type: string, enum: [pending, processing, shipped, delivered, cancelled] }
+        subtotal:       { type: number }
+        discount:       { type: number }
+        shipping_cost:  { type: number }
+        tax_amount:     { type: number }
+        total:          { type: number }
+        promo_code:     { type: string, nullable: true }
+        items:          { type: array, items: { $ref: '#/components/schemas/OrderItem' } }
+        created_at:     { type: string, format: date-time }
+
+    OrderItem:
+      type: object
+      properties:
+        product_id:   { type: integer }
+        sale_unit_id: { type: integer }
+        quantity:     { type: integer }
+        unit_price:   { type: number }
+        subtotal:     { type: number }
+
+    User:
+      type: object
+      properties:
+        id:    { type: integer }
+        name:  { type: string }
+        email: { type: string, format: email }
+
+    AuthResponse:
+      type: object
+      properties:
+        token:  { type: string, description: "Sanctum bearer token" }
+        user:   { $ref: '#/components/schemas/User' }
+
+    PromoValidateResponse:
+      type: object
+      properties:
+        valid:    { type: boolean }
+        discount: { type: number }
+        message:  { type: string }
+        code:     { type: string }
+
+    TaxSettings:
+      type: object
+      properties:
+        enabled:   { type: boolean }
+        mode:      { type: string, enum: [cart_total, per_product] }
+        rate:      { type: number }
+        label:     { type: string }
+        inclusive: { type: boolean }
+
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+        errors:  { type: object }
+
+tags:
+  - name: Auth
+    description: Register, login, logout, password reset
+  - name: Products
+    description: Product catalogue and sale units
+  - name: Categories
+    description: Product categories
+  - name: Brands
+    description: Coffee brands
+  - name: Orders
+    description: Place orders, view history, download receipt PDF
+  - name: Promos
+    description: Validate promo / discount codes
+  - name: Settings
+    description: App settings, tax config, brand config
+  - name: Content
+    description: Blog, testimonials, policy pages
+
+paths:
+  # ── CATALOG ─────────────────────────────────────────────────
+  /public/products:
+    get:
+      tags: [Products]
+      summary: List all active products
+      parameters:
+        - { name: category, in: query, schema: { type: string }, description: "Category slug filter" }
+        - { name: brand,    in: query, schema: { type: string }, description: "Brand slug filter" }
+        - { name: search,   in: query, schema: { type: string } }
+        - { name: sort,     in: query, schema: { type: string, enum: [price_asc, price_desc, newest, rating] } }
+        - { name: page,     in: query, schema: { type: integer, default: 1 } }
+        - { name: per_page, in: query, schema: { type: integer, default: 20 } }
+        - { name: Accept-Language, in: header, schema: { type: string, default: fr } }
+      responses:
+        "200":
+          description: Paginated product list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:  { type: array, items: { $ref: '#/components/schemas/Product' } }
+                  total: { type: integer }
+                  page:  { type: integer }
+
+  /public/products/{slug}:
+    get:
+      tags: [Products]
+      summary: Get product detail by slug
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+        - { name: Accept-Language, in: header, schema: { type: string, default: fr } }
+      responses:
+        "200": { description: Product detail, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
+        "404": { description: Not found }
+
+  /public/categories:
+    get:
+      tags: [Categories]
+      summary: List all categories
+      responses:
+        "200": { description: Category list, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Category' } } } } }
+
+  /public/brands:
+    get:
+      tags: [Brands]
+      summary: List all brands
+      responses:
+        "200": { description: Brand list, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Brand' } } } } }
+
+  # ── SETTINGS ────────────────────────────────────────────────
+  /public/settings/tax:
+    get:
+      tags: [Settings]
+      summary: Get tax/VAT configuration
+      responses:
+        "200": { description: Tax settings, content: { application/json: { schema: { $ref: '#/components/schemas/TaxSettings' } } } }
+
+  /public/settings/brand:
+    get:
+      tags: [Settings]
+      summary: Get brand settings (name, logo, tagline)
+      responses:
+        "200": { description: Brand settings }
+
+  /public/settings/promo:
+    get:
+      tags: [Settings]
+      summary: Get sitewide promo banner settings
+      responses:
+        "200": { description: Promo settings }
+
+  /public/settings/checkout:
+    get:
+      tags: [Settings]
+      summary: Get checkout settings (shipping, free shipping threshold)
+      responses:
+        "200": { description: Checkout settings }
+
+  /public/policy/{key}:
+    get:
+      tags: [Content]
+      summary: Get policy page content (privacy, terms, returns)
+      parameters:
+        - { name: key, in: path, required: true, schema: { type: string, enum: [privacy_policy, terms_conditions, return_policy] } }
+        - { name: Accept-Language, in: header, schema: { type: string, default: fr } }
+      responses:
+        "200": { description: Policy page }
+        "404": { description: Not found }
+
+  # ── PROMO ────────────────────────────────────────────────────
+  /public/promo-codes/validate:
+    post:
+      tags: [Promos]
+      summary: Validate a promo code against a cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, cart_total]
+              properties:
+                code:          { type: string, example: "BIENVENUE10" }
+                cart_total:    { type: number, example: 89.90 }
+                customer_email: { type: string, format: email }
+                items:
+                  type: array
+                  description: Array of cart items for product-specific promo targeting
+                  items:
+                    type: object
+                    properties:
+                      product_id:   { type: integer }
+                      sale_unit_id: { type: integer }
+                      quantity:     { type: integer }
+                      price:        { type: number }
+      responses:
+        "200": { description: Promo validation result, content: { application/json: { schema: { $ref: '#/components/schemas/PromoValidateResponse' } } } }
+        "422": { description: Invalid or inapplicable code }
+
+  # ── CONTENT ──────────────────────────────────────────────────
+  /public/blog-posts:
+    get:
+      tags: [Content]
+      summary: List published blog posts
+      parameters:
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: Accept-Language, in: header, schema: { type: string } }
+      responses:
+        "200": { description: Blog post list }
+
+  /public/blog-posts/{slug}:
+    get:
+      tags: [Content]
+      summary: Get blog post detail
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Blog post detail }
+
+  /public/testimonials:
+    get:
+      tags: [Content]
+      summary: List published testimonials
+      responses:
+        "200": { description: Testimonial list }
+
+  # ── AUTH ─────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new customer account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, password_confirmation]
+              properties:
+                name:                  { type: string, example: "Jean Dupont" }
+                email:                 { type: string, format: email, example: "jean@example.com" }
+                password:              { type: string, format: password, minLength: 8 }
+                password_confirmation: { type: string }
+      responses:
+        "201": { description: Account created, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        "422": { description: Validation error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and get bearer token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string, format: email, example: "jean@example.com" }
+                password: { type: string, example: "secret123" }
+      responses:
+        "200": { description: Login success, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        "401": { description: Invalid credentials }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke current token
+      security: [{ sanctum: [] }]
+      responses:
+        "200": { description: Logged out }
+        "401": { description: Unauthenticated }
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Send password reset link by email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200": { description: Reset link sent }
+        "422": { description: Email not found }
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password using token from email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, email, password, password_confirmation]
+              properties:
+                token:                 { type: string }
+                email:                 { type: string, format: email }
+                password:              { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+      responses:
+        "200": { description: Password reset success }
+        "422": { description: Invalid token }
+
+  # ── ORDERS (authenticated) ────────────────────────────────────
+  /orders:
+    get:
+      tags: [Orders]
+      summary: List authenticated customer's orders
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: status, in: query, schema: { type: string, enum: [pending, processing, shipped, delivered, cancelled] } }
+      responses:
+        "200": { description: Order list, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Order' } } } } }
+        "401": { description: Unauthenticated }
+    post:
+      tags: [Orders]
+      summary: Place a new order
+      security: [{ sanctum: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items, shipping_address, delivery_type_id]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [sale_unit_id, quantity]
+                    properties:
+                      sale_unit_id: { type: integer }
+                      quantity:     { type: integer }
+                promo_code:         { type: string, nullable: true }
+                delivery_type_id:   { type: integer }
+                payment_method_id:  { type: integer }
+                shipping_address:
+                  type: object
+                  properties:
+                    name:     { type: string }
+                    address1: { type: string }
+                    city:     { type: string }
+                    postcode: { type: string }
+                    country:  { type: string }
+                    phone:    { type: string }
+                notes: { type: string }
+      responses:
+        "201": { description: Order created, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        "422": { description: Validation error or out of stock }
+
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get single order detail
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Order detail, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        "404": { description: Not found }
+
+  /orders/{id}/cancel:
+    post:
+      tags: [Orders]
+      summary: Cancel a pending order
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Order cancelled }
+        "422": { description: Cannot cancel (already shipped etc.) }
+
+  /orders/{id}/receipt:
+    get:
+      tags: [Orders]
+      summary: Download PDF receipt for an order
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: PDF file
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+
+  # ── ACCOUNT ─────────────────────────────────────────────────
+  /account/profile:
+    get:
+      tags: [Auth]
+      summary: Get authenticated user profile
+      security: [{ sanctum: [] }]
+      responses:
+        "200": { description: User profile }
+    put:
+      tags: [Auth]
+      summary: Update user profile (name, locale, phone)
+      security: [{ sanctum: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:   { type: string }
+                phone:  { type: string }
+                locale: { type: string, enum: [fr, en, de, ru, nl] }
+      responses:
+        "200": { description: Profile updated }
