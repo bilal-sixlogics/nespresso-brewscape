@@ -2,15 +2,27 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Api\Admin\AdminLoginController;
+use App\Http\Controllers\Api\Admin\AdminDashboardController;
+use App\Http\Controllers\Api\Admin\AdminProductController;
+use App\Http\Controllers\Api\Admin\AdminOrderController;
+use App\Http\Controllers\Api\Admin\AdminCategoryController;
+use App\Http\Controllers\Api\Admin\AdminBrandController;
+use App\Http\Controllers\Api\Admin\AdminTagController;
+use App\Http\Controllers\Api\Admin\AdminInventoryController;
+use App\Http\Controllers\Api\Admin\AdminBlogPostController;
+use App\Http\Controllers\Api\Admin\AdminUserController;
+use App\Http\Controllers\Api\Admin\AdminTestimonialController;
+use App\Http\Controllers\Api\Admin\AdminBannerController;
+use App\Http\Controllers\Api\Admin\AdminPromoCodeController;
+use App\Http\Controllers\Api\Admin\AdminDeliveryController;
+use App\Http\Controllers\Api\Admin\AdminSettingsController;
+
 /*
 |--------------------------------------------------------------------------
 | Cafrezzo REST API Routes  (v1)
 |--------------------------------------------------------------------------
 | Base URL:  https://api.cafrezzo.com/api/v1
-|
-| STATUS: Deferred — user approval required before implementation.
-|         Stubs are grouped here to show intended structure.
-|         Controllers do not exist yet.
 |--------------------------------------------------------------------------
 */
 
@@ -66,6 +78,75 @@ Route::prefix('v1')->group(function () {
         Route::post('logout',               'App\Http\Controllers\Api\Auth\LoginController@destroy')->middleware('auth:sanctum');
         Route::post('forgot-password',      'App\Http\Controllers\Api\Auth\PasswordController@forgot');
         Route::post('reset-password',       'App\Http\Controllers\Api\Auth\PasswordController@reset');
+    });
+
+    // -----------------------------------------------------------------------
+    // ADMIN AUTH (no middleware — login endpoint is public)
+    // -----------------------------------------------------------------------
+    Route::post('admin/login',  [AdminLoginController::class, 'store']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('admin/logout', [AdminLoginController::class, 'destroy']);
+        Route::get('admin/me',      [AdminLoginController::class, 'me']);
+    });
+
+    // -----------------------------------------------------------------------
+    // ADMIN PROTECTED ENDPOINTS
+    // -----------------------------------------------------------------------
+    Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+
+        // Dashboard
+        Route::get('dashboard/stats',         [AdminDashboardController::class, 'stats']);
+        Route::get('dashboard/sales-trend',   [AdminDashboardController::class, 'salesTrend']);
+        Route::get('dashboard/recent-orders', [AdminDashboardController::class, 'recentOrders']);
+
+        // Products
+        Route::apiResource('products', AdminProductController::class);
+
+        // Orders
+        Route::apiResource('orders', AdminOrderController::class)->only(['index', 'show', 'destroy']);
+        Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
+
+        // Catalog setup
+        Route::apiResource('categories', AdminCategoryController::class);
+        Route::apiResource('brands',     AdminBrandController::class);
+        Route::apiResource('tags',       AdminTagController::class);
+
+        // Inventory
+        Route::get('inventory',                          [AdminInventoryController::class, 'index']);
+        Route::post('inventory/{inventoryStock}/adjust', [AdminInventoryController::class, 'adjust']);
+        Route::get('inventory/{inventoryStock}/transactions', [AdminInventoryController::class, 'transactions']);
+
+        // Blog Posts
+        Route::apiResource('blog-posts', AdminBlogPostController::class);
+
+        // Testimonials
+        Route::apiResource('testimonials', AdminTestimonialController::class)->except(['show']);
+
+        // Banners
+        Route::apiResource('banners', AdminBannerController::class)->except(['show']);
+
+        // Promo Codes
+        Route::apiResource('promo-codes', AdminPromoCodeController::class)->except(['show']);
+
+        // Delivery Types
+        Route::get('delivery-types',                     [AdminDeliveryController::class, 'deliveryIndex']);
+        Route::post('delivery-types',                    [AdminDeliveryController::class, 'deliveryStore']);
+        Route::put('delivery-types/{deliveryType}',      [AdminDeliveryController::class, 'deliveryUpdate']);
+        Route::delete('delivery-types/{deliveryType}',   [AdminDeliveryController::class, 'deliveryDestroy']);
+
+        // Payment Methods
+        Route::get('payment-methods',                    [AdminDeliveryController::class, 'paymentIndex']);
+        Route::post('payment-methods',                   [AdminDeliveryController::class, 'paymentStore']);
+        Route::put('payment-methods/{paymentMethod}',    [AdminDeliveryController::class, 'paymentUpdate']);
+        Route::delete('payment-methods/{paymentMethod}', [AdminDeliveryController::class, 'paymentDestroy']);
+
+        // Users
+        Route::apiResource('users', AdminUserController::class)->only(['index', 'show', 'update', 'destroy']);
+
+        // Settings
+        Route::get('settings',          [AdminSettingsController::class, 'index']);
+        Route::put('settings',          [AdminSettingsController::class, 'update']);
+        Route::get('settings/{group}',  [AdminSettingsController::class, 'group']);
     });
 
     // -----------------------------------------------------------------------

@@ -7,13 +7,11 @@ use Spatie\Activitylog\LogOptions;
 class Product extends Model {
     use LogsActivity, SoftDeletes;
     protected $fillable = [
-        'slug','category_id','brand_id','name','name_en','name_part2','name_part2_en',
+        'slug','sku','product_type','category_id','brand_id','name','name_en','name_part2','name_part2_en',
         'tagline','tagline_en','description','description_en','price','original_price',
         'intensity','origin','roast_level','processing_method','weight',
         'average_rating','review_count','is_featured','is_new','in_stock','is_active',
-        // Product-level sale / discount
         'is_on_sale','sale_discount_percent','sale_ends_at',
-        // Tax overrides
         'tax_rate_override','is_tax_exempt',
     ];
     protected $casts = [
@@ -24,6 +22,12 @@ class Product extends Model {
         'sale_ends_at' => 'datetime',
         'tax_rate_override' => 'decimal:2','is_tax_exempt' => 'boolean',
     ];
+    // Scopes by product type
+    public function scopeCoffee($q)    { return $q->where('product_type', 'coffee');    }
+    public function scopeMachine($q)   { return $q->where('product_type', 'machine');   }
+    public function scopeAccessory($q) { return $q->where('product_type', 'accessory'); }
+    public function scopeSweet($q)     { return $q->where('product_type', 'sweet');     }
+
     public function getActivitylogOptions(): LogOptions { return LogOptions::defaults()->logAll()->logOnlyDirty(); }
     public function category() { return $this->belongsTo(Category::class); }
     public function brand() { return $this->belongsTo(Brand::class); }
@@ -35,6 +39,7 @@ class Product extends Model {
     public function notes() { return $this->hasMany(ProductNote::class); }
     public function brewSizes() { return $this->hasMany(ProductBrewSize::class); }
     public function tags() { return $this->hasMany(ProductTag::class); }
+    public function globalTags() { return $this->belongsToMany(Tag::class, 'product_tag'); }
     public function allergens() { return $this->hasMany(ProductAllergen::class); }
     public function testimonials() { return $this->hasMany(Testimonial::class); }
     public function deals() { return $this->hasMany(Deal::class); }

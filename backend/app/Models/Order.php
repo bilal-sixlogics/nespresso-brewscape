@@ -23,3 +23,5 @@ class Order extends Model {
         });
     }
 }
+// Revenue period scopes
+// scopeForPeriod is intentionally not a real scope — use direct where() chains in controllers
