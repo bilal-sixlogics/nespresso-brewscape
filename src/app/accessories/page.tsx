@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react';
 import { enrichedProducts } from '@/lib/productsData';
@@ -13,12 +13,11 @@ import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
 import { useDragScroll } from '@/hooks/useDragScroll';
+import publicApi from '@/lib/publicApi';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
-const accessoryProducts = enrichedProducts.filter(p =>
-    p.category === "Accessoires"
-);
+const fallbackAccessories = enrichedProducts.filter(p => p.category === "Accessoires");
 
 const TAGS = [
     { id: 'all', label: 'Tous les Accessoires', labelEn: 'All Accessories' },
@@ -38,6 +37,12 @@ export default function AccessoriesPage() {
     const [sortBy, setSortBy] = useState<SortOption>('relevance');
     const [sortOpen, setSortOpen] = useState(false);
     const { scrollRef, onMouseDown, onMouseUp, onMouseMove } = useDragScroll();
+
+    const [apiAccessories, setApiAccessories] = useState<Product[]>([]);
+    useEffect(() => {
+        publicApi.byCategory('accessoires', 30).then(setApiAccessories).catch(() => {});
+    }, []);
+    const accessoryProducts = apiAccessories.length > 0 ? apiAccessories : (fallbackAccessories as Product[]);
 
     const filteredAccessories = useMemo(() => {
         let base = activeTag === 'all'

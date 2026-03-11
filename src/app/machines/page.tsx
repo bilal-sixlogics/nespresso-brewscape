@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, ChevronDown, RotateCcw, Settings, Zap, Droplets, Coffee } from 'lucide-react';
 import { enrichedProducts } from '@/lib/productsData';
@@ -13,6 +13,7 @@ import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
 import { useDragScroll } from '@/hooks/useDragScroll';
+import publicApi from '@/lib/publicApi';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
@@ -23,7 +24,7 @@ const MACHINE_CATEGORIES = [
     { id: 'capsule', label: 'À Capsules', labelEn: 'Capsule Machines', icon: Droplets },
 ];
 
-const machineProducts = enrichedProducts.filter(p =>
+const fallbackMachineProducts = enrichedProducts.filter(p =>
     p.category === "Machines à Café" || p.category === "Vending"
 );
 
@@ -37,6 +38,12 @@ export default function MachinesPage() {
     const [sortBy, setSortBy] = useState<SortOption>('relevance');
     const [sortOpen, setSortOpen] = useState(false);
     const { scrollRef, onMouseDown, onMouseUp, onMouseMove } = useDragScroll();
+
+    const [apiMachines, setApiMachines] = useState<Product[]>([]);
+    useEffect(() => {
+        publicApi.byCategory('machines-a-cafe', 40).then(setApiMachines).catch(() => {});
+    }, []);
+    const machineProducts = apiMachines.length > 0 ? apiMachines : (fallbackMachineProducts as Product[]);
 
     const filteredMachines = useMemo(() => {
         let base = activeCategory === 'all'

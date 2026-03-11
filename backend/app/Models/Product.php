@@ -41,6 +41,7 @@ class Product extends Model {
     public function tags() { return $this->hasMany(ProductTag::class); }
     public function globalTags() { return $this->belongsToMany(Tag::class, 'product_tag'); }
     public function allergens() { return $this->hasMany(ProductAllergen::class); }
+    public function reviews() { return $this->hasMany(ProductReview::class)->orderByDesc('review_date'); }
     public function testimonials() { return $this->hasMany(Testimonial::class); }
     public function deals() { return $this->hasMany(Deal::class); }
     public function getDiscountPercentAttribute(): ?int {

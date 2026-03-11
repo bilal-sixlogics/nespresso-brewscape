@@ -7,7 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { AppConfig } from "@/lib/config";
 import { useCart } from "@/store/CartContext";
-import { productDatabase, enrichedProducts } from "@/lib/productsData";
+import { enrichedProducts } from "@/lib/productsData"; // fallback only
+import publicApi from "@/lib/publicApi";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
 import { StackedDeckCarousel } from "@/components/ui/StackedDeckCarousel";
@@ -107,12 +108,13 @@ function BrandsMarqueeSection() {
 }
 
 
-function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: any) => void }) {
+function FeaturedMachinesSection({ onProductClick, apiMachines }: { onProductClick: (p: any) => void; apiMachines?: Product[] }) {
   const { t, language } = useLanguage();
 
-  const displayMachines = (enrichedProducts as any[])
+  const fallback = (enrichedProducts as any[])
     .filter(p => p.category?.toLowerCase().includes('machine') || p.category?.toLowerCase().includes('cafetière'))
     .slice(0, 3);
+  const displayMachines = (apiMachines && apiMachines.length > 0 ? apiMachines : fallback).slice(0, 3);
 
   return (
     <section className="py-10 sm:py-12 md:py-14 px-4 sm:px-6 lg:px-8 bg-white text-sb-black relative overflow-hidden border-t border-gray-100">
@@ -230,32 +232,48 @@ const wholeBeans = [
   },
 ];
 
-const allProductsCombined = enrichedProducts;
 // Navigation is now handled by Next.js router
 
 export default function Home() {
   const carouselRef = useRef<HTMLDivElement>(null);
   const { t, language } = useLanguage();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  // Navigation logic extracted to app router
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const { addToCart, cartCount } = useCart();
 
   const [activeBeanIndex, setActiveBeanIndex] = useState(0);
   const [openAccordion, setOpenAccordion] = useState<string>('description');
 
+  // API-loaded products
+  const [apiMachines, setApiMachines] = useState<Product[]>([]);
+  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const [apiLoading, setApiLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      publicApi.featuredMachines(),
+      publicApi.products({ per_page: 50 }),
+    ]).then(([machines, { products }]) => {
+      setApiMachines(machines);
+      setApiProducts(products);
+    }).catch(() => {}).finally(() => setApiLoading(false));
+  }, []);
+
+  const allProductsCombined = apiProducts.length > 0 ? apiProducts : (enrichedProducts as Product[]);
+
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'All') return enrichedProducts.slice(0, 50);
-    const catData = enrichedProducts.filter(p => p.category === selectedCategory);
+    const source = allProductsCombined;
+    if (selectedCategory === 'All') return source.slice(0, 50);
+    const catData = source.filter(p => p.category === selectedCategory);
     if (catData.length > 0) return catData;
 
     // Fallback for Nespresso-style filters
-    if (selectedCategory === 'Espresso') return enrichedProducts.filter(p => p.brewSizes?.includes('Espresso')).slice(0, 40);
-    if (selectedCategory === 'Blonde') return enrichedProducts.filter(p => (p.intensity || 0) < 7).slice(0, 40);
-    if (selectedCategory === 'Dark Roast') return enrichedProducts.filter(p => (p.intensity || 0) >= 8).slice(0, 40);
+    if (selectedCategory === 'Espresso') return source.filter(p => p.brewSizes?.includes('Espresso')).slice(0, 40);
+    if (selectedCategory === 'Blonde') return source.filter(p => (p.intensity || 0) < 7).slice(0, 40);
+    if (selectedCategory === 'Dark Roast') return source.filter(p => (p.intensity || 0) >= 8).slice(0, 40);
 
-    return enrichedProducts.slice(0, 40);
-  }, [selectedCategory]);
+    return source.slice(0, 40);
+  }, [selectedCategory, allProductsCombined]);
 
   // Prevent scrolling when panel is open
   useEffect(() => {
@@ -551,7 +569,7 @@ export default function Home() {
         </section>
 
         {/* ── FEATURED MACHINES ──────────────────────────────────────── */}
-        <FeaturedMachinesSection onProductClick={setSelectedProduct} />
+        <FeaturedMachinesSection onProductClick={setSelectedProduct} apiMachines={apiMachines} />
 
         {/* ── BRANDS MARQUEE ─────────────────────────────────────────── */}
         <BrandsMarqueeSection />

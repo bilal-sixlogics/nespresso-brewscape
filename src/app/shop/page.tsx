@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, Tag, X, Clock, ChevronDown, RotateCcw } from 'lucide-react';
 import { enrichedProducts, categoriesList } from '@/lib/productsData';
@@ -15,6 +15,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useRecentlyViewed } from '@/context/RecentlyViewedContext';
 import { AppConfig } from '@/lib/config';
 import { useDragScroll } from '@/hooks/useDragScroll';
+import publicApi from '@/lib/publicApi';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
@@ -32,6 +33,18 @@ export default function ShopPage() {
     const [sortOpen, setSortOpen] = useState(false);
     const [bannerDismissed, setBannerDismissed] = useState(false);
 
+    // API data
+    const [allApiProducts, setAllApiProducts] = useState<Product[]>([]);
+    const [apiLoading, setApiLoading] = useState(true);
+
+    useEffect(() => {
+        publicApi.products({ per_page: 48 }).then(({ products }) => {
+            setAllApiProducts(products);
+        }).catch(() => {}).finally(() => setApiLoading(false));
+    }, []);
+
+    const productSource = allApiProducts.length > 0 ? allApiProducts : (enrichedProducts as Product[]);
+
     const { scrollRef, onMouseDown, onMouseUp, onMouseMove } = useDragScroll();
 
     // Admin-controlled sitewide discount banner — reads from AppConfig (backend-driven in production)
@@ -40,8 +53,8 @@ export default function ShopPage() {
 
     const filteredProducts = useMemo(() => {
         let base = selectedCategory === 'all'
-            ? enrichedProducts
-            : enrichedProducts.filter(p => p.category === selectedCategory);
+            ? productSource
+            : productSource.filter(p => p.category === selectedCategory);
         let result = applyFilters(base, filters);
 
         // Sort

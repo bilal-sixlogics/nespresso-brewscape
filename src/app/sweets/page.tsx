@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react';
 import { enrichedProducts } from '@/lib/productsData';
+import publicApi from '@/lib/publicApi';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
 import { FilterDrawer, applyFilters, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
@@ -16,7 +17,7 @@ import { useDragScroll } from '@/hooks/useDragScroll';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
-const sweetProducts = enrichedProducts.filter(p =>
+const fallbackSweets = enrichedProducts.filter(p =>
     p.category === "Friandises" || p.category === "Thé & Boissons"
 );
 
@@ -38,6 +39,12 @@ export default function SweetsPage() {
     const [sortBy, setSortBy] = useState<SortOption>('relevance');
     const [sortOpen, setSortOpen] = useState(false);
     const { scrollRef, onMouseDown, onMouseUp, onMouseMove } = useDragScroll();
+
+    const [apiSweets, setApiSweets] = useState<Product[]>([]);
+    useEffect(() => {
+        publicApi.byCategory('friandises', 60).then(setApiSweets).catch(() => {});
+    }, []);
+    const sweetProducts = apiSweets.length > 0 ? apiSweets : (fallbackSweets as Product[]);
 
     const filteredSweets = useMemo(() => {
         let base = activeTag === 'all'

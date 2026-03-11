@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ChevronDown, ShoppingBag, Check, ArrowRight, Share2, Heart, ArrowLeft, X, Maximize2 } from 'lucide-react';
 import Link from 'next/link';
 import { enrichedProducts } from '@/lib/productsData';
+import publicApi from '@/lib/publicApi';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { SaleUnit, Product } from '@/types';
@@ -77,7 +78,35 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
     const { language } = useLanguage();
     const t = (fr: string, en: string) => language === 'fr' ? fr : en;
 
-    const product = enrichedProducts.find(p => p.slug === slug || p.id === slug);
+    // Try API first, fall back to local data
+    const [apiProduct, setApiProduct] = useState<Product | null>(null);
+    const [apiRelated, setApiRelated] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        publicApi.product(slug).then(p => {
+            if (p) {
+                setApiProduct(p);
+                // Load related products by category
+                if (p.category) {
+                    const catSlugMap: Record<string, string> = {
+                        'Café en Grains': 'cafe-en-grains', 'Café Moulu': 'cafe-moulu',
+                        'Capsules de Café': 'capsules-de-cafe', 'Machines à Café': 'machines-a-cafe',
+                        'Accessoires': 'accessoires', 'Friandises': 'friandises',
+                    };
+                    const catSlug = catSlugMap[p.category];
+                    if (catSlug) {
+                        publicApi.byCategory(catSlug, 8).then(ps =>
+                            setApiRelated(ps.filter(rp => String(rp.id) !== String(p.id)).slice(0, 4))
+                        ).catch(() => {});
+                    }
+                }
+            }
+        }).catch(() => {}).finally(() => setLoading(false));
+    }, [slug]);
+
+    const localProduct = enrichedProducts.find(p => p.slug === slug || String(p.id) === slug);
+    const product = (apiProduct || localProduct) as Product | undefined;
 
     const [quantity, setQuantity] = useState(1);
     const [selectedUnit, setSelectedUnit] = useState<SaleUnit | null>(null);
@@ -87,6 +116,15 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
     const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
     const [wishlist, setWishlist] = useState(false);
     const [panelProduct, setPanelProduct] = useState<Product | null>(null);
+
+    if (loading && !product) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-sb-white gap-4">
+                <div className="w-8 h-8 border-2 border-sb-green border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-400">Chargement…</p>
+            </div>
+        );
+    }
 
     if (!product) {
         return (
@@ -122,9 +160,9 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
     const displayTagline = language === 'fr' ? product.tagline : (product.taglineEn ?? product.tagline);
     const displayDesc = language === 'fr' ? product.desc : (product.descEn ?? product.desc);
 
-    const relatedProducts = enrichedProducts
-        .filter(p => p.id !== product.id && p.category === product.category)
-        .slice(0, 4);
+    const relatedProducts = apiRelated.length > 0
+        ? apiRelated
+        : (enrichedProducts as Product[]).filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
 
     const handleAddToCart = () => {
         addToCart(product, effectiveUnit, quantity);

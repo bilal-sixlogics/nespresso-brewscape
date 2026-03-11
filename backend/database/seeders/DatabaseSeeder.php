@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 class DatabaseSeeder extends Seeder
 {
@@ -22,10 +21,10 @@ class DatabaseSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'admin@cafrezzo.com'],
             [
-                'name'     => 'Cafrezzo Admin',
-                'password' => Hash::make('Cafrezzo2024!'),
-                'locale'   => 'fr',
-                'is_active'=> true,
+                'name'      => 'Cafrezzo Admin',
+                'password'  => Hash::make('Cafrezzo2024!'),
+                'locale'    => 'fr',
+                'is_active' => true,
             ]
         );
         $admin->assignRole('super_admin');
@@ -34,24 +33,30 @@ class DatabaseSeeder extends Seeder
         $manager = User::firstOrCreate(
             ['email' => 'manager@cafrezzo.com'],
             [
-                'name'     => 'Store Manager',
-                'password' => Hash::make('Manager2024!'),
-                'locale'   => 'fr',
-                'is_active'=> true,
+                'name'      => 'Store Manager',
+                'password'  => Hash::make('Manager2024!'),
+                'locale'    => 'fr',
+                'is_active' => true,
             ]
         );
         $manager->assignRole('manager');
 
-        // ── Default Site Settings ──────────────────────────────────────────────
+        // ── Default Site Settings (delivery types, payment methods, etc.) ──────
         $this->call(SettingsSeeder::class);
 
-        // ── Products & Catalogue ───────────────────────────────────────────────
-        $this->call(ProductSeeder::class);
+        // ── 15 Customers with addresses ────────────────────────────────────────
+        $this->call(CustomerSeeder::class);
+
+        // ── Full product catalogue (200+ coffee, 50 treats, 20 machines, 10 acc)
+        $this->call(BigProductSeeder::class);
 
         // ── Mail Templates + Policy Pages ──────────────────────────────────────
         $this->call(MailTemplateSeeder::class);
 
         // ── Sample Promo Codes + Tax Settings ──────────────────────────────────
         $this->call(PromoSeeder::class);
+
+        // ── 50 Orders with real user+product relationships ─────────────────────
+        $this->call(OrderSeeder::class);
     }
 }
