@@ -49,7 +49,7 @@ class TestimonialResource extends Resource {
             Tables\Columns\TextColumn::make('author_name')->searchable()->sortable(),
             Tables\Columns\TextColumn::make('role')->searchable(),
             Tables\Columns\TextColumn::make('rating')
-                ->formatStateUsing(fn($s) => str_repeat('★', $s)),
+                ->formatStateUsing(fn($state) => str_repeat('★', (int) $state)),
             Tables\Columns\TextColumn::make('product.name')->label('Product')->badge()->color('gray'),
             Tables\Columns\TextColumn::make('review_text')->limit(60)->searchable(),
             Tables\Columns\ToggleColumn::make('is_active'),

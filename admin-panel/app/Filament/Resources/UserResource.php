@@ -30,8 +30,8 @@ class UserResource extends Resource {
                         ->default('fr'),
                 ]),
                 Forms\Components\TextInput::make('password')->password()->revealable()
-                    ->dehydrateStateUsing(fn($s) => Hash::make($s))
-                    ->dehydrated(fn($s) => filled($s))
+                    ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                    ->dehydrated(fn($state) => filled($state))
                     ->nullable()
                     ->label('New Password (leave blank to keep current)'),
                 Forms\Components\Select::make('roles')

@@ -19,7 +19,7 @@ class RecentOrdersWidget extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('order_number')->copyable()->weight('bold'),
                 Tables\Columns\TextColumn::make('user.name')->default('Guest'),
-                Tables\Columns\TextColumn::make('status')->badge()->color(fn($s) => match($s) {
+                Tables\Columns\TextColumn::make('status')->badge()->color(fn($state) => match($state) {
                     'pending' => 'warning', 'processing' => 'info',
                     'shipped' => 'primary', 'delivered' => 'success', 'cancelled' => 'danger', default => 'gray',
                 }),

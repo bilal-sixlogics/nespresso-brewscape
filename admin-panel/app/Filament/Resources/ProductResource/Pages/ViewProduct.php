@@ -125,7 +125,7 @@ class ViewProduct extends ViewRecord
                             TextEntry::make('causer.name')->label('By')->default('System'),
                             TextEntry::make('description')->label('Action')->badge(),
                             TextEntry::make('properties')->label('Changes')
-                                ->getStateUsing(fn($s) => is_array($s) ? json_encode($s['attributes'] ?? []) : '—')
+                                ->getStateUsing(fn($record) => is_array($record->properties) ? json_encode($record->properties['attributes'] ?? []) : '—')
                                 ->limit(80),
                         ]),
                     ]),

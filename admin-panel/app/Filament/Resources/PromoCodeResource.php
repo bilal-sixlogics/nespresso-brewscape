@@ -98,8 +98,8 @@ class PromoCodeResource extends Resource {
     public static function table(Table $table): Table {
         return $table->columns([
             Tables\Columns\TextColumn::make('code')->searchable()->copyable()->weight('bold'),
-            Tables\Columns\TextColumn::make('type')->badge()->color(fn($s)=>$s==='percent'?'success':'warning'),
-            Tables\Columns\TextColumn::make('value')->formatStateUsing(fn($s,$r)=>$r->type==='percent'?"$s%":"€$s"),
+            Tables\Columns\TextColumn::make('type')->badge()->color(fn($state)=>$state==='percent'?'success':'warning'),
+            Tables\Columns\TextColumn::make('value')->formatStateUsing(fn($state,$record)=>$record->type==='percent'?"{$state}%":"€{$state}"),
             Tables\Columns\TextColumn::make('used_count')->label('Used'),
             Tables\Columns\TextColumn::make('usage_limit')->label('Limit')->default('∞'),
             Tables\Columns\TextColumn::make('expires_at')->dateTime()->sortable(),

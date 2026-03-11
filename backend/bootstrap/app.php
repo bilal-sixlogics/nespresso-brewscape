@@ -13,7 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Sanctum stateful API (enables cookie-based auth for SPA)
+        // Admin API uses Bearer tokens, so exempt it from CSRF verification
         $middleware->statefulApi();
+        $middleware->validateCsrfTokens(except: [
+            'api/v1/admin/*',
+            'api/v1/auth/*',
+        ]);
 
         // CORS — must run before routing resolves the request
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);

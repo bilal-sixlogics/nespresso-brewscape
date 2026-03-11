@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // ── Super Admin User ───────────────────────────────────────────────────
-        $admin = User::firstOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@cafrezzo.com'],
             [
                 'name'      => 'Cafrezzo Admin',
@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
         $admin->assignRole('super_admin');
 
         // ── Manager User ───────────────────────────────────────────────────────
-        $manager = User::firstOrCreate(
+        $manager = User::updateOrCreate(
             ['email' => 'manager@cafrezzo.com'],
             [
                 'name'      => 'Store Manager',

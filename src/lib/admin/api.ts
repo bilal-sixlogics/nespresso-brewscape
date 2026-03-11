@@ -3,7 +3,7 @@
  * All methods return typed data or throw an Error with message.
  */
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8001/api';
+const BASE = process.env.NEXT_PUBLIC_ADMIN_API_URL ?? 'http://localhost:8001/api';
 
 let _locale = 'fr';
 export function setApiLocale(locale: string) { _locale = locale; }

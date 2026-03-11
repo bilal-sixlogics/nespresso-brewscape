@@ -22,7 +22,7 @@ class BlogPostResource extends Resource {
                 Forms\Components\Group::make()->schema([
                     Forms\Components\Section::make('Content (FR)')->schema([
                         Forms\Components\TextInput::make('title')->required()
-                            ->live(onBlur: true)->afterStateUpdated(fn($s, $set) => $set('slug', Str::slug($s))),
+                            ->live(onBlur: true)->afterStateUpdated(fn($state, $set) => $set('slug', Str::slug($state))),
                         Forms\Components\Textarea::make('excerpt')->rows(3),
                         Forms\Components\RichEditor::make('body')->toolbarButtons([
                             'bold','italic','underline','strike','h2','h3','bulletList',

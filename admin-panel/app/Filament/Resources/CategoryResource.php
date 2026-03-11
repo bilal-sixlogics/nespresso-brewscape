@@ -20,7 +20,7 @@ class CategoryResource extends Resource {
             Forms\Components\Section::make()->schema([
                 Forms\Components\Grid::make(2)->schema([
                     Forms\Components\TextInput::make('name')->required()->maxLength(100)
-                        ->live(onBlur: true)->afterStateUpdated(fn($s, $set) => $set('slug', Str::slug($s))),
+                        ->live(onBlur: true)->afterStateUpdated(fn($state, $set) => $set('slug', Str::slug($state))),
                     Forms\Components\TextInput::make('name_en')->label('Name (EN)')->maxLength(100),
                 ]),
                 Forms\Components\Grid::make(2)->schema([
