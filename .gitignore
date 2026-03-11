@@ -33,3 +33,4 @@ next-env.d.ts
 .netlify
 .claude/
 firebase-debug.log
+admin-panel/
