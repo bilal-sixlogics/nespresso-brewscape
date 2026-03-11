@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Eye, Search, Globe } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Search, Globe, RefreshCw } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { AdminModal } from '@/components/admin/ui/AdminModal';
 import { AdminBadge } from '@/components/admin/ui/AdminBadge';
@@ -26,11 +26,11 @@ interface BlogPost {
   author_id: number | null;
 }
 
-const MOCK_POSTS: BlogPost[] = [
-  { id: 1, title: 'Guide de dégustation espresso', title_en: 'Espresso Tasting Guide', slug: 'espresso-tasting-guide', category: 'Guides', category_en: 'Guides', excerpt: 'Découvrez les secrets…', excerpt_en: 'Discover the secrets…', body: '', body_en: '', image_path: null, external_url: null, published_at: '2025-01-15', is_published: true, author_id: 1 },
-  { id: 2, title: 'Choisir sa machine à café', title_en: 'Choosing Your Coffee Machine', slug: 'choosing-coffee-machine', category: 'Conseils', category_en: 'Tips', excerpt: 'Comment choisir…', excerpt_en: 'How to choose…', body: '', body_en: '', image_path: null, external_url: null, published_at: '2025-02-10', is_published: true, author_id: 1 },
-  { id: 3, title: 'Les origines du café arabica', title_en: 'Origins of Arabica Coffee', slug: 'origins-arabica', category: 'Culture', category_en: 'Culture', excerpt: 'L\'arabica est cultivé…', excerpt_en: 'Arabica is grown…', body: '', body_en: '', image_path: null, external_url: null, published_at: null, is_published: false, author_id: 1 },
-];
+function toArr(r: unknown): BlogPost[] {
+  if (Array.isArray(r)) return r as BlogPost[];
+  const x = r as Record<string, unknown>;
+  return Array.isArray(x?.data) ? (x.data as BlogPost[]) : [];
+}
 
 const emptyPost = (): Partial<BlogPost> => ({
   title: '', title_en: '', slug: '', category: '', category_en: '',
@@ -50,18 +50,14 @@ export default function BlogPage() {
   const [editing, setEditing]   = useState<Partial<BlogPost> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<BlogPost | null>(null);
   const [saving, setSaving]     = useState(false);
+  const [apiError, setApiError] = useState('');
   const [activeTab, setActiveTab] = useState<'fr' | 'en'>('fr');
 
   const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await (adminApi as any).blog?.list?.() ?? (adminApi as any).blogPosts?.list?.();
-      setPosts(data?.data ?? data ?? MOCK_POSTS);
-    } catch {
-      setPosts(MOCK_POSTS);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true); setApiError('');
+    try { setPosts(toArr(await adminApi.blog.list())); }
+    catch (e) { setApiError((e as Error).message ?? 'Failed to load'); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -77,30 +73,26 @@ export default function BlogPage() {
     setSaving(true);
     try {
       if (editing.id) {
-        await (adminApi as any).blog?.update?.(editing.id, editing) ?? (adminApi as any).blogPosts?.update?.(editing.id, editing);
+        await adminApi.blog.update(editing.id, editing);
         setPosts(prev => prev.map(p => p.id === editing.id ? { ...p, ...editing } as BlogPost : p));
       } else {
-        const created = await (adminApi as any).blog?.create?.(editing) ?? (adminApi as any).blogPosts?.create?.(editing) ?? { ...editing, id: Date.now() };
-        setPosts(prev => [...prev, created as BlogPost]);
+        const created = await adminApi.blog.create(editing) as BlogPost;
+        setPosts(prev => [...prev, created]);
       }
-    } catch { /* optimistic already done or handle */ }
+    } catch { /* ignore */ }
     setSaving(false);
     setEditing(null);
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    try {
-      await (adminApi as any).blog?.delete?.(deleteTarget.id) ?? (adminApi as any).blogPosts?.delete?.(deleteTarget.id);
-    } catch { /* ignore */ }
+    try { await adminApi.blog.delete(deleteTarget.id); } catch { /* ignore */ }
     setPosts(prev => prev.filter(p => p.id !== deleteTarget.id));
     setDeleteTarget(null);
   };
 
   const handleTogglePublish = async (post: BlogPost) => {
-    try {
-      await (adminApi as any).blog?.update?.(post.id, { is_published: !post.is_published });
-    } catch { /* ignore */ }
+    try { await adminApi.blog.update(post.id, { is_published: !post.is_published }); } catch { /* ignore */ }
     setPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_published: !p.is_published } : p));
   };
 
@@ -113,9 +105,10 @@ export default function BlogPage() {
         title="Blog Posts"
         subtitle="Manage brew journals, guides and coffee culture articles."
         actions={
-          <button className="admin-btn admin-btn-primary" onClick={() => { setEditing(emptyPost()); setActiveTab('fr'); }}>
-            <Plus size={15} /> New Post
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="admin-btn admin-btn-ghost" onClick={load}><RefreshCw size={14} /></button>
+            <button className="admin-btn admin-btn-primary" onClick={() => { setEditing(emptyPost()); setActiveTab('fr'); }}><Plus size={15} /> New Post</button>
+          </div>
         }
       />
 

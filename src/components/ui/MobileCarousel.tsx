@@ -1,75 +1,106 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MobileCarouselProps {
-    children: React.ReactNode[];
+  children: React.ReactNode[];
 }
 
 export function MobileCarousel({ children }: MobileCarouselProps) {
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [page, setPage]     = useState(0);
 
-    const handleScroll = () => {
-        if (!scrollRef.current) return;
-        const scrollPosition = scrollRef.current.scrollLeft;
-        const itemWidth = scrollRef.current.clientWidth;
-        const index = Math.round(scrollPosition / itemWidth);
-        setCurrentIndex(index);
-    };
+  // Group children into pairs (2 per page on mobile)
+  const arr   = React.Children.toArray(children);
+  const pairs = [];
+  for (let i = 0; i < arr.length; i += 2) {
+    pairs.push(arr.slice(i, Math.min(i + 2, arr.length)));
+  }
+  const numPages = pairs.length;
 
-    const scrollTo = (index: number) => {
-        if (!scrollRef.current) return;
-        const itemWidth = scrollRef.current.clientWidth;
-        scrollRef.current.scrollTo({
-            left: index * itemWidth,
-            behavior: "smooth"
-        });
-    };
+  const goTo = useCallback((p: number) => {
+    if (!scrollRef.current) return;
+    const clamped = Math.max(0, Math.min(p, numPages - 1));
+    scrollRef.current.scrollTo({ left: clamped * scrollRef.current.clientWidth, behavior: "smooth" });
+    setPage(clamped);
+  }, [numPages]);
 
-    return (
-        <div className="relative group -mx-8 w-[calc(100%+4rem)] md:mx-0 md:w-full">
-            <div
-                ref={scrollRef}
-                onScroll={handleScroll}
-                className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-8 gap-4 w-full py-12 -my-12 px-8 md:px-0 items-stretch"
-                style={{ touchAction: 'pan-x' }}
-            >
-                {React.Children.map(children, (child) => (
-                    <div className="w-[calc(50vw-24px)] sm:w-[340px] shrink-0 snap-center md:w-auto md:shrink flex items-stretch">
-                        {child}
-                    </div>
-                ))}
-            </div>
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, clientWidth } = scrollRef.current;
+    setPage(Math.round(scrollLeft / Math.max(1, clientWidth)));
+  }, []);
 
-            {/* Mobile Controls */}
-            <div className="flex md:hidden items-center justify-center gap-6 mt-2">
-                <button
-                    onClick={() => scrollTo(Math.max(0, currentIndex - 1))}
-                    disabled={currentIndex === 0}
-                    className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center text-sb-black disabled:opacity-30 shadow-sm transition-colors hover:bg-gray-50"
-                >
-                    <ChevronLeft size={18} />
-                </button>
-                <div className="flex gap-2.5 items-center">
-                    {React.Children.map(children, (_, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => scrollTo(idx)}
-                            className={`rounded-full transition-all duration-300 ${currentIndex === idx ? 'w-5 h-2 bg-sb-green' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
-                            aria-label={`Go to slide ${idx + 1}`}
-                        />
-                    ))}
-                </div>
-                <button
-                    onClick={() => scrollTo(Math.min(React.Children.count(children) - 1, currentIndex + 1))}
-                    disabled={currentIndex === React.Children.count(children) - 1}
-                    className="w-10 h-10 rounded-full border border-gray-200 bg-white flex items-center justify-center text-sb-black disabled:opacity-30 shadow-sm transition-colors hover:bg-gray-50"
-                >
-                    <ChevronRight size={18} />
-                </button>
-            </div>
+  // Reset to page 0 if children change
+  useEffect(() => { setPage(0); }, [arr.length]);
+
+  return (
+    <div className="relative">
+      {/* ── Desktop grid ── */}
+      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 py-8 -my-8">
+        {arr.map((child, i) => (
+          <div key={i} className="flex items-stretch">{child}</div>
+        ))}
+      </div>
+
+      {/* ── Mobile paginated carousel ── */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="md:hidden flex overflow-x-auto no-scrollbar py-8 -my-8"
+        style={{ scrollSnapType: "x mandatory", touchAction: "pan-x" }}
+      >
+        {pairs.map((pair, i) => (
+          <div
+            key={i}
+            className="flex gap-3 px-4 shrink-0"
+            style={{ minWidth: "100%", scrollSnapAlign: "start" }}
+          >
+            {pair.map((child, j) => (
+              <div key={j} className="flex-1 min-w-0 flex items-stretch">{child}</div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Mobile controls ── */}
+      {numPages > 1 && (
+        <div className="md:hidden flex items-center justify-center gap-5 mt-2">
+          <button
+            onClick={() => goTo(page - 1)}
+            disabled={page === 0}
+            className="w-9 h-9 rounded-full border border-gray-200 bg-white shadow-sm flex items-center justify-center text-sb-black disabled:opacity-25 transition-all duration-200 hover:border-sb-green hover:text-sb-green active:scale-95"
+            aria-label="Previous"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: numPages }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                aria-label={`Page ${i + 1}`}
+                className={`rounded-full transition-all duration-300 ${
+                  i === page
+                    ? "w-5 h-1.5 bg-sb-green"
+                    : "w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400"
+                }`}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={() => goTo(page + 1)}
+            disabled={page >= numPages - 1}
+            className="w-9 h-9 rounded-full border border-gray-200 bg-white shadow-sm flex items-center justify-center text-sb-black disabled:opacity-25 transition-all duration-200 hover:border-sb-green hover:text-sb-green active:scale-95"
+            aria-label="Next"
+          >
+            <ChevronRight size={16} />
+          </button>
         </div>
-    );
+      )}
+    </div>
+  );
 }

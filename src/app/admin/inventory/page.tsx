@@ -39,27 +39,11 @@ const TYPE_COLOR: Record<string, string> = {
   wastage: 'badge-red',
 };
 
-// Mock data fallback
-const MOCK_STOCK: StockItem[] = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  product_id: i + 1,
-  product_name: ['Espresso Intense', 'Lungo Classico', 'Arabica Premium', 'Inissia Machine', 'Lattissima Pro', 'Travel Kit', 'Storage Box', 'Chocolate Truffles', 'Caramel Biscuits', 'Vertuo Next', 'Pixie Machine', 'Capsule Holder'][i],
-  product_type: ['coffee','coffee','coffee','machine','machine','accessory','accessory','sweet','sweet','machine','machine','accessory'][i],
-  sku: `SKU-${String(i+1).padStart(4,'0')}`,
-  sale_unit_label: ['10 caps', '50 caps', '10 caps', 'Single', 'Single', 'Set', 'Small', '200g', '150g', 'Single', 'Single', 'Set'][i],
-  quantity_on_hand: [45, 3, 18, 7, 2, 23, 50, 12, 8, 5, 14, 30][i],
-  reorder_threshold: 10,
-  reorder_quantity: 50,
-  last_updated: new Date(Date.now() - i * 86400000).toISOString(),
-}));
-
-const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: 1, type: 'sale',       quantity: 5,  quantity_before: 50, quantity_after: 45, notes: 'Order #1042', performed_by: 'System', created_at: new Date(Date.now() - 3600000).toISOString() },
-  { id: 2, type: 'restock',    quantity: 100, quantity_before: 0, quantity_after: 100, notes: 'Supplier delivery', performed_by: 'admin@cafrezzo.com', created_at: new Date(Date.now() - 86400000).toISOString() },
-  { id: 3, type: 'adjustment', quantity: -2,  quantity_before: 20, quantity_after: 18, notes: 'Damaged units', performed_by: 'admin@cafrezzo.com', created_at: new Date(Date.now() - 172800000).toISOString() },
-  { id: 4, type: 'return',     quantity: 1,   quantity_before: 6, quantity_after: 7,  notes: 'Customer return', performed_by: 'System', created_at: new Date(Date.now() - 259200000).toISOString() },
-  { id: 5, type: 'wastage',    quantity: -1,  quantity_before: 8, quantity_after: 7,  notes: 'Expired', performed_by: 'manager@cafrezzo.com', created_at: new Date(Date.now() - 345600000).toISOString() },
-];
+function toArr<T>(r: unknown): T[] {
+  if (Array.isArray(r)) return r as T[];
+  const x = r as Record<string, unknown>;
+  return Array.isArray(x?.data) ? (x.data as T[]) : [];
+}
 
 export default function InventoryPage() {
   const [items, setItems]       = useState<StockItem[]>([]);
@@ -77,14 +61,9 @@ export default function InventoryPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    try {
-      const data = await (adminApi as any).inventory?.list();
-      setItems(data?.data ?? data ?? MOCK_STOCK);
-    } catch {
-      setItems(MOCK_STOCK);
-    } finally {
-      setLoading(false);
-    }
+    try { setItems(toArr<StockItem>(await adminApi.inventory.list())); }
+    catch { setItems([]); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -114,19 +93,15 @@ export default function InventoryPage() {
   const openHistory = async (item: StockItem) => {
     setSelected(item);
     setModalType('history');
-    try {
-      const data = await (adminApi as any).inventory?.transactions(item.id);
-      setTransactions(data?.data ?? data ?? MOCK_TRANSACTIONS);
-    } catch {
-      setTransactions(MOCK_TRANSACTIONS);
-    }
+    try { setTransactions(toArr<Transaction>(await adminApi.inventory.transactions(item.id))); }
+    catch { setTransactions([]); }
   };
 
   const handleAdjust = async () => {
     if (!selected || adjustQty === 0) return;
     setSaving(true);
     try {
-      await (adminApi as any).inventory?.adjust(selected.id, {
+      await adminApi.inventory.adjust(selected.id, {
         type: adjustType,
         quantity: adjustType === 'adjustment' || adjustType === 'wastage' ? -Math.abs(adjustQty) : Math.abs(adjustQty),
         notes: adjustNotes,

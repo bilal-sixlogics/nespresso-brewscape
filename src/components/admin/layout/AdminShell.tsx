@@ -28,9 +28,14 @@ export function AdminShell({ children }: Props) {
     if (!token && pathname !== '/admin/login') {
       router.replace('/admin/login');
     }
+    // Already logged in — skip login page
+    if (token && pathname === '/admin/login') {
+      router.replace('/admin/dashboard');
+    }
   }, [token, pathname, router]);
 
   if (!token && pathname !== '/admin/login') return null;
+  if (token && pathname === '/admin/login') return null; // redirecting
 
   // Login page renders without shell chrome
   if (pathname === '/admin/login') {

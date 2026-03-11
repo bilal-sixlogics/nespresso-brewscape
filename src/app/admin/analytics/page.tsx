@@ -57,34 +57,17 @@ function DonutChart({ data, colors }: { data: { label: string; value: number }[]
   );
 }
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
-const genTrend = (base: number, len = 30) => Array.from({ length: len }, (_, i) => Math.max(0, base + Math.round((Math.random() - 0.4) * base * 0.4) + i * (base * 0.01)));
-
-const MOCK = {
-  revenue_trend: genTrend(3200),
-  orders_trend:  genTrend(18),
-  revenue_today: 4821,
-  orders_today:  31,
-  avg_order:     155.5,
-  new_customers: 8,
-  revenue_by_category: [
-    { label: 'Coffee', value: 14200 },
-    { label: 'Machines', value: 9800 },
-    { label: 'Accessories', value: 3400 },
-    { label: 'Sweets', value: 1200 },
-  ],
-  top_products: [
-    { name: 'Espresso Intense 50 caps', revenue: 4200, units: 84 },
-    { name: 'Inissia Machine',          revenue: 3900, units: 13 },
-    { name: 'Lungo Classico 50 caps',   revenue: 2800, units: 56 },
-    { name: 'Lattissima Pro',           revenue: 2600, units: 8  },
-    { name: 'Travel Kit',               revenue: 1800, units: 36 },
-  ],
-  recent_days: Array.from({ length: 7 }, (_, i) => ({
-    date: new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' }),
-    revenue: Math.round(2000 + Math.random() * 3000),
-    orders:  Math.round(10 + Math.random() * 25),
-  })),
+// ── Default empty state ────────────────────────────────────────────────────────
+const EMPTY_STATS = {
+  revenue_trend: [] as number[],
+  orders_trend:  [] as number[],
+  revenue_today: 0,
+  orders_today:  0,
+  avg_order:     0,
+  new_customers: 0,
+  revenue_by_category: [] as { label: string; value: number }[],
+  top_products: [] as { name: string; revenue: number; units: number }[],
+  recent_days: [] as { date: string; revenue: number; orders: number }[],
 };
 
 const CAT_COLORS = ['#3C7A58', '#5BA07A', '#84C19A', '#B2D9BF'];
@@ -96,14 +79,17 @@ const PERIOD_OPTIONS = [
 
 export default function AnalyticsPage() {
   const [period, setPeriod]   = useState(30);
-  const [stats, setStats]     = useState(MOCK);
-  const [loading, setLoading] = useState(false);
+  const [stats, setStats]     = useState(EMPTY_STATS);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    adminApi.dashboard.stats()
-      .then((d: any) => setStats({ ...MOCK, ...d }))
-      .catch(() => setStats(MOCK))
+    Promise.all([
+      adminApi.dashboard.stats(),
+      adminApi.dashboard.salesTrend(period),
+    ])
+      .then(([s, trend]: any[]) => setStats({ ...EMPTY_STATS, ...s, ...(trend ?? {}) }))
+      .catch(() => setStats(EMPTY_STATS))
       .finally(() => setLoading(false));
   }, [period]);
 

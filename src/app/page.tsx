@@ -10,7 +10,7 @@ import { useCart } from "@/store/CartContext";
 import { productDatabase, enrichedProducts } from "@/lib/productsData";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
-import { MobileCarousel } from "@/components/ui/MobileCarousel";
+import { StackedDeckCarousel } from "@/components/ui/StackedDeckCarousel";
 import { TestimonialsSection } from '@/components/ui/TestimonialsSection';
 import { useLanguage } from "@/context/LanguageContext";
 import { Product } from "@/types";
@@ -146,7 +146,8 @@ function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: any) 
           </Link>
         </div>
 
-        <MobileCarousel>
+        {/* Desktop: 3-column grid */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6 lg:gap-8">
           {displayMachines.map((machine: any, i: number) => (
             <ProductCard
               key={machine.id}
@@ -155,9 +156,23 @@ function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: any) 
               onClick={onProductClick}
             />
           ))}
-        </MobileCarousel>
+        </div>
 
-        <div className="flex md:hidden justify-center mt-10">
+        {/* Mobile: stacked deck carousel */}
+        <div className="md:hidden flex justify-center py-2">
+          <StackedDeckCarousel>
+            {displayMachines.map((machine: any, i: number) => (
+              <ProductCard
+                key={machine.id}
+                product={machine}
+                index={i}
+                onClick={onProductClick}
+              />
+            ))}
+          </StackedDeckCarousel>
+        </div>
+
+        <div className="flex md:hidden justify-center mt-6">
           <Link href="/machines" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-sb-green border border-sb-green px-8 py-4 rounded-full">
             {t('viewAllMachines')} <ArrowRight size={12} />
           </Link>
@@ -463,8 +478,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Grid */}
-            <MobileCarousel>
+            {/* Desktop: 3-column grid */}
+            <div className="hidden md:grid md:grid-cols-3 gap-6 lg:gap-8 px-4">
               {filteredProducts.slice(0, 3).map((product, idx) => (
                 <ProductCard
                   key={product.id}
@@ -473,7 +488,21 @@ export default function Home() {
                   onClick={setSelectedProduct}
                 />
               ))}
-            </MobileCarousel>
+            </div>
+
+            {/* Mobile: stacked deck carousel */}
+            <div className="md:hidden flex justify-center py-2">
+              <StackedDeckCarousel>
+                {filteredProducts.slice(0, 3).map((product, idx) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    index={idx}
+                    onClick={setSelectedProduct}
+                  />
+                ))}
+              </StackedDeckCarousel>
+            </div>
 
             <div className="flex justify-center mt-14">
               <Link href="/shop" className="group">

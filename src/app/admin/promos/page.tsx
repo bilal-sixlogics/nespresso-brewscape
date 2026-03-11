@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Tag, Percent, DollarSign, Gift, Zap } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, Percent, DollarSign, Gift, Zap, RefreshCw } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { AdminModal } from '@/components/admin/ui/AdminModal';
 import { AdminBadge } from '@/components/admin/ui/AdminBadge';
@@ -20,14 +20,13 @@ interface PromoCode {
   minimum_order?: number;
 }
 
-const MOCK_PROMOS: PromoCode[] = [
-  { id: 1, code: 'WELCOME10', type: 'percent', value: 10, usage_limit: 500, used_count: 143, expires_at: '2025-12-31', is_active: true, minimum_order: 20 },
-  { id: 2, code: 'SUMMER5',   type: 'fixed',   value: 5,  usage_limit: 200, used_count: 88,  expires_at: '2025-08-31', is_active: true, minimum_order: 0 },
-  { id: 3, code: 'VIP20',     type: 'percent', value: 20, usage_limit: 50,  used_count: 50,  expires_at: '2025-06-30', is_active: false, minimum_order: 50 },
-  { id: 4, code: 'FREESHIP',  type: 'fixed',   value: 0,  usage_limit: null,used_count: 22,  expires_at: null, is_active: true, minimum_order: 30 },
-];
-
 const empty = (): Partial<PromoCode> => ({ code: '', type: 'percent', value: 10, usage_limit: null, used_count: 0, expires_at: null, is_active: true, minimum_order: 0 });
+
+function toArr(r: unknown): PromoCode[] {
+  if (Array.isArray(r)) return r as PromoCode[];
+  const x = r as Record<string, unknown>;
+  return Array.isArray(x?.data) ? (x.data as PromoCode[]) : [];
+}
 
 export default function PromosPage() {
   const [promos, setPromos]   = useState<PromoCode[]>([]);
@@ -35,6 +34,7 @@ export default function PromosPage() {
   const [editing, setEditing] = useState<Partial<PromoCode> | null>(null);
   const [del, setDel]         = useState<PromoCode | null>(null);
   const [saving, setSaving]   = useState(false);
+  const [apiError, setApiError] = useState('');
   const [tab, setTab]         = useState<'codes' | 'sitewide' | 'shipping'>('codes');
 
   // Sitewide promo state
@@ -45,15 +45,10 @@ export default function PromosPage() {
   const [freeShipThreshold, setFreeShipThreshold] = useState('50');
 
   const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await adminApi.tags.list(); // Replace with adminApi.promos.list()
-      setPromos(MOCK_PROMOS);
-    } catch {
-      setPromos(MOCK_PROMOS);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true); setApiError('');
+    try { setPromos(toArr(await adminApi.promos.list())); }
+    catch (e) { setApiError((e as Error).message ?? 'Failed to load'); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -63,9 +58,11 @@ export default function PromosPage() {
     setSaving(true);
     try {
       if (editing.id) {
+        await adminApi.promos.update(editing.id, editing);
         setPromos(prev => prev.map(p => p.id === editing.id ? { ...p, ...editing } as PromoCode : p));
       } else {
-        setPromos(prev => [...prev, { ...editing, id: Date.now(), used_count: 0 } as PromoCode]);
+        const created = await adminApi.promos.create(editing) as PromoCode;
+        setPromos(prev => [...prev, created]);
       }
     } catch { /* ignore */ }
     setSaving(false);
@@ -74,11 +71,15 @@ export default function PromosPage() {
 
   const handleDelete = async () => {
     if (!del) return;
+    try { await adminApi.promos.delete(del.id); } catch { /* ignore */ }
     setPromos(prev => prev.filter(p => p.id !== del.id));
     setDel(null);
   };
 
-  const handleToggle = (id: number) => {
+  const handleToggle = async (id: number) => {
+    const promo = promos.find(p => p.id === id);
+    if (!promo) return;
+    try { await adminApi.promos.update(id, { is_active: !promo.is_active }); } catch { /* ignore */ }
     setPromos(prev => prev.map(p => p.id === id ? { ...p, is_active: !p.is_active } : p));
   };
 
@@ -94,13 +95,12 @@ export default function PromosPage() {
         subtitle="Manage promo codes, sitewide discounts and free shipping thresholds."
         actions={
           tab === 'codes' ? (
-            <button className="admin-btn admin-btn-primary" onClick={() => setEditing(empty())}>
-              <Plus size={15} /> New Code
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="admin-btn admin-btn-ghost" onClick={load}><RefreshCw size={14} /></button>
+              <button className="admin-btn admin-btn-primary" onClick={() => setEditing(empty())}><Plus size={15} /> New Code</button>
+            </div>
           ) : (
-            <button className="admin-btn admin-btn-primary">
-              Save Changes
-            </button>
+            <button className="admin-btn admin-btn-primary">Save Changes</button>
           )
         }
       />
