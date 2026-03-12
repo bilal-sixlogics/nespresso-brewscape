@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Package, TrendingDown, AlertTriangle, RefreshCw, Plus, Minus, History, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { AdminModal } from '@/components/admin/ui/AdminModal';
@@ -145,9 +145,9 @@ export default function InventoryPage() {
       />
 
       {/* KPI row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
+      <div className="admin-grid-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
         {[
-          { label: 'Total SKUs',   value: items.length,  icon: Package,       color: 'var(--color-a-green)' },
+          { label: 'Total SKUs',   value: items.length,  icon: Package,       color: 'var(--a-green)' },
           { label: 'Low Stock',    value: lowStock,       icon: TrendingDown,  color: '#F59E0B' },
           { label: 'Out of Stock', value: outOfStock,     icon: AlertTriangle, color: '#EF4444' },
         ].map(({ label, value, icon: Icon, color }) => (
@@ -156,8 +156,8 @@ export default function InventoryPage() {
               <Icon size={18} style={{ color }} />
             </div>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-a-text)' }}>{loading ? '—' : value}</div>
-              <div style={{ fontSize: 12, color: 'var(--color-a-text-muted)' }}>{label}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--a-text)' }}>{loading ? '—' : value}</div>
+              <div style={{ fontSize: 12, color: 'var(--a-text-muted)' }}>{label}</div>
             </div>
           </div>
         ))}
@@ -166,7 +166,7 @@ export default function InventoryPage() {
       {/* Filters */}
       <div className="admin-card" style={{ padding: '12px 16px', marginBottom: 16, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-a-text-muted)' }} />
+          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--a-text-muted)' }} />
           <input
             className="admin-input"
             placeholder="Search by name or SKU…"
@@ -212,14 +212,13 @@ export default function InventoryPage() {
                 </tr>
               ))
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--color-a-text-muted)' }}>No items found</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--a-text-muted)' }}>No items found</td></tr>
             ) : filtered.map((item, idx) => {
               const level = stockLevel(item.quantity_on_hand, item.reorder_threshold);
               const expanded = expandedRows.has(item.id);
               return (
-                <>
+                <React.Fragment key={item.id}>
                   <motion.tr
-                    key={item.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: idx * 0.03 }}
@@ -227,24 +226,24 @@ export default function InventoryPage() {
                     onClick={() => toggleRow(item.id)}
                   >
                     <td>
-                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-a-text-muted)', padding: 0, display: 'flex' }}>
+                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--a-text-muted)', padding: 0, display: 'flex' }}>
                         {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                       </button>
                     </td>
                     <td>
                       <div style={{ fontWeight: 600, fontSize: 13 }}>{item.product_name}</div>
-                      <div style={{ fontSize: 11, color: 'var(--color-a-text-muted)' }}>{item.product_type}</div>
+                      <div style={{ fontSize: 11, color: 'var(--a-text-muted)' }}>{item.product_type}</div>
                     </td>
-                    <td><code style={{ fontSize: 11, color: 'var(--color-a-text-muted)' }}>{item.sku}</code></td>
+                    <td><code style={{ fontSize: 11, color: 'var(--a-text-muted)' }}>{item.sku}</code></td>
                     <td style={{ fontSize: 12 }}>{item.sale_unit_label}</td>
                     <td>
-                      <span style={{ fontWeight: 700, fontSize: 15, color: item.quantity_on_hand <= 0 ? '#EF4444' : item.quantity_on_hand <= item.reorder_threshold ? '#F59E0B' : 'var(--color-a-text)' }}>
+                      <span style={{ fontWeight: 700, fontSize: 15, color: item.quantity_on_hand <= 0 ? '#EF4444' : item.quantity_on_hand <= item.reorder_threshold ? '#F59E0B' : 'var(--a-text)' }}>
                         {item.quantity_on_hand}
                       </span>
                     </td>
-                    <td style={{ fontSize: 12, color: 'var(--color-a-text-muted)' }}>{item.reorder_threshold}</td>
+                    <td style={{ fontSize: 12, color: 'var(--a-text-muted)' }}>{item.reorder_threshold}</td>
                     <td><span className={`admin-badge ${level.cls}`}>{level.label}</span></td>
-                    <td style={{ fontSize: 11, color: 'var(--color-a-text-muted)' }}>
+                    <td style={{ fontSize: 11, color: 'var(--a-text-muted)' }}>
                       {new Date(item.last_updated).toLocaleDateString()}
                     </td>
                     <td onClick={e => e.stopPropagation()}>
@@ -266,18 +265,18 @@ export default function InventoryPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        <td colSpan={9} style={{ background: 'var(--color-a-surface-2)', padding: '12px 20px' }}>
+                        <td colSpan={9} style={{ background: 'var(--a-surface-2)', padding: '12px 20px' }}>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, fontSize: 12 }}>
                             <div>
-                              <div style={{ color: 'var(--color-a-text-muted)', marginBottom: 2 }}>Reorder Qty</div>
+                              <div style={{ color: 'var(--a-text-muted)', marginBottom: 2 }}>Reorder Qty</div>
                               <div style={{ fontWeight: 600 }}>{item.reorder_quantity} units</div>
                             </div>
                             <div>
-                              <div style={{ color: 'var(--color-a-text-muted)', marginBottom: 2 }}>Product Type</div>
+                              <div style={{ color: 'var(--a-text-muted)', marginBottom: 2 }}>Product Type</div>
                               <div style={{ fontWeight: 600, textTransform: 'capitalize' }}>{item.product_type}</div>
                             </div>
                             <div>
-                              <div style={{ color: 'var(--color-a-text-muted)', marginBottom: 2 }}>Stock Value (est.)</div>
+                              <div style={{ color: 'var(--a-text-muted)', marginBottom: 2 }}>Stock Value (est.)</div>
                               <div style={{ fontWeight: 600 }}>—</div>
                             </div>
                             <div>
@@ -290,7 +289,7 @@ export default function InventoryPage() {
                       </motion.tr>
                     )}
                   </AnimatePresence>
-                </>
+                </React.Fragment>
               );
             })}
           </tbody>
@@ -313,14 +312,14 @@ export default function InventoryPage() {
         }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ padding: '10px 14px', borderRadius: 8, background: 'var(--color-a-surface-2)', display: 'flex', gap: 16 }}>
+          <div style={{ padding: '10px 14px', borderRadius: 8, background: 'var(--a-surface-2)', display: 'flex', gap: 16 }}>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--color-a-text-muted)' }}>Current Stock</div>
+              <div style={{ fontSize: 11, color: 'var(--a-text-muted)' }}>Current Stock</div>
               <div style={{ fontSize: 22, fontWeight: 700 }}>{selected?.quantity_on_hand ?? 0}</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: 'var(--color-a-text-muted)' }}>After Adjustment</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-a-green)' }}>
+              <div style={{ fontSize: 11, color: 'var(--a-text-muted)' }}>After Adjustment</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--a-green)' }}>
                 {adjustType === 'restock'
                   ? (selected?.quantity_on_hand ?? 0) + Math.abs(adjustQty)
                   : Math.max(0, (selected?.quantity_on_hand ?? 0) - Math.abs(adjustQty))}
@@ -395,14 +394,14 @@ export default function InventoryPage() {
                 <td style={{ fontSize: 11 }}>{new Date(tx.created_at).toLocaleString()}</td>
                 <td><span className={`admin-badge ${TYPE_COLOR[tx.type]}`} style={{ textTransform: 'capitalize' }}>{tx.type}</span></td>
                 <td>
-                  <span style={{ fontWeight: 700, color: tx.quantity > 0 ? 'var(--color-a-green)' : '#EF4444' }}>
+                  <span style={{ fontWeight: 700, color: tx.quantity > 0 ? 'var(--a-green)' : '#EF4444' }}>
                     {tx.quantity > 0 ? '+' : ''}{tx.quantity}
                   </span>
                 </td>
                 <td style={{ fontSize: 12 }}>{tx.quantity_before}</td>
                 <td style={{ fontSize: 12 }}>{tx.quantity_after}</td>
-                <td style={{ fontSize: 12, color: 'var(--color-a-text-muted)' }}>{tx.notes || '—'}</td>
-                <td style={{ fontSize: 11, color: 'var(--color-a-text-muted)' }}>{tx.performed_by}</td>
+                <td style={{ fontSize: 12, color: 'var(--a-text-muted)' }}>{tx.notes || '—'}</td>
+                <td style={{ fontSize: 11, color: 'var(--a-text-muted)' }}>{tx.performed_by}</td>
               </tr>
             ))}
           </tbody>

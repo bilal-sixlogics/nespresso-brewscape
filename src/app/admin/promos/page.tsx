@@ -106,7 +106,7 @@ export default function PromosPage() {
       />
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 2, background: 'var(--color-a-surface)', borderRadius: 8, padding: 4, width: 'fit-content', marginBottom: 18 }}>
+      <div style={{ display: 'flex', gap: 2, background: 'var(--a-surface)', borderRadius: 8, padding: 4, width: 'fit-content', marginBottom: 18 }}>
         {[
           { key: 'codes',    label: 'Promo Codes',      icon: Tag },
           { key: 'sitewide', label: 'Sitewide Discount', icon: Percent },
@@ -148,7 +148,7 @@ export default function PromosPage() {
                 return (
                   <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.04 }}>
                     <td>
-                      <code style={{ fontWeight: 700, fontSize: 13, letterSpacing: '0.05em', color: 'var(--color-a-green)' }}>{p.code}</code>
+                      <code style={{ fontWeight: 700, fontSize: 13, letterSpacing: '0.05em', color: 'var(--a-green)' }}>{p.code}</code>
                     </td>
                     <td>
                       <span className="admin-badge badge-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -164,7 +164,7 @@ export default function PromosPage() {
                       {p.usage_limit !== null && <> / {p.usage_limit}</>}
                     </td>
                     <td style={{ fontSize: 12 }}>{p.minimum_order ? `€${p.minimum_order}` : '—'}</td>
-                    <td style={{ fontSize: 12, color: isExpired ? '#EF4444' : 'var(--color-a-text-muted)' }}>
+                    <td style={{ fontSize: 12, color: isExpired ? '#EF4444' : 'var(--a-text-muted)' }}>
                       {p.expires_at ? new Date(p.expires_at).toLocaleDateString() : 'Never'}
                     </td>
                     <td>
@@ -203,7 +203,7 @@ export default function PromosPage() {
           <div className="admin-card-title">Sitewide Discount Banner</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-              <div onClick={() => setSitewideEnabled(v => !v)} style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: sitewideEnabled ? 'var(--color-a-green)' : 'var(--color-a-surface-3)', border: '1px solid var(--color-a-border)', transition: 'background 0.2s' }}>
+              <div onClick={() => setSitewideEnabled(v => !v)} style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: sitewideEnabled ? 'var(--a-green)' : 'var(--a-surface-3)', border: '1px solid var(--a-border)', transition: 'background 0.2s' }}>
                 <div style={{ position: 'absolute', top: 2, left: sitewideEnabled ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', transition: 'left 0.2s' }} />
               </div>
               <span style={{ fontWeight: 600, fontSize: 13 }}>Enable Sitewide Discount</span>
@@ -221,7 +221,7 @@ export default function PromosPage() {
               </div>
             )}
             {sitewideEnabled && (
-              <div style={{ padding: '12px 16px', borderRadius: 8, background: 'var(--color-a-green)', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'white' }}>
+              <div style={{ padding: '12px 16px', borderRadius: 8, background: 'var(--a-green)', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'white' }}>
                 Preview: {sitewideLabel} ({sitewidePercent}% off)
               </div>
             )}
@@ -235,7 +235,7 @@ export default function PromosPage() {
           <div className="admin-card-title">Free Shipping Threshold</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-              <div onClick={() => setFreeShipEnabled(v => !v)} style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: freeShipEnabled ? 'var(--color-a-green)' : 'var(--color-a-surface-3)', border: '1px solid var(--color-a-border)', transition: 'background 0.2s' }}>
+              <div onClick={() => setFreeShipEnabled(v => !v)} style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: freeShipEnabled ? 'var(--a-green)' : 'var(--a-surface-3)', border: '1px solid var(--a-border)', transition: 'background 0.2s' }}>
                 <div style={{ position: 'absolute', top: 2, left: freeShipEnabled ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', transition: 'left 0.2s' }} />
               </div>
               <span style={{ fontWeight: 600, fontSize: 13 }}>Enable Free Shipping Promo</span>
@@ -244,7 +244,7 @@ export default function PromosPage() {
               <div style={{ maxWidth: 300 }}>
                 <label className="admin-label">Free Shipping Above (€)</label>
                 <input className="admin-input" type="number" value={freeShipThreshold} onChange={e => setFreeShipThreshold(e.target.value)} min="0" />
-                <div style={{ fontSize: 12, color: 'var(--color-a-text-muted)', marginTop: 6 }}>
+                <div style={{ fontSize: 12, color: 'var(--a-text-muted)', marginTop: 6 }}>
                   Customers with orders above €{freeShipThreshold} get free shipping automatically.
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function PromosPage() {
               <input className="admin-input" type="date" value={editing.expires_at?.split('T')[0] ?? ''} onChange={e => set('expires_at', e.target.value || null)} />
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-              <div onClick={() => set('is_active', !editing.is_active)} style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: editing.is_active ? 'var(--color-a-green)' : 'var(--color-a-surface-3)', border: '1px solid var(--color-a-border)', transition: 'background 0.2s' }}>
+              <div onClick={() => set('is_active', !editing.is_active)} style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: editing.is_active ? 'var(--a-green)' : 'var(--a-surface-3)', border: '1px solid var(--a-border)', transition: 'background 0.2s' }}>
                 <div style={{ position: 'absolute', top: 2, left: editing.is_active ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', transition: 'left 0.2s' }} />
               </div>
               <span style={{ fontSize: 13, fontWeight: 600 }}>Active</span>

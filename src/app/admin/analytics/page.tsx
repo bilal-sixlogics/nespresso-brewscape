@@ -52,7 +52,7 @@ function DonutChart({ data, colors }: { data: { label: string; value: number }[]
           style={{ transform: 'rotate(-90deg)', transformOrigin: `${cx}px ${cy}px`, transition: 'stroke-dasharray 0.5s' }}
         />
       ))}
-      <circle cx={cx} cy={cy} r={30} fill="var(--color-a-surface)" />
+      <circle cx={cx} cy={cy} r={30} fill="var(--a-surface)" />
     </svg>
   );
 }
@@ -121,7 +121,7 @@ export default function AnalyticsPage() {
       />
 
       {/* KPI cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
+      <div className="admin-grid-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
         {kpis.map(({ label, value, icon: Icon, color, trend }, idx) => (
           <motion.div
             key={label}
@@ -138,7 +138,7 @@ export default function AnalyticsPage() {
               <span style={{ fontSize: 11, fontWeight: 600, color: '#34D399' }}>{trend}</span>
             </div>
             <div style={{ marginTop: 12, fontSize: 24, fontWeight: 700 }}>{loading ? '—' : value}</div>
-            <div style={{ fontSize: 12, color: 'var(--color-a-text-muted)', marginTop: 2 }}>{label}</div>
+            <div style={{ fontSize: 12, color: 'var(--a-text-muted)', marginTop: 2 }}>{label}</div>
           </motion.div>
         ))}
       </div>
@@ -148,7 +148,7 @@ export default function AnalyticsPage() {
         <div className="admin-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div className="admin-card-title" style={{ marginBottom: 0 }}>Revenue Trend ({period}d)</div>
-            <TrendingUp size={15} style={{ color: 'var(--color-a-green)' }} />
+            <TrendingUp size={15} style={{ color: 'var(--a-green)' }} />
           </div>
           <Sparkline data={stats.revenue_trend.slice(-period)} height={100} />
         </div>
@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
             <tbody>
               {stats.recent_days.map(d => (
                 <tr key={d.date}>
-                  <td style={{ color: 'var(--color-a-text-muted)' }}>{d.date}</td>
+                  <td style={{ color: 'var(--a-text-muted)' }}>{d.date}</td>
                   <td style={{ fontWeight: 600 }}>€{d.revenue.toLocaleString()}</td>
                   <td>{d.orders}</td>
                 </tr>
@@ -220,17 +220,17 @@ export default function AnalyticsPage() {
               const maxRev = stats.top_products[0].revenue;
               return (
                 <tr key={p.name}>
-                  <td style={{ fontWeight: 700, color: i === 0 ? 'var(--color-a-green)' : 'var(--color-a-text-muted)', width: 30 }}>#{i + 1}</td>
+                  <td style={{ fontWeight: 700, color: i === 0 ? 'var(--a-green)' : 'var(--a-text-muted)', width: 30 }}>#{i + 1}</td>
                   <td style={{ fontWeight: 600 }}>{p.name}</td>
                   <td style={{ fontWeight: 700 }}>€{p.revenue.toLocaleString()}</td>
                   <td>{p.units}</td>
                   <td style={{ minWidth: 120 }}>
-                    <div style={{ height: 6, borderRadius: 3, background: 'var(--color-a-surface-3)', overflow: 'hidden' }}>
+                    <div style={{ height: 6, borderRadius: 3, background: 'var(--a-surface-3)', overflow: 'hidden' }}>
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${(p.revenue / maxRev) * 100}%` }}
                         transition={{ delay: 0.3 + i * 0.05, duration: 0.6 }}
-                        style={{ height: '100%', background: 'var(--color-a-green)', borderRadius: 3 }}
+                        style={{ height: '100%', background: 'var(--a-green)', borderRadius: 3 }}
                       />
                     </div>
                   </td>

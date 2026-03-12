@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Pencil, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { AdminDataTable, type Column, type TableAction } from '@/components/admin/ui/AdminDataTable';
 import { AdminBadge, StatusBadge } from '@/components/admin/ui/AdminBadge';
@@ -20,12 +21,12 @@ const COLS: Column<User>[] = [
     key: 'name', label: 'User', sortable: true,
     render: (r) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, var(--color-a-green), var(--color-a-green-muted))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white', flexShrink: 0 }}>
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, var(--a-green), var(--a-green-muted))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white', flexShrink: 0 }}>
           {r.name[0].toUpperCase()}
         </div>
         <div>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{r.name}</div>
-          <div style={{ fontSize: 11, color: 'var(--color-a-text-muted)' }}>{r.email}</div>
+          <div style={{ fontSize: 11, color: 'var(--a-text-muted)' }}>{r.email}</div>
         </div>
       </div>
     ),
@@ -40,7 +41,7 @@ const COLS: Column<User>[] = [
   },
   {
     key: 'created_at', label: 'Joined', sortable: true, width: '100px',
-    render: (r) => <span style={{ fontSize: 12, color: 'var(--color-a-text-muted)' }}>{new Date(r.created_at).toLocaleDateString()}</span>,
+    render: (r) => <span style={{ fontSize: 12, color: 'var(--a-text-muted)' }}>{new Date(r.created_at).toLocaleDateString()}</span>,
   },
 ];
 
@@ -83,16 +84,25 @@ export default function UsersPage() {
         title="Users"
         subtitle="Manage admin panel users and their roles."
       />
-      <AdminDataTable
-        data={users}
-        columns={COLS}
-        actions={actions}
-        keyFn={(u) => u.id}
-        loading={loading}
-        searchPlaceholder="Search users by name or email…"
-        emptyTitle="No admin users found"
-        onRowClick={openEdit}
-      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="admin-card"
+        style={{ padding: 0, overflow: 'hidden' }}
+      >
+        <AdminDataTable
+          data={users}
+          columns={COLS}
+          actions={actions}
+          keyFn={(u) => u.id}
+          loading={loading}
+          searchPlaceholder="Search users by name or email…"
+          emptyTitle="No admin users found"
+          onRowClick={openEdit}
+        />
+      </motion.div>
 
       <AdminModal open={!!editUser} onClose={() => setEdit(null)}
         title="Edit User Role" subtitle={editUser?.email} size="sm"
@@ -105,14 +115,14 @@ export default function UsersPage() {
           </>
         }
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <label className="admin-label">Role</label>
             <select className="admin-input admin-select" value={form.role ?? ''} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value as User['role'] }))}>
               {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
-            <p style={{ fontSize: 11.5, color: 'var(--color-a-text-muted)', marginTop: 6 }}>
-              Super Admin — full access. Manager — products, orders, content. Inventory Staff — inventory only.
+            <p style={{ fontSize: 11.5, color: 'var(--a-text-muted)', marginTop: 8, lineHeight: 1.5 }}>
+              <strong>Super Admin</strong> — full access &nbsp;·&nbsp; <strong>Manager</strong> — products, orders, content &nbsp;·&nbsp; <strong>Inventory Staff</strong> — inventory only.
             </p>
           </div>
           <div>

@@ -11,8 +11,8 @@ const DOT_COLORS: Record<Variant, string> = {
   red:     '#EF4444',
   amber:   '#F59E0B',
   sky:     '#38BDF8',
-  gray:    'var(--color-a-text-dim)',
-  primary: 'var(--color-a-green)',
+  gray:    'var(--a-text-dim)',
+  primary: 'var(--a-green)',
 };
 
 export function AdminBadge({ variant = 'gray', children, dot }: Props) {

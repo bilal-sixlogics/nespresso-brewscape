@@ -115,7 +115,7 @@ export default function BlogPage() {
       {/* Filters */}
       <div className="admin-card" style={{ padding: '12px 16px', marginBottom: 16, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-a-text-muted)' }} />
+          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--a-text-muted)' }} />
           <input className="admin-input" placeholder="Search posts…" style={{ paddingLeft: 30 }} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         {(['all','published','draft'] as const).map(f => (
@@ -143,12 +143,12 @@ export default function BlogPage() {
                 <tr key={i}>{Array.from({ length: 5 }).map((_, j) => <td key={j}><div className="admin-skeleton" style={{ height: 14, borderRadius: 4 }} /></td>)}</tr>
               ))
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: 'center', padding: 40, color: 'var(--color-a-text-muted)' }}>No posts found</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: 'center', padding: 40, color: 'var(--a-text-muted)' }}>No posts found</td></tr>
             ) : filtered.map((post, idx) => (
               <motion.tr key={post.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.04 }}>
                 <td>
                   <div style={{ fontWeight: 600, fontSize: 13 }}>{post.title}</div>
-                  <div style={{ fontSize: 11, color: 'var(--color-a-text-muted)' }}>{post.title_en}</div>
+                  <div style={{ fontSize: 11, color: 'var(--a-text-muted)' }}>{post.title_en}</div>
                 </td>
                 <td>
                   <span className="admin-badge badge-primary">{post.category}</span>
@@ -158,7 +158,7 @@ export default function BlogPage() {
                     {post.is_published ? 'Published' : 'Draft'}
                   </AdminBadge>
                 </td>
-                <td style={{ fontSize: 12, color: 'var(--color-a-text-muted)' }}>
+                <td style={{ fontSize: 12, color: 'var(--a-text-muted)' }}>
                   {post.published_at ? new Date(post.published_at).toLocaleDateString() : '—'}
                 </td>
                 <td>
@@ -196,7 +196,7 @@ export default function BlogPage() {
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
               <div
                 onClick={() => set('is_published', !editing?.is_published)}
-                style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: editing?.is_published ? 'var(--color-a-green)' : 'var(--color-a-surface-3)', border: '1px solid var(--color-a-border)', transition: 'background 0.2s' }}
+                style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: editing?.is_published ? 'var(--a-green)' : 'var(--a-surface-3)', border: '1px solid var(--a-border)', transition: 'background 0.2s' }}
               >
                 <div style={{ position: 'absolute', top: 2, left: editing?.is_published ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', transition: 'left 0.2s' }} />
               </div>
@@ -214,7 +214,7 @@ export default function BlogPage() {
         {editing && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Lang tabs */}
-            <div style={{ display: 'flex', gap: 2, background: 'var(--color-a-surface-2)', borderRadius: 8, padding: 4, width: 'fit-content' }}>
+            <div style={{ display: 'flex', gap: 2, background: 'var(--a-surface-2)', borderRadius: 8, padding: 4, width: 'fit-content' }}>
               {(['fr','en'] as const).map(lang => (
                 <button key={lang} className={`admin-btn ${activeTab === lang ? 'admin-btn-primary' : 'admin-btn-ghost'}`} style={{ padding: '5px 18px', fontSize: 12 }} onClick={() => setActiveTab(lang)}>
                   <Globe size={12} /> {lang.toUpperCase()}

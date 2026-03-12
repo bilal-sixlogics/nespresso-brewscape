@@ -59,8 +59,8 @@ export const adminApi = {
   products: {
     list: (params?: Record<string, string | number>) =>
       request(`/v1/admin/products?${new URLSearchParams(params as Record<string, string>)}`),
-    byType: (type: string, page = 1, search = '') =>
-      request(`/v1/admin/products?product_type=${type}&page=${page}&search=${encodeURIComponent(search)}`),
+    byType: (type: string, page = 1, search = '', perPage = 100) =>
+      request(`/v1/admin/products?product_type=${type}&page=${page}&search=${encodeURIComponent(search)}&per_page=${perPage}`),
     get: (id: number) => request(`/v1/admin/products/${id}`),
     create: (data: unknown) =>
       request('/v1/admin/products', { method: 'POST', body: JSON.stringify(data) }),

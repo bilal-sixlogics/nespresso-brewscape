@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Globe } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { AdminDataTable, type Column, type TableAction } from '@/components/admin/ui/AdminDataTable';
 import { AdminBadge }      from '@/components/admin/ui/AdminBadge';
@@ -17,19 +18,30 @@ const COLS: Column<Brand>[] = [
     render: (r) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {r.logo_path ? (
-          <img src={`/storage/${r.logo_path}`} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain', background: '#fff' }} />
+          <img src={`/storage/${r.logo_path}`} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'contain', background: '#fff', border: '1px solid var(--a-border)' }} />
         ) : (
-          <div style={{ width: 28, height: 28, borderRadius: 6, background: 'var(--color-a-surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--color-a-text-dim)' }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, var(--a-green-light), var(--a-surface-2))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'var(--a-green)' }}>
             {r.name[0]}
           </div>
         )}
-        <span style={{ fontWeight: 600 }}>{r.name}</span>
+        <span style={{ fontWeight: 600, fontSize: 13 }}>{r.name}</span>
       </div>
     ),
   },
-  { key: 'slug',    label: 'Slug',    render: (r) => <code style={{ fontSize: 11, opacity: 0.7 }}>{r.slug}</code> },
-  { key: 'website', label: 'Website', render: (r) => r.website ? <a href={r.website} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: 'var(--color-a-green-hover)' }}>{r.website}</a> : <span style={{ color: 'var(--color-a-text-dim)' }}>—</span> },
-  { key: 'is_active', label: 'Active', width: '70px', render: (r) => <AdminBadge variant={r.is_active ? 'green' : 'gray'} dot>{r.is_active ? 'Yes' : 'No'}</AdminBadge> },
+  { key: 'slug', label: 'Slug', render: (r) => <code style={{ fontSize: 11, opacity: 0.7, background: 'var(--a-surface-2)', padding: '2px 8px', borderRadius: 6 }}>{r.slug}</code> },
+  {
+    key: 'website', label: 'Website',
+    render: (r) => r.website ? (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--a-green-hover)' }}>
+        <Globe size={11} />
+        {r.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+      </span>
+    ) : <span style={{ color: 'var(--a-text-dim)', fontSize: 12 }}>—</span>,
+  },
+  {
+    key: 'is_active', label: 'Active', width: '70px',
+    render: (r) => <AdminBadge variant={r.is_active ? 'green' : 'gray'} dot>{r.is_active ? 'Yes' : 'No'}</AdminBadge>,
+  },
 ];
 
 const blank = () => ({ name: '', slug: '', website: '', is_active: true });
@@ -83,9 +95,18 @@ export default function BrandsPage() {
       <AdminPageHeader title="Brands" subtitle="Manage product brands shown in the catalogue."
         actions={<button className="admin-btn admin-btn-primary" onClick={openCreate}><Plus size={15} />Add Brand</button>}
       />
-      <AdminDataTable data={brands} columns={COLS} actions={actions} keyFn={(b) => b.id}
-        loading={loading} searchPlaceholder="Search brands…" emptyTitle="No brands yet" onRowClick={openEdit}
-      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="admin-card"
+        style={{ padding: 0, overflow: 'hidden' }}
+      >
+        <AdminDataTable data={brands} columns={COLS} actions={actions} keyFn={(b) => b.id}
+          loading={loading} searchPlaceholder="Search brands…" emptyTitle="No brands yet" onRowClick={openEdit}
+        />
+      </motion.div>
 
       <AdminModal open={open} onClose={() => setOpen(false)}
         title={editId ? 'Edit Brand' : 'New Brand'} size="sm"
@@ -98,8 +119,8 @@ export default function BrandsPage() {
           </>
         }
       >
-        {error && <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', color: '#F87171', fontSize: 13 }}>{error}</div>}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {error && <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#F87171', fontSize: 13 }}>{error}</div>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {[
             { l: 'Brand Name *', k: 'name',    ph: 'e.g. Nespresso' },
             { l: 'Slug',         k: 'slug',    ph: 'nespresso' },
@@ -117,10 +138,10 @@ export default function BrandsPage() {
           ))}
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
             <div onClick={() => setForm((p) => ({ ...p, is_active: !p.is_active }))}
-              style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: form.is_active ? 'var(--color-a-green)' : 'var(--color-a-surface-3)', border: '1px solid var(--color-a-border)', transition: 'background 0.2s' }}>
-              <div style={{ position: 'absolute', top: 2, left: form.is_active ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
+              style={{ width: 40, height: 22, borderRadius: 11, position: 'relative', cursor: 'pointer', background: form.is_active ? 'var(--a-green)' : 'var(--a-surface-3)', border: '1px solid var(--a-border)', transition: 'all 0.25s ease' }}>
+              <div style={{ position: 'absolute', top: 2, left: form.is_active ? 20 : 2, width: 16, height: 16, borderRadius: '50%', background: 'white', transition: 'left 0.25s ease', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
             </div>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-a-text)' }}>Active</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--a-text)' }}>Active</span>
           </label>
         </div>
       </AdminModal>
@@ -128,7 +149,7 @@ export default function BrandsPage() {
       <AdminModal open={!!delId} onClose={() => setDelId(null)} title="Delete Brand" size="sm"
         footer={<><button className="admin-btn admin-btn-ghost" onClick={() => setDelId(null)}>Cancel</button><button className="admin-btn admin-btn-danger" onClick={handleDelete}>Delete</button></>}
       >
-        <p style={{ fontSize: 14, color: 'var(--color-a-text-muted)' }}>Delete this brand? Products using it will have no brand assigned.</p>
+        <p style={{ fontSize: 14, color: 'var(--a-text-muted)' }}>Delete this brand? Products using it will have no brand assigned.</p>
       </AdminModal>
     </>
   );

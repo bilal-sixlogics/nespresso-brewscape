@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { AdminDataTable, type Column, type TableAction } from '@/components/admin/ui/AdminDataTable';
 import { AdminModal }      from '@/components/admin/ui/AdminModal';
@@ -25,16 +26,20 @@ const COLS: Column<Tag>[] = [
   {
     key: 'name', label: 'Tag', sortable: true,
     render: (r) => (
-      <span style={{ background: r.color, color: 'white', padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>
+      <span style={{
+        background: r.color, color: 'white', padding: '3px 12px', borderRadius: 999,
+        fontSize: 12, fontWeight: 700, display: 'inline-block',
+        boxShadow: `0 1px 4px ${r.color}33`,
+      }}>
         {r.name}
       </span>
     ),
   },
-  { key: 'name_en', label: 'EN Name', render: (r) => r.name_en || <span style={{ color: 'var(--color-a-text-dim)' }}>—</span> },
-  { key: 'slug',    label: 'Slug',    render: (r) => <code style={{ fontSize: 11, opacity: 0.7 }}>{r.slug}</code> },
+  { key: 'name_en', label: 'EN Name', render: (r) => r.name_en || <span style={{ color: 'var(--a-text-dim)' }}>—</span> },
+  { key: 'slug', label: 'Slug', render: (r) => <code style={{ fontSize: 11, opacity: 0.7, background: 'var(--a-surface-2)', padding: '2px 8px', borderRadius: 6 }}>{r.slug}</code> },
   { key: 'products_count', label: 'Products', width: '80px',
-    render: (r) => <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-a-text-muted)' }}>{r.products_count ?? 0}</span> },
-  { key: 'sort_order', label: 'Order', width: '60px', render: (r) => <span style={{ fontSize: 12 }}>{r.sort_order}</span> },
+    render: (r) => <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--a-text-muted)' }}>{r.products_count ?? 0}</span> },
+  { key: 'sort_order', label: 'Order', width: '60px', render: (r) => <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--a-text-muted)' }}>{r.sort_order}</span> },
 ];
 
 const blank = () => ({ name: '', name_en: '', slug: '', color: '#3C7A58', sort_order: 0, is_active: true });
@@ -91,28 +96,53 @@ export default function TagsPage() {
       />
 
       {/* Preset chips for quick creation */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-        <span style={{ fontSize: 11, color: 'var(--color-a-text-dim)', alignSelf: 'center', marginRight: 4 }}>Quick add:</span>
-        {PRESETS.map((p) => (
-          <button
-            key={p.name}
-            style={{
-              padding: '3px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
-              background: p.color, color: 'white', border: 'none', cursor: 'pointer',
-              opacity: tags.some((t) => t.name === p.name) ? 0.35 : 1,
-            }}
-            disabled={tags.some((t) => t.name === p.name)}
-            onClick={() => { setEditId(null); setForm({ name: p.name, color: p.color, slug: slugify(p.name), sort_order: 0, is_active: true }); setOpen(true); }}
-          >
-            {p.name}
-          </button>
-        ))}
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.08 }}
+        className="admin-card"
+        style={{ padding: '14px 18px', marginBottom: 16 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <Sparkles size={13} style={{ color: 'var(--a-green)' }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--a-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quick Add Presets</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {PRESETS.map((p) => {
+            const exists = tags.some((t) => t.name === p.name);
+            return (
+              <button
+                key={p.name}
+                style={{
+                  padding: '4px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600,
+                  background: exists ? 'var(--a-surface-2)' : p.color, color: exists ? 'var(--a-text-dim)' : 'white',
+                  border: 'none', cursor: exists ? 'default' : 'pointer',
+                  opacity: exists ? 0.5 : 1,
+                  transition: 'all 0.2s ease',
+                  boxShadow: exists ? 'none' : `0 2px 6px ${p.color}33`,
+                }}
+                disabled={exists}
+                onClick={() => { setEditId(null); setForm({ name: p.name, color: p.color, slug: slugify(p.name), sort_order: 0, is_active: true }); setOpen(true); }}
+              >
+                {exists ? `✓ ${p.name}` : p.name}
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
 
-      <AdminDataTable data={tags} columns={COLS} actions={actions} keyFn={(t) => t.id}
-        loading={loading} searchPlaceholder="Search tags…" emptyTitle="No tags yet"
-        emptySubtitle="Tags let you highlight products across all pages." onRowClick={openEdit}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.15 }}
+        className="admin-card"
+        style={{ padding: 0, overflow: 'hidden' }}
+      >
+        <AdminDataTable data={tags} columns={COLS} actions={actions} keyFn={(t) => t.id}
+          loading={loading} searchPlaceholder="Search tags…" emptyTitle="No tags yet"
+          emptySubtitle="Tags let you highlight products across all pages." onRowClick={openEdit}
+        />
+      </motion.div>
 
       <AdminModal open={open} onClose={() => setOpen(false)}
         title={editId ? 'Edit Tag' : 'New Tag'} size="sm"
@@ -125,8 +155,8 @@ export default function TagsPage() {
           </>
         }
       >
-        {error && <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', color: '#F87171', fontSize: 13 }}>{error}</div>}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {error && <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#F87171', fontSize: 13 }}>{error}</div>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
               <label className="admin-label">Name (FR) *</label>
@@ -150,9 +180,9 @@ export default function TagsPage() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <input type="color" value={form.color ?? '#3C7A58'}
                   onChange={(e) => setForm((p) => ({ ...p, color: e.target.value }))}
-                  style={{ width: 40, height: 38, borderRadius: 8, border: '1px solid var(--color-a-border)', cursor: 'pointer', padding: 2, background: 'var(--color-a-surface-2)' }}
+                  style={{ width: 40, height: 38, borderRadius: 10, border: '1px solid var(--a-border)', cursor: 'pointer', padding: 2, background: 'var(--a-surface-2)' }}
                 />
-                <span style={{ padding: '4px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: form.color, color: 'white' }}>
+                <span style={{ padding: '4px 14px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: form.color, color: 'white', boxShadow: `0 1px 4px ${form.color}33` }}>
                   {form.name || 'Preview'}
                 </span>
               </div>
@@ -167,10 +197,10 @@ export default function TagsPage() {
             <div style={{ paddingBottom: 4 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
                 <div onClick={() => setForm((p) => ({ ...p, is_active: !p.is_active }))}
-                  style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: form.is_active ? 'var(--color-a-green)' : 'var(--color-a-surface-3)', border: '1px solid var(--color-a-border)', transition: 'background 0.2s' }}>
-                  <div style={{ position: 'absolute', top: 2, left: form.is_active ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
+                  style={{ width: 40, height: 22, borderRadius: 11, position: 'relative', cursor: 'pointer', background: form.is_active ? 'var(--a-green)' : 'var(--a-surface-3)', border: '1px solid var(--a-border)', transition: 'all 0.25s ease' }}>
+                  <div style={{ position: 'absolute', top: 2, left: form.is_active ? 20 : 2, width: 16, height: 16, borderRadius: '50%', background: 'white', transition: 'left 0.25s ease', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-a-text)' }}>Active</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--a-text)' }}>Active</span>
               </label>
             </div>
           </div>
@@ -180,7 +210,7 @@ export default function TagsPage() {
       <AdminModal open={!!delId} onClose={() => setDelId(null)} title="Delete Tag" size="sm"
         footer={<><button className="admin-btn admin-btn-ghost" onClick={() => setDelId(null)}>Cancel</button><button className="admin-btn admin-btn-danger" onClick={handleDelete}>Delete</button></>}
       >
-        <p style={{ fontSize: 14, color: 'var(--color-a-text-muted)' }}>Delete this tag? It will be removed from all products it's applied to.</p>
+        <p style={{ fontSize: 14, color: 'var(--a-text-muted)' }}>Delete this tag? It will be removed from all products it's applied to.</p>
       </AdminModal>
     </>
   );

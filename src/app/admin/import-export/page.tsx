@@ -124,14 +124,14 @@ export default function ImportExportPage() {
                   <div style={{ fontSize: 22 }}>{opt.icon}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: 13 }}>{opt.label}</div>
-                    <div style={{ fontSize: 11, color: 'var(--color-a-text-muted)', marginTop: 2 }}>{opt.desc}</div>
+                    <div style={{ fontSize: 11, color: 'var(--a-text-muted)', marginTop: 2 }}>{opt.desc}</div>
                     <AnimatePresence>
                       {job && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
-                          style={{ fontSize: 11, marginTop: 4, color: job.status === 'done' ? 'var(--color-a-green)' : job.status === 'error' ? '#EF4444' : 'var(--color-a-text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}
+                          style={{ fontSize: 11, marginTop: 4, color: job.status === 'done' ? 'var(--a-green)' : job.status === 'error' ? '#EF4444' : 'var(--a-text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}
                         >
                           {job.status === 'done' && <CheckCircle size={11} />}
                           {job.status === 'error' && <AlertCircle size={11} />}
@@ -175,28 +175,28 @@ export default function ImportExportPage() {
               onDrop={handleDrop}
               style={{
                 marginTop: 14,
-                border: `2px dashed ${dragOver ? 'var(--color-a-green)' : 'var(--color-a-border)'}`,
+                border: `2px dashed ${dragOver ? 'var(--a-green)' : 'var(--a-border)'}`,
                 borderRadius: 10,
                 padding: '28px 20px',
                 textAlign: 'center',
                 cursor: 'pointer',
-                background: dragOver ? 'var(--color-a-green)08' : 'var(--color-a-surface-2)',
+                background: dragOver ? 'var(--a-green)08' : 'var(--a-surface-2)',
                 transition: 'all 0.2s',
               }}
               onClick={() => document.getElementById('csv-file-input')?.click()}
             >
-              <Upload size={28} style={{ color: 'var(--color-a-text-muted)', marginBottom: 8 }} />
+              <Upload size={28} style={{ color: 'var(--a-text-muted)', marginBottom: 8 }} />
               {importFile ? (
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 13 }}>{importFile.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--color-a-text-muted)', marginTop: 4 }}>
+                  <div style={{ fontSize: 12, color: 'var(--a-text-muted)', marginTop: 4 }}>
                     {(importFile.size / 1024).toFixed(1)} KB
                   </div>
                 </div>
               ) : (
                 <>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>Drop CSV file here</div>
-                  <div style={{ fontSize: 12, color: 'var(--color-a-text-muted)', marginTop: 4 }}>or click to browse</div>
+                  <div style={{ fontSize: 12, color: 'var(--a-text-muted)', marginTop: 4 }}>or click to browse</div>
                 </>
               )}
               <input
@@ -219,8 +219,8 @@ export default function ImportExportPage() {
                       marginTop: 12,
                       padding: '10px 14px',
                       borderRadius: 8,
-                      background: job.status === 'done' ? 'rgba(52,211,153,0.08)' : job.status === 'error' ? 'rgba(239,68,68,0.08)' : 'var(--color-a-surface-2)',
-                      border: `1px solid ${job.status === 'done' ? 'rgba(52,211,153,0.2)' : job.status === 'error' ? 'rgba(239,68,68,0.2)' : 'var(--color-a-border)'}`,
+                      background: job.status === 'done' ? 'rgba(52,211,153,0.08)' : job.status === 'error' ? 'rgba(239,68,68,0.08)' : 'var(--a-surface-2)',
+                      border: `1px solid ${job.status === 'done' ? 'rgba(52,211,153,0.2)' : job.status === 'error' ? 'rgba(239,68,68,0.2)' : 'var(--a-border)'}`,
                       display: 'flex',
                       alignItems: 'center',
                       gap: 8,
@@ -228,7 +228,7 @@ export default function ImportExportPage() {
                     }}
                   >
                     {job.status === 'done' && <CheckCircle size={14} style={{ color: '#34D399' }} />}
-                    {job.status === 'running' && <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite', color: 'var(--color-a-text-muted)' }} />}
+                    {job.status === 'running' && <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite', color: 'var(--a-text-muted)' }} />}
                     {job.message}
                     {job.count !== undefined && <span style={{ marginLeft: 'auto', fontWeight: 700 }}>{job.count} rows</span>}
                   </motion.div>
@@ -252,10 +252,10 @@ export default function ImportExportPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {IMPORT_TEMPLATES.map(tpl => (
                 <div key={tpl.key} className="admin-card" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <FileText size={16} style={{ color: 'var(--color-a-text-muted)', flexShrink: 0 }} />
+                  <FileText size={16} style={{ color: 'var(--a-text-muted)', flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: 12 }}>{tpl.label}</div>
-                    <div style={{ fontSize: 11, color: 'var(--color-a-text-muted)', marginTop: 2 }}>{tpl.cols.split(',').length} columns</div>
+                    <div style={{ fontSize: 11, color: 'var(--a-text-muted)', marginTop: 2 }}>{tpl.cols.split(',').length} columns</div>
                   </div>
                   <button className="admin-btn admin-btn-ghost" style={{ padding: '5px 10px', fontSize: 11 }} onClick={() => downloadTemplate(tpl)}>
                     <Download size={12} /> .csv

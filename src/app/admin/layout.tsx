@@ -14,9 +14,5 @@ export const metadata: Metadata = {
  * AdminShell handles auth guard, sidebar, topbar and page transitions.
  */
 export default function AdminRootLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="admin-root">
-      <AdminShell>{children}</AdminShell>
-    </div>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }

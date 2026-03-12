@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminTopBar }  from './AdminTopBar';
 import { useAdminStore } from '@/store/adminStore';
 
-const pageVariants = {
+const pageVariants: Variants = {
   initial:  { opacity: 0, y: 8 },
-  animate:  { opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.4, 0, 0.2, 1] } },
+  animate:  { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' } },
   exit:     { opacity: 0, y: -4, transition: { duration: 0.15 } },
 };
 
@@ -19,23 +19,37 @@ interface Props {
 
 export function AdminShell({ children }: Props) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { user, token, sidebarCollapsed, darkMode } = useAdminStore();
   const router   = useRouter();
   const pathname = usePathname();
+
+  // Detect mobile
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   // Auth guard
   useEffect(() => {
     if (!token && pathname !== '/admin/login') {
       router.replace('/admin/login');
     }
-    // Already logged in — skip login page
     if (token && pathname === '/admin/login') {
       router.replace('/admin/dashboard');
     }
   }, [token, pathname, router]);
 
   if (!token && pathname !== '/admin/login') return null;
-  if (token && pathname === '/admin/login') return null; // redirecting
+  if (token && pathname === '/admin/login') return null;
 
   // Login page renders without shell chrome
   if (pathname === '/admin/login') {
@@ -46,7 +60,9 @@ export function AdminShell({ children }: Props) {
     );
   }
 
-  const sidebarW = sidebarCollapsed ? 64 : 260;
+  // On mobile, never offset the content — sidebar is overlay
+  // Sidebar has 8px left margin + 8px visual spacing from the rounded container
+  const sidebarW = isMobile ? 0 : (sidebarCollapsed ? (64 + 8) : (260 + 8));
 
   return (
     <div className="admin-root" data-theme={darkMode ? 'dark' : undefined}>
@@ -56,7 +72,7 @@ export function AdminShell({ children }: Props) {
           onMobileClose={() => setMobileMenuOpen(false)}
         />
 
-        {/* Main content — offset by sidebar width */}
+        {/* Main content — offset by sidebar width on desktop only */}
         <div
           className="admin-content-wrap"
           style={{ marginLeft: sidebarW }}

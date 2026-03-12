@@ -1,8 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import type { Product, Category, Brand, Tag } from '@/types/admin';
 import { adminApi } from '@/lib/admin/api';
+import { ProductPreview } from './ProductPreview';
+
+const RichTextEditor = lazy(() =>
+  import('./RichTextEditor').then((m) => ({ default: m.RichTextEditor }))
+);
 
 type ProductType = 'coffee' | 'machine' | 'accessory' | 'sweet';
 
@@ -26,6 +31,7 @@ const TABS = [
   { id: 'description', label: 'Description' },
   { id: 'pricing',     label: 'Pricing & Sale' },
   { id: 'meta',        label: 'Tags & SEO' },
+  { id: 'preview',     label: '👁 Preview' },
 ];
 
 const COFFEE_TABS = [...TABS.slice(0, 2), { id: 'coffee', label: 'Coffee Profile' }, ...TABS.slice(2)];
@@ -141,8 +147,8 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
         onClick={() => set(!val)}
         style={{
           width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer',
-          background: val ? 'var(--color-a-green)' : 'var(--color-a-surface-3)',
-          border: '1px solid var(--color-a-border)',
+          background: val ? 'var(--a-green)' : 'var(--a-surface-3)',
+          border: '1px solid var(--a-border)',
           transition: 'background 0.2s',
         }}
       >
@@ -152,7 +158,7 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
           transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
         }} />
       </div>
-      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-a-text)' }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--a-text)' }}>{label}</span>
     </label>
   );
 
@@ -161,7 +167,7 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
       {/* Tab navigation */}
       <div style={{
         display: 'flex', gap: 2, marginBottom: 20,
-        borderBottom: '1px solid var(--color-a-border)', paddingBottom: 0,
+        borderBottom: '1px solid var(--a-border)', paddingBottom: 0,
       }}>
         {tabs.map((t) => (
           <button
@@ -172,11 +178,11 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
               padding: '7px 14px',
               fontSize: 13,
               fontWeight: tab === t.id ? 700 : 500,
-              color: tab === t.id ? 'var(--color-a-green-hover)' : 'var(--color-a-text-muted)',
+              color: tab === t.id ? 'var(--a-green-hover)' : 'var(--a-text-muted)',
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: tab === t.id ? '2px solid var(--color-a-green)' : '2px solid transparent',
+              borderBottom: tab === t.id ? '2px solid var(--a-green)' : '2px solid transparent',
               marginBottom: -1,
               transition: 'color 0.15s, border-color 0.15s',
             }}
@@ -227,7 +233,7 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
           ))}
 
           {/* Toggles row */}
-          <div style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, padding: '8px 0' }}>
+          <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, padding: '8px 0' }}>
             {toggle('In Stock',  inStock,    setInStock)}
             {toggle('Active',    isActive,   setIsActive)}
             {toggle('Featured',  isFeatured, setIsFeatured)}
@@ -248,24 +254,22 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
             ))}
           </div>
           {field('Description (FR)', (
-            <textarea
-              className="admin-input"
-              rows={5}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Full product description…"
-              style={{ resize: 'vertical' }}
-            />
+            <Suspense fallback={<div className="admin-input" style={{ minHeight: 140, opacity: 0.5 }}>Loading editor…</div>}>
+              <RichTextEditor
+                value={description}
+                onChange={setDescription}
+                placeholder="Full product description…"
+              />
+            </Suspense>
           ))}
           {field('Description (EN)', (
-            <textarea
-              className="admin-input"
-              rows={5}
-              value={descriptionEn}
-              onChange={(e) => setDescriptionEn(e.target.value)}
-              placeholder="Description in English…"
-              style={{ resize: 'vertical' }}
-            />
+            <Suspense fallback={<div className="admin-input" style={{ minHeight: 140, opacity: 0.5 }}>Loading editor…</div>}>
+              <RichTextEditor
+                value={descriptionEn}
+                onChange={setDescriptionEn}
+                placeholder="Description in English…"
+              />
+            </Suspense>
           ))}
         </div>
       )}
@@ -296,7 +300,7 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
       {/* ── ALLERGENS (sweets) ─────────────────────────────────────────── */}
       {tab === 'allergens' && type === 'sweet' && (
         <div>
-          <p style={{ fontSize: 13, color: 'var(--color-a-text-muted)', marginBottom: 12 }}>
+          <p style={{ fontSize: 13, color: 'var(--a-text-muted)', marginBottom: 12 }}>
             Allergen information is managed in the Filament admin panel or via bulk import.
             Save the product first, then add allergens via the Filament interface.
           </p>
@@ -320,7 +324,7 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
             </>
           )}
           {!isOnSale && (
-            <div style={{ gridColumn: 'span 2', padding: '20px 0', color: 'var(--color-a-text-muted)', fontSize: 13 }}>
+            <div style={{ gridColumn: 'span 2', padding: '20px 0', color: 'var(--a-text-muted)', fontSize: 13 }}>
               Enable "On Sale" to set a discount percentage and expiry date.
             </div>
           )}
@@ -333,7 +337,7 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
           <label className="admin-label">Global Tags</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
             {allTags.length === 0 && (
-              <p style={{ fontSize: 13, color: 'var(--color-a-text-muted)' }}>
+              <p style={{ fontSize: 13, color: 'var(--a-text-muted)' }}>
                 No tags defined yet. Create tags in Catalog Setup → Tags.
               </p>
             )}
@@ -347,9 +351,9 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
                   style={{
                     padding: '4px 12px', borderRadius: 999, fontSize: 12.5, fontWeight: 600,
                     cursor: 'pointer', transition: 'all 0.15s',
-                    background: sel ? t.color : 'var(--color-a-surface-2)',
-                    color: sel ? 'white' : 'var(--color-a-text-muted)',
-                    border: `1px solid ${sel ? t.color : 'var(--color-a-border)'}`,
+                    background: sel ? t.color : 'var(--a-surface-2)',
+                    color: sel ? 'white' : 'var(--a-text-muted)',
+                    border: `1px solid ${sel ? t.color : 'var(--a-border)'}`,
                   }}
                 >
                   {t.name}
@@ -358,6 +362,37 @@ export function ProductForm({ product, type, skuPrefix, onSubmit }: Props) {
             })}
           </div>
         </div>
+      )}
+
+      {/* ── PREVIEW ──────────────────────────────────────────────────── */}
+      {tab === 'preview' && (
+        <ProductPreview
+          data={{
+            name,
+            nameEn: nameEn || undefined,
+            tagline: tagline || undefined,
+            taglineEn: taglineEn || undefined,
+            price,
+            originalPrice: originalPrice || undefined,
+            description: description || undefined,
+            descriptionEn: descriptionEn || undefined,
+            weight: weight || undefined,
+            origin: origin || undefined,
+            intensity: intensity || undefined,
+            roastLevel: roastLevel || undefined,
+            processing: processing || undefined,
+            inStock,
+            isNew,
+            isFeatured,
+            isOnSale,
+            saleDiscount: saleDiscount || undefined,
+            imagePath: product?.images?.find(i => i.is_primary)?.path ?? product?.images?.[0]?.path,
+            category: categories.find(c => c.id === categoryId)?.name,
+            brand: brands.find(b => b.id === brandId)?.name,
+            tags: allTags.filter(t => selectedTags.includes(t.id)).map(t => t.name),
+            type,
+          }}
+        />
       )}
 
       {/* Hidden submit target */}

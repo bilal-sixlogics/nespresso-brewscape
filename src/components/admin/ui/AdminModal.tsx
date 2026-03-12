@@ -48,8 +48,8 @@ export function AdminModal({ open, onClose, title, subtitle, children, footer, s
         >
           <motion.div
             style={{
-              background: 'var(--color-a-surface)',
-              border: '1px solid var(--color-a-border-2)',
+              background: 'var(--a-surface)',
+              border: '1px solid var(--a-border-2)',
               borderRadius: 16,
               width: '100%',
               maxWidth: SIZE_MAP[size],
@@ -70,16 +70,16 @@ export function AdminModal({ open, onClose, title, subtitle, children, footer, s
                 alignItems: 'flex-start',
                 justifyContent: 'space-between',
                 padding: '20px 24px 16px',
-                borderBottom: '1px solid var(--color-a-border)',
+                borderBottom: '1px solid var(--a-border)',
                 flexShrink: 0,
               }}
             >
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-a-text)' }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--a-text)' }}>
                   {title}
                 </div>
                 {subtitle && (
-                  <div style={{ fontSize: 12.5, color: 'var(--color-a-text-muted)', marginTop: 2 }}>
+                  <div style={{ fontSize: 12.5, color: 'var(--a-text-muted)', marginTop: 2 }}>
                     {subtitle}
                   </div>
                 )}
@@ -104,7 +104,7 @@ export function AdminModal({ open, onClose, title, subtitle, children, footer, s
               <div
                 style={{
                   padding: '14px 24px',
-                  borderTop: '1px solid var(--color-a-border)',
+                  borderTop: '1px solid var(--a-border)',
                   display: 'flex',
                   justifyContent: 'flex-end',
                   gap: 8,

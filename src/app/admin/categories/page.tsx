@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { AdminPageHeader } from '@/components/admin/ui/AdminPageHeader';
 import { AdminDataTable, type Column, type TableAction } from '@/components/admin/ui/AdminDataTable';
 import { AdminBadge }      from '@/components/admin/ui/AdminBadge';
@@ -17,6 +18,10 @@ const TYPE_OPTIONS = [
   { value: 'sweet',     label: 'Treats & Sweets' },
 ];
 
+const TYPE_COLORS: Record<string, 'green' | 'sky' | 'amber' | 'red' | 'gray'> = {
+  all: 'gray', coffee: 'green', machine: 'sky', accessory: 'amber', sweet: 'red',
+};
+
 const COLS: Column<Category>[] = [
   {
     key: 'name',
@@ -24,16 +29,16 @@ const COLS: Column<Category>[] = [
     sortable: true,
     render: (r) => (
       <div>
-        <div style={{ fontWeight: 600 }}>{r.name}</div>
-        {r.name_en && <div style={{ fontSize: 11, color: 'var(--color-a-text-muted)' }}>{r.name_en}</div>}
+        <div style={{ fontWeight: 600, fontSize: 13 }}>{r.name}</div>
+        {r.name_en && <div style={{ fontSize: 11, color: 'var(--a-text-muted)' }}>{r.name_en}</div>}
       </div>
     ),
   },
-  { key: 'slug', label: 'Slug', render: (r) => <code style={{ fontSize: 11, opacity: 0.7 }}>{r.slug}</code> },
+  { key: 'slug', label: 'Slug', render: (r) => <code style={{ fontSize: 11, opacity: 0.7, background: 'var(--a-surface-2)', padding: '2px 8px', borderRadius: 6 }}>{r.slug}</code> },
   {
     key: 'product_type',
     label: 'Type',
-    render: (r) => <AdminBadge variant="primary">{r.product_type}</AdminBadge>,
+    render: (r) => <AdminBadge variant={TYPE_COLORS[r.product_type] ?? 'gray'}>{r.product_type}</AdminBadge>,
   },
   {
     key: 'is_active',
@@ -41,7 +46,7 @@ const COLS: Column<Category>[] = [
     width: '70px',
     render: (r) => <AdminBadge variant={r.is_active ? 'green' : 'gray'} dot>{r.is_active ? 'Yes' : 'No'}</AdminBadge>,
   },
-  { key: 'sort_order', label: 'Order', width: '60px', render: (r) => <span style={{ fontSize: 12 }}>{r.sort_order}</span> },
+  { key: 'sort_order', label: 'Order', width: '60px', render: (r) => <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--a-text-muted)' }}>{r.sort_order}</span> },
 ];
 
 const blank = (): Partial<Category> => ({
@@ -103,10 +108,19 @@ export default function CategoriesPage() {
       <AdminPageHeader title="Categories" subtitle="Organise your catalogue into categories per product type."
         actions={<button className="admin-btn admin-btn-primary" onClick={openCreate}><Plus size={15} />Add Category</button>}
       />
-      <AdminDataTable data={cats} columns={COLS} actions={actions} keyFn={(c) => c.id}
-        loading={loading} searchPlaceholder="Search categories…" emptyTitle="No categories yet"
-        emptySubtitle="Create your first category to organise products." onRowClick={openEdit}
-      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="admin-card"
+        style={{ padding: 0, overflow: 'hidden' }}
+      >
+        <AdminDataTable data={cats} columns={COLS} actions={actions} keyFn={(c) => c.id}
+          loading={loading} searchPlaceholder="Search categories…" emptyTitle="No categories yet"
+          emptySubtitle="Create your first category to organise products." onRowClick={openEdit}
+        />
+      </motion.div>
 
       <AdminModal open={open} onClose={() => setOpen(false)}
         title={editId ? 'Edit Category' : 'New Category'} size="md"
@@ -119,8 +133,8 @@ export default function CategoriesPage() {
           </>
         }
       >
-        {error && <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#F87171', fontSize: 13 }}>{error}</div>}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {error && <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#F87171', fontSize: 13 }}>{error}</div>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {f('Name (FR) *', <input className="admin-input" value={form.name ?? ''} onChange={(e) => { setForm((p) => ({ ...p, name: e.target.value, slug: editId ? p.slug : slugify(e.target.value) })); }} required />)}
             {f('Name (EN)',   <input className="admin-input" value={form.name_en ?? ''} onChange={(e) => setForm((p) => ({ ...p, name_en: e.target.value }))} />)}
@@ -134,15 +148,15 @@ export default function CategoriesPage() {
             ))}
           </div>
           {f('Description (FR)', <textarea className="admin-input" rows={2} value={form.description ?? ''} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} style={{ resize: 'vertical' }} />)}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'end' }}>
             {f('Sort Order', <input className="admin-input" type="number" value={form.sort_order ?? 0} onChange={(e) => setForm((p) => ({ ...p, sort_order: Number(e.target.value) }))} />)}
             <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 4 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
                 <div onClick={() => setForm((p) => ({ ...p, is_active: !p.is_active }))}
-                  style={{ width: 36, height: 20, borderRadius: 10, position: 'relative', cursor: 'pointer', background: form.is_active ? 'var(--color-a-green)' : 'var(--color-a-surface-3)', border: '1px solid var(--color-a-border)', transition: 'background 0.2s' }}>
-                  <div style={{ position: 'absolute', top: 2, left: form.is_active ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
+                  style={{ width: 40, height: 22, borderRadius: 11, position: 'relative', cursor: 'pointer', background: form.is_active ? 'var(--a-green)' : 'var(--a-surface-3)', border: '1px solid var(--a-border)', transition: 'all 0.25s ease' }}>
+                  <div style={{ position: 'absolute', top: 2, left: form.is_active ? 20 : 2, width: 16, height: 16, borderRadius: '50%', background: 'white', transition: 'left 0.25s ease', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-a-text)' }}>Active</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--a-text)' }}>Active</span>
               </label>
             </div>
           </div>
@@ -152,7 +166,7 @@ export default function CategoriesPage() {
       <AdminModal open={!!delId} onClose={() => setDelId(null)} title="Delete Category" size="sm"
         footer={<><button className="admin-btn admin-btn-ghost" onClick={() => setDelId(null)}>Cancel</button><button className="admin-btn admin-btn-danger" onClick={handleDelete}>Delete</button></>}
       >
-        <p style={{ fontSize: 14, color: 'var(--color-a-text-muted)' }}>Delete this category? Products in this category will be uncategorised.</p>
+        <p style={{ fontSize: 14, color: 'var(--a-text-muted)' }}>Delete this category? Products in this category will be uncategorised.</p>
       </AdminModal>
     </>
   );

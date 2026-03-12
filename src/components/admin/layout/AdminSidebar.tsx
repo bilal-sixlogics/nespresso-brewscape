@@ -28,52 +28,47 @@ interface NavGroup {
 
 const NAV: NavGroup[] = [
   {
-    group: 'Overview',
+    group: 'Main',
     items: [
       { label: 'Dashboard',    href: '/admin/dashboard',   icon: LayoutDashboard },
+      { label: 'Analytics',    href: '/admin/analytics',   icon: BarChart3 },
     ],
   },
   {
-    group: 'Catalog',
+    group: 'Catalogue',
     items: [
       { label: 'Coffee & Capsules', href: '/admin/coffee',      icon: Coffee },
       { label: 'Machines',          href: '/admin/machines',    icon: Cpu },
-      { label: 'Accessories',       href: '/admin/accessories', icon: Wrench },
       { label: 'Treats & Sweets',   href: '/admin/sweets',      icon: Cake },
+      { label: 'Accessories',       href: '/admin/accessories', icon: Wrench },
+      { label: 'Categories',        href: '/admin/categories',  icon: FolderOpen },
+      { label: 'Brands',            href: '/admin/brands',      icon: Award },
+      { label: 'Tags',              href: '/admin/tags',         icon: Tag },
     ],
   },
   {
-    group: 'Catalog Setup',
+    group: 'Store',
     items: [
-      { label: 'Categories', href: '/admin/categories', icon: FolderOpen },
-      { label: 'Brands',     href: '/admin/brands',     icon: Award },
-      { label: 'Tags',       href: '/admin/tags',        icon: Tag },
-    ],
-  },
-  {
-    group: 'Commerce',
-    items: [
-      { label: 'Orders',           href: '/admin/orders',    icon: ShoppingCart },
-      { label: 'Inventory',        href: '/admin/inventory', icon: Package },
-      { label: 'Promotions',       href: '/admin/promos',    icon: Percent },
-      { label: 'Delivery & Pay',   href: '/admin/delivery',  icon: Truck },
+      { label: 'Orders',         href: '/admin/orders',    icon: ShoppingCart },
+      { label: 'Inventory',      href: '/admin/inventory', icon: Package },
+      { label: 'Promotions',     href: '/admin/promos',    icon: Percent },
+      { label: 'Delivery & Pay', href: '/admin/delivery',  icon: Truck },
     ],
   },
   {
     group: 'Content',
     items: [
-      { label: 'Blog Posts',    href: '/admin/blog',         icon: FileText },
-      { label: 'Testimonials',  href: '/admin/testimonials', icon: Star },
-      { label: 'Banners',       href: '/admin/banners',      icon: Megaphone },
+      { label: 'Blog Posts',    href: '/admin/blog',          icon: FileText },
+      { label: 'Banners',       href: '/admin/banners',       icon: Megaphone },
+      { label: 'Testimonials',  href: '/admin/testimonials',  icon: Star },
       { label: 'Import/Export', href: '/admin/import-export', icon: ArrowUpDown },
     ],
   },
   {
     group: 'Admin',
     items: [
-      { label: 'Users',     href: '/admin/users',     icon: Users },
-      { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-      { label: 'Settings',  href: '/admin/settings',  icon: Settings },
+      { label: 'Users',    href: '/admin/users',    icon: Users },
+      { label: 'Settings', href: '/admin/settings', icon: Settings },
     ],
   },
 ];
@@ -99,7 +94,7 @@ export function AdminSidebar({ mobileOpen, onMobileClose }: Props) {
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Mobile backdrop */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -114,12 +109,12 @@ export function AdminSidebar({ mobileOpen, onMobileClose }: Props) {
 
       <nav
         className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}
-        style={{ position: 'fixed', top: 0, left: 0, height: '100dvh', zIndex: 200 }}
+        style={{ position: 'fixed', top: 0, left: 0, zIndex: 200 }}
       >
-        {/* Brand */}
+        {/* Brand header */}
         <div className="admin-brand">
           <div className="admin-brand-mark">
-            <Coffee size={16} color="white" />
+            <Coffee size={17} color="white" />
           </div>
           <AnimatePresence>
             {!sidebarCollapsed && (
@@ -135,12 +130,13 @@ export function AdminSidebar({ mobileOpen, onMobileClose }: Props) {
             )}
           </AnimatePresence>
 
-          {/* Mobile close */}
+          {/* Mobile close button */}
           {mobileOpen && (
             <button
               className="admin-topbar-btn ml-auto md:hidden"
               onClick={onMobileClose}
               aria-label="Close menu"
+              style={{ marginLeft: 'auto' }}
             >
               <X size={16} />
             </button>
@@ -169,7 +165,7 @@ export function AdminSidebar({ mobileOpen, onMobileClose }: Props) {
                       <span className="admin-nav-badge">{item.badge}</span>
                     ) : null}
                     {active && !sidebarCollapsed && (
-                      <ChevronRight size={12} style={{ marginLeft: 'auto', opacity: 0.5 }} />
+                      <ChevronRight size={12} style={{ marginLeft: 'auto', opacity: 0.45 }} />
                     )}
                   </Link>
                 );
@@ -204,8 +200,10 @@ export function AdminSidebar({ mobileOpen, onMobileClose }: Props) {
             onClick={handleLogout}
             title={sidebarCollapsed ? 'Logout' : undefined}
           >
-            <LogOut size={16} className="admin-nav-icon" style={{ color: 'var(--color-a-danger)' }} />
-            <span className="admin-nav-label" style={{ color: 'var(--color-a-danger)' }}>Logout</span>
+            <LogOut size={16} className="admin-nav-icon" style={{ color: 'var(--a-danger)' }} />
+            {!sidebarCollapsed && (
+              <span className="admin-nav-label" style={{ color: 'var(--a-danger)' }}>Sign out</span>
+            )}
           </button>
         </div>
       </nav>

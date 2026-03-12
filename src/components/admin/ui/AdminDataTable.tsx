@@ -93,7 +93,7 @@ export function AdminDataTable<T>({
       <div className="admin-table-toolbar">
         {searchable && (
           <div className="admin-search-input">
-            <Search size={14} style={{ color: 'var(--color-a-text-dim)', flexShrink: 0 }} />
+            <Search size={14} style={{ color: 'var(--a-text-dim)', flexShrink: 0 }} />
             <input
               type="text"
               placeholder={searchPlaceholder}
@@ -104,7 +104,7 @@ export function AdminDataTable<T>({
         )}
         {toolbar}
         {filtered.length !== data.length && (
-          <span style={{ fontSize: 12, color: 'var(--color-a-text-muted)' }}>
+          <span style={{ fontSize: 12, color: 'var(--a-text-muted)' }}>
             {filtered.length} of {data.length}
           </span>
         )}
@@ -211,7 +211,7 @@ export function AdminDataTable<T>({
       {/* Pagination */}
       {!loading && totalPages > 1 && (
         <div className="admin-pagination">
-          <span style={{ fontSize: 12, color: 'var(--color-a-text-muted)', marginRight: 8 }}>
+          <span style={{ fontSize: 12, color: 'var(--a-text-muted)', marginRight: 8 }}>
             Page {page} of {totalPages}
           </span>
           <button
