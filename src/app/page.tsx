@@ -110,9 +110,10 @@ function BrandsMarqueeSection() {
 function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: any) => void }) {
   const { t, language } = useLanguage();
 
+  // Provide up to 5 items — MobileCarousel shows 2 on mobile, 3 on lg, 4 on xl, 5 on 2xl
   const displayMachines = (enrichedProducts as any[])
     .filter(p => p.category?.toLowerCase().includes('machine') || p.category?.toLowerCase().includes('cafetière'))
-    .slice(0, 3);
+    .slice(0, 5);
 
   return (
     <section className="py-10 sm:py-12 md:py-14 px-4 sm:px-6 lg:px-8 bg-white text-sb-black relative overflow-hidden border-t border-gray-100">
@@ -463,9 +464,9 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Grid */}
+            {/* Grid — slice(0,5): 2 shown mobile, 3 on lg, 4 on xl, 5 on 2xl */}
             <MobileCarousel>
-              {filteredProducts.slice(0, 3).map((product, idx) => (
+              {filteredProducts.slice(0, 5).map((product, idx) => (
                 <ProductCard
                   key={product.id}
                   product={product}

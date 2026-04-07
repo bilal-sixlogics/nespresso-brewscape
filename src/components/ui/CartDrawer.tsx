@@ -57,7 +57,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         </div>
                         <div>
                             <p className="font-black text-sm uppercase tracking-widest">{tx('Mon Panier', 'My Cart')}</p>
-                            <p className="text-[10px] text-gray-400 font-bold">{cartCount} {tx('article(s)', 'item(s)')}</p>
+                            <p className="text-xs text-gray-400 font-bold">{cartCount} {tx('article(s)', 'item(s)')}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -71,7 +71,8 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         )}
                         <button
                             onClick={onClose}
-                            className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+                            aria-label="Close cart"
+                            className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2"
                         >
                             <X size={16} />
                         </button>
@@ -149,20 +150,22 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                             <p className="text-[10px] text-gray-400 font-bold mt-0.5">{unitLabel}</p>
 
                                             <div className="flex items-center justify-between mt-2">
-                                                {/* Qty stepper */}
+                                                                        {/* Qty stepper */}
                                                 <div className="flex items-center bg-white border border-gray-100 rounded-full px-1 py-0.5 gap-1">
                                                     <button
                                                         onClick={() => updateQuantity(item.product.id, item.saleUnit.id, item.quantity - 1)}
-                                                        className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+                                                        aria-label="Decrease quantity"
+                                                        className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-1"
                                                     >
-                                                        <Minus size={10} />
+                                                        <Minus size={11} />
                                                     </button>
-                                                    <span className="text-sm font-black w-5 text-center">{item.quantity}</span>
+                                                    <span className="text-sm font-black w-6 text-center">{item.quantity}</span>
                                                     <button
                                                         onClick={() => updateQuantity(item.product.id, item.saleUnit.id, item.quantity + 1)}
-                                                        className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+                                                        aria-label="Increase quantity"
+                                                        className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-1"
                                                     >
-                                                        <Plus size={10} />
+                                                        <Plus size={11} />
                                                     </button>
                                                 </div>
 
@@ -171,10 +174,11 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                             </div>
                                         </div>
 
-                                        {/* Remove */}
+                                                        {/* Remove */}
                                         <button
                                             onClick={() => removeFromCart(item.product.id, item.saleUnit.id)}
-                                            className="w-7 h-7 flex items-center justify-center text-gray-200 hover:text-red-400 transition-colors flex-shrink-0 mt-0.5"
+                                            aria-label={`Remove ${displayName} from cart`}
+                                            className="w-9 h-9 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors flex-shrink-0 mt-0.5 focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-1 rounded-full"
                                         >
                                             <Trash2 size={14} />
                                         </button>
@@ -208,7 +212,9 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                         className="overflow-hidden"
                                     >
                                         <div className="flex gap-2 mt-3">
+                                            <label htmlFor="cart-promo-code" className="sr-only">{tx('Code promo', 'Promo code')}</label>
                                             <input
+                                                id="cart-promo-code"
                                                 type="text"
                                                 value={promoInput}
                                                 onChange={e => setPromoInput(e.target.value.toUpperCase())}
@@ -218,7 +224,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                             />
                                             <button
                                                 onClick={handleApplyPromo}
-                                                className="px-5 py-2.5 bg-sb-green text-white rounded-full text-[10px] font-black uppercase tracking-wider hover:bg-[#2C6345] transition-colors"
+                                                className="px-5 py-2.5 bg-sb-green text-white rounded-full text-[10px] font-black uppercase tracking-wider hover:bg-sb-dark transition-colors"
                                             >
                                                 {tx('Appliquer', 'Apply')}
                                             </button>
@@ -244,7 +250,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
                         {/* Shipping method selector */}
                         <div className="flex gap-2">
-                            {[AppConfig.shipping.standard, AppConfig.shipping.express].map((method: any) => {
+                            {[AppConfig.shipping.standard, AppConfig.shipping.express].map((method) => {
                                 const isActive = selectedShipping.id === method.id;
                                 const label = language === 'fr' ? method.label : method.labelEn;
                                 return (
@@ -296,7 +302,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         <Link
                             href="/checkout"
                             onClick={onClose}
-                            className="flex justify-between items-center w-full bg-sb-green text-white px-7 py-4 rounded-full shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-colors"
+                            className="flex justify-between items-center w-full bg-sb-green text-white px-7 py-4 rounded-full shadow-lg shadow-sb-green/25 hover:bg-sb-dark transition-colors focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2"
                         >
                             <div>
                                 <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{tx('Total', 'Total')} · {cartCount} article(s)</p>

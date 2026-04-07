@@ -193,29 +193,33 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: '100%', opacity: 0.5 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={displayName}
                         className="fixed top-0 right-0 h-full w-full sm:w-[500px] lg:w-[600px] bg-[#FAF9F6] z-[110] shadow-2xl overflow-y-auto overflow-x-hidden border-l border-white/20 flex flex-col"
                     >
                         {/* ── Sticky Header ──────────────────────────── */}
                         <div className="sticky top-0 bg-[#FAF9F6]/90 backdrop-blur-xl border-b border-gray-100 z-20 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center flex-shrink-0">
                             <button
                                 onClick={onClose}
-                                className="flex items-center gap-2 text-sb-black opacity-60 hover:opacity-100 transition-opacity group"
+                                aria-label="Close product panel"
+                                className="flex items-center gap-2 text-sb-black opacity-60 hover:opacity-100 transition-opacity group focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2 rounded-full"
                             >
-                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform border border-gray-50">
+                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform border border-gray-50">
                                     <ArrowLeft size={14} />
                                 </div>
-                                <span className="text-[9px] font-bold tracking-widest uppercase">{t('keepExploring')}</span>
+                                <span className="text-[10px] font-bold tracking-widest uppercase">{t('keepExploring')}</span>
                             </button>
 
                             {/* Tags + Stock */}
                             <div className="flex gap-1.5 flex-wrap">
                                 {product.isNew && (
-                                    <span className="text-[8px] font-black tracking-widest uppercase px-2.5 py-1 bg-sb-black text-white rounded-full">{t('new')}</span>
+                                    <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 bg-sb-black text-white rounded-full">{t('new')}</span>
                                 )}
                                 {product.tags?.includes('best-seller') && (
-                                    <span className="text-[8px] font-black tracking-widest uppercase px-2.5 py-1 bg-amber-400 text-white rounded-full">{t('bestSeller')}</span>
+                                    <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 bg-amber-400 text-white rounded-full">{t('bestSeller')}</span>
                                 )}
-                                <span className={`text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full flex items-center gap-1 ${isInStock ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-500 border border-red-200'
+                                <span className={`text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full flex items-center gap-1 ${isInStock ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-500 border border-red-200'
                                     }`}>
                                     <span className={`w-1.5 h-1.5 rounded-full ${isInStock ? 'bg-emerald-500 animate-pulse' : 'bg-red-400'}`} />
                                     {isInStock ? (t('inStock') || 'In Stock') : (t('outOfStock') || 'Out of Stock')}
@@ -254,7 +258,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                 {/* ── Compact Sale Units ── */}
                                 {product.saleUnits && product.saleUnits.length > 1 && (
                                     <div className="pt-2">
-                                        <p className="text-[8px] font-black uppercase tracking-widest text-gray-400 mb-2">{t('selectPack')}</p>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t('selectPack')}</p>
                                         <div className="flex flex-wrap gap-2">
                                             {product.saleUnits.map(unit => {
                                                 const isActive = effectiveUnit.id === unit.id;
@@ -281,10 +285,10 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                 <div className="grid grid-cols-2 gap-3 pt-2">
                                     {product.brewSizes && product.brewSizes.length > 0 && (
                                         <div className="bg-white p-3 rounded-2xl border border-gray-100">
-                                            <span className="text-[8px] font-bold tracking-widest uppercase text-gray-400 block mb-1.5">Format</span>
+                                            <span className="text-[10px] font-bold tracking-widest uppercase text-gray-400 block mb-1.5">Format</span>
                                             <div className="flex flex-wrap gap-1">
                                                 {product.brewSizes.map(size => (
-                                                    <span key={size} className="bg-gray-50 px-2 py-0.5 rounded-full text-[8px] font-bold text-sb-black border border-gray-100 uppercase">
+                                                    <span key={size} className="bg-gray-50 px-2 py-0.5 rounded-full text-[10px] font-bold text-sb-black border border-gray-100 uppercase">
                                                         {size}
                                                     </span>
                                                 ))}
@@ -301,10 +305,10 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                 {/* ── Aromatic Profile ── */}
                                 {product.notes && product.notes.length > 0 && (
                                     <div className="bg-sb-green p-4 rounded-[20px] text-white">
-                                        <p className="text-[8px] font-bold tracking-widest uppercase opacity-70 mb-2">{t('aromaticProfile')}</p>
+                                        <p className="text-[10px] font-bold tracking-widest uppercase opacity-70 mb-2">{t('aromaticProfile')}</p>
                                         <div className="flex flex-wrap gap-1.5">
                                             {product.notes.map(note => (
-                                                <span key={note} className="bg-white/10 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border border-white/10">
+                                                <span key={note} className="bg-white/10 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-white/10">
                                                     {note}
                                                 </span>
                                             ))}
@@ -393,11 +397,11 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
                                     : isAdded
                                         ? 'bg-sb-black text-white shadow-sb-black/10'
-                                        : 'bg-sb-green text-white hover:bg-[#2C6345] shadow-sb-green/25 hover:-translate-y-0.5'
+                                        : 'bg-sb-green text-white hover:bg-sb-dark shadow-sb-green/25 hover:-translate-y-0.5'
                                     }`}
                             >
                                 <div className="flex flex-col items-start">
-                                    <span className="text-[8px] font-bold tracking-widest uppercase opacity-75">
+                                    <span className="text-[10px] font-bold tracking-widest uppercase opacity-75">
                                         {!isInStock ? (t('outOfStock') || 'Out of Stock') : isAdded ? t('addToCartSuccess') : t('total')}
                                     </span>
                                     <AnimatePresence mode="wait">

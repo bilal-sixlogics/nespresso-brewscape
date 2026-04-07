@@ -39,9 +39,16 @@ export function Footer() {
                         </p>
                         <div className="flex space-x-3">
                             {AppConfig.socials.map((social) => (
-                                <button key={social.name} className="w-10 h-10 bg-white/5 hover:bg-sb-green border border-white/10 hover:border-sb-green rounded-full flex items-center justify-center text-xs font-bold text-gray-400 hover:text-white transition-all duration-300">
+                                <a
+                                    key={social.name}
+                                    href={social.url}
+                                    aria-label={social.name}
+                                    rel="noopener noreferrer"
+                                    target="_blank"
+                                    className="w-11 h-11 bg-white/5 hover:bg-sb-green border border-white/10 hover:border-sb-green rounded-full flex items-center justify-center text-xs font-bold text-gray-400 hover:text-white transition-all duration-300 focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2"
+                                >
                                     {social.name}
-                                </button>
+                                </a>
                             ))}
                         </div>
                     </div>
@@ -75,12 +82,14 @@ export function Footer() {
                         <p className="text-gray-400 text-sm leading-relaxed mb-6">{t('subscribeHero')}</p>
                         {nlState === 'success' ? (
                             <div className="flex items-center gap-3 bg-sb-green/20 border border-sb-green/30 rounded-full px-5 py-3">
-                                <CheckCircle2 size={16} className="text-sb-green" />
-                                <span className="text-sm font-bold text-sb-green">Subscribed! Welcome aboard ☕</span>
+                                <CheckCircle2 size={16} className="text-white" />
+                                <span className="text-sm font-bold text-white">Subscribed! Welcome aboard ☕</span>
                             </div>
                         ) : (
                             <div className="flex">
+                                <label htmlFor="footer-newsletter-email" className="sr-only">{t('emailPlaceholder')}</label>
                                 <input
+                                    id="footer-newsletter-email"
                                     type="email"
                                     value={nlEmail}
                                     onChange={e => setNlEmail(e.target.value)}
@@ -92,7 +101,7 @@ export function Footer() {
                                 <button
                                     onClick={handleSubscribe}
                                     disabled={nlState === 'loading'}
-                                    className="bg-sb-green hover:bg-[#2C6345] text-white px-6 py-3 rounded-r-full text-xs font-bold tracking-widest uppercase transition-colors flex items-center gap-2 disabled:opacity-60"
+                                    className="bg-sb-green hover:bg-sb-dark text-white px-6 py-3 rounded-r-full text-xs font-bold tracking-widest uppercase transition-colors flex items-center gap-2 disabled:opacity-60"
                                 >
                                     {nlState === 'loading' ? <Loader2 size={14} className="animate-spin" /> : t('join')}
                                 </button>

@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Star, Tag, Eye } from 'lucide-react';
-import { useCart } from '@/store/CartContext';
+import { Star, Tag, Eye } from 'lucide-react';
 import { IntensityBar } from './IntensityBar';
 import { Product } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
@@ -15,9 +14,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick, index }: ProductCardProps) {
-    const { addToCart } = useCart();
     const { language, t } = useLanguage();
-    const [isAdded, setIsAdded] = useState(false);
     const [imgIdx, setImgIdx] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -37,24 +34,8 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
 
     const visibleNotes = product.notes?.slice(0, 2) ?? [];
 
-    const handleAddToCart = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!isInStock) return;
-        const defaultUnit = product.saleUnits?.[0] ?? {
-            id: 'default',
-            label: product.namePart2 ?? 'Unité',
-            price: product.price,
-            quantity: 1,
-        };
-        addToCart(product, defaultUnit, 1);
-        setIsAdded(true);
-        setTimeout(() => setIsAdded(false), 1600);
-    };
-
-    const pdpHref = `/shop/${product.slug ?? product.id}`;
-
     return (
-        <motion.div
+        <motion.article
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
@@ -66,8 +47,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
         >
             {/* ── Image Zone ─────────────────────────────────── */}
             <div
-                className="relative rounded-xl sm:rounded-[32px] overflow-hidden shrink-0"
-                style={{ aspectRatio: '1/1', background: 'linear-gradient(145deg, #f5f0eb 0%, #ede8e0 100%)' }}
+                className="relative rounded-xl sm:rounded-[32px] overflow-hidden shrink-0 aspect-square bg-gradient-to-br from-[#f5f0eb] to-[#ede8e0]"
                 onMouseMove={(e) => {
                     if (images.length > 1) {
                         const pct = e.nativeEvent.offsetX / e.currentTarget.clientWidth;
@@ -90,7 +70,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                     />
                 </AnimatePresence>
 
-                {/* Hover overlay — dark vignette fades in, revealing the action buttons */}
+                {/* Hover overlay — dark vignette fades in */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: isHovered ? 1 : 0 }}
@@ -100,78 +80,61 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
 
                 {/* Badges */}
                 {hasDiscount && (
-                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-20 bg-red-500 text-white text-[8px] sm:text-[9px] font-black rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 shadow-lg">-{discountPct}%</div>
+                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-20 bg-red-500 text-white text-[9px] sm:text-[10px] font-black rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 shadow-lg" aria-label={`${discountPct}% discount`}>-{discountPct}%</div>
                 )}
                 {product.isNew && !hasDiscount && (
-                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-20 bg-sb-black text-white text-[8px] sm:text-[9px] font-black rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1">NEW</div>
+                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-20 bg-sb-black text-white text-[9px] sm:text-[10px] font-black rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1">NEW</div>
                 )}
                 {product.tags?.includes('best-seller') && (
-                    <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 flex items-center gap-1 bg-amber-400/90 backdrop-blur-sm text-white text-[7px] sm:text-[8px] font-black rounded-full px-1.5 py-0.5 sm:px-2 sm:py-1">
-                        <Star size={8} fill="white" className="w-[6px] h-[6px] sm:w-2 sm:h-2" /> #1
+                    <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 flex items-center gap-1 bg-amber-400/90 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-black rounded-full px-1.5 py-0.5 sm:px-2 sm:py-1">
+                        <Star size={8} fill="white" className="w-2 h-2 sm:w-2.5 sm:h-2.5" /> #1
                     </div>
                 )}
 
                 {/* Stock pill */}
-                <div className={`absolute top-2 sm:top-4 ${product.tags?.includes('best-seller') ? 'right-12 sm:right-16' : 'right-2 sm:right-4'} z-20 flex items-center gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[7px] sm:text-[8px] font-black uppercase tracking-wider backdrop-blur-sm shadow-sm ${isInStock ? 'bg-emerald-500/90 text-white' : 'bg-red-500/90 text-white'}`}>
+                <div className={`absolute top-2 sm:top-4 ${product.tags?.includes('best-seller') ? 'right-12 sm:right-16' : 'right-2 sm:right-4'} z-20 flex items-center gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider backdrop-blur-sm shadow-sm ${isInStock ? 'bg-emerald-500/90 text-white' : 'bg-red-500/90 text-white'}`}>
                     <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${isInStock ? 'bg-white' : 'bg-white/80'} animate-pulse`} />
                     {isInStock ? t('inStock') || 'In Stock' : t('outOfStock') || 'Out of Stock'}
                 </div>
 
                 {/* Image dots (multi-image indicator) */}
                 {images.length > 1 && (
-                    <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1 z-20">
+                    <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-1 z-20">
                         {images.map((_, i) => (
                             <div key={i} className={`rounded-full transition-all duration-200 ${i === imgIdx ? 'bg-white w-4 h-1.5' : 'bg-white/40 w-1.5 h-1.5'}`} />
                         ))}
                     </div>
                 )}
 
-                {/* Hover CTA — slides up from the bottom */}
+                {/* Hover Quick Look — centered at bottom */}
                 <motion.div
                     initial={{ y: 16, opacity: 0 }}
                     animate={{ y: isHovered ? 0 : 16, opacity: isHovered ? 1 : 0 }}
                     transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-20 flex gap-1.5 sm:gap-2"
+                    className="absolute bottom-2 left-1/2 -translate-x-1/2 sm:bottom-4 z-20"
                 >
-                    {/* Add to Cart */}
-                    <motion.button
-                        whileTap={{ scale: 0.94 }}
-                        onClick={handleAddToCart}
-                        disabled={!isInStock}
-                        className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-1.5 sm:py-2.5 rounded-full text-[8px] sm:text-[11px] font-black uppercase tracking-widest shadow-xl transition-colors duration-200 ${isInStock
-                            ? 'bg-sb-green text-white hover:bg-[#2C6345]'
-                            : 'bg-white/20 text-white/60 cursor-not-allowed backdrop-blur-sm'
-                            }`}
-                    >
-                        <AnimatePresence mode="wait">
-                            {isAdded
-                                ? <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="text-white font-black">✓ Added</motion.span>
-                                : <motion.span key="add" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="flex items-center gap-1 sm:gap-1.5"><ShoppingBag size={12} className="w-3 h-3 sm:w-[13px] sm:h-[13px]" /> <span className="hidden sm:inline">{isInStock ? 'Add to Cart' : 'Sold Out'}</span><span className="inline sm:hidden">{isInStock ? 'Add' : 'Out'}</span></motion.span>
-                            }
-                        </AnimatePresence>
-                    </motion.button>
-
-                    {/* Quick Look */}
                     <motion.button
                         whileTap={{ scale: 0.94 }}
                         onClick={(e) => { e.stopPropagation(); onClick(product); }}
-                        className="w-7 h-7 sm:w-10 sm:h-10 shrink-0 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors"
+                        aria-label="Quick look"
+                        className="flex items-center gap-2 min-h-[44px] px-5 py-2.5 bg-white/20 backdrop-blur-md border border-white/30 rounded-full hover:bg-white/40 transition-colors focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                     >
-                        <Eye size={12} className="text-white w-3 h-3 sm:w-[15px] sm:h-[15px]" />
+                        <Eye size={14} className="text-white" />
+                        <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white hidden sm:inline">Quick Look</span>
                     </motion.button>
                 </motion.div>
             </div>
 
             {/* ── Content ───────────────────────────────────── */}
             <div className="px-1.5 sm:px-3 pt-3 sm:pt-5 pb-1 sm:pb-2 flex flex-col flex-1 gap-1.5 sm:gap-2">
-                <h3 className="font-display text-xs sm:text-base md:text-[1.35rem] uppercase leading-tight group-hover:text-sb-green transition-colors duration-300 line-clamp-2">
+                <h3 className="font-display text-sm sm:text-base md:text-[1.35rem] uppercase leading-tight group-hover:text-sb-green transition-colors duration-300 line-clamp-2">
                     {displayName}
-                    {displayNamePart2 && <span className="text-gray-300"> {displayNamePart2}</span>}
+                    {displayNamePart2 && <span className="text-gray-400"> {displayNamePart2}</span>}
                 </h3>
                 {visibleNotes.length > 0 && (
                     <div className="flex gap-1 sm:gap-1.5 flex-wrap">
                         {visibleNotes.map(note => (
-                            <span key={note} className="inline-flex items-center gap-0.5 sm:gap-1 text-[7px] sm:text-[8px] font-bold uppercase tracking-wider bg-sb-green/10 text-sb-green px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full border border-sb-green/20"><Tag size={8} className="w-[6px] h-[6px] sm:w-2 sm:h-2" />{note}</span>
+                            <span key={note} className="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-sb-green/10 text-sb-green px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full border border-sb-green/20"><Tag size={8} className="w-2 h-2 shrink-0" />{note}</span>
                         ))}
                     </div>
                 )}
@@ -180,9 +143,9 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                 ) : <div className="h-0.5 sm:h-1" />}
                 <div className="flex items-baseline gap-1.5 sm:gap-2 mt-auto pt-1 sm:pt-2">
                     <span className="text-sm sm:text-xl md:text-2xl font-bold text-sb-green tracking-tighter">€{displayPrice.toFixed(2)}</span>
-                    {hasDiscount && <span className="text-[10px] sm:text-sm text-gray-300 line-through">€{originalPrice!.toFixed(2)}</span>}
+                    {hasDiscount && <span className="text-[11px] sm:text-sm text-gray-400 line-through">€{originalPrice!.toFixed(2)}</span>}
                 </div>
             </div>
-        </motion.div>
+        </motion.article>
     );
 }

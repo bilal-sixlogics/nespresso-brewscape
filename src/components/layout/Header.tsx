@@ -183,6 +183,21 @@ function LanguageToggle({ direction = 'down' }: { direction?: 'up' | 'down' }) {
     );
 }
 
+// ─── Nav links (static — defined outside component to avoid re-creation per render) ─
+const TOP_NAV: NavLink[] = [
+    { href: '/', labelKey: 'navHome' },
+    { href: '/machines', labelKey: 'navMachines' },
+    { href: '/sweets', labelKey: 'navSweets' },
+    { href: '/contact', labelKey: 'navContact' },
+];
+
+const BOTTOM_NAV: NavLink[] = [
+    { href: '/shop', labelKey: 'navShop' },
+    { href: '/accessories', labelKey: 'navAccessories' },
+    { href: '/brew-guide', labelKey: 'navBrewGuide' },
+    { href: '/blog', labelKey: 'navBlog' },
+];
+
 // ─── Header ────────────────────────────────────────────────────────────────
 export function Header() {
     const pathname = usePathname();
@@ -196,7 +211,9 @@ export function Header() {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        setMobileMenuOpen(false); // Close mobile menu on route change
+        // Close mobile menu on route change — intentional side-effect, not a cascade
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMobileMenuOpen(false);
     }, [pathname]);
 
     // Close search/menu on ESC
@@ -221,19 +238,8 @@ export function Header() {
         return () => { document.body.style.overflow = ''; };
     }, [mobileMenuOpen]);
 
-    const topRow: NavLink[] = [
-        { href: '/', labelKey: 'navHome' },
-        { href: '/machines', labelKey: 'navMachines' },
-        { href: '/sweets', labelKey: 'navSweets' },
-        { href: '/contact', labelKey: 'navContact' },
-    ];
-
-    const bottomRow: NavLink[] = [
-        { href: '/shop', labelKey: 'navShop' },
-        { href: '/accessories', labelKey: 'navAccessories' },
-        { href: '/brew-guide', labelKey: 'navBrewGuide' },
-        { href: '/blog', labelKey: 'navBlog' },
-    ];
+    const topRow = TOP_NAV;
+    const bottomRow = BOTTOM_NAV;
 
     const navLinkClass = (href: string) =>
         `flex-1 p-3 lg:p-4 flex items-center justify-center border-r border-white/20 hover:bg-white/10 transition-colors text-[10px] font-bold tracking-[0.15em] uppercase ${pathname === href ? 'bg-white/10 text-white' : 'text-white/80 hover:text-white'
@@ -344,13 +350,17 @@ export function Header() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Navigation menu"
                         className="fixed inset-0 z-[100000] bg-sb-green flex flex-col xl:hidden"
                     >
                         <div className="flex items-center justify-between p-4 border-b border-white/20">
                             <h1 className="font-display text-xl uppercase tracking-tight text-white">Menu</h1>
                             <button
                                 onClick={() => setMobileMenuOpen(false)}
-                                className="w-10 h-10 flex items-center justify-center text-white bg-white/10 rounded-full"
+                                aria-label="Close menu"
+                                className="w-11 h-11 flex items-center justify-center text-white bg-white/10 rounded-full hover:bg-white/20 transition-colors focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                             >
                                 <X size={20} />
                             </button>

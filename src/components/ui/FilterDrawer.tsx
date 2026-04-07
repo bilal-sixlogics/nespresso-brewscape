@@ -190,8 +190,10 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sb-black">{t('En stock uniquement', 'In Stock Only')}</span>
                         <button
                             onClick={() => onChange({ ...filters, inStockOnly: !filters.inStockOnly })}
-                            className={`w-12 h-6 rounded-full transition-colors duration-200 relative ${filters.inStockOnly ? 'bg-sb-green' : 'bg-gray-200'}`}
-                            aria-label="Toggle in stock only"
+                            role="switch"
+                            aria-checked={filters.inStockOnly}
+                            aria-label="In stock only"
+                            className={`w-12 h-6 rounded-full transition-colors duration-200 relative focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2 ${filters.inStockOnly ? 'bg-sb-green' : 'bg-gray-200'}`}
                         >
                             <motion.div
                                 animate={{ x: filters.inStockOnly ? 24 : 2 }}
@@ -210,7 +212,8 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
                                     <button
                                         key={cat}
                                         onClick={() => onChange({ ...filters, categories: toggle(filters.categories, cat) })}
-                                        className={`min-h-[36px] px-3.5 py-2 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all ${active ? 'bg-sb-green text-white shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-100 hover:border-sb-green/30'}`}
+                                        aria-pressed={active}
+                                        className={`min-h-[44px] px-3.5 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2 ${active ? 'bg-sb-green text-white shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-100 hover:border-sb-green/30'}`}
                                     >
                                         {cat}
                                     </button>
@@ -229,7 +232,8 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
                                         <button
                                             key={brand}
                                             onClick={() => onChange({ ...filters, brands: toggle(filters.brands, brand) })}
-                                            className={`min-h-[36px] px-3.5 py-2 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all ${active ? 'bg-sb-black text-white shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-100 hover:border-gray-300'}`}
+                                            aria-pressed={active}
+                                            className={`min-h-[44px] px-3.5 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2 ${active ? 'bg-sb-black text-white shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-100 hover:border-gray-300'}`}
                                         >
                                             {brand === 'nespresso' ? 'Nespresso' : brand === 'starbucks' ? 'Starbucks' : brand}
                                         </button>
@@ -248,7 +252,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
                             />
                             <div className="flex justify-between mt-2">
                                 {[1, 4, 7, 10, 13].map(v => (
-                                    <span key={v} className="text-[8px] text-gray-300 font-bold">{v}</span>
+                                    <span key={v} className="text-[10px] text-gray-400 font-bold">{v}</span>
                                 ))}
                             </div>
                         </div>
@@ -274,7 +278,8 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
                                         <button
                                             key={tag}
                                             onClick={() => onChange({ ...filters, tags: toggle(filters.tags, tag) })}
-                                            className={`min-h-[36px] px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all ${active ? 'bg-sb-black text-white' : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-gray-300'}`}
+                                            aria-pressed={active}
+                                            className={`min-h-[44px] px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2 ${active ? 'bg-sb-black text-white' : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-gray-300'}`}
                                         >
                                             #{tag}
                                         </button>
