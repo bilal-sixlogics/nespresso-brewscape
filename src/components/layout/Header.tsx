@@ -301,7 +301,7 @@ export function Header() {
                     <div className="flex-shrink-0 flex items-center gap-1 sm:gap-2 px-3 sm:px-4 border-l-0 xl:border-l border-white/20 relative z-[100] pointer-events-auto">
                         <button
                             onClick={() => setSearchOpen(true)}
-                            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-white"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors text-white"
                             aria-label="Search"
                         >
                             <Search size={16} />
@@ -309,7 +309,7 @@ export function Header() {
 
                         <button
                             onClick={() => isAuthenticated ? router.push('/account') : openLoginModal()}
-                            className="flex items-center gap-2 px-2 py-1.5 rounded-full hover:bg-white/10 transition-colors text-white"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center gap-2 px-2 rounded-full hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors text-white"
                             aria-label="Account"
                         >
                             <User size={16} />
@@ -322,7 +322,7 @@ export function Header() {
 
                         <button
                             onClick={() => setCartOpen(true)}
-                            className="w-9 h-9 bg-white rounded-full flex items-center justify-center relative shadow-sm hover:shadow-md transition-shadow"
+                            className="min-h-[44px] min-w-[44px] bg-white rounded-full flex items-center justify-center relative shadow-sm hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-green transition-shadow"
                             aria-label="Open cart"
                         >
                             <ShoppingBag size={14} className="text-sb-black" />

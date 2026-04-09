@@ -9,7 +9,10 @@ import { PaginatedResponse, ApiResponse, ProductQueryParams } from '@/lib/api/ty
 import { Product } from '@/types';
 import { enrichedProducts } from '@/lib/productsData';
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true' || process.env.NODE_ENV === 'development';
+// Explicit "false" disables mock even in development (e.g. when NEXT_PUBLIC_USE_MOCK=false in .env.local)
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'false'
+    ? false
+    : process.env.NEXT_PUBLIC_USE_MOCK === 'true' || process.env.NODE_ENV === 'development';
 const MOCK_DELAY = 600; // ms — simulates realistic network latency
 
 function simulateDelay() {

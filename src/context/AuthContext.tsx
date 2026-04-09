@@ -64,7 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setIsAuthenticated(true);
             }
         } catch (e) {
-            console.error('Failed to parse user session', e);
+            if (process.env.NODE_ENV === 'development') {
+                console.error('Failed to parse user session', e);
+            }
         }
     }, []);
 
@@ -74,7 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             localStorage.setItem('cafrezzo-user', JSON.stringify(u));
         } catch (e) {
-            console.error('Failed to save user session', e);
+            if (process.env.NODE_ENV === 'development') {
+                console.error('Failed to save user session', e);
+            }
         }
     };
 
@@ -94,7 +98,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             localStorage.removeItem('cafrezzo-user');
         } catch (e) {
-            console.error('Failed to remove user session', e);
+            if (process.env.NODE_ENV === 'development') {
+                console.error('Failed to remove user session', e);
+            }
         }
     };
 

@@ -306,7 +306,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                             whileTap={{ scale: 0.97 }}
                             onClick={handleAddToCart}
                             disabled={isAdded}
-                            className={`flex-1 flex justify-between items-center px-7 py-4 rounded-full shadow-lg transition-all duration-300 ${isAdded ? 'bg-sb-black text-white' : 'bg-sb-green text-white hover:bg-[#2C6345] shadow-sb-green/25'}`}
+                            className={`flex-1 flex justify-between items-center px-7 py-4 rounded-full shadow-lg transition-all duration-300 ${isAdded ? 'bg-sb-black text-white' : 'bg-sb-green text-white hover:bg-sb-dark shadow-sb-green/25'}`}
                         >
                             <div>
                                 <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{isAdded ? t('Ajouté !', 'Added!') : t('Total', 'Total')}</p>
@@ -400,7 +400,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                                     product.weight && { label: 'Poids', value: product.weight },
                                     product.brewSizes && { label: t('Formats', 'Brew Sizes'), value: product.brewSizes.join(', ') },
                                     product.allergens && { label: t('Allergènes', 'Allergens'), value: product.allergens.join(', ') },
-                                ].filter(Boolean).map((spec: any, i) => (
+                                ].filter((s): s is { label: string; value: string } => !!s).map((spec, i) => (
                                     <div key={i} className={`flex justify-between items-center px-6 py-4 ${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
                                         <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{spec.label}</span>
                                         <span className="text-sm font-bold text-sb-black">{spec.value}</span>

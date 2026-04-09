@@ -47,13 +47,15 @@ function Input({ label, value, onChange, type = 'text', placeholder = '', requir
     label: string; value: string; onChange: (v: string) => void;
     type?: string; placeholder?: string; required?: boolean; className?: string;
 }) {
+    const inputId = `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
     return (
         <div className={className}>
-            <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{label}{required && ' *'}</label>
+            <label htmlFor={inputId} className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{label}{required && ' *'}</label>
             <input
+                id={inputId}
                 type={type} value={value} placeholder={placeholder}
                 onChange={e => onChange(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3.5 text-sm font-medium focus:border-sb-green focus:outline-none transition-colors bg-white placeholder:text-gray-300"
+                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3.5 text-sm font-medium focus:border-sb-green focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-green transition-colors bg-white placeholder:text-gray-300"
             />
         </div>
     );
@@ -63,12 +65,14 @@ function Select({ label, value, onChange, options, className = '' }: {
     label: string; value: string; onChange: (v: string) => void;
     options: { value: string; label: string }[]; className?: string;
 }) {
+    const selectId = `select-${label.toLowerCase().replace(/\s+/g, '-')}`;
     return (
         <div className={className}>
-            <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{label} *</label>
+            <label htmlFor={selectId} className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{label} *</label>
             <select
+                id={selectId}
                 value={value} onChange={e => onChange(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3.5 text-sm font-medium focus:border-sb-green focus:outline-none transition-colors bg-white text-gray-700"
+                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3.5 text-sm font-medium focus:border-sb-green focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-green transition-colors bg-white text-gray-700"
             >
                 <option value="">Sélectionner...</option>
                 {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}

@@ -25,9 +25,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
 import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { PromoStrip } from "@/components/layout/PromoStrip";
+import { SiteChrome } from "@/components/layout/SiteChrome";
 import { LoginModal } from "@/components/ui/LoginModal";
 
 export default function RootLayout({
@@ -45,14 +43,9 @@ export default function RootLayout({
                 <WishlistProvider>
                   <NotificationsProvider>
                     <RecentlyViewedProvider>
-                      <div className="bg-sb-white text-sb-black overflow-x-hidden">
-                        <PromoStrip />
-                        <Header />
-                        <main className="min-h-screen">
-                          {children}
-                        </main>
-                        <Footer />
-                      </div>
+                      <SiteChrome>
+                        {children}
+                      </SiteChrome>
                       <LoginModal />
                     </RecentlyViewedProvider>
                   </NotificationsProvider>

@@ -117,7 +117,7 @@ export default function ContactPage() {
 
             {/* ── Contact Info Strip ───────────────────────────── */}
             <section className="bg-white border-b border-gray-100 py-14 px-8">
-                <div className="max-w-[1400px] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                     {contactInfo.map((item, i) => {
                         const Icon = item.icon;
                         const content = (
