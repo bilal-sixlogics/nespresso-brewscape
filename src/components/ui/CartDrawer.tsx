@@ -142,7 +142,11 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                     >
                                         {/* Thumbnail */}
                                         <div className="w-16 h-16 bg-white rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-100">
-                                            <img src={getProductImage(item.product) ?? ''} alt={displayName} className="w-14 h-14 object-contain" />
+                                            {getProductImage(item.product) ? (
+                                                <img src={getProductImage(item.product)!} alt={displayName} className="w-14 h-14 object-contain" />
+                                            ) : (
+                                                <div className="w-14 h-14 flex items-center justify-center text-gray-300 text-2xl">&#9749;</div>
+                                            )}
                                         </div>
 
                                         {/* Details */}
