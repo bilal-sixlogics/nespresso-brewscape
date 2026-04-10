@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, CheckCircle2, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import Image from 'next/image';
@@ -15,6 +15,7 @@ interface FeaturedReview {
     product: {
         name: string;
         slug: string;
+        image: string | null;
         featured_image: string | null;
     } | null;
     user: {
@@ -23,13 +24,10 @@ interface FeaturedReview {
     } | null;
 }
 
-// Fallback avatar when the user has none
 const fallbackAvatar = (name: string) =>
     `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=439665&color=fff&size=80`;
 
-// Fallback product image
-const fallbackProduct =
-    'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=600&auto=format&fit=crop';
+const PLACEHOLDER_PRODUCT = '/images/placeholder-coffee.jpg';
 
 export const TestimonialsSection = () => {
     const [reviews, setReviews] = useState<FeaturedReview[]>([]);
@@ -42,22 +40,43 @@ export const TestimonialsSection = () => {
             .then(json => {
                 const data: FeaturedReview[] = json?.data ?? [];
                 setReviews(data);
+                setActive(0); // reset to 0 when new data arrives
             })
             .catch(() => setReviews([]))
             .finally(() => setIsLoading(false));
     }, []);
 
     const count = reviews.length;
-    const next = useCallback(() => setActive(p => (p + 1) % count), [count]);
-    const prev = useCallback(() => setActive(p => (p - 1 + count) % count), [count]);
 
+    // Clamp active to valid range whenever count changes
+    useEffect(() => {
+        if (count > 0 && active >= count) {
+            setActive(0);
+        }
+    }, [count, active]);
+
+    const next = useCallback(() => {
+        setActive(p => count > 1 ? (p + 1) % count : 0);
+    }, [count]);
+
+    const prev = useCallback(() => {
+        setActive(p => count > 1 ? (p - 1 + count) % count : 0);
+    }, [count]);
+
+    // Auto-rotate
     useEffect(() => {
         if (count < 2) return;
         const timer = setInterval(next, 8000);
         return () => clearInterval(timer);
     }, [next, count]);
 
-    // While loading, show skeleton
+    // Compute aggregate rating
+    const avgRating = useMemo(() => {
+        if (count === 0) return 0;
+        return reviews.reduce((s, r) => s + r.rating, 0) / count;
+    }, [reviews, count]);
+
+    // Loading skeleton
     if (isLoading) {
         return (
             <section className="bg-[#FAF9F6] border-t border-black/5 py-10 sm:py-12 lg:py-14 px-4 sm:px-6 lg:px-12">
@@ -72,13 +91,16 @@ export const TestimonialsSection = () => {
         );
     }
 
-    // No featured reviews yet — render nothing
     if (count === 0) return null;
 
-    const current = reviews[active];
+    // Safe access — clamp index
+    const safeIndex = Math.min(active, count - 1);
+    const current = reviews[safeIndex];
+    if (!current) return null; // extra safety
+
     const authorName = current.user?.name ?? current.user_name;
-    const avatarSrc = current.user?.avatar ?? fallbackAvatar(authorName);
-    const productImage = current.product?.featured_image ?? fallbackProduct;
+    const avatarSrc = current.user?.avatar || fallbackAvatar(authorName);
+    const productImage = current.product?.featured_image || current.product?.image || null;
     const productName = current.product?.name ?? 'Brewscape Selection';
 
     return (
@@ -90,30 +112,24 @@ export const TestimonialsSection = () => {
                         <div className="w-6 h-px bg-sb-green" />
                         <span className="text-[9px] font-black tracking-[0.35em] uppercase text-sb-green">Reviews</span>
                     </div>
-                    {/* Aggregate rating badge */}
-                    {(() => {
-                        const avg = reviews.reduce((s, r) => s + r.rating, 0) / count;
-                        const rounded = Math.round(avg);
-                        return (
-                            <div className="flex items-center gap-2 bg-white border border-black/5 rounded-xl px-4 py-2 shadow-sm">
-                                <div className="flex gap-0.5">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={10} className={i < rounded ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />
-                                    ))}
-                                </div>
-                                <span className="text-sb-black font-bold text-xs">{avg.toFixed(1)}</span>
-                                <span className="text-gray-300 text-[9px]">/ 5</span>
-                            </div>
-                        );
-                    })()}
+                    {/* Aggregate rating badge — dynamic */}
+                    <div className="flex items-center gap-2 bg-white border border-black/5 rounded-xl px-4 py-2 shadow-sm">
+                        <div className="flex gap-0.5">
+                            {[0, 1, 2, 3, 4].map(i => (
+                                <Star key={i} size={10} className={i < Math.round(avgRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />
+                            ))}
+                        </div>
+                        <span className="text-sb-black font-bold text-xs">{avgRating.toFixed(1)}</span>
+                        <span className="text-gray-300 text-[9px]">/ 5</span>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.8fr] gap-8 items-stretch">
-                    {/* ── LEFT PANEL ── */}
+                    {/* LEFT PANEL — product image + author card */}
                     <div className="relative">
                         <AnimatePresence mode="wait">
                             <motion.div
-                                key={`left-${active}`}
+                                key={`left-${safeIndex}`}
                                 initial={{ opacity: 0, y: 16 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -16 }}
@@ -122,13 +138,19 @@ export const TestimonialsSection = () => {
                             >
                                 {/* Product image */}
                                 <div className="relative w-full aspect-[4/3] rounded-[16px] sm:rounded-[24px] overflow-hidden bg-sb-green/10 shrink-0">
-                                    <Image
-                                        src={productImage}
-                                        alt={productName}
-                                        fill
-                                        className="object-cover"
-                                        unoptimized={!productImage.startsWith('/')}
-                                    />
+                                    {productImage ? (
+                                        <Image
+                                            src={productImage}
+                                            alt={productName}
+                                            fill
+                                            className="object-cover"
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gradient-to-br from-sb-green/20 to-sb-green/5 flex items-center justify-center">
+                                            <span className="text-5xl">&#9749;</span>
+                                        </div>
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                                     <div className="absolute bottom-4 left-4 right-4">
                                         {current.is_verified_purchase && (
@@ -140,23 +162,23 @@ export const TestimonialsSection = () => {
                                     </div>
                                 </div>
 
-                                {/* Author card */}
+                                {/* Author card — avatar + name + per-review stars */}
                                 <div className="bg-white rounded-[20px] border border-black/5 p-5 shadow-sm flex items-center gap-4">
                                     <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 ring-2 ring-sb-green/20">
-                                        <Image
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
                                             src={avatarSrc}
                                             alt={authorName}
                                             width={44}
                                             height={44}
-                                            className="object-cover"
-                                            unoptimized
+                                            className="w-11 h-11 object-cover"
                                         />
                                     </div>
                                     <div className="min-w-0">
                                         <div className="text-sb-black font-bold text-sm leading-none truncate">{authorName}</div>
                                         <div className="flex gap-0.5 mt-1.5">
-                                            {[...Array(current.rating)].map((_, i) => (
-                                                <Star key={i} size={10} className="fill-amber-400 text-amber-400" />
+                                            {[0, 1, 2, 3, 4].map(i => (
+                                                <Star key={i} size={10} className={i < current.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />
                                             ))}
                                         </div>
                                     </div>
@@ -168,11 +190,11 @@ export const TestimonialsSection = () => {
                         </AnimatePresence>
                     </div>
 
-                    {/* ── RIGHT PANEL ── */}
+                    {/* RIGHT PANEL — quote */}
                     <div className="bg-white rounded-[28px] border border-black/5 shadow-sm p-8 lg:p-10 flex flex-col justify-between gap-8">
                         <AnimatePresence mode="wait">
                             <motion.div
-                                key={`quote-${active}`}
+                                key={`quote-${safeIndex}`}
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
@@ -201,19 +223,18 @@ export const TestimonialsSection = () => {
                                 >
                                     <ChevronRight size={16} />
                                 </button>
-                                <span className="text-gray-300 text-xs font-mono ml-2">
-                                    {String(active + 1).padStart(2, '0')} / {String(count).padStart(2, '0')}
-                                </span>
                             </div>
-
-                            <div className="flex gap-1.5">
-                                {reviews.map((_, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => setActive(i)}
-                                        className={`h-0.5 rounded-full transition-all duration-500 ${i === active ? 'w-8 bg-sb-green' : 'w-3 bg-black/10 hover:bg-black/20'}`}
-                                    />
-                                ))}
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-bold text-gray-400">{safeIndex + 1} / {count}</span>
+                                <div className="flex gap-1">
+                                    {reviews.map((_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setActive(i)}
+                                            className={`h-1 rounded-full transition-all duration-300 ${i === safeIndex ? 'w-6 bg-sb-green' : 'w-1.5 bg-black/10 hover:bg-sb-green/40'}`}
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
