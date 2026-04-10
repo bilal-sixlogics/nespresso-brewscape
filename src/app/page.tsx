@@ -16,74 +16,6 @@ import { Product } from "@/types";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductSkeleton } from "@/components/ui/ProductSkeleton";
 
-
-function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: Product) => void }) {
-  const { t, language } = useLanguage();
-  const { products: machineProducts, isLoading } = useProducts({ storefront_page: '/machines', featured: true, per_page: 5 });
-
-  // Provide up to 5 items — MobileCarousel shows 2 on mobile, 3 on lg, 4 on xl, 5 on 2xl
-  const displayMachines = machineProducts.slice(0, 5);
-
-  return (
-    <section className="py-10 sm:py-12 md:py-14 px-4 sm:px-6 lg:px-8 bg-white text-sb-black relative overflow-hidden border-t border-gray-100">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.04),_transparent_60%)] pointer-events-none" />
-
-      <div className="max-w-[1400px] mx-auto relative z-10">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-8 sm:mb-10 md:mb-14 gap-4 sm:gap-6">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-6 h-px bg-sb-green" />
-              <span className="text-[9px] font-black tracking-[0.35em] uppercase text-sb-green">
-                {t('featuredMachines')}
-              </span>
-            </div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase leading-[0.9] text-sb-black">
-              {language === 'fr' ? 'Machines' : 'Featured'}<br />
-              <span className="text-sb-green">{language === 'fr' ? 'Vedettes' : 'Machines'}</span>
-            </h2>
-            <p className="text-gray-400 text-sm mt-4 max-w-md">
-              {language === 'fr'
-                ? 'Des machines conçues pour sublimer chaque café, du barista débutant au professionnel exigeant.'
-                : 'Machines designed to perfect every coffee, from beginner to seasoned barista.'}
-            </p>
-          </div>
-          <Link
-            href="/machines"
-            className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-sb-green hover:text-white border border-sb-green hover:bg-sb-green px-8 py-4 rounded-full transition-all duration-300"
-          >
-            {t('viewAllMachines')} <ArrowRight size={12} />
-          </Link>
-        </div>
-
-        {isLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-            {[...Array(4)].map((_, i) => <ProductSkeleton key={i} />)}
-          </div>
-        ) : (
-          <MobileCarousel>
-            {displayMachines.map((machine, i) => (
-              <ProductCard
-                key={machine.id}
-                product={machine}
-                index={i}
-                onClick={onProductClick}
-              />
-            ))}
-          </MobileCarousel>
-        )}
-
-        <div className="flex md:hidden justify-center mt-10">
-          <Link href="/machines" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-sb-green border border-sb-green px-8 py-4 rounded-full">
-            {t('viewAllMachines')} <ArrowRight size={12} />
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
 const wholeBeans = [
   {
     name: 'Master Origin', nameEn: 'Master Origin',
@@ -410,9 +342,6 @@ const { addToCart, cartCount } = useCart();
           {/* Torn paper at bottom of stats - green tearing into white below */}
           <div className="torn-paper-green-down z-30"></div>
         </section>
-
-        {/* ── FEATURED MACHINES ──────────────────────────────────────── */}
-        <FeaturedMachinesSection onProductClick={setSelectedProduct} />
 
         {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
         <TestimonialsSection />
