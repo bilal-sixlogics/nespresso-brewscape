@@ -65,8 +65,8 @@ function BrandsMarqueeSection() {
 
       {apiBrands.length > 0 && (() => {
         // Duplicate brands enough times so each track fills at least the viewport width.
-        // Each card is ~180px (w-40 + gap-5 = 160+20). For 1600px viewport we need ceil(1600/180) ≈ 9 items per track.
-        const itemWidth = 180;
+        // Each card is ~212px (w-48 + gap-5 = 192+20). For 1600px viewport we need ceil(1600/212) ≈ 8 items per track.
+        const itemWidth = 212;
         const minItemsPerTrack = Math.max(apiBrands.length, Math.ceil(1600 / itemWidth) + 1);
         const repeatCount = Math.ceil(minItemsPerTrack / apiBrands.length);
         const filledBrands: ApiBrand[] = [];
@@ -84,36 +84,33 @@ function BrandsMarqueeSection() {
                 {filledBrands.map((brand, i) => (
                   <div
                     key={`${trackIdx}-${i}`}
-                    className="shrink-0 w-40 h-20 rounded-2xl bg-white/95 shadow-lg shadow-black/10 flex items-center justify-center group hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden relative"
+                    className="shrink-0 w-48 h-24 rounded-2xl bg-white shadow-[0_2px_20px_rgba(0,0,0,0.08)] flex items-center justify-center group hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-500 cursor-pointer overflow-hidden relative border border-white/80"
                   >
                     {brand.logo ? (
-                      /* Logo-only: fill card, object-contain keeps aspect ratio */
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={brand.logo}
                         alt={brand.name}
-                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain p-5 opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                         onError={(e) => {
-                          // On load error fall back to the text treatment
-                          const card = (e.target as HTMLImageElement).closest('.brand-card-inner') as HTMLElement;
-                          if (card) card.dataset.textFallback = 'true';
                           (e.target as HTMLImageElement).style.display = 'none';
                           const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
                           if (fallback) fallback.style.display = 'flex';
                         }}
                       />
                     ) : null}
-                    {/* Premium text fallback — hidden when logo loads successfully */}
+                    {/* Premium typographic fallback — luxury brand wordmark style */}
                     <div
-                      className="brand-card-inner absolute inset-0 flex flex-col items-center justify-center gap-1 px-3"
+                      className="absolute inset-0 flex items-center justify-center px-4"
                       style={{ display: brand.logo ? 'none' : 'flex' }}
                     >
-                      <div className="w-8 h-8 rounded-full bg-sb-green/10 flex items-center justify-center mb-0.5">
-                        <span className="text-sb-green font-black text-sm leading-none">{brand.name.charAt(0)}</span>
-                      </div>
-                      <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest text-center leading-tight line-clamp-2">{brand.name}</span>
+                      <span
+                        className="text-[13px] font-black uppercase tracking-[0.25em] text-gray-800 text-center leading-snug group-hover:text-sb-green transition-colors duration-500"
+                        style={{ fontVariant: 'small-caps', letterSpacing: brand.name.length > 10 ? '0.15em' : '0.25em' }}
+                      >
+                        {brand.name}
+                      </span>
                     </div>
-                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-white/40 rounded-2xl transition-all duration-300" />
                   </div>
                 ))}
               </div>
