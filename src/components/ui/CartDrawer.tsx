@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { AppConfig } from '@/lib/config';
+import { getProductImage } from '@/types';
 
 export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     const {
@@ -126,8 +127,8 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             </motion.div>
                         ) : (
                             items.map(item => {
-                                const displayName = language === 'fr' ? item.product.name : (item.product.nameEn ?? item.product.name);
-                                const unitLabel = language === 'fr' ? item.saleUnit.label : (item.saleUnit.labelEn ?? item.saleUnit.label);
+                                const displayName = item.product.name;
+                                const unitLabel = item.saleUnit.name;
                                 const lineTotal = item.unitPrice * item.quantity;
                                 return (
                                     <motion.div
@@ -141,7 +142,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                     >
                                         {/* Thumbnail */}
                                         <div className="w-16 h-16 bg-white rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-100">
-                                            <img src={item.product.image} alt={displayName} className="w-14 h-14 object-contain" />
+                                            <img src={getProductImage(item.product) ?? ''} alt={displayName} className="w-14 h-14 object-contain" />
                                         </div>
 
                                         {/* Details */}

@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { Product, SaleUnit } from '@/types';
 import { AppConfig } from '@/lib/config';
-import { enrichedProducts } from '@/lib/productsData';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -53,8 +52,8 @@ interface CartContextType {
 
     // Actions
     addToCart: (product: Product, saleUnit: SaleUnit, quantity?: number) => void;
-    removeFromCart: (productId: string | number, saleUnitId: string) => void;
-    updateQuantity: (productId: string | number, saleUnitId: string, quantity: number) => void;
+    removeFromCart: (productId: string | number, saleUnitId: string | number) => void;
+    updateQuantity: (productId: string | number, saleUnitId: string | number, quantity: number) => void;
     clearCart: () => void;
 }
 
@@ -70,22 +69,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         AppConfig.shipping.standard,
     );
 
-    // ─── Backend Validation & Derived Pricing ───────────────────────────────
-
-    // Calculate subtotal by looking up the TRUE price from the source data
-    // to prevent client-side tampering (acting as strict backend validation).
+    // ─── Derived Pricing ───────────────────────────────────────────────────
+    // Final price validation happens server-side at checkout.
+    // Client subtotal uses the unit price captured at add-to-cart time.
     const subtotal = items.reduce((sum, item) => {
-        const sourceProduct = enrichedProducts.find(p => p.id === item.product.id);
-        if (!sourceProduct) return sum; // Product no longer exists
-
-        // If explicitly out of stock in backend, it can't be bought
-        if (sourceProduct.inStock === false) return sum;
-
-        // Find the true price for the selected unit
-        const sourceUnit = sourceProduct.saleUnits?.find(u => u.id === item.saleUnit.id);
-        const truePrice = sourceUnit ? sourceUnit.price : sourceProduct.price;
-
-        return sum + (truePrice * item.quantity);
+        return sum + (item.unitPrice * item.quantity);
     }, 0);
 
     // Sitewide discount (admin-toggled)
@@ -118,8 +106,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const existingIdx = prev.findIndex(
                 i => i.product.id === product.id && i.saleUnit.id === saleUnit.id
             );
-            // Compute effective unit price (after product-level discount if any)
-            const unitPrice = saleUnit.originalPrice ? saleUnit.price : saleUnit.price;
+            // Compute effective unit price (ensure number since API may return string)
+            const unitPrice = Number(saleUnit.selling_price) || 0;
 
             if (existingIdx > -1) {
                 const next = [...prev];
@@ -133,13 +121,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
-    const removeFromCart = useCallback((productId: string | number, saleUnitId: string) => {
+    const removeFromCart = useCallback((productId: string | number, saleUnitId: string | number) => {
         setItems(prev => prev.filter(
             i => !(i.product.id === productId && i.saleUnit.id === saleUnitId)
         ));
     }, []);
 
-    const updateQuantity = useCallback((productId: string | number, saleUnitId: string, quantity: number) => {
+    const updateQuantity = useCallback((productId: string | number, saleUnitId: string | number, quantity: number) => {
         if (quantity <= 0) {
             removeFromCart(productId, saleUnitId);
             return;

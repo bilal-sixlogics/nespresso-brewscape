@@ -11,7 +11,13 @@ import {
     MessageSquare, MapPin, User as UserIcon, Star, X, Plus, Edit2, Trash2,
     AlertCircle, Shield, CreditCard, Home, Briefcase, ChevronDown, Camera, Save, Loader2, Search, Heart
 } from 'lucide-react';
-import { Order, OrderStatus, OrderItem, Address } from '@/types';
+import { Order, OrderStatus, OrderItem, Address, Product, getProductImage } from '@/types';
+
+/** Minimal mock product for demo order display */
+function mockProduct(id: number, slug: string, name: string, image: string, price: number): Product {
+    const now = new Date().toISOString();
+    return { id, slug, name, brand_id: 1, category_id: 1, selling_price: price, status: 'active', featured_image: image, stock_qty: 100, reserved_stock: 0, low_stock_threshold: 5, sort_order: 0, is_featured: false, created_at: now, updated_at: now };
+}
 
 // ── Status helpers ─────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
@@ -330,33 +336,33 @@ const MOCK_ORDERS: Order[] = [
         id: 'CF-99281A', date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'shipped', trackingNumber: 'TRK99281FR', paymentMethod: 'stripe',
         subtotal: 89.90, shipping: 0, discount: 0, total: 89.90,
-        items: [{ id: '1', quantity: 2, unitPrice: 44.95, product: { id: 'm1', slug: 'vertuo-pop', name: 'Vertuo Pop Machine', image: 'https://images.unsplash.com/photo-1517701550927-30cfcb64c54a?q=80&w=600&auto=format&fit=crop', price: 89.90 } }]
+        items: [{ id: '1', quantity: 2, unitPrice: 44.95, product: mockProduct(1, 'vertuo-pop', 'Vertuo Pop Machine', 'https://images.unsplash.com/photo-1517701550927-30cfcb64c54a?q=80&w=600&auto=format&fit=crop', 89.90) }]
     },
     {
         id: 'CF-88172B', date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'delivered', trackingNumber: 'TRK88172FR', paymentMethod: 'cod',
         subtotal: 45.00, shipping: 5.90, discount: 5.00, total: 45.90,
         items: [
-            { id: '2', quantity: 5, unitPrice: 9.00, product: { id: 'p1', slug: 'lavazza-crema-aroma-expert-1kg', name: 'Lavazza Crema e Aroma Expert 1kg', image: 'https://images.unsplash.com/photo-1611162458324-aae1eb4129a4?q=80&w=600&auto=format&fit=crop', price: 9.00 } },
+            { id: '2', quantity: 5, unitPrice: 9.00, product: mockProduct(2, 'lavazza-crema-aroma-expert-1kg', 'Lavazza Crema e Aroma Expert 1kg', 'https://images.unsplash.com/photo-1611162458324-aae1eb4129a4?q=80&w=600&auto=format&fit=crop', 9.00) },
         ]
     },
     {
         id: 'CF-77063C', date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'delivered', paymentMethod: 'wise',
         subtotal: 32.00, shipping: 0, discount: 0, total: 32.00,
-        items: [{ id: '3', quantity: 4, unitPrice: 8.00, product: { id: 'p2', slug: 'marcilla-ground-coffee', name: 'Marcilla Ground Coffee', image: 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?q=80&w=600&auto=format&fit=crop', price: 8.00 } }]
+        items: [{ id: '3', quantity: 4, unitPrice: 8.00, product: mockProduct(3, 'marcilla-ground-coffee', 'Marcilla Ground Coffee', 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?q=80&w=600&auto=format&fit=crop', 8.00) }]
     },
     {
         id: 'CF-66044D', date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'cancelled', paymentMethod: 'stripe',
         subtotal: 120.00, shipping: 0, discount: 0, total: 120.00,
-        items: [{ id: '4', quantity: 1, unitPrice: 120.00, product: { id: 'm2', slug: 'nespresso-essenza', name: 'Nespresso Essenza Mini', image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop', price: 120.00 } }]
+        items: [{ id: '4', quantity: 1, unitPrice: 120.00, product: mockProduct(4, 'nespresso-essenza', 'Nespresso Essenza Mini', 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop', 120.00) }]
     },
     {
         id: 'CF-55025E', date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'delivered', paymentMethod: 'card',
         subtotal: 18.50, shipping: 5.90, discount: 0, total: 24.40,
-        items: [{ id: '5', quantity: 2, unitPrice: 9.25, product: { id: 'p3', slug: 'intenso-blend', name: 'Intenso Blend Pods ×10', image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=600&auto=format&fit=crop', price: 9.25 } }]
+        items: [{ id: '5', quantity: 2, unitPrice: 9.25, product: mockProduct(5, 'intenso-blend', 'Intenso Blend Pods x10', 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=600&auto=format&fit=crop', 9.25) }]
     },
 ];
 
@@ -562,7 +568,7 @@ export default function AccountPage() {
                                                                         {order.items.map((item: OrderItem) => (
                                                                             <div key={item.id} className="flex gap-4 items-center">
                                                                                 <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0">
-                                                                                    <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                                                                                    <img src={getProductImage(item.product) ?? ''} alt={item.product.name} className="w-full h-full object-cover" />
                                                                                 </div>
                                                                                 <div className="flex-1 min-w-0">
                                                                                     <p className="font-bold text-sm text-sb-black truncate">{item.product.name}</p>

@@ -1,6 +1,7 @@
-import { Product } from '@/types';
+// Legacy mock data — uses old schema shape, cast to bypass strict typing.
+// TODO: Migrate to new Product shape or remove once backend integration is complete.
 
-export const mockProducts: Product[] = [
+export const mockProducts: any[] = [
     {
         id: 1,
         name: "ISPIRAZIONE",
@@ -75,9 +76,9 @@ export const mockProducts: Product[] = [
 ];
 
 // Reusable array to generate many products for testing load-more
-export const generateProducts = (category: string, baseId: number, count: number): Product[] => {
+export const generateProducts = (category: string, baseId: number, count: number): any[] => {
     const templates = mockProducts;
-    const result: Product[] = [];
+    const result: any[] = [];
 
     for (let i = 0; i < count; i++) {
         const template = templates[i % templates.length];
@@ -111,26 +112,26 @@ export const productDatabase = {
     ],
 };
 
-export const machinesData: Product[] = [
+export const machinesData: any[] = [
     { id: 101, name: "VERTUO", namePart2: "POP+", price: 129.00, intensity: 0, brewSizes: ['Espresso', 'Coffee', 'Alto'], image: "https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?q=80&w=400&auto=format&fit=crop" },
     { id: 102, name: "ESSENZA", namePart2: "MINI", price: 179.00, intensity: 0, brewSizes: ['Espresso', 'Lungo'], image: "https://images.unsplash.com/photo-1520206183501-b80df61043c2?q=80&w=400&auto=format&fit=crop" },
     { id: 103, name: "VERTUO", namePart2: "NEXT", price: 179.00, intensity: 0, brewSizes: ['Espresso', 'Coffee', 'Carafe'], image: "https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?q=80&w=400&auto=format&fit=crop" },
     { id: 104, name: "CITIZ", namePart2: "PLATINUM", price: 299.00, intensity: 0, brewSizes: ['Espresso', 'Lungo', 'Americano'], image: "https://images.unsplash.com/photo-1520206183501-b80df61043c2?q=80&w=400&auto=format&fit=crop" }
 ];
 
-export const accessoriesData: Product[] = [
+export const accessoriesData: any[] = [
     { id: 201, name: "AEROCCINO 3", namePart2: "MILK FROTHER", price: 99.00, intensity: 0, brewSizes: [], image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=400&auto=format&fit=crop" },
     { id: 202, name: "LUME", namePart2: "MUG SET", price: 29.00, intensity: 0, brewSizes: [], image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?q=80&w=400&auto=format&fit=crop" },
     { id: 203, name: "RECYCLING", namePart2: "BIN", price: 15.00, intensity: 0, brewSizes: [], image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=400&auto=format&fit=crop" },
     { id: 204, name: "NOMAD", namePart2: "TRAVEL MUG", price: 35.00, intensity: 0, brewSizes: [], image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?q=80&w=400&auto=format&fit=crop" }
 ];
 
-export const apparelData: Product[] = [
+export const apparelData: any[] = [
     { id: 301, name: "BARISTA", namePart2: "APRON", price: 45.00, intensity: 0, brewSizes: [], image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=400&auto=format&fit=crop" },
     { id: 302, name: "TOTE", namePart2: "BAG", price: 25.00, intensity: 0, brewSizes: [], image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=400&auto=format&fit=crop" }
 ];
 
-export const giftsData: Product[] = [
+export const giftsData: any[] = [
     { id: 401, name: "DISCOVERY", namePart2: "BOX", price: 55.00, intensity: 0, brewSizes: [], image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=400&auto=format&fit=crop" },
     { id: 402, name: "FESTIVE", namePart2: "ASSORTMENT", price: 42.00, intensity: 0, brewSizes: [], image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=400&auto=format&fit=crop" }
 ];

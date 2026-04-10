@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { getProductImage, getDisplayPrice, getDefaultUnit } from '@/types';
 
 export default function WishlistPage() {
     const { wishlist, removeFromWishlist } = useWishlist();
@@ -15,11 +16,17 @@ export default function WishlistPage() {
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
 
     const handleAddToCart = (product: any) => {
-        const unit = product.saleUnits?.[0] ?? {
-            id: 'default',
-            label: product.namePart2 ?? 'Unit',
-            price: product.price,
+        const unit = getDefaultUnit(product) ?? {
+            id: 0,
+            name: 'Unit',
+            unit_type: 'pc',
+            selling_price: product.selling_price,
+            pricing_method: 'direct' as const,
+            sku: '',
+            stock: 1,
             quantity: 1,
+            is_default: true,
+            status: 'active' as const,
         };
         addToCart(product, unit, 1);
     };
@@ -76,8 +83,9 @@ export default function WishlistPage() {
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8">
                             {wishlist.map((product, i) => {
-                                const displayName = language === 'en' && product.nameEn ? product.nameEn : product.name;
-                                const images = product.images?.length ? product.images : [product.image];
+                                const displayName = product.name;
+                                const primaryImage = getProductImage(product);
+                                const defaultUnit = getDefaultUnit(product);
                                 return (
                                     <motion.div
                                         key={product.id}
@@ -91,7 +99,7 @@ export default function WishlistPage() {
                                         {/* Image */}
                                         <Link href={`/shop/${product.slug ?? product.id}`} className="block relative h-52 bg-gray-50 overflow-hidden">
                                             <img
-                                                src={images[0]}
+                                                src={primaryImage ?? ''}
                                                 alt={displayName}
                                                 className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
                                             />
@@ -106,11 +114,11 @@ export default function WishlistPage() {
                                         {/* Info */}
                                         <div className="p-5">
                                             <p className="font-black text-sm text-sb-black mb-0.5 truncate">{displayName}</p>
-                                            {product.namePart2 && (
-                                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-3 truncate">{product.namePart2}</p>
+                                            {defaultUnit?.name && (
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-3 truncate">{defaultUnit.name}</p>
                                             )}
                                             <div className="flex items-center justify-between">
-                                                <span className="font-black text-lg text-sb-green">€{product.price.toFixed(2)}</span>
+                                                <span className="font-black text-lg text-sb-green">€{getDisplayPrice(product).toFixed(2)}</span>
                                                 <button
                                                     onClick={() => handleAddToCart(product)}
                                                     className="flex items-center gap-1.5 px-4 py-2 bg-sb-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-sb-green transition-colors"

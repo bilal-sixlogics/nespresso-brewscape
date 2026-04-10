@@ -11,6 +11,7 @@ import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { AppConfig } from '@/lib/config';
+import { getProductImage } from '@/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ShippingForm {
@@ -147,12 +148,12 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                             {/* Items */}
                             <div className="space-y-3 border-b border-gray-100 pb-4">
                                 {items.map(item => {
-                                    const name = language === 'fr' ? item.product.name : (item.product.nameEn ?? item.product.name);
-                                    const unit = language === 'fr' ? item.saleUnit.label : (item.saleUnit.labelEn ?? item.saleUnit.label);
+                                    const name = item.product.name;
+                                    const unit = item.saleUnit.name;
                                     return (
                                         <div key={`${item.product.id}-${item.saleUnit.id}`} className="flex items-center gap-3">
                                             <div className="w-12 h-12 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                                <img src={item.product.image} alt={name} className="w-10 h-10 object-contain" />
+                                                <img src={getProductImage(item.product) ?? ''} alt={name} className="w-10 h-10 object-contain" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-xs font-bold text-sb-black truncate">{name}</p>

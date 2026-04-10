@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Star, Loader2, CheckCircle2 } from 'lucide-react';
-import { OrderItem } from '@/types';
+import { OrderItem, getProductImage } from '@/types';
 
 interface ReviewModalProps {
     isOpen: boolean;
@@ -93,7 +93,7 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
 
                                 <div className="flex justify-center mb-8">
                                     <div className="w-24 h-24 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden shadow-inner">
-                                        <img src={item.product.image} alt={item.product.name} className="w-20 h-20 object-contain drop-shadow-md" />
+                                        <img src={getProductImage(item.product) ?? ''} alt={item.product.name} className="w-20 h-20 object-contain drop-shadow-md" />
                                     </div>
                                 </div>
 

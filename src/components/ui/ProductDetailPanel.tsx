@@ -1,22 +1,25 @@
 "use client";
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Check, ChevronDown, ArrowRight, Star, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { Product, SaleUnit } from '@/types';
+import {
+    Product, SaleUnit,
+    getProductImage, getProductImages, getDefaultUnit, getDisplayPrice,
+    isInStock, isNewProduct, hasTag, extractNotes,
+} from '@/types';
 import { IntensityBar } from '@/components/ui/IntensityBar';
 import { RichText } from '@/components/ui/RichText';
 
 // ─── Panel Image Carousel ─────────────────────────────────────────────────────
-function PanelImageCarousel({ product }: { product: { image: string; images?: string[]; name: string; namePart2?: string; nameEn?: string; originalPrice?: number; price: number } }) {
-    const images = product.images && product.images.length > 0 ? product.images : [product.image];
+function PanelImageCarousel({ product }: { product: Product }) {
+    const allImages = getProductImages(product);
+    const primaryImage = getProductImage(product);
+    const images = allImages.length > 0 ? allImages : primaryImage ? [primaryImage] : [];
     const [imgIdx, setImgIdx] = React.useState(0);
-    const hasDiscount = !!product.originalPrice && product.originalPrice > product.price;
-    const discountPct = hasDiscount ? Math.round((1 - product.price / product.originalPrice!) * 100) : 0;
 
     React.useEffect(() => {
         if (images.length <= 1) return;
@@ -27,20 +30,21 @@ function PanelImageCarousel({ product }: { product: { image: string; images?: st
     return (
         <div className="relative h-56 sm:h-64 md:h-72 bg-[#60A17B] flex items-center justify-center overflow-hidden mx-4 sm:mx-6 mt-4 sm:mt-6 rounded-[24px] sm:rounded-[32px] shadow-sm border border-white/30 group">
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-            {hasDiscount && (
-                <div className="absolute top-4 left-4 bg-red-500 text-white text-[9px] font-black rounded-full px-2.5 py-1 z-20 shadow-lg">-{discountPct}%</div>
-            )}
             <AnimatePresence mode="wait">
-                <motion.img
-                    key={imgIdx}
-                    src={images[imgIdx]}
-                    alt={product.nameEn ?? product.name}
-                    initial={{ opacity: 0, scale: 1.06 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                    className="h-full w-full object-cover rounded-[inherit] drop-shadow-[0_20px_30px_rgba(0,0,0,0.15)] relative z-10"
-                />
+                {images.length > 0 ? (
+                    <motion.img
+                        key={imgIdx}
+                        src={images[imgIdx]}
+                        alt={product.name}
+                        initial={{ opacity: 0, scale: 1.06 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+                        className="h-full w-full object-cover rounded-[inherit] drop-shadow-[0_20px_30px_rgba(0,0,0,0.15)] relative z-10"
+                    />
+                ) : (
+                    <div className="text-white/40 text-6xl">☕</div>
+                )}
             </AnimatePresence>
             {images.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
@@ -51,37 +55,6 @@ function PanelImageCarousel({ product }: { product: { image: string; images?: st
                     ))}
                 </div>
             )}
-        </div>
-    );
-}
-
-// ─── Taste Profile Bar ──────────────────────────────────────────────────────
-function TasteBar({ label, value, max = 5 }: { label: string; value: number; max?: number }) {
-    return (
-        <div className="flex items-center gap-3">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 w-20 flex-shrink-0">{label}</span>
-            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                    className="h-full bg-gradient-to-r from-sb-green/60 to-sb-green rounded-full transition-all duration-500"
-                    style={{ width: `${(value / max) * 100}%` }}
-                />
-            </div>
-            <span className="text-[9px] text-gray-400 font-bold w-4 text-right">{value}</span>
-        </div>
-    );
-}
-
-// ─── Star Rating ────────────────────────────────────────────────────────────
-function StarRating({ rating, size = 12 }: { rating: number; size?: number }) {
-    return (
-        <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map(i => (
-                <Star
-                    key={i}
-                    size={size}
-                    className={i <= Math.round(rating) ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'}
-                />
-            ))}
         </div>
     );
 }
@@ -125,7 +98,7 @@ interface ProductDetailPanelProps {
 
 export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps) {
     const { addToCart } = useCart();
-    const { t, language } = useLanguage();
+    const { t } = useLanguage();
     const router = useRouter();
     const [quantity, setQuantity] = useState(1);
     const [isAdded, setIsAdded] = useState(false);
@@ -142,31 +115,33 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
 
     if (!product) return null;
 
-    const isInStock = product.inStock !== false;
+    const inStock = isInStock(product);
+    const productIsNew = isNewProduct(product);
+    const isBestSeller = hasTag(product, 'best-seller');
 
     // Determine the effective sale unit
-    const effectiveUnit: SaleUnit = selectedUnit ?? (
-        product.saleUnits?.[0] ?? {
-            id: 'default',
-            label: product.namePart2 ?? 'Unité',
-            labelEn: product.namePart2En ?? 'Unit',
-            price: product.price,
-            originalPrice: product.originalPrice,
-            quantity: 1,
-        }
-    );
+    const defaultUnit = getDefaultUnit(product);
+    const effectiveUnit: SaleUnit = selectedUnit ?? defaultUnit ?? {
+        id: 0,
+        name: 'Unit',
+        unit_type: 'pc',
+        quantity: 1,
+        selling_price: product.selling_price,
+        pricing_method: 'direct',
+        sku: '',
+        stock: product.stock_qty,
+        is_default: true,
+        status: 'active',
+    };
 
-    const unitPrice = effectiveUnit.price;
-    const originalUnitPrice = effectiveUnit.originalPrice;
-    const hasDiscount = !!originalUnitPrice && originalUnitPrice > unitPrice;
-    const discountPct = hasDiscount
-        ? Math.round((1 - unitPrice / originalUnitPrice!) * 100)
-        : 0;
+    const unitPrice = Number(effectiveUnit.selling_price) || 0;
 
-    const displayName = language === 'fr' ? product.name : (product.nameEn ?? product.name);
-    const displayPart2 = language === 'fr' ? product.namePart2 : (product.namePart2En ?? product.namePart2);
-    const displayTagline = language === 'fr' ? product.tagline : (product.taglineEn ?? product.tagline);
-    const displayDesc = language === 'fr' ? product.desc : (product.descEn ?? product.desc);
+    const displayName = product.name;
+    const displayPart2 = defaultUnit?.name;
+    const displayTagline = product.tagline;
+    const displayDesc = product.description;
+
+    const notes = extractNotes(product.sections);
 
     const handleAddToCart = () => {
         addToCart(product, effectiveUnit, quantity);
@@ -213,16 +188,16 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
 
                             {/* Tags + Stock */}
                             <div className="flex gap-1.5 flex-wrap">
-                                {product.isNew && (
+                                {productIsNew && (
                                     <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 bg-sb-black text-white rounded-full">{t('new')}</span>
                                 )}
-                                {product.tags?.includes('best-seller') && (
+                                {isBestSeller && (
                                     <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 bg-amber-400 text-white rounded-full">{t('bestSeller')}</span>
                                 )}
-                                <span className={`text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full flex items-center gap-1 ${isInStock ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-500 border border-red-200'
+                                <span className={`text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full flex items-center gap-1 ${inStock ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-500 border border-red-200'
                                     }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${isInStock ? 'bg-emerald-500 animate-pulse' : 'bg-red-400'}`} />
-                                    {isInStock ? (t('inStock') || 'In Stock') : (t('outOfStock') || 'Out of Stock')}
+                                    <span className={`w-1.5 h-1.5 rounded-full ${inStock ? 'bg-emerald-500 animate-pulse' : 'bg-red-400'}`} />
+                                    {inStock ? (t('inStock') || 'In Stock') : (t('outOfStock') || 'Out of Stock')}
                                 </span>
                             </div>
                         </div>
@@ -245,9 +220,6 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                     </div>
                                     <div className="text-right">
                                         <div className="font-display text-3xl sm:text-4xl text-sb-green leading-none">€{unitPrice.toFixed(2)}</div>
-                                        {hasDiscount && (
-                                            <span className="text-sm text-gray-300 line-through">€{originalUnitPrice!.toFixed(2)}</span>
-                                        )}
                                     </div>
                                 </div>
 
@@ -256,13 +228,12 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                 )}
 
                                 {/* ── Compact Sale Units ── */}
-                                {product.saleUnits && product.saleUnits.length > 1 && (
+                                {product.sales_units && product.sales_units.length > 1 && (
                                     <div className="pt-2">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t('selectPack')}</p>
                                         <div className="flex flex-wrap gap-2">
-                                            {product.saleUnits.map(unit => {
+                                            {product.sales_units.map(unit => {
                                                 const isActive = effectiveUnit.id === unit.id;
-                                                const unitLabel = language === 'fr' ? unit.label : (unit.labelEn ?? unit.label);
                                                 return (
                                                     <button
                                                         key={unit.id}
@@ -272,8 +243,8 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                                             : 'border-gray-50 bg-white text-sb-black hover:border-sb-green/30'
                                                             }`}
                                                     >
-                                                        <span className="text-[9px] font-bold uppercase">{unitLabel}</span>
-                                                        <span className="text-[10px] font-black opacity-80">€{unit.price.toFixed(2)}</span>
+                                                        <span className="text-[9px] font-bold uppercase">{unit.name}</span>
+                                                        <span className="text-[10px] font-black opacity-80">€{Number(unit.selling_price).toFixed(2)}</span>
                                                     </button>
                                                 );
                                             })}
@@ -283,18 +254,6 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
 
                                 {/* ── Quick Specs ── */}
                                 <div className="grid grid-cols-2 gap-3 pt-2">
-                                    {product.brewSizes && product.brewSizes.length > 0 && (
-                                        <div className="bg-white p-3 rounded-2xl border border-gray-100">
-                                            <span className="text-[10px] font-bold tracking-widest uppercase text-gray-400 block mb-1.5">Format</span>
-                                            <div className="flex flex-wrap gap-1">
-                                                {product.brewSizes.map(size => (
-                                                    <span key={size} className="bg-gray-50 px-2 py-0.5 rounded-full text-[10px] font-bold text-sb-black border border-gray-100 uppercase">
-                                                        {size}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
                                     {product.intensity != null && product.intensity > 0 && (
                                         <div className="bg-white p-3 rounded-2xl border border-gray-100">
                                             <IntensityBar intensity={product.intensity} size="panel" />
@@ -303,11 +262,11 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                 </div>
 
                                 {/* ── Aromatic Profile ── */}
-                                {product.notes && product.notes.length > 0 && (
+                                {notes && notes.length > 0 && (
                                     <div className="bg-sb-green p-4 rounded-[20px] text-white">
                                         <p className="text-[10px] font-bold tracking-widest uppercase opacity-70 mb-2">{t('aromaticProfile')}</p>
                                         <div className="flex flex-wrap gap-1.5">
-                                            {product.notes.map(note => (
+                                            {notes.map(note => (
                                                 <span key={note} className="bg-white/10 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-white/10">
                                                     {note}
                                                 </span>
@@ -392,8 +351,8 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                             {/* CTA */}
                             <button
                                 onClick={handleAddToCart}
-                                disabled={isAdded || !isInStock}
-                                className={`flex-1 flex justify-between items-center px-6 py-4 rounded-full shadow-lg transition-all duration-300 ${!isInStock
+                                disabled={isAdded || !inStock}
+                                className={`flex-1 flex justify-between items-center px-6 py-4 rounded-full shadow-lg transition-all duration-300 ${!inStock
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
                                     : isAdded
                                         ? 'bg-sb-black text-white shadow-sb-black/10'
@@ -402,18 +361,18 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                             >
                                 <div className="flex flex-col items-start">
                                     <span className="text-[10px] font-bold tracking-widest uppercase opacity-75">
-                                        {!isInStock ? (t('outOfStock') || 'Out of Stock') : isAdded ? t('addToCartSuccess') : t('total')}
+                                        {!inStock ? (t('outOfStock') || 'Out of Stock') : isAdded ? t('addToCartSuccess') : t('total')}
                                     </span>
                                     <AnimatePresence mode="wait">
                                         <motion.span
-                                            key={isAdded ? 'added' : !isInStock ? 'oos' : 'price'}
+                                            key={isAdded ? 'added' : !inStock ? 'oos' : 'price'}
                                             initial={{ y: 10, opacity: 0 }}
                                             animate={{ y: 0, opacity: 1 }}
                                             exit={{ y: -10, opacity: 0 }}
                                             transition={{ duration: 0.2 }}
                                             className="font-display text-2xl leading-none"
                                         >
-                                            {!isInStock ? '✕' : isAdded ? '✓' : `€${(unitPrice * quantity).toFixed(2)}`}
+                                            {!inStock ? '✕' : isAdded ? '✓' : `€${(unitPrice * quantity).toFixed(2)}`}
                                         </motion.span>
                                     </AnimatePresence>
                                 </div>

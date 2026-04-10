@@ -1,11 +1,9 @@
-// Server Component — owns generateStaticParams for Next.js static export.
+// Server Component — owns dynamic page for product detail.
 // params is a Promise in Next.js 15+ and must be awaited.
-import { enrichedProducts } from '@/lib/productsData';
 import ProductDetailPageClient from './ProductDetailPageClient';
 
-export function generateStaticParams() {
-    return enrichedProducts.map(p => ({ slug: p.slug ?? String(p.id) }));
-}
+// Dynamic page — product slugs come from the API
+export const dynamic = 'force-dynamic';
 
 export default async function ProductDetailPage({
     params,
