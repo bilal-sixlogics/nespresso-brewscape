@@ -1,12 +1,10 @@
 "use client";
 
-import { Search, ShoppingBag, ArrowLeft, X, Check, MapPin, Coffee, CreditCard, ArrowRight, Zap, Star } from "lucide-react";
-import { useState, useEffect, useMemo, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { AppConfig } from "@/lib/config";
-import { useCart } from "@/store/CartContext";
+
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
 import { MobileCarousel } from "@/components/ui/MobileCarousel";
@@ -16,64 +14,95 @@ import { Product } from "@/types";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductSkeleton } from "@/components/ui/ProductSkeleton";
 
-const wholeBeans = [
-  {
-    name: 'Master Origin', nameEn: 'Master Origin',
-    namePart2: 'Colombia', namePart2En: 'Colombia',
-    roast: 'Medium', roastLevel: 3,
-    origin: 'Colombia', price: 9.50,
-    color: 'from-[#c4a36e] to-[#8a6d3b]',
-    notes: ['Winey', 'Red Beans'],
-    desc: 'Late harvest Arabica. A highly fermentative process creates a winey profile with notes of red fruits.',
-    descEn: 'Late harvest Arabica. A highly fermentative process creates a winey profile with notes of red fruits.',
-    image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=300&auto=format&fit=crop'
-  },
-  {
-    name: 'Master Origin', nameEn: 'Master Origin',
-    namePart2: 'India', namePart2En: 'India',
-    roast: 'Dark', roastLevel: 5,
-    origin: 'India', price: 9.50,
-    color: 'from-[#5b8c5a] to-[#2d5a30]',
-    notes: ['Intense', 'Spicy'],
-    desc: 'Monsooned Robusta. Exposed to wet monsoon winds for intense, woody, and spicy aromatic notes.',
-    descEn: 'Monsooned Robusta. Exposed to wet monsoon winds for intense, woody, and spicy aromatic notes.',
-    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?q=80&w=300&auto=format&fit=crop'
-  },
-  {
-    name: 'Master Origin', nameEn: 'Master Origin',
-    namePart2: 'Ethiopia', namePart2En: 'Ethiopia',
-    roast: 'Light', roastLevel: 2,
-    origin: 'Ethiopia', price: 9.50,
-    color: 'from-[#e07a5f] to-[#b6533a]',
-    notes: ['Fruit Jam', 'Orange Blossom'],
-    desc: 'Sun-dried Arabica. Drying coffee inside the cherry brings decadent fruit jam aromas and orange blossom notes.',
-    descEn: 'Sun-dried Arabica. Drying coffee inside the cherry brings decadent fruit jam aromas and orange blossom notes.',
-    image: 'https://images.unsplash.com/photo-1587734195503-904fca47e0e9?q=80&w=300&auto=format&fit=crop'
-  },
-  {
-    name: 'Master Origin', nameEn: 'Master Origin',
-    namePart2: 'Indonesia', namePart2En: 'Indonesia',
-    roast: 'Medium', roastLevel: 4,
-    origin: 'Indonesia', price: 9.50,
-    color: 'from-[#1a3a2a] to-[#0d1f16]',
-    notes: ['Woody', 'Tobacco'],
-    desc: 'Wet-hulled Arabica. The unique wet-hulling method in high humidity produces a rich, velvety body with woody notes.',
-    descEn: 'Wet-hulled Arabica. The unique wet-hulling method in high humidity produces a rich, velvety body with woody notes.',
-    image: 'https://images.unsplash.com/photo-1611564494260-6f21b80af7ea?q=80&w=300&auto=format&fit=crop'
-  },
+const BRANDS = [
+  { name: 'Nespresso', logo: 'https://logo.clearbit.com/nespresso.com' },
+  { name: 'Nescafé', logo: 'https://logo.clearbit.com/nescafe.com' },
+  { name: 'Lavazza', logo: 'https://logo.clearbit.com/lavazza.com' },
+  { name: 'illy', logo: 'https://logo.clearbit.com/illy.com' },
+  { name: 'Starbucks', logo: 'https://logo.clearbit.com/starbucks.com' },
+  { name: 'Dolce Gusto', logo: 'https://logo.clearbit.com/dolce-gusto.com' },
+  { name: 'Cadbury', logo: 'https://logo.clearbit.com/cadbury.com' },
+  { name: 'Tassimo', logo: 'https://logo.clearbit.com/tassimo.com' },
+  { name: 'Kimbo', logo: 'https://logo.clearbit.com/kimbo.it' },
+  { name: "L'OR", logo: 'https://logo.clearbit.com/lorcoffee.com' },
+  { name: 'Senseo', logo: 'https://logo.clearbit.com/senseo.com' },
+  { name: 'Delta Q', logo: 'https://logo.clearbit.com/deltaq.com' },
+  { name: 'Jacobs', logo: 'https://logo.clearbit.com/jacobsdouweegberts.com' },
+  { name: 'Carte Noire', logo: 'https://logo.clearbit.com/cartenoire.fr' },
 ];
 
-// Navigation is now handled by Next.js router
+function BrandsMarqueeSection() {
+  const { language } = useLanguage();
+  const brands = [...BRANDS, ...BRANDS];
+
+  return (
+    <section className="bg-sb-green py-12 relative overflow-hidden">
+      {/* Subtle radial highlight */}
+      <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(ellipse_at_50%_50%,_white,_transparent_70%)] pointer-events-none" />
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mb-6 sm:mb-10">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-5 h-px bg-white/40" />
+              <span className="text-[9px] font-black tracking-[0.4em] uppercase text-white/50">
+                {language === 'fr' ? 'Nos Partenaires' : 'Our Partners'}
+              </span>
+            </div>
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-white uppercase leading-tight">
+              {language === 'fr' ? 'Marques de Confiance' : 'Trusted Brands'}
+            </h2>
+          </div>
+          <p className="text-white/50 text-xs max-w-xs leading-relaxed">
+            {language === 'fr'
+              ? 'Les grandes marques du café, toutes réunies sur notre plateforme.'
+              : 'World-renowned coffee brands, all available on our platform.'}
+          </p>
+        </div>
+      </div>
+
+      {/* Single marquee row */}
+      <div className="relative">
+        {/* Left/Right fade gradients */}
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-sb-green to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-sb-green to-transparent" />
+
+        <div className="flex gap-5 marquee-ltr">
+          {brands.map((brand, i) => (
+            <div
+              key={`b-${i}`}
+              className="shrink-0 w-40 rounded-2xl bg-white/95 shadow-lg shadow-black/10 flex flex-col items-center justify-center gap-1.5 group hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden relative px-4 py-5"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={brand.logo}
+                alt={brand.name}
+                className="w-20 h-10 object-contain group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  const span = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                  if (span) span.style.display = 'block';
+                }}
+              />
+              <span
+                className="text-[10px] font-black text-gray-700 uppercase tracking-widest text-center"
+                style={{ display: 'none' }}
+              >
+                {brand.name}
+              </span>
+              <div className="absolute inset-0 border-2 border-transparent group-hover:border-sb-green/25 rounded-2xl transition-all duration-300" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 export default function Home() {
-  const carouselRef = useRef<HTMLDivElement>(null);
   const { t, language } = useLanguage();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  // Navigation logic extracted to app router
-const { addToCart, cartCount } = useCart();
-
-  const [activeBeanIndex, setActiveBeanIndex] = useState(0);
-  const [openAccordion, setOpenAccordion] = useState<string>('description');
 
   // Fetch featured products from API — show all, no category filter
   const { products: featuredProducts, isLoading: featuredLoading } = useProducts({ featured: true, per_page: 20 });
@@ -313,8 +342,6 @@ const { addToCart, cartCount } = useCart();
 
         {/* STATS SECTION */}
         <section className="bg-sb-green py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 relative">
-          {/* Torn paper at top of stats - green tearing into white above */}
-          <div className="torn-paper-green-up z-30"></div>
           <div className="max-w-[1200px] mx-auto flex justify-center">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-16 w-full lg:w-[85%]">
               {[
@@ -339,9 +366,10 @@ const { addToCart, cartCount } = useCart();
               ))}
             </div>
           </div>
-          {/* Torn paper at bottom of stats - green tearing into white below */}
-          <div className="torn-paper-green-down z-30"></div>
         </section>
+
+        {/* ── BRANDS MARQUEE ─────────────────────────────────────────── */}
+        <BrandsMarqueeSection />
 
         {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
         <TestimonialsSection />
