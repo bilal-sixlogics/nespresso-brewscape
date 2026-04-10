@@ -16,97 +16,6 @@ import { Product } from "@/types";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductSkeleton } from "@/components/ui/ProductSkeleton";
 
-const BRANDS = [
-  { name: 'Nespresso', logo: 'https://logo.clearbit.com/nespresso.com', bg: '#000000' },
-  { name: 'Nescafé', logo: 'https://logo.clearbit.com/nescafe.com', bg: '#DA251C' },
-  { name: 'Lavazza', logo: 'https://logo.clearbit.com/lavazza.com', bg: '#FFFFFF' },
-  { name: 'illy', logo: 'https://logo.clearbit.com/illy.com', bg: '#FFFFFF' },
-  { name: 'Starbucks', logo: 'https://logo.clearbit.com/starbucks.com', bg: '#00704A' },
-  { name: 'Dolce Gusto', logo: 'https://logo.clearbit.com/dolce-gusto.com', bg: '#FFFFFF' },
-  { name: 'Cadbury', logo: 'https://logo.clearbit.com/cadbury.com', bg: '#4B088A' },
-  { name: 'Tassimo', logo: 'https://logo.clearbit.com/tassimo.com', bg: '#FFFFFF' },
-  { name: 'Kimbo', logo: 'https://logo.clearbit.com/kimbo.it', bg: '#FFFFFF' },
-  { name: "L'OR", logo: 'https://logo.clearbit.com/lorcoffee.com', bg: '#1A1A1A' },
-  { name: 'Senseo', logo: 'https://logo.clearbit.com/senseo.com', bg: '#FFFFFF' },
-  { name: 'Delta Q', logo: 'https://logo.clearbit.com/deltaq.com', bg: '#FFFFFF' },
-  { name: 'Jacobs', logo: 'https://logo.clearbit.com/jacobsdouweegberts.com', bg: '#FFFFFF' },
-  { name: 'Carte Noire', logo: 'https://logo.clearbit.com/cartenoire.fr', bg: '#1A1A1A' },
-];
-
-function BrandsMarqueeSection() {
-  const { language } = useLanguage();
-  const brands = [...BRANDS, ...BRANDS];
-
-  return (
-    <section className="bg-sb-green py-12 relative overflow-hidden">
-      {/* Torn paper top — green tears into white above */}
-      <div className="torn-paper-green-up z-30" />
-
-      {/* Subtle radial highlight */}
-      <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(ellipse_at_50%_50%,_white,_transparent_70%)] pointer-events-none" />
-
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mb-6 sm:mb-10">
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-5 h-px bg-white/40" />
-              <span className="text-[9px] font-black tracking-[0.4em] uppercase text-white/50">
-                {language === 'fr' ? 'Nos Partenaires' : 'Our Partners'}
-              </span>
-            </div>
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-white uppercase leading-tight">
-              {language === 'fr' ? 'Marques de Confiance' : 'Trusted Brands'}
-            </h2>
-          </div>
-          <p className="text-white/50 text-xs max-w-xs leading-relaxed">
-            {language === 'fr'
-              ? 'Les grandes marques du café, toutes réunies sur notre plateforme.'
-              : 'World-renowned coffee brands, all available on our platform.'}
-          </p>
-        </div>
-      </div>
-
-      {/* Single marquee row */}
-      <div className="relative">
-        {/* Left/Right fade gradients */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-sb-green to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-sb-green to-transparent" />
-
-        <div className="flex gap-5 marquee-ltr">
-          {brands.map((brand, i) => (
-            <div
-              key={`b-${i}`}
-              className="shrink-0 w-40 h-22 rounded-2xl bg-white/95 shadow-lg shadow-black/10 flex flex-col items-center justify-center gap-1.5 group hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden relative px-4 py-5"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={brand.logo}
-                alt={brand.name}
-                className="w-20 h-10 object-contain group-hover:scale-105 transition-transform duration-300"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  const span = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-                  if (span) span.style.display = 'block';
-                }}
-              />
-              <span
-                className="text-[10px] font-black text-gray-700 uppercase tracking-widest text-center"
-                style={{ display: 'none' }}
-              >
-                {brand.name}
-              </span>
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-sb-green/25 rounded-2xl transition-all duration-300" />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Torn paper bottom — green tears into white below */}
-      <div className="torn-paper-green-down z-30" />
-    </section>
-  );
-}
-
 
 function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: Product) => void }) {
   const { t, language } = useLanguage();
@@ -504,9 +413,6 @@ const { addToCart, cartCount } = useCart();
 
         {/* ── FEATURED MACHINES ──────────────────────────────────────── */}
         <FeaturedMachinesSection onProductClick={setSelectedProduct} />
-
-        {/* ── BRANDS MARQUEE ─────────────────────────────────────────── */}
-        <BrandsMarqueeSection />
 
         {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
         <TestimonialsSection />
