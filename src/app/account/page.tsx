@@ -12,6 +12,9 @@ import {
     AlertCircle, Shield, CreditCard, Home, Briefcase, ChevronDown, Camera, Save, Loader2, Search, Heart
 } from 'lucide-react';
 import { Order, OrderStatus, OrderItem, Address, Product, getProductImage } from '@/types';
+import { apiClient } from '@/lib/api/client';
+import { Endpoints } from '@/lib/api/endpoints';
+import { ApiError } from '@/lib/api/types';
 
 /** Minimal mock product for demo order display */
 function mockProduct(id: number, slug: string, name: string, image: string, price: number): Product {
@@ -75,13 +78,14 @@ function StatusTimeline({ status }: { status: string }) {
 
 // ── Profile Tab ──────────────────────────────────────────────────────────────
 function ProfileTab({ orders }: { orders: Order[] }) {
-    const { user, login } = useAuth();
+    const { user, refreshAddresses } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState(user?.name || '');
     const [editEmail, setEditEmail] = useState(user?.email || '');
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [showSaved, setShowSaved] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
     const fileRef = React.useRef<HTMLInputElement>(null);
 
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,16 +96,21 @@ function ProfileTab({ orders }: { orders: Order[] }) {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!user) return;
+        setSaveError(null);
         setIsSaving(true);
-        setTimeout(() => {
-            login({ ...user, name: editName, email: editEmail });
-            setIsSaving(false);
+        try {
+            await apiClient.put(Endpoints.profile, { name: editName, email: editEmail });
             setIsEditing(false);
             setShowSaved(true);
             setTimeout(() => setShowSaved(false), 2500);
-        }, 800);
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setSaveError(apiErr.message ?? 'Failed to save changes.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -129,6 +138,17 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                     >
                         <CheckCircle2 size={14} />
                         <span className="text-sm font-bold">Profile updated successfully!</span>
+                    </motion.div>
+                )}
+                {saveError && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 flex items-center gap-2 mb-4"
+                    >
+                        <AlertCircle size={14} />
+                        <span className="text-sm font-bold">{saveError}</span>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -226,10 +246,11 @@ function ProfileTab({ orders }: { orders: Order[] }) {
 }
 
 // ── Address Form Modal ──────────────────────────────────────────────────────
-function AddressFormModal({ address, onSave, onClose }: {
+function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
     address?: Address | null;
     onSave: (data: Omit<Address, 'id'>) => void;
     onClose: () => void;
+    isLoading?: boolean;
 }) {
     const [form, setForm] = useState<Omit<Address, 'id'>>({
         label: address?.label || 'Home',
@@ -301,10 +322,11 @@ function AddressFormModal({ address, onSave, onClose }: {
                 </div>
 
                 <button
-                    onClick={() => { if (isValid) { onSave(form); onClose(); } }}
-                    disabled={!isValid}
-                    className="w-full mt-6 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    onClick={() => { if (isValid && !isLoading) onSave(form); }}
+                    disabled={!isValid || isLoading}
+                    className="w-full mt-6 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
+                    {isLoading ? <Loader2 size={16} className="animate-spin" /> : null}
                     {address ? 'Save Changes' : 'Add Address'}
                 </button>
             </motion.div>
@@ -370,7 +392,7 @@ type Tab = 'orders' | 'addresses' | 'profile' | 'wishlist';
 type Filter = 'all' | 'active' | 'delivered' | 'cancelled';
 
 export default function AccountPage() {
-    const { user, logout, addAddress, updateAddress, deleteAddress, setDefaultAddress } = useAuth();
+    const { user, logout, refreshAddresses } = useAuth();
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState<Tab>('orders');
     const [reviewingItem, setReviewingItem] = useState<OrderItem | null>(null);
@@ -380,8 +402,63 @@ export default function AccountPage() {
     const [page, setPage] = useState(1);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+    const [addressError, setAddressError] = useState<string | null>(null);
+    const [addressLoading, setAddressLoading] = useState(false);
 
     const orders = user?.orders?.length ? user.orders : MOCK_ORDERS;
+
+    const handleSaveAddress = async (data: Omit<Address, 'id'>) => {
+        setAddressError(null);
+        setAddressLoading(true);
+        try {
+            const payload = {
+                label: data.label,
+                first_name: data.firstName,
+                last_name: data.lastName,
+                address_1: data.address,
+                city: data.city,
+                postcode: data.postalCode,
+                country: data.country,
+                phone: data.phone || null,
+                is_default: data.isDefault ?? false,
+            };
+            if (editingAddress) {
+                await apiClient.put(Endpoints.address(editingAddress.id), payload);
+            } else {
+                await apiClient.post(Endpoints.addresses, payload);
+            }
+            await refreshAddresses();
+            setShowAddressModal(false);
+            setEditingAddress(null);
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setAddressError(apiErr.message ?? 'Failed to save address.');
+        } finally {
+            setAddressLoading(false);
+        }
+    };
+
+    const handleDeleteAddress = async (id: string) => {
+        setAddressError(null);
+        try {
+            await apiClient.delete(Endpoints.address(id));
+            await refreshAddresses();
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setAddressError(apiErr.message ?? 'Failed to delete address.');
+        }
+    };
+
+    const handleSetDefault = async (id: string) => {
+        setAddressError(null);
+        try {
+            await apiClient.patch(Endpoints.addressDefault(id));
+            await refreshAddresses();
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setAddressError(apiErr.message ?? 'Failed to update default address.');
+        }
+    };
     const addresses = user?.addresses ?? [];
 
     const filteredOrders = orders.filter(o => {
@@ -426,7 +503,7 @@ export default function AccountPage() {
                             <p className="text-gray-400 text-sm mt-1">{user?.email}</p>
                         </div>
                         <button
-                            onClick={logout}
+                            onClick={() => logout()}
                             className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all text-xs font-bold uppercase tracking-wider w-max"
                         >
                             <LogOut size={14} /> Sign Out
@@ -641,12 +718,19 @@ export default function AccountPage() {
                                         <div className="flex items-center justify-between mb-6">
                                             <h2 className="font-display text-2xl uppercase">Saved Addresses</h2>
                                             <button
-                                                onClick={() => { setEditingAddress(null); setShowAddressModal(true); }}
+                                                onClick={() => { setEditingAddress(null); setAddressError(null); setShowAddressModal(true); }}
                                                 className="flex items-center gap-2 px-5 py-3 bg-sb-green text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors"
                                             >
                                                 <Plus size={14} /> Add Address
                                             </button>
                                         </div>
+
+                                        {addressError && (
+                                            <div className="mb-4 flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+                                                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                                                <span>{addressError}</span>
+                                            </div>
+                                        )}
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             {addresses.map((addr: Address) => (
@@ -658,10 +742,10 @@ export default function AccountPage() {
                                                             {addr.isDefault && <span className="px-2 py-0.5 bg-sb-green/10 text-sb-green text-[9px] font-black uppercase tracking-wider rounded-full border border-sb-green/20">Default</span>}
                                                         </div>
                                                         <div className="flex gap-1">
-                                                            <button onClick={() => { setEditingAddress(addr); setShowAddressModal(true); }} className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center hover:bg-sb-green hover:text-white transition-colors text-gray-400">
+                                                            <button onClick={() => { setEditingAddress(addr); setAddressError(null); setShowAddressModal(true); }} className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center hover:bg-sb-green hover:text-white transition-colors text-gray-400">
                                                                 <Edit2 size={13} />
                                                             </button>
-                                                            <button onClick={() => deleteAddress(addr.id)} className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center hover:bg-red-50 hover:text-red-400 transition-colors text-gray-400">
+                                                            <button onClick={() => handleDeleteAddress(addr.id)} className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center hover:bg-red-50 hover:text-red-400 transition-colors text-gray-400">
                                                                 <Trash2 size={13} />
                                                             </button>
                                                         </div>
@@ -673,7 +757,7 @@ export default function AccountPage() {
 
                                                     {!addr.isDefault && (
                                                         <button
-                                                            onClick={() => setDefaultAddress(addr.id)}
+                                                            onClick={() => handleSetDefault(addr.id)}
                                                             className="mt-4 text-[10px] font-bold uppercase tracking-widest text-sb-green hover:underline"
                                                         >
                                                             Set as Default
@@ -731,14 +815,9 @@ export default function AccountPage() {
                 {showAddressModal && (
                     <AddressFormModal
                         address={editingAddress}
-                        onSave={(data) => {
-                            if (editingAddress) {
-                                updateAddress({ ...data, id: editingAddress.id });
-                            } else {
-                                addAddress(data);
-                            }
-                        }}
-                        onClose={() => { setShowAddressModal(false); setEditingAddress(null); }}
+                        onSave={handleSaveAddress}
+                        onClose={() => { setShowAddressModal(false); setEditingAddress(null); setAddressError(null); }}
+                        isLoading={addressLoading}
                     />
                 )}
             </AnimatePresence>

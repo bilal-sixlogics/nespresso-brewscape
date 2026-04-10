@@ -597,7 +597,7 @@ export default function CheckoutPage() {
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
 
-    const { user, login } = useAuth();
+    const { user } = useAuth();
     const [step, setStep] = useState<Step>('shipping');
     const [orderNum] = useState(() => `CF${Date.now().toString().slice(-8)}`);
 
@@ -614,17 +614,8 @@ export default function CheckoutPage() {
         method: 'card', cardHolder: user?.name || '', cardNumber: '', expiry: '', cvv: '', saveCard: false, createAccount: false
     });
 
-    // Auto-create account if requested
-    useEffect(() => {
-        if (step === 'confirmation' && paymentForm.createAccount && !user) {
-            login({
-                id: `usr_${Date.now()}`,
-                name: `${shippingForm.firstName} ${shippingForm.lastName}`.trim() || 'New User',
-                email: shippingForm.email,
-                orders: []
-            });
-        }
-    }, [step, paymentForm.createAccount, user, login, shippingForm]);
+    // Account creation after checkout is handled via /register page
+    // (paymentForm.createAccount is kept for future backend integration)
 
     // If cart is empty and not on confirmation, redirect
     if (items.length === 0 && step !== 'confirmation') {

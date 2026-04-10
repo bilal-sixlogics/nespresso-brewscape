@@ -165,6 +165,26 @@ export default function Home() {
                 </motion.p>
               </div>
 
+              {/* HERO CUP AND CIRCLE - Cup sits ON the circle, bottom in, top out */}
+              <div className="w-full lg:w-1/3 flex justify-center items-center relative z-[40] mt-2 sm:mt-4 lg:mt-0 h-[260px] sm:h-[350px] md:h-[400px] lg:h-[500px]">
+                {/* The Green Circle - BEHIND the cup (z-1) */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
+                  className="absolute left-1/2 transform -translate-x-1/2 bg-[#439665] rounded-full z-[1] w-[200px] h-[200px] sm:w-[280px] sm:h-[280px] md:h-[350px] md:w-[350px] lg:w-[420px] lg:h-[420px]"
+                  style={{ top: '50%', marginTop: '-60px' }}
+                />
+                {/* The Cup - ABOVE the circle (z-2), transparent PNG floating */}
+                <motion.img
+                  animate={{ y: [0, -12, 0] }}
+                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                  src="/hero-cup.png"
+                  alt="Iced Coffee Cup"
+                  className="absolute left-1/2 transform -translate-x-1/2 z-[2] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.35)] w-[150px] sm:w-[210px] md:w-[250px] lg:w-[300px] h-auto top-[30px] sm:top-[40px] lg:top-[60px]"
+                />
+              </div>
+
               <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-end mb-6 lg:mb-0 space-y-5 sm:space-y-8 z-[50]">
                 <motion.div
                   initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
