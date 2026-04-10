@@ -119,7 +119,7 @@ function StepIndicator({ current }: { current: Step }) {
 }
 
 function OrderSummary({ compact = false }: { compact?: boolean }) {
-    const { items, subtotal, sitewideDiscount, promoDiscount, shippingCost, total, appliedPromo, selectedShipping } = useCart();
+    const { items, subtotal, promoDiscount, shippingCost, total, appliedPromo, selectedShipping } = useCart();
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [expanded, setExpanded] = useState(!compact);
@@ -168,7 +168,6 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                             {/* Pricing breakdown */}
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between text-gray-500"><span>{tx('Sous-total', 'Subtotal')}</span><span className="font-bold">€{subtotal.toFixed(2)}</span></div>
-                                {sitewideDiscount > 0 && <div className="flex justify-between text-sb-green"><span>{tx('Remise boutique', 'Store discount')}</span><span className="font-bold">-€{sitewideDiscount.toFixed(2)}</span></div>}
                                 {promoDiscount > 0 && <div className="flex justify-between text-sb-green"><span>{appliedPromo?.code}</span><span className="font-bold">-€{promoDiscount.toFixed(2)}</span></div>}
                                 <div className="flex justify-between text-gray-500">
                                     <span>{tx('Livraison', 'Shipping')} — {language === 'fr' ? selectedShipping.label : selectedShipping.labelEn}</span>
@@ -208,7 +207,7 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
     onNext: () => void;
 }) {
     const { language } = useLanguage();
-    const { selectedShipping, setShipping } = useCart();
+    const { selectedShipping, setShipping, shippingOptions } = useCart();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
 
     const set = (key: keyof ShippingForm) => (v: string) => onChange({ ...form, [key]: v });
@@ -244,7 +243,7 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
             <div className="mb-8">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">{tx('Mode de livraison', 'Delivery Method')}</p>
                 <div className="space-y-3">
-                    {[AppConfig.shipping.standard, AppConfig.shipping.express].map((method: any) => {
+                    {shippingOptions.map((method: any) => {
                         const active = selectedShipping.id === method.id;
                         const label = language === 'fr' ? method.label : method.labelEn;
                         return (

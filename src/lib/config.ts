@@ -17,42 +17,16 @@ export const AppConfig = {
         copyrightYear: new Date().getFullYear(),
     },
 
-    // ─── Promo & Discount System ────────────────────────────────────────────
-    // These simulate admin-controlled backend toggles.
-    promo: {
-        // Sitewide discount applied automatically to every order.
-        sitewideDiscount: {
-            enabled: true,
-            percentage: 10, // 10% off all products automatically
-        },
-
-        // Free shipping threshold. Set to 0 to offer free shipping on all.
-        freeShippingThreshold: 150, // e.g. EUR 150
-
-        // Announcement banner (the strip at the very top).
-        banner: {
-            enabled: true,
-            messages: [
-                "☕ Livraison offerte dès 150€ d'achat",
-                "🎉 -10% sur toute la boutique — Automatiquement appliqué",
-            ],
-            messagesEn: [
-                "☕ Free Shipping on orders over €150",
-                "🎉 -10% Sitewide — Automatically applied at checkout",
-            ],
-        },
-
-        // Manual promo codes (simulating backend-provided codes).
-        promoCodes: {
-            "CAFREZZO20": { type: "percentage", value: 20, label: "20% Off" },
-            "BIENVENUE": { type: "fixed", value: 10, label: "€10 Off" },
-        } as Record<string, { type: "percentage" | "fixed"; value: number; label: string }>,
-    },
-
-    // ─── Shipping Rates ─────────────────────────────────────────────────────
-    shipping: {
-        standard: { id: 'standard' as const, label: "Standard (3–5 jours)", labelEn: "Standard (3–5 days)", price: 5.99 },
-        express: { id: 'express' as const, label: "Express (1–2 jours)", labelEn: "Express (1–2 days)", price: 12.99 },
+    // ─── Promo Banner ────────────────────────────────────────────────────────
+    // Static banner messages — promotions themselves are managed via admin panel.
+    promoBanner: {
+        enabled: true,
+        messages: [
+            "☕ Livraison offerte dès 150€ d'achat",
+        ],
+        messagesEn: [
+            "☕ Free Shipping on orders over €150",
+        ],
     },
 
     socials: [

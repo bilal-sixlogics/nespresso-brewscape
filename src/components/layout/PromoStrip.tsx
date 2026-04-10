@@ -11,7 +11,7 @@ export function PromoStrip() {
     const [visible, setVisible] = useState(true);
     const [currentIdx, setCurrentIdx] = useState(0);
 
-    const { banner } = AppConfig.promo;
+    const banner = AppConfig.promoBanner;
     if (!banner.enabled) return null;
 
     const messages = language === 'fr' ? banner.messages : banner.messagesEn;

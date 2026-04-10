@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { Product, SaleUnit } from '@/types';
-import { AppConfig } from '@/lib/config';
+import { apiClient } from '@/lib/api/client';
+import { Endpoints } from '@/lib/api/endpoints';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -15,9 +16,11 @@ export interface CartItem {
 
 export interface AppliedPromo {
     code: string;
+    promotion_id: number;
+    promotion_name: string;
     type: "percentage" | "fixed";
     value: number;
-    label: string;
+    discount: number; // pre-calculated discount amount from backend
 }
 
 export interface ShippingMethod {
@@ -27,28 +30,43 @@ export interface ShippingMethod {
     price: number;
 }
 
+const DEFAULT_SHIPPING: ShippingMethod = {
+    id: 'standard',
+    label: 'Standard (3–5 jours)',
+    labelEn: 'Standard (3–5 days)',
+    price: 5.99,
+};
+
+const EXPRESS_SHIPPING: ShippingMethod = {
+    id: 'express',
+    label: 'Express (1–2 jours)',
+    labelEn: 'Express (1–2 days)',
+    price: 12.99,
+};
+
 interface CartContextType {
     // Cart Data
     items: CartItem[];
-    cartCount: number; // Total item quantity for badge
+    cartCount: number;
 
     // Pricing
     subtotal: number;
-    sitewideDiscount: number;   // Amount saved from sitewide %
-    promoDiscount: number;      // Amount saved from promo code
+    promoDiscount: number;
     shippingCost: number;
     total: number;
-    amountToFreeShipping: number; // Remaining amount to unlock free shipping (0 if already free)
+    amountToFreeShipping: number;
 
     // Promo Code
     appliedPromo: AppliedPromo | null;
     promoError: string | null;
-    applyPromoCode: (code: string) => void;
+    promoLoading: boolean;
+    applyPromoCode: (code: string) => Promise<void>;
     removePromoCode: () => void;
 
     // Shipping
     selectedShipping: ShippingMethod;
     setShipping: (method: ShippingMethod) => void;
+    shippingOptions: ShippingMethod[];
 
     // Actions
     addToCart: (product: Product, saleUnit: SaleUnit, quantity?: number) => void;
@@ -61,42 +79,26 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const FREE_SHIPPING_THRESHOLD = 150; // €150
+
 export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
     const [promoError, setPromoError] = useState<string | null>(null);
-    const [selectedShipping, setSelectedShipping] = useState<ShippingMethod>(
-        AppConfig.shipping.standard,
-    );
+    const [promoLoading, setPromoLoading] = useState(false);
+    const [selectedShipping, setSelectedShipping] = useState<ShippingMethod>(DEFAULT_SHIPPING);
 
     // ─── Derived Pricing ───────────────────────────────────────────────────
-    // Final price validation happens server-side at checkout.
-    // Client subtotal uses the unit price captured at add-to-cart time.
-    const subtotal = items.reduce((sum, item) => {
-        return sum + (item.unitPrice * item.quantity);
-    }, 0);
+    const subtotal = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
 
-    // Sitewide discount (admin-toggled)
-    const sitewideDiscountPct = AppConfig.promo.sitewideDiscount.enabled
-        ? AppConfig.promo.sitewideDiscount.percentage / 100
-        : 0;
-    const sitewideDiscount = subtotal * sitewideDiscountPct;
+    // Promo discount comes from backend calculation
+    const promoDiscount = appliedPromo?.discount ?? 0;
 
-    // Promo code discount (applied on top of sitewide-discounted price)
-    const afterSitewide = subtotal - sitewideDiscount;
-    let promoDiscount = 0;
-    if (appliedPromo) {
-        promoDiscount = appliedPromo.type === "percentage"
-            ? afterSitewide * (appliedPromo.value / 100)
-            : Math.min(appliedPromo.value, afterSitewide); // Don't discount below 0
-    }
-
-    const afterAllDiscounts = afterSitewide - promoDiscount;
-    const freeShippingThreshold = AppConfig.promo.freeShippingThreshold;
-    const isFreeShipping = afterAllDiscounts >= freeShippingThreshold;
+    const afterDiscount = Math.max(0, subtotal - promoDiscount);
+    const isFreeShipping = afterDiscount >= FREE_SHIPPING_THRESHOLD;
     const shippingCost = isFreeShipping ? 0 : selectedShipping.price;
-    const amountToFreeShipping = Math.max(0, freeShippingThreshold - afterAllDiscounts);
-    const total = afterAllDiscounts + shippingCost;
+    const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - afterDiscount);
+    const total = afterDiscount + shippingCost;
     const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
     // ─── Actions ────────────────────────────────────────────────────────────
@@ -106,7 +108,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const existingIdx = prev.findIndex(
                 i => i.product.id === product.id && i.saleUnit.id === saleUnit.id
             );
-            // Compute effective unit price (ensure number since API may return string)
             const unitPrice = Number(saleUnit.selling_price) || 0;
 
             if (existingIdx > -1) {
@@ -145,16 +146,52 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setPromoError(null);
     }, []);
 
-    const applyPromoCode = useCallback((code: string) => {
-        const trimmed = code.trim().toUpperCase();
-        const found = AppConfig.promo.promoCodes[trimmed];
-        if (found) {
-            setAppliedPromo({ code: trimmed, ...found });
-            setPromoError(null);
-        } else {
-            setPromoError("Code invalide ou expiré.");
+    // ─── Promo Code — calls backend API ─────────────────────────────────────
+
+    const applyPromoCode = useCallback(async (code: string) => {
+        const trimmed = code.trim();
+        if (!trimmed) {
+            setPromoError('Please enter a promo code.');
+            return;
         }
-    }, []);
+
+        setPromoLoading(true);
+        setPromoError(null);
+
+        try {
+            const res = await apiClient.post<{
+                valid: boolean;
+                promotion_id: number;
+                promotion_name: string;
+                discount_type: 'percentage' | 'fixed';
+                discount_value: number;
+                discount: number;
+                message?: string;
+            }>(Endpoints.applyPromo, {
+                code: trimmed,
+                order_total: subtotal,
+            });
+
+            if (res.valid) {
+                setAppliedPromo({
+                    code: trimmed.toUpperCase(),
+                    promotion_id: res.promotion_id,
+                    promotion_name: res.promotion_name,
+                    type: res.discount_type,
+                    value: res.discount_value,
+                    discount: res.discount,
+                });
+                setPromoError(null);
+            } else {
+                setPromoError(res.message || 'Invalid promo code.');
+            }
+        } catch (err: unknown) {
+            const apiErr = err as { message?: string; status?: number };
+            setPromoError(apiErr.message || 'Invalid or expired promo code.');
+        } finally {
+            setPromoLoading(false);
+        }
+    }, [subtotal]);
 
     const removePromoCode = useCallback(() => {
         setAppliedPromo(null);
@@ -167,9 +204,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     return (
         <CartContext.Provider value={{
-            items, cartCount, subtotal, sitewideDiscount, promoDiscount,
+            items, cartCount, subtotal, promoDiscount,
             shippingCost, total, amountToFreeShipping, appliedPromo, promoError,
-            applyPromoCode, removePromoCode, selectedShipping, setShipping,
+            promoLoading, applyPromoCode, removePromoCode,
+            selectedShipping, setShipping, shippingOptions: [DEFAULT_SHIPPING, EXPRESS_SHIPPING],
             addToCart, removeFromCart, updateQuantity, clearCart,
         }}>
             {children}

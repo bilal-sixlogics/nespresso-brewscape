@@ -6,15 +6,16 @@ import { X, ShoppingBag, Trash2, Plus, Minus, Tag, Truck, ArrowRight, Check } fr
 import Link from 'next/link';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { AppConfig } from '@/lib/config';
 import { getProductImage } from '@/types';
+
+const FREE_SHIPPING_THRESHOLD = 150;
 
 export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     const {
-        items, cartCount, subtotal, sitewideDiscount, promoDiscount,
+        items, cartCount, subtotal, promoDiscount,
         shippingCost, total, amountToFreeShipping,
-        appliedPromo, promoError, applyPromoCode, removePromoCode,
-        selectedShipping, setShipping,
+        appliedPromo, promoError, promoLoading, applyPromoCode, removePromoCode,
+        selectedShipping, setShipping, shippingOptions,
         removeFromCart, updateQuantity, clearCart,
     } = useCart();
     const { language } = useLanguage();
@@ -23,8 +24,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
     const [promoInput, setPromoInput] = useState('');
     const [promoExpanded, setPromoExpanded] = useState(false);
 
-    const freeShippingThreshold = AppConfig.promo.freeShippingThreshold;
-    const freeShippingProgress = Math.min(100, ((subtotal - promoDiscount - sitewideDiscount) / freeShippingThreshold) * 100);
+    const freeShippingProgress = Math.min(100, ((subtotal - promoDiscount) / FREE_SHIPPING_THRESHOLD) * 100);
 
     const handleApplyPromo = () => {
         if (promoInput.trim()) applyPromoCode(promoInput.trim());
@@ -240,7 +240,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                         initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                                         className="flex justify-between items-center mt-2 overflow-hidden"
                                     >
-                                        <span className="text-[10px] text-gray-400">{appliedPromo.label}</span>
+                                        <span className="text-[10px] text-gray-400">{appliedPromo.promotion_name} ({appliedPromo.code})</span>
                                         <button onClick={removePromoCode} className="text-[9px] text-red-400 font-bold hover:underline">
                                             {tx('Supprimer', 'Remove')}
                                         </button>
@@ -251,7 +251,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
                         {/* Shipping method selector */}
                         <div className="flex gap-2">
-                            {[AppConfig.shipping.standard, AppConfig.shipping.express].map((method) => {
+                            {shippingOptions.map((method) => {
                                 const isActive = selectedShipping.id === method.id;
                                 const label = language === 'fr' ? method.label : method.labelEn;
                                 return (
@@ -275,12 +275,6 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                 <span>{tx('Sous-total', 'Subtotal')}</span>
                                 <span className="font-bold">€{subtotal.toFixed(2)}</span>
                             </div>
-                            {sitewideDiscount > 0 && (
-                                <div className="flex justify-between text-sm text-sb-green">
-                                    <span>{tx('Remise boutique', 'Store discount')}</span>
-                                    <span className="font-bold">-€{sitewideDiscount.toFixed(2)}</span>
-                                </div>
-                            )}
                             {promoDiscount > 0 && (
                                 <div className="flex justify-between text-sm text-sb-green">
                                     <span>{appliedPromo?.code}</span>

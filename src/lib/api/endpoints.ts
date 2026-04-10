@@ -13,7 +13,7 @@ export const Endpoints = {
     // ── Store Config & CMS ───────────────────────────────────────────────
     settings: `${API_BASE}/settings`,
     shippingMethods: `${API_BASE}/shipping-methods`,
-    promoCodes: `${API_BASE}/promo-codes/validate`,
+    applyPromo: `${API_BASE}/promotions/apply`,
     promoStrips: `${API_BASE}/promo-strips`,
     heroBanners: `${API_BASE}/hero-banners`,
     featuredCollections: (key: string) => `${API_BASE}/featured-collections/${key}`,
