@@ -340,34 +340,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* STATS SECTION */}
-        <section className="bg-sb-green py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 relative">
-          <div className="max-w-[1200px] mx-auto flex justify-center">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-16 w-full lg:w-[85%]">
-              {[
-                { num: '46', label: t('statExperience') },
-                { num: '1M+', label: t('statClients') },
-                { num: '84', label: t('statCountries') },
-                { num: '1K+', label: t('statProducts') },
-              ].map((stat) => (
-                <div key={stat.num} className="flex flex-col items-center lg:items-start text-center lg:text-left relative">
-                  <motion.div
-                    initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", bounce: 0.5 }}
-                    className="font-display text-4xl sm:text-5xl lg:text-7xl mb-3 sm:mb-4 text-white drop-shadow-lg"
-                  >
-                    {stat.num}
-                  </motion.div>
-                  <div className="text-[11px] lg:text-xs font-bold tracking-[0.2em] uppercase whitespace-pre-line text-white/80 leading-relaxed">
-                    {stat.label}
-                  </div>
-                  {/* Decorative line */}
-                  <div className="hidden lg:block absolute -right-8 top-1/2 -translate-y-1/2 w-[1px] h-12 bg-white/20 last:hidden"></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* ── BRANDS MARQUEE ─────────────────────────────────────────── */}
         <BrandsMarqueeSection />
 
