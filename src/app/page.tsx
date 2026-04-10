@@ -63,16 +63,25 @@ function BrandsMarqueeSection() {
         </div>
       </div>
 
-      {apiBrands.length > 0 && (
+      {apiBrands.length > 0 && (() => {
+        // Duplicate brands enough times so each track fills at least the viewport width.
+        // Each card is ~180px (w-40 + gap-5 = 160+20). For 1600px viewport we need ceil(1600/180) ≈ 9 items per track.
+        const itemWidth = 180;
+        const minItemsPerTrack = Math.max(apiBrands.length, Math.ceil(1600 / itemWidth) + 1);
+        const repeatCount = Math.ceil(minItemsPerTrack / apiBrands.length);
+        const filledBrands: ApiBrand[] = [];
+        for (let r = 0; r < repeatCount; r++) filledBrands.push(...apiBrands);
+
+        return (
         <div className="relative overflow-hidden">
           <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-sb-green to-transparent" />
           <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-sb-green to-transparent" />
 
-          {/* Two identical tracks animate in sync — when the first exits the viewport the second is already in place, creating a true seamless loop */}
+          {/* Two identical tracks: translateX(-100%) of one track width creates seamless infinite loop */}
           <div className="flex gap-5 marquee-track">
             {[0, 1].map(trackIdx => (
               <div key={trackIdx} className="flex gap-5 shrink-0" aria-hidden={trackIdx === 1}>
-                {apiBrands.map((brand, i) => (
+                {filledBrands.map((brand, i) => (
                   <div
                     key={`${trackIdx}-${i}`}
                     className="shrink-0 w-40 h-20 rounded-2xl bg-white/95 shadow-lg shadow-black/10 flex items-center justify-center group hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden relative"
@@ -111,7 +120,8 @@ function BrandsMarqueeSection() {
             ))}
           </div>
         </div>
-      )}
+        );
+      })()}
     </section>
   );
 }
