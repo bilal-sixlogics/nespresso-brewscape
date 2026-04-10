@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { AppConfig } from "@/lib/config";
+import { ArrowRight, Coffee, Leaf, Award } from "lucide-react";
 
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
@@ -37,7 +38,6 @@ function BrandsMarqueeSection() {
 
   return (
     <section className="bg-sb-green py-12 relative overflow-hidden">
-      {/* Subtle radial highlight */}
       <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(ellipse_at_50%_50%,_white,_transparent_70%)] pointer-events-none" />
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mb-6 sm:mb-10">
@@ -61,9 +61,7 @@ function BrandsMarqueeSection() {
         </div>
       </div>
 
-      {/* Single marquee row */}
       <div className="relative">
-        {/* Left/Right fade gradients */}
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-sb-green to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-sb-green to-transparent" />
 
@@ -84,10 +82,7 @@ function BrandsMarqueeSection() {
                   if (span) span.style.display = 'block';
                 }}
               />
-              <span
-                className="text-[10px] font-black text-gray-700 uppercase tracking-widest text-center"
-                style={{ display: 'none' }}
-              >
+              <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest text-center" style={{ display: 'none' }}>
                 {brand.name}
               </span>
               <div className="absolute inset-0 border-2 border-transparent group-hover:border-sb-green/25 rounded-2xl transition-all duration-300" />
@@ -99,15 +94,12 @@ function BrandsMarqueeSection() {
   );
 }
 
-
 export default function Home() {
   const { t, language } = useLanguage();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  // Fetch featured products from API — show all, no category filter
   const { products: featuredProducts, isLoading: featuredLoading } = useProducts({ featured: true, per_page: 20 });
 
-  // Prevent scrolling when panel is open
   useEffect(() => {
     if (selectedProduct) {
       document.body.style.overflow = 'hidden';
@@ -117,17 +109,16 @@ export default function Home() {
     return () => { document.body.style.overflow = ''; };
   }, [selectedProduct]);
 
-
   return (
     <div className="w-full relative bg-sb-white text-sb-black overflow-x-hidden">
-      {/* MAIN HOME CONTENT */}
       <motion.div
         key="home"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}
       >
-        {/* HERO SECTION */}
+
+        {/* ── HERO ─────────────────────────────────────────────────────── */}
         <section className="relative w-full pt-16 pb-12 sm:pb-20 lg:pb-32 bg-sb-white z-10 overflow-visible min-h-[500px] sm:min-h-[600px] lg:min-h-[800px] flex flex-col justify-center">
-          {/* Coffee Beans Decoration - Left Side */}
+          {/* Coffee Beans Decoration */}
           <div
             className="absolute left-0 top-0 bottom-0 w-[300px] lg:w-[500px] pointer-events-none z-0"
             style={{
@@ -135,16 +126,10 @@ export default function Home() {
               maskImage: 'radial-gradient(ellipse at left center, black 20%, transparent 70%)'
             }}
           >
-            <img
-              src="/coffee-beans.png"
-              alt=""
-              className="w-full h-full object-cover opacity-50"
-            />
+            <img src="/coffee-beans.png" alt="" className="w-full h-full object-cover opacity-50" />
           </div>
 
           <div className="max-w-[1700px] mx-auto px-4 sm:px-8 relative mb-6 sm:mb-12">
-
-            {/* Massive Text sitting AT THE BACK */}
             <motion.h2
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -180,9 +165,8 @@ export default function Home() {
                 </motion.p>
               </div>
 
-              {/* HERO CUP AND CIRCLE - Cup sits ON the circle, bottom in, top out */}
+              {/* Hero Cup */}
               <div className="w-full lg:w-1/3 flex justify-center items-center relative z-[40] mt-2 sm:mt-4 lg:mt-0 h-[260px] sm:h-[350px] md:h-[400px] lg:h-[500px]">
-                {/* The Green Circle - BEHIND the cup (z-10) */}
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -190,7 +174,6 @@ export default function Home() {
                   className="absolute left-1/2 transform -translate-x-1/2 bg-[#439665] rounded-full z-[1] w-[200px] h-[200px] sm:w-[280px] sm:h-[280px] md:h-[350px] md:w-[350px] lg:w-[420px] lg:h-[420px]"
                   style={{ top: '50%', marginTop: '-60px' }}
                 />
-                {/* The Cup - ABOVE the circle (z-10), fixed size, transparent PNG */}
                 <motion.img
                   animate={{ y: [0, -12, 0] }}
                   transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
@@ -230,85 +213,182 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          {/* White torn paper cutting into the green story section below */}
-          {/* <div className="torn-paper-white-down z-20"></div> */}
         </section>
 
-        {/* STORY SECTION - ULTRA PREMIUM REDESIGN */}
-        <section className="bg-sb-green pt-16 sm:pt-24 md:pt-32 pb-16 sm:pb-24 md:pb-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-          <div className="max-w-[1400px] mx-auto relative z-10 w-full px-2 lg:px-12">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-10 sm:gap-16 lg:gap-24">
-              {/* Left Text Detail */}
+        {/* ── STORY / CRAFT SECTION ─────────────────────────────────────── */}
+        <section className="relative bg-[#0D1F14] overflow-hidden">
+          {/* Full-bleed background image with dark overlay */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=2000&auto=format&fit=crop"
+              alt=""
+              className="w-full h-full object-cover opacity-30"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0D1F14]/95 via-[#0D1F14]/70 to-[#0D1F14]/40" />
+          </div>
+
+          <div className="relative z-10 max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-20 sm:py-28 lg:py-36">
+            <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+
+              {/* Left — text */}
               <motion.div
-                initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
-                className="w-full lg:w-1/2 text-left"
+                initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.9 }}
+                className="w-full lg:w-1/2"
               >
-                <div className="text-[10px] bg-white/10 text-white font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-8 border border-white/20">{t('heritageSubtitle')}</div>
-                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-8xl text-white uppercase tracking-tight mb-4 sm:mb-6 md:mb-8 drop-shadow-md leading-[0.9]">
-                  {language === 'en' ? 'THE ART OF' : "L'ART DU"}<br />
-                  <span className="text-[#E5D5B8] opacity-90">{language === 'en' ? 'FRENCH' : "CAFÉ"}</span><br />
-                  {language === 'en' ? 'COFFEE' : "FRANÇAIS"}
+                <div className="inline-flex items-center gap-2 bg-sb-green/20 border border-sb-green/30 text-sb-green text-[9px] font-black tracking-[0.4em] uppercase px-4 py-2 rounded-full mb-8">
+                  <Leaf size={10} />
+                  {language === 'fr' ? 'Notre Savoir-Faire' : 'Our Craft'}
+                </div>
+
+                <h2 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white uppercase leading-[0.85] tracking-tight mb-8">
+                  {language === 'fr' ? (
+                    <><span className="text-sb-green">L'Art</span><br />Du Café<br />Français</>
+                  ) : (
+                    <><span className="text-sb-green">The Art</span><br />Of French<br />Coffee</>
+                  )}
                 </h2>
-                <p className="text-[#E5D5B8] text-base lg:text-lg font-medium leading-relaxed max-w-lg opacity-80 mb-10">
-                  {t('heritageDesc')}
+
+                <p className="text-white/60 text-base lg:text-lg leading-relaxed max-w-md mb-10">
+                  {language === 'fr'
+                    ? 'Chaque tasse raconte une histoire — de la sélection rigoureuse des grains aux terres fertiles d\'Éthiopie, de Colombie et d\'Indonésie, jusqu\'à votre table.'
+                    : 'Every cup tells a story — from the careful selection of beans across the fertile lands of Ethiopia, Colombia, and Indonesia, to your table.'}
                 </p>
+
+                {/* Pillar stats */}
+                <div className="flex gap-8 mb-12">
+                  {[
+                    { num: '46+', label: language === 'fr' ? 'Ans d\'expertise' : 'Years of expertise' },
+                    { num: '84', label: language === 'fr' ? 'Pays servis' : 'Countries served' },
+                    { num: '100%', label: language === 'fr' ? 'Durable' : 'Sustainable' },
+                  ].map((s) => (
+                    <div key={s.num}>
+                      <div className="font-display text-3xl text-white">{s.num}</div>
+                      <div className="text-[9px] text-white/40 font-bold uppercase tracking-widest mt-1">{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+
                 <Link
                   href="/brew-guide"
-                  className="inline-block text-white border-b border-white pb-1 font-bold text-xs uppercase tracking-[0.2em] hover:text-[#E5D5B8] hover:border-[#E5D5B8] transition-colors leading-loose"
+                  className="inline-flex items-center gap-3 text-sb-green border border-sb-green/40 hover:border-sb-green hover:bg-sb-green hover:text-white px-7 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300"
                 >
-                  Discover Our Farms
+                  {language === 'fr' ? 'Découvrir nos origines' : 'Discover Our Origins'} <ArrowRight size={12} />
                 </Link>
               </motion.div>
 
-              {/* Right Images (Asymmetrical Parallax Layout) */}
-              <div className="w-full lg:w-1/2 relative h-[280px] sm:h-[400px] md:h-[500px] lg:h-[700px] flex items-center justify-center mt-6 sm:mt-10 lg:mt-0">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 30 }} whileInView={{ opacity: 1, scale: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }}
-                  className="absolute top-0 right-10 w-[60%] lg:w-[50%] h-[70%] z-10 rounded-[40px] rounded-tr-[100px] rounded-bl-[100px] overflow-hidden shadow-2xl border border-white/10"
-                >
-                  <img src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover hover:scale-105 transition-transform duration-[1.5s]" alt="Pouring coffee" />
-                </motion.div>
+              {/* Right — image grid */}
+              <motion.div
+                initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.9, delay: 0.15 }}
+                className="w-full lg:w-1/2 grid grid-cols-2 gap-3 sm:gap-4"
+              >
+                {/* Tall image left */}
+                <div className="row-span-2 rounded-3xl overflow-hidden h-[340px] sm:h-[460px] lg:h-[540px]">
+                  <img
+                    src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop"
+                    alt="Coffee being poured"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-[2s]"
+                  />
+                </div>
+                {/* Top right */}
+                <div className="rounded-3xl overflow-hidden h-[160px] sm:h-[218px] lg:h-[258px]">
+                  <img
+                    src="https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=800&auto=format&fit=crop"
+                    alt="Coffee beans close up"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-[2s]"
+                  />
+                </div>
+                {/* Bottom right — dark glass badge over image */}
+                <div className="rounded-3xl overflow-hidden h-[160px] sm:h-[218px] lg:h-[258px] relative">
+                  <img
+                    src="https://images.unsplash.com/photo-1521302080334-4bebac2763a6?q=80&w=800&auto=format&fit=crop"
+                    alt="Espresso extraction"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-[2s]"
+                  />
+                  {/* Floating badge */}
+                  <div className="absolute bottom-4 left-4 right-4 bg-black/50 backdrop-blur-md rounded-2xl px-4 py-3 border border-white/10">
+                    <div className="flex items-center gap-2">
+                      <Award size={14} className="text-sb-green flex-shrink-0" />
+                      <span className="text-white text-[10px] font-bold uppercase tracking-wider">
+                        {language === 'fr' ? 'Certifié 100% Arabica' : '100% Arabica Certified'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, x: -40, y: 50 }} whileInView={{ opacity: 1, x: 0, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.4 }}
-                  className="absolute bottom-10 left-0 w-[55%] h-[60%] z-20 rounded-[30px] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] border-4 border-sb-green"
-                >
-                  <img src="https://images.unsplash.com/photo-1511556820780-d912e42b4980?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover hover:scale-105 transition-transform duration-[1.5s]" alt="Roasting beans" />
-                </motion.div>
-
-                {/* Premium glass floating badge */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.6, type: "spring" }}
-                  className="absolute top-[40%] right-[-5%] lg:right-[-2%] z-30 bg-white/10 backdrop-blur-md rounded-full w-24 h-24 lg:w-32 lg:h-32 flex flex-col items-center justify-center border border-white/20 shadow-2xl"
-                >
-                  <span className="text-white font-display text-2xl lg:text-3xl">100%</span>
-                  <span className="text-[#E5D5B8] text-[8px] font-bold uppercase tracking-widest mt-1">Sustainably</span>
-                  <span className="text-[#E5D5B8] text-[8px] font-bold uppercase tracking-widest">Sourced</span>
-                </motion.div>
-              </div>
             </div>
+          </div>
+
+          {/* Bottom accent line */}
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-sb-green/40 to-transparent" />
+        </section>
+
+        {/* ── WHY CAFREZZO — 3-pillar strip ────────────────────────────── */}
+        <section className="bg-[#FAF9F6] py-14 sm:py-16 px-4 sm:px-6 border-b border-gray-100">
+          <div className="max-w-[1100px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-200 rounded-3xl overflow-hidden shadow-sm">
+            {[
+              {
+                icon: <Coffee size={20} className="text-sb-green" />,
+                title: language === 'fr' ? 'Sélection Rigoureuse' : 'Rigorous Selection',
+                desc: language === 'fr'
+                  ? 'Seuls les meilleurs grains, issus des plus grandes origines mondiales, sont sélectionnés par nos experts.'
+                  : 'Only the finest beans from the world\'s greatest origins, hand-picked by our experts.',
+              },
+              {
+                icon: <Leaf size={20} className="text-sb-green" />,
+                title: language === 'fr' ? 'Engagement Durable' : 'Sustainable Commitment',
+                desc: language === 'fr'
+                  ? 'Chaque produit est sourcé de manière responsable, respectant les fermiers et la planète.'
+                  : 'Every product is responsibly sourced, supporting farmers and protecting the planet.',
+              },
+              {
+                icon: <Award size={20} className="text-sb-green" />,
+                title: language === 'fr' ? 'Excellence Garantie' : 'Guaranteed Excellence',
+                desc: language === 'fr'
+                  ? 'Un contrôle qualité strict à chaque étape — du grain à la capsule, jusqu\'à votre tasse.'
+                  : 'Strict quality control at every step — from bean to capsule, through to your cup.',
+              },
+            ].map((pillar, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="bg-[#FAF9F6] px-8 py-10 flex flex-col gap-4"
+              >
+                <div className="w-10 h-10 rounded-full bg-sb-green/10 flex items-center justify-center">
+                  {pillar.icon}
+                </div>
+                <h3 className="font-black text-sm uppercase tracking-widest text-sb-black">{pillar.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{pillar.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </section>
 
-        {/* FEATURED COLLECTION SECTION */}
-        <section className="bg-[#FAF9F6] py-8 sm:py-10 md:py-14 px-4 sm:px-6 lg:px-8 relative z-10 w-full overflow-hidden">
-          <div className="max-w-[1400px] mx-auto">
-            {/* Compact Premium Header */}
-            <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-8 sm:mb-10 md:mb-12 px-4 gap-6">
+        {/* ── FEATURED COLLECTION ───────────────────────────────────────── */}
+        <section className="bg-white py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+          {/* Subtle background texture */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(59,126,90,0.04),_transparent_60%)] pointer-events-none" />
+
+          <div className="max-w-[1400px] mx-auto relative z-10">
+            <div className="flex flex-col md:flex-row items-end justify-between mb-12 md:mb-16 px-2 gap-6">
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-px bg-sb-green" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-px bg-sb-green" />
                   <span className="text-[9px] font-black tracking-[0.35em] uppercase text-sb-green">{t('premiumSelection')}</span>
                 </div>
-                <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-sb-black uppercase tracking-tight leading-[0.9]">
+                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-sb-black uppercase tracking-tight leading-[0.88]">
                   {language === 'fr' ? 'Sélection' : 'Featured'}<br />
                   <span className="text-sb-green">{language === 'fr' ? 'Vedette' : 'Collection'}</span>
                 </h2>
               </div>
+              <Link
+                href="/shop"
+                className="hidden md:inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-sb-green border border-sb-green hover:bg-sb-green hover:text-white px-7 py-3.5 rounded-full transition-all duration-300"
+              >
+                {language === 'fr' ? 'Voir tout' : 'View All'} <ArrowRight size={11} />
+              </Link>
             </div>
 
-            {/* Grid — slice(0,5): 2 shown mobile, 3 on lg, 4 on xl, 5 on 2xl */}
             {featuredLoading ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {[...Array(5)].map((_, i) => <ProductSkeleton key={i} />)}
@@ -326,24 +406,40 @@ export default function Home() {
               </MobileCarousel>
             )}
 
-            <div className="flex justify-center mt-14">
-              <Link href="/shop" className="group">
-                <motion.button
-                  whileHover={{ scale: 1.02, backgroundColor: '#000', borderColor: '#000', color: '#FFF' }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-transparent border border-sb-black text-sb-black px-10 py-4 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase transition-all"
-                >
-                  {language === 'fr' ? 'Voir toute la collection' : 'View Entire Collection'}
-                </motion.button>
+            <div className="flex md:hidden justify-center mt-10">
+              <Link href="/shop" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-sb-green border border-sb-green px-7 py-3.5 rounded-full">
+                {language === 'fr' ? 'Voir toute la collection' : 'View Entire Collection'} <ArrowRight size={11} />
               </Link>
             </div>
           </div>
         </section>
 
-        {/* ── BRANDS MARQUEE ─────────────────────────────────────────── */}
+        {/* ── FULL-BLEED COFFEE MOMENT ──────────────────────────────────── */}
+        <section className="relative h-[50vh] sm:h-[60vh] lg:h-[70vh] overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1504630083234-14187a9df0f5?q=80&w=2000&auto=format&fit=crop"
+            alt="Premium coffee moment"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-8 sm:p-12 lg:p-16 max-w-[1400px] mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
+            >
+              <p className="text-white/60 text-[10px] font-black tracking-[0.4em] uppercase mb-3">
+                {language === 'fr' ? '— Une Expérience Sensorielle' : '— A Sensory Experience'}
+              </p>
+              <h2 className="font-display text-4xl sm:text-5xl lg:text-7xl text-white uppercase leading-[0.9] max-w-2xl">
+                {language === 'fr' ? 'Chaque Tasse,\nUn Moment.' : 'Every Cup,\nA Moment.'}
+              </h2>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ── BRANDS MARQUEE ───────────────────────────────────────────── */}
         <BrandsMarqueeSection />
 
-        {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
+        {/* ── TESTIMONIALS ─────────────────────────────────────────────── */}
         <TestimonialsSection />
 
       </motion.div>
