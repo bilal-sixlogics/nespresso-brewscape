@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, ChevronDown, RotateCcw, Settings, Zap, Droplets, Coffee } from 'lucide-react';
-import { enrichedProducts } from '@/lib/productsData';
+import { SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
-import { FilterDrawer, applyFilters, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
-import { Product } from '@/types';
-import { usePagination } from '@/hooks/usePagination';
+import { FilterDrawer, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
+import { Product, hasTag, getTagLabels } from '@/types';
+import { useProducts, useCategories, useBrands } from '@/hooks/useProducts';
+import { ProductQueryParams } from '@/lib/api/types';
 import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
@@ -16,62 +16,80 @@ import { useDragScroll } from '@/hooks/useDragScroll';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
-const MACHINE_CATEGORIES = [
-    { id: 'all', label: 'Toutes les Machines', labelEn: 'All Machines', icon: Coffee },
-    { id: 'automatique', label: 'Super-Automatiques', labelEn: 'Super-Automatic', icon: Zap },
-    { id: 'manuelle', label: 'Manuelles & Semi-Auto', labelEn: 'Manual & Semi-Auto', icon: Settings },
-    { id: 'capsule', label: 'À Capsules', labelEn: 'Capsule Machines', icon: Droplets },
-];
-
-const machineProducts = enrichedProducts.filter(p =>
-    p.category === "Machines à Café" || p.category === "Vending"
-);
-
 export default function MachinesPage() {
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [activeCategory, setActiveCategory] = useState('all');
     const [filterOpen, setFilterOpen] = useState(false);
     const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
     const [sortBy, setSortBy] = useState<SortOption>('relevance');
     const [sortOpen, setSortOpen] = useState(false);
     const { scrollRef, onMouseDown, onMouseUp, onMouseMove } = useDragScroll();
 
-    const filteredMachines = useMemo(() => {
-        let base = activeCategory === 'all'
-            ? machineProducts
-            : machineProducts.filter(p => {
-                const features = p.features?.flatMap(f => [...f.items, ...(f.itemsEn ?? [])]).join(' ').toLowerCase() ?? '';
-                return features.includes(activeCategory) || (p.tags ?? []).includes(activeCategory);
-            });
+    // Real categories/brands from backend
+    const { categories: allCategories } = useCategories();
+    const { brands } = useBrands();
+    const machineCategories = useMemo(
+        () => allCategories.filter(c => c.storefront_page === '/machines' && c.status === 'active'),
+        [allCategories]
+    );
 
-        let result = applyFilters(base, filters);
+    // Single source of truth: driven by filters.categories
+    const activeCategory = filters.categories[0] ?? '';
 
-        if (sortBy === 'price_asc') result.sort((a, b) => (a.saleUnits?.[0]?.price ?? a.price) - (b.saleUnits?.[0]?.price ?? b.price));
-        else if (sortBy === 'price_desc') result.sort((a, b) => (b.saleUnits?.[0]?.price ?? b.price) - (a.saleUnits?.[0]?.price ?? a.price));
-        else if (sortBy === 'newest') result.sort((a, b) => (b.tags?.includes('Nouveau') ? 1 : 0) - (a.tags?.includes('Nouveau') ? 1 : 0));
-        else if (sortBy === 'popularity') result.sort((a, b) => (b.tags?.includes('Best Seller') ? 1 : 0) - (a.tags?.includes('Best Seller') ? 1 : 0));
+    const handleCategoryPill = (catName: string) => {
+        setFilters(f => ({ ...f, categories: f.categories[0] === catName ? [] : [catName] }));
+    };
 
-        return result;
-    }, [activeCategory, filters, sortBy]);
+    // Stable params via useMemo — only rebuilds when actual values change
+    const queryParams = useMemo<ProductQueryParams>(() => {
+        const p: ProductQueryParams = { storefront_page: '/machines', per_page: 12 };
+
+        if (activeCategory) {
+            const cat = machineCategories.find(c => c.name === activeCategory);
+            if (cat) p.category = cat.slug;
+        }
+        if (sortBy === 'price_asc' || sortBy === 'price_desc' || sortBy === 'newest') {
+            p.sort_by = sortBy;
+        }
+        if (filters.inStockOnly) p.in_stock = true;
+        if (filters.brands.length > 0) {
+            const b = brands.find(br => br.name === filters.brands[0]);
+            if (b) p.brand = b.slug;
+        }
+        if (filters.priceRange[0] !== 0) p.min_price = filters.priceRange[0];
+        if (filters.priceRange[1] !== 500) p.max_price = filters.priceRange[1];
+        if (filters.tags.length > 0) p.tags = filters.tags.join(',');
+
+        return p;
+    }, [activeCategory, machineCategories, sortBy, filters, brands]);
+
+    const { products: machineProducts, isLoading, hasMore, loadMore } = useProducts(queryParams);
+
+    const displayProducts = useMemo(() => {
+        if (sortBy !== 'popularity') return machineProducts;
+        return [...machineProducts].sort((a, b) => (hasTag(b, 'best-seller') ? 1 : 0) - (hasTag(a, 'best-seller') ? 1 : 0));
+    }, [machineProducts, sortBy]);
+
+    const availableCategories = useMemo(() => machineCategories.map(c => c.name), [machineCategories]);
+    const availableBrands = useMemo(() => brands.map(b => b.name), [brands]);
+    const availableTags = useMemo(() => {
+        const set = new Set<string>();
+        machineProducts.forEach(p => getTagLabels(p).forEach(t => set.add(t)));
+        return Array.from(set);
+    }, [machineProducts]);
 
     const activeFilterCount = filters.brands.length + filters.categories.length + filters.tags.length +
         (filters.inStockOnly ? 1 : 0) +
         (filters.intensityRange[0] !== 1 || filters.intensityRange[1] !== 13 ? 1 : 0) +
         (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 500 ? 1 : 0);
 
-    const hasActiveFilters = activeFilterCount > 0 || sortBy !== 'relevance' || activeCategory !== 'all';
+    const hasActiveFilters = activeFilterCount > 0 || sortBy !== 'relevance';
 
     const resetAll = () => {
         setFilters(DEFAULT_FILTERS);
         setSortBy('relevance');
-        setActiveCategory('all');
     };
-
-    const { displayedItems, hasMore, isLoading, loadMore, reset } = usePagination(filteredMachines, 8);
-
-    React.useEffect(() => { reset(); }, [activeCategory, filters, sortBy, reset]);
 
     const highlights = [
         { icon: '⚡', label: tx('Pression 15 bars', '15 Bar Pressure'), desc: tx('Extraction professionnelle', 'Professional extraction') },
@@ -222,41 +240,42 @@ export default function MachinesPage() {
                             onMouseMove={onMouseMove}
                             className="flex gap-3 overflow-x-auto no-scrollbar items-center cursor-grab active:cursor-grabbing pb-1"
                         >
-                            {MACHINE_CATEGORIES.map(cat => {
-                                const Icon = cat.icon;
-                                const label = language === 'fr' ? cat.label : cat.labelEn;
-                                return (
-                                    <button
-                                        key={cat.id}
-                                        onClick={() => setActiveCategory(cat.id)}
-                                        className={`flex-shrink-0 flex items-center gap-2 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${activeCategory === cat.id
-                                            ? 'bg-sb-green text-white shadow-xl shadow-sb-green/25'
-                                            : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-sb-green/30 hover:text-sb-black'
-                                            }`}
-                                    >
-                                        <Icon size={12} />
-                                        {label}
-                                    </button>
-                                );
-                            })}
+                            <button
+                                onClick={() => setFilters(f => ({ ...f, categories: [] }))}
+                                className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${!activeCategory
+                                    ? 'bg-sb-green text-white shadow-xl shadow-sb-green/25'
+                                    : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-sb-green/30 hover:text-sb-black'
+                                    }`}
+                            >
+                                {tx('Toutes', 'All')}
+                            </button>
+                            {machineCategories.map(cat => (
+                                <button
+                                    key={cat.slug}
+                                    onClick={() => handleCategoryPill(cat.name)}
+                                    className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${activeCategory === cat.name
+                                        ? 'bg-sb-green text-white shadow-xl shadow-sb-green/25'
+                                        : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-sb-green/30 hover:text-sb-black'
+                                        }`}
+                                >
+                                    {cat.name}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
                     {/* Results header */}
                     <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-10">
                         <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sb-black">
-                            {activeCategory === 'all'
-                                ? tx('Toutes les Machines', 'All Machines')
-                                : MACHINE_CATEGORIES.find(c => c.id === activeCategory)?.[language === 'fr' ? 'label' : 'labelEn'] ?? activeCategory
-                            }
+                            {!activeCategory ? tx('Toutes les Machines', 'All Machines') : activeCategory}
                         </h3>
                         <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">
-                            {filteredMachines.length} {tx('résultats', 'results')}
+                            {displayProducts.length} {tx('résultats', 'results')}
                         </div>
                     </div>
 
                     {/* Grid */}
-                    {filteredMachines.length === 0 ? (
+                    {!isLoading && displayProducts.length === 0 ? (
                         <div className="text-center py-24">
                             <p className="text-6xl mb-4">☕</p>
                             <p className="font-bold text-xl mb-2">
@@ -268,10 +287,10 @@ export default function MachinesPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8">
-                            {displayedItems.map((product, idx) => (
+                            {displayProducts.map((product, idx) => (
                                 <ProductCard
                                     key={`${product.id}-${idx}`}
-                                    product={product as Product}
+                                    product={product}
                                     index={idx}
                                     onClick={setSelectedProduct}
                                 />
@@ -286,7 +305,7 @@ export default function MachinesPage() {
                         isLoading={isLoading}
                         hasMore={hasMore}
                         onLoadMore={loadMore}
-                        totalCount={filteredMachines.length}
+                        totalCount={displayProducts.length}
                     />
                 </div>
             </section>
@@ -297,7 +316,10 @@ export default function MachinesPage() {
                 onClose={() => setFilterOpen(false)}
                 filters={filters}
                 onChange={setFilters}
-                resultCount={filteredMachines.length}
+                resultCount={displayProducts.length}
+                availableCategories={availableCategories}
+                availableBrands={availableBrands}
+                availableTags={availableTags}
             />
 
             {/* Side Panel */}

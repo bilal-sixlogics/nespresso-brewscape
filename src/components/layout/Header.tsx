@@ -9,8 +9,9 @@ import { useCart } from '@/store/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { AppConfig } from '@/lib/config';
 import { useLanguage, SUPPORTED_LANGUAGES, Language } from '@/context/LanguageContext';
-import { enrichedProducts } from '@/lib/productsData';
+import { useProducts } from '@/hooks/useProducts';
 import { CartDrawer } from '@/components/ui/CartDrawer';
+import { Product, getProductImage, getDisplayPrice, getDefaultUnit } from '@/types';
 
 // ─── Type ─────────────────────────────────────────────────────────────────
 interface NavLink { href: string; labelKey: string; active?: boolean }
@@ -21,14 +22,14 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
     const [query, setQuery] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // Only fetch when query is non-empty (2+ chars)
+    const { products: searchResults, isLoading: searchLoading } = useProducts(
+        query.length > 1 ? { search: query, per_page: 8 } : { per_page: 0 }
+    );
+
     useEffect(() => { inputRef.current?.focus(); }, []);
 
-    const results = query.length > 1
-        ? enrichedProducts.filter(p =>
-            p.name.toLowerCase().includes(query.toLowerCase()) ||
-            (p.nameEn ?? '').toLowerCase().includes(query.toLowerCase())
-        ).slice(0, 8)
-        : [];
+    const results: Product[] = query.length > 1 ? searchResults : [];
 
 
     return (
@@ -65,7 +66,12 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
 
                 {/* Results */}
                 <div className="max-h-80 overflow-y-auto p-4">
-                    {query.length > 1 && results.length === 0 && (
+                    {query.length > 1 && searchLoading && (
+                        <div className="flex justify-center py-8">
+                            <div className="w-6 h-6 border-2 border-gray-200 border-t-sb-green rounded-full animate-spin" />
+                        </div>
+                    )}
+                    {query.length > 1 && !searchLoading && results.length === 0 && (
                         <p className="text-center text-gray-400 text-sm py-8">{t('noResults')}</p>
                     )}
                     {results.length > 0 && (
@@ -82,14 +88,14 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
                                         className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors group"
                                     >
                                         <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-                                            <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                                            <img src={getProductImage(p) ?? ''} alt={p.name} className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-xs font-bold text-sb-black truncate">{p.name}</p>
-                                            {p.namePart2 && <p className="text-[10px] text-gray-400">{p.namePart2}</p>}
+                                            {getDefaultUnit(p)?.name && <p className="text-[10px] text-gray-400">{getDefaultUnit(p)?.name}</p>}
                                         </div>
                                         <span className="text-sm font-bold text-sb-green flex-shrink-0">
-                                            €{p.price.toFixed(2)}
+                                            €{getDisplayPrice(p).toFixed(2)}
                                         </span>
                                     </Link>
                                 ))}
@@ -186,16 +192,16 @@ function LanguageToggle({ direction = 'down' }: { direction?: 'up' | 'down' }) {
 // ─── Nav links (static — defined outside component to avoid re-creation per render) ─
 const TOP_NAV: NavLink[] = [
     { href: '/', labelKey: 'navHome' },
+    { href: '/shop', labelKey: 'navShop' },
     { href: '/machines', labelKey: 'navMachines' },
     { href: '/sweets', labelKey: 'navSweets' },
-    { href: '/contact', labelKey: 'navContact' },
 ];
 
 const BOTTOM_NAV: NavLink[] = [
-    { href: '/shop', labelKey: 'navShop' },
     { href: '/accessories', labelKey: 'navAccessories' },
     { href: '/brew-guide', labelKey: 'navBrewGuide' },
     { href: '/blog', labelKey: 'navBlog' },
+    { href: '/contact', labelKey: 'navContact' },
 ];
 
 // ─── Header ────────────────────────────────────────────────────────────────

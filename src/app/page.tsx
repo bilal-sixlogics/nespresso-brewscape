@@ -7,13 +7,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { AppConfig } from "@/lib/config";
 import { useCart } from "@/store/CartContext";
-import { productDatabase, enrichedProducts } from "@/lib/productsData";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
 import { MobileCarousel } from "@/components/ui/MobileCarousel";
 import { TestimonialsSection } from '@/components/ui/TestimonialsSection';
 import { useLanguage } from "@/context/LanguageContext";
 import { Product } from "@/types";
+import { useProducts } from "@/hooks/useProducts";
+import { ProductSkeleton } from "@/components/ui/ProductSkeleton";
 
 const BRANDS = [
   { name: 'Nespresso', logo: 'https://logo.clearbit.com/nespresso.com', bg: '#000000' },
@@ -107,13 +108,12 @@ function BrandsMarqueeSection() {
 }
 
 
-function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: any) => void }) {
+function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: Product) => void }) {
   const { t, language } = useLanguage();
+  const { products: machineProducts, isLoading } = useProducts({ storefront_page: '/machines', featured: true, per_page: 5 });
 
   // Provide up to 5 items — MobileCarousel shows 2 on mobile, 3 on lg, 4 on xl, 5 on 2xl
-  const displayMachines = (enrichedProducts as any[])
-    .filter(p => p.category?.toLowerCase().includes('machine') || p.category?.toLowerCase().includes('cafetière'))
-    .slice(0, 5);
+  const displayMachines = machineProducts.slice(0, 5);
 
   return (
     <section className="py-10 sm:py-12 md:py-14 px-4 sm:px-6 lg:px-8 bg-white text-sb-black relative overflow-hidden border-t border-gray-100">
@@ -147,16 +147,22 @@ function FeaturedMachinesSection({ onProductClick }: { onProductClick: (p: any) 
           </Link>
         </div>
 
-        <MobileCarousel>
-          {displayMachines.map((machine: any, i: number) => (
-            <ProductCard
-              key={machine.id}
-              product={machine}
-              index={i}
-              onClick={onProductClick}
-            />
-          ))}
-        </MobileCarousel>
+        {isLoading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {[...Array(4)].map((_, i) => <ProductSkeleton key={i} />)}
+          </div>
+        ) : (
+          <MobileCarousel>
+            {displayMachines.map((machine, i) => (
+              <ProductCard
+                key={machine.id}
+                product={machine}
+                index={i}
+                onClick={onProductClick}
+              />
+            ))}
+          </MobileCarousel>
+        )}
 
         <div className="flex md:hidden justify-center mt-10">
           <Link href="/machines" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-sb-green border border-sb-green px-8 py-4 rounded-full">
@@ -216,7 +222,6 @@ const wholeBeans = [
   },
 ];
 
-const allProductsCombined = enrichedProducts;
 // Navigation is now handled by Next.js router
 
 export default function Home() {
@@ -224,24 +229,13 @@ export default function Home() {
   const { t, language } = useLanguage();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   // Navigation logic extracted to app router
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const { addToCart, cartCount } = useCart();
+const { addToCart, cartCount } = useCart();
 
   const [activeBeanIndex, setActiveBeanIndex] = useState(0);
   const [openAccordion, setOpenAccordion] = useState<string>('description');
 
-  const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'All') return enrichedProducts.slice(0, 50);
-    const catData = enrichedProducts.filter(p => p.category === selectedCategory);
-    if (catData.length > 0) return catData;
-
-    // Fallback for Nespresso-style filters
-    if (selectedCategory === 'Espresso') return enrichedProducts.filter(p => p.brewSizes?.includes('Espresso')).slice(0, 40);
-    if (selectedCategory === 'Blonde') return enrichedProducts.filter(p => (p.intensity || 0) < 7).slice(0, 40);
-    if (selectedCategory === 'Dark Roast') return enrichedProducts.filter(p => (p.intensity || 0) >= 8).slice(0, 40);
-
-    return enrichedProducts.slice(0, 40);
-  }, [selectedCategory]);
+  // Fetch featured products from API — show all, no category filter
+  const { products: featuredProducts, isLoading: featuredLoading } = useProducts({ featured: true, per_page: 20 });
 
   // Prevent scrolling when panel is open
   useEffect(() => {
@@ -339,7 +333,7 @@ export default function Home() {
               <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-end mb-6 lg:mb-0 space-y-5 sm:space-y-8 z-[50]">
                 <motion.div
                   initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
-                  onClick={() => setSelectedProduct(enrichedProducts.find(p => p.category === 'Capsules de Café') || enrichedProducts[0])}
+                  onClick={() => setSelectedProduct(featuredProducts.find(p => p.category?.name?.includes('Capsule')) || featuredProducts[0] || null)}
                   className="flex items-center space-x-6 mr-4 bg-white/70 backdrop-blur-md p-4 rounded-3xl border border-white/80 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)] group cursor-pointer hover:bg-white/90 hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] transition-all duration-300"
                 >
                   <div className="flex flex-col text-right">
@@ -442,39 +436,25 @@ export default function Home() {
                   <span className="text-sb-green">{language === 'fr' ? 'Vedette' : 'Collection'}</span>
                 </h2>
               </div>
-              {/* Filter Buttons */}
-              <div className="flex gap-2 flex-wrap">
-                {[
-                  { key: 'All', label: t('all') },
-                  { key: 'Espresso', label: 'Espresso' },
-                  { key: 'Blonde', label: 'Blonde' },
-                  { key: 'Dark Roast', label: language === 'fr' ? 'Torréfié' : 'Dark Roast' },
-                ].map(({ key, label }) => (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedCategory(key)}
-                    className={`px-5 py-2.5 rounded-full text-[9px] font-bold tracking-widest uppercase transition-all duration-300 whitespace-nowrap border ${selectedCategory === key
-                      ? 'bg-sb-black text-white border-sb-black shadow-md'
-                      : 'bg-transparent text-gray-400 hover:text-sb-black border-gray-200 hover:border-sb-black'
-                      }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Grid — slice(0,5): 2 shown mobile, 3 on lg, 4 on xl, 5 on 2xl */}
-            <MobileCarousel>
-              {filteredProducts.slice(0, 5).map((product, idx) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  index={idx}
-                  onClick={setSelectedProduct}
-                />
-              ))}
-            </MobileCarousel>
+            {featuredLoading ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {[...Array(5)].map((_, i) => <ProductSkeleton key={i} />)}
+              </div>
+            ) : (
+              <MobileCarousel>
+                {featuredProducts.slice(0, 5).map((product, idx) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    index={idx}
+                    onClick={setSelectedProduct}
+                  />
+                ))}
+              </MobileCarousel>
+            )}
 
             <div className="flex justify-center mt-14">
               <Link href="/shop" className="group">

@@ -1,77 +1,56 @@
 /**
  * ProductService — all product-related API calls.
- * Uses dummy data fallback when API is unavailable (NEXT_PUBLIC_USE_MOCK=true or API offline).
+ * Connects to the Laravel backend at /api/v1/products.
  */
 
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
 import { PaginatedResponse, ApiResponse, ProductQueryParams } from '@/lib/api/types';
 import { Product } from '@/types';
-import { enrichedProducts } from '@/lib/productsData';
-
-// Explicit "false" disables mock even in development (e.g. when NEXT_PUBLIC_USE_MOCK=false in .env.local)
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'false'
-    ? false
-    : process.env.NEXT_PUBLIC_USE_MOCK === 'true' || process.env.NODE_ENV === 'development';
-const MOCK_DELAY = 600; // ms — simulates realistic network latency
-
-function simulateDelay() {
-    return new Promise(r => setTimeout(r, MOCK_DELAY));
-}
-
-function buildMockPaginatedResponse<T>(items: T[], page: number, perPage: number): PaginatedResponse<T> {
-    const total = items.length;
-    const lastPage = Math.ceil(total / perPage);
-    const from = (page - 1) * perPage + 1;
-    const to = Math.min(page * perPage, total);
-    const data = items.slice((page - 1) * perPage, page * perPage);
-    return {
-        data,
-        links: {
-            first: null, last: null,
-            prev: page > 1 ? `?page=${page - 1}` : null,
-            next: page < lastPage ? `?page=${page + 1}` : null,
-        },
-        meta: { current_page: page, from, to, last_page: lastPage, per_page: perPage, total, path: '/products' },
-    };
-}
 
 export const ProductService = {
     /**
      * Fetch a paginated list of products.
-     * Applies category/search/price/stock filters.
+     * Supports filtering by category, brand, price range, intensity, tags, stock, and sorting.
      */
     async getProducts(params: ProductQueryParams = {}): Promise<PaginatedResponse<Product>> {
-        if (USE_MOCK) {
-            await simulateDelay();
-            let filtered = [...enrichedProducts] as Product[];
-            if (params.category) filtered = filtered.filter(p => p.category === params.category);
-            if (params.search) {
-                const q = params.search.toLowerCase();
-                filtered = filtered.filter(p => p.name.toLowerCase().includes(q));
-            }
-            if (params.in_stock) filtered = filtered.filter(p => p.inStock !== false);
-            if (params.intensity_min) filtered = filtered.filter(p => (p.intensity ?? 0) >= params.intensity_min!);
-            if (params.intensity_max) filtered = filtered.filter(p => (p.intensity ?? 14) <= params.intensity_max!);
-            if (params.min_price) filtered = filtered.filter(p => p.price >= params.min_price!);
-            if (params.max_price) filtered = filtered.filter(p => p.price <= params.max_price!);
-            return buildMockPaginatedResponse(filtered, params.page ?? 1, params.per_page ?? 12);
-        }
+        // Convert tags array to comma-separated if needed
+        const apiParams: Record<string, string | number | boolean | undefined | null> = {};
 
-        return apiClient.get<PaginatedResponse<Product>>(Endpoints.products, { params: params as Record<string, string | number | boolean | undefined | null> });
+        if (params.page) apiParams.page = params.page;
+        if (params.per_page) apiParams.per_page = params.per_page;
+        if (params.category) apiParams.category = params.category;
+        if (params.category_id) apiParams.category_id = params.category_id;
+        if (params.brand) apiParams.brand = params.brand;
+        if (params.brand_id) apiParams.brand_id = params.brand_id;
+        if (params.search) apiParams.search = params.search;
+        if (params.min_price != null) apiParams.min_price = params.min_price;
+        if (params.max_price != null) apiParams.max_price = params.max_price;
+        if (params.in_stock) apiParams.in_stock = true;
+        if (params.sort_by) apiParams.sort_by = params.sort_by;
+        if (params.tags) apiParams.tags = params.tags;
+        if (params.tag) apiParams.tag = params.tag;
+        if (params.intensity_min != null) apiParams.intensity_min = params.intensity_min;
+        if (params.intensity_max != null) apiParams.intensity_max = params.intensity_max;
+        if (params.featured) apiParams.featured = true;
+        if (params.storefront_page) apiParams.storefront_page = params.storefront_page;
+
+        return apiClient.get<PaginatedResponse<Product>>(Endpoints.products, { params: apiParams });
     },
 
     /**
-     * Fetch a single product by slug.
+     * Fetch a single product by slug (includes reviews, sections, etc.).
      */
     async getProduct(slug: string): Promise<Product> {
-        if (USE_MOCK) {
-            await simulateDelay();
-            const product = (enrichedProducts as Product[]).find(p => p.slug === slug || String(p.id) === slug);
-            if (!product) throw { message: 'Product not found', status: 404 };
-            return product;
-        }
         const res = await apiClient.get<ApiResponse<Product>>(Endpoints.product(slug));
+        return res.data;
+    },
+
+    /**
+     * Fetch featured products.
+     */
+    async getFeatured(): Promise<Product[]> {
+        const res = await apiClient.get<{ data: Product[] }>(Endpoints.products + '/featured');
         return res.data;
     },
 };

@@ -1,13 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ChevronDown, ShoppingBag, Check, ArrowRight, Share2, Heart, ArrowLeft, X, Maximize2 } from 'lucide-react';
 import Link from 'next/link';
-import { enrichedProducts } from '@/lib/productsData';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { SaleUnit, Product } from '@/types';
+import { useProduct, useProducts } from '@/hooks/useProducts';
+import {
+    SaleUnit, Product,
+    extractTasteProfile, extractNotes, extractFeatures, extractSpecField,
+    getProductImage, getProductImages, getDisplayPrice, getDefaultUnit,
+    isInStock, isNewProduct, hasTag,
+} from '@/types';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
 import { IntensityBar } from '@/components/ui/IntensityBar';
@@ -77,7 +82,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
     const { language } = useLanguage();
     const t = (fr: string, en: string) => language === 'fr' ? fr : en;
 
-    const product = enrichedProducts.find(p => p.slug === slug || p.id === slug);
+    const { product, isLoading: productLoading } = useProduct(slug);
 
     const [quantity, setQuantity] = useState(1);
     const [selectedUnit, setSelectedUnit] = useState<SaleUnit | null>(null);
@@ -87,6 +92,34 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
     const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
     const [wishlist, setWishlist] = useState(false);
     const [panelProduct, setPanelProduct] = useState<Product | null>(null);
+
+    // Derive image list — safe to compute before hooks (no hooks below yet)
+    const imageUrls = product ? getProductImages(product) : [];
+    const images = imageUrls.length > 0 ? imageUrls : (product ? [getProductImage(product) ?? '/placeholder.png'] : ['/placeholder.png']);
+
+    // Auto-scroll carousel — must be called unconditionally (before any early returns)
+    useEffect(() => {
+        if (images.length <= 1) return;
+        const timer = setInterval(() => setActiveImg(p => (p + 1) % images.length), 4000);
+        return () => clearInterval(timer);
+    }, [images.length]);
+
+    // Fetch related products — must be called unconditionally (before any early returns)
+    const relatedParams = useMemo(() => ({
+        category_id: product?.category_id,
+        per_page: 5,
+    }), [product?.category_id]);
+    const { products: relatedProductsRaw } = useProducts(relatedParams);
+    const relatedProducts = relatedProductsRaw.filter(p => p.id !== product?.id).slice(0, 4);
+
+    // ── Early returns after all hooks ──────────────────────────────────────────
+    if (productLoading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-sb-white gap-6">
+                <div className="w-12 h-12 border-4 border-sb-green/20 border-t-sb-green rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     if (!product) {
         return (
@@ -100,31 +133,24 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
         );
     }
 
-    const images = product.images && product.images.length > 0 ? product.images : [product.image];
+    const notes = extractNotes(product.sections);
+    const tasteProfile = extractTasteProfile(product.sections);
+    const features = extractFeatures(product.sections);
+    const productIsNew = isNewProduct(product);
 
-    // Auto-scroll carousel
-    useEffect(() => {
-        if (images.length <= 1) return;
-        const timer = setInterval(() => setActiveImg(p => (p + 1) % images.length), 4000);
-        return () => clearInterval(timer);
-    }, [images.length]);
-
-    const effectiveUnit: SaleUnit = selectedUnit ?? (product.saleUnits?.[0] ?? {
-        id: 'default', label: product.namePart2 ?? 'Unité', price: product.price, originalPrice: product.originalPrice, quantity: 1,
+    const defaultUnit = getDefaultUnit(product);
+    const effectiveUnit: SaleUnit = selectedUnit ?? (defaultUnit ?? {
+        id: 0, name: 'Unité', unit_type: 'pc', quantity: 1, selling_price: product.selling_price,
+        pricing_method: 'direct' as const, sku: '', stock: product.stock_qty, is_default: true, status: 'active' as const,
     });
-    const unitPrice = effectiveUnit.price;
-    const originalUnitPrice = effectiveUnit.originalPrice;
-    const hasDiscount = !!originalUnitPrice && originalUnitPrice > unitPrice;
-    const discountPct = hasDiscount ? Math.round((1 - unitPrice / originalUnitPrice!) * 100) : 0;
+    const unitPrice = Number(effectiveUnit.selling_price) || 0;
+    const hasDiscount = false; // discount logic now lives in sale unit pricing_method
+    const discountPct = 0;
 
-    const displayName = language === 'fr' ? product.name : (product.nameEn ?? product.name);
-    const displayPart2 = language === 'fr' ? product.namePart2 : (product.namePart2En ?? product.namePart2);
-    const displayTagline = language === 'fr' ? product.tagline : (product.taglineEn ?? product.tagline);
-    const displayDesc = language === 'fr' ? product.desc : (product.descEn ?? product.desc);
-
-    const relatedProducts = enrichedProducts
-        .filter(p => p.id !== product.id && p.category === product.category)
-        .slice(0, 4);
+    const displayName = product.name;
+    const displayPart2 = defaultUnit?.name;
+    const displayTagline = product.tagline;
+    const displayDesc = product.description;
 
     const handleAddToCart = () => {
         addToCart(product, effectiveUnit, quantity);
@@ -132,8 +158,8 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
         setTimeout(() => setIsAdded(false), 2000);
     };
 
-    const avgRating = product.averageRating ?? (product.reviews?.length
-        ? product.reviews.reduce((s, r) => s + r.rating, 0) / product.reviews.length
+    const avgRating = product.average_rating ?? (product.reviews?.length
+        ? product.reviews.reduce((s: number, r: { rating: number }) => s + r.rating, 0) / product.reviews.length
         : null);
 
     return (
@@ -144,7 +170,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                     <Link href="/" className="hover:text-sb-green transition-colors">{t('Accueil', 'Home')}</Link>
                     <span>/</span>
                     <Link href="/shop" className="hover:text-sb-green transition-colors">{t('Boutique', 'Shop')}</Link>
-                    {product.category && <><span>/</span><Link href="/shop" className="hover:text-sb-green transition-colors">{product.category}</Link></>}
+                    {product.category && <><span>/</span><Link href="/shop" className="hover:text-sb-green transition-colors">{product.category.name}</Link></>}
                     <span>/</span>
                     <span className="text-sb-black truncate max-w-[180px]">{displayName}</span>
                 </div>
@@ -163,7 +189,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                         {hasDiscount && (
                             <div className="absolute top-6 left-6 z-10 bg-red-500 text-white text-sm font-black rounded-full px-4 py-2 shadow-lg">-{discountPct}%</div>
                         )}
-                        {product.isNew && !hasDiscount && (
+                        {productIsNew && !hasDiscount && (
                             <div className="absolute top-6 left-6 z-10 bg-sb-black text-white text-sm font-black rounded-full px-4 py-2">NEW</div>
                         )}
                         <button onClick={e => { e.stopPropagation(); setWishlist(w => !w); }}
@@ -209,17 +235,17 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                     {/* Title & tags */}
                     <div>
                         <div className="flex gap-2 mb-4 flex-wrap">
-                            {product.tags?.includes('best-seller') && (
+                            {hasTag(product, 'best-seller') && (
                                 <span className="text-[9px] font-black uppercase tracking-widest bg-amber-400 text-white px-3 py-1.5 rounded-full flex items-center gap-1"><Star size={9} fill="white" /> Best Seller</span>
                             )}
-                            {product.isNew && (
+                            {productIsNew && (
                                 <span className="text-[9px] font-black uppercase tracking-widest bg-sb-black text-white px-3 py-1.5 rounded-full">Nouveau</span>
                             )}
-                            {product.tags?.includes('eco-friendly') && (
+                            {hasTag(product, 'eco-friendly') && (
                                 <span className="text-[9px] font-black uppercase tracking-widest bg-emerald-500 text-white px-3 py-1.5 rounded-full">♻️ Éco</span>
                             )}
                             {product.category && (
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-sb-green border border-sb-green/30 px-3 py-1.5 rounded-full">{product.category}</span>
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-sb-green border border-sb-green/30 px-3 py-1.5 rounded-full">{product.category.name}</span>
                             )}
                         </div>
                         <h1 className="font-display text-5xl xl:text-6xl uppercase leading-tight text-sb-black mb-2">
@@ -237,8 +263,6 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                     {/* Price */}
                     <div className="flex items-baseline gap-4">
                         <span className="font-display text-6xl text-sb-green">€{unitPrice.toFixed(2)}</span>
-                        {hasDiscount && <span className="text-2xl text-gray-300 line-through">€{originalUnitPrice!.toFixed(2)}</span>}
-                        {hasDiscount && <span className="text-sm bg-red-50 text-red-500 font-bold px-3 py-1 rounded-full">-{discountPct}%</span>}
                     </div>
 
                     {/* Intensity */}
@@ -249,12 +273,12 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                     )}
 
                     {/* Aromatic notes */}
-                    {product.notes && product.notes.length > 0 && (
+                    {notes && notes.length > 0 && (
                         <div className="bg-sb-green rounded-3xl p-6 text-white relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-12 -mt-12" />
                             <p className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-4">{t('Notes aromatiques', 'Aromatic Notes')}</p>
                             <div className="flex flex-wrap gap-2">
-                                {product.notes.map(note => (
+                                {notes.map((note: string) => (
                                     <span key={note} className="bg-white/15 backdrop-blur-sm text-white text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-full border border-white/20">{note}</span>
                                 ))}
                             </div>
@@ -262,23 +286,21 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                     )}
 
                     {/* Sale unit selector */}
-                    {product.saleUnits && product.saleUnits.length > 1 && (
+                    {product.sales_units && product.sales_units.length > 1 && (
                         <div>
                             <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3">{t('Choisir le format', 'Choose Format')}</p>
                             <div className="flex flex-wrap gap-3">
-                                {product.saleUnits.map(unit => {
+                                {product.sales_units.map((unit: SaleUnit) => {
                                     const active = effectiveUnit.id === unit.id;
-                                    const label = language === 'fr' ? unit.label : (unit.labelEn ?? unit.label);
                                     return (
                                         <button
                                             key={unit.id}
                                             onClick={() => setSelectedUnit(unit)}
                                             className={`flex flex-col px-5 py-3 rounded-2xl border-2 transition-all ${active ? 'border-sb-green bg-sb-green/5 text-sb-green' : 'border-gray-100 bg-white hover:border-sb-green/30'}`}
                                         >
-                                            <span className="text-xs font-bold">{label}</span>
+                                            <span className="text-xs font-bold">{unit.name}</span>
                                             <div className="flex items-center gap-1 mt-0.5">
-                                                <span className="text-base font-black">€{unit.price.toFixed(2)}</span>
-                                                {unit.originalPrice && <span className="text-xs text-gray-300 line-through">€{unit.originalPrice.toFixed(2)}</span>}
+                                                <span className="text-base font-black">€{Number(unit.selling_price).toFixed(2)}</span>
                                             </div>
                                         </button>
                                     );
@@ -357,26 +379,26 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                             ) : (
                                 <p className="text-gray-400 italic">{t('Aucune description disponible.', 'No description available.')}</p>
                             )}
-                            {product.tasteProfile && (
+                            {tasteProfile && (
                                 <div className="mt-12 bg-white rounded-3xl p-8 border border-gray-100">
                                     <h3 className="font-display text-2xl uppercase mb-6">{t('Profil Gustatif', 'Taste Profile')}</h3>
                                     <div className="space-y-4">
-                                        {product.tasteProfile.bitterness != null && <TasteBar label={t('Amertume', 'Bitterness')} value={product.tasteProfile.bitterness} />}
-                                        {product.tasteProfile.acidity != null && <TasteBar label={t('Acidité', 'Acidity')} value={product.tasteProfile.acidity} />}
-                                        {product.tasteProfile.roastiness != null && <TasteBar label={t('Torréfaction', 'Roastiness')} value={product.tasteProfile.roastiness} />}
-                                        {product.tasteProfile.body != null && <TasteBar label={t('Corps', 'Body')} value={product.tasteProfile.body} />}
-                                        {product.tasteProfile.sweetness != null && <TasteBar label={t('Douceur', 'Sweetness')} value={product.tasteProfile.sweetness} />}
+                                        {tasteProfile.bitterness != null && <TasteBar label={t('Amertume', 'Bitterness')} value={tasteProfile.bitterness} />}
+                                        {tasteProfile.acidity != null && <TasteBar label={t('Acidité', 'Acidity')} value={tasteProfile.acidity} />}
+                                        {tasteProfile.roastiness != null && <TasteBar label={t('Torréfaction', 'Roastiness')} value={tasteProfile.roastiness} />}
+                                        {tasteProfile.body != null && <TasteBar label={t('Corps', 'Body')} value={tasteProfile.body} />}
+                                        {tasteProfile.sweetness != null && <TasteBar label={t('Douceur', 'Sweetness')} value={tasteProfile.sweetness} />}
                                     </div>
                                 </div>
                             )}
-                            {product.features?.map((feat, i) => {
+                            {features.map((feat: { title: string; titleEn?: string; items: string[]; itemsEn?: string[] }, i: number) => {
                                 const title = language === 'fr' ? feat.title : (feat.titleEn ?? feat.title);
                                 const items = language === 'fr' ? feat.items : (feat.itemsEn ?? feat.items);
                                 return (
                                     <div key={i} className="mt-8 bg-white rounded-3xl p-8 border border-gray-100">
                                         <h3 className="font-display text-2xl uppercase mb-4">{title}</h3>
                                         <ul className="space-y-2">
-                                            {items.map((item, j) => (
+                                            {items.map((item: string, j: number) => (
                                                 <li key={j} className="flex items-start gap-3 text-sm text-gray-600">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-sb-green mt-2 flex-shrink-0" />
                                                     {item}
@@ -394,12 +416,12 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                             <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden">
                                 {[
                                     product.intensity != null && { label: t('Intensité', 'Intensity'), value: `${product.intensity} / 13` },
-                                    product.roastLevel && { label: t('Torréfaction', 'Roast Level'), value: product.roastLevel },
-                                    product.origin && { label: t('Origine', 'Origin'), value: product.origin },
-                                    product.processingMethod && { label: t('Méthode', 'Process'), value: product.processingMethod },
-                                    product.weight && { label: 'Poids', value: product.weight },
-                                    product.brewSizes && { label: t('Formats', 'Brew Sizes'), value: product.brewSizes.join(', ') },
-                                    product.allergens && { label: t('Allergènes', 'Allergens'), value: product.allergens.join(', ') },
+                                    extractSpecField(product.sections, 'Roast') && { label: t('Torréfaction', 'Roast Level'), value: extractSpecField(product.sections, 'Roast')! },
+                                    extractSpecField(product.sections, 'Origin') && { label: t('Origine', 'Origin'), value: extractSpecField(product.sections, 'Origin')! },
+                                    extractSpecField(product.sections, 'Process') && { label: t('Méthode', 'Process'), value: extractSpecField(product.sections, 'Process')! },
+                                    product.weight && { label: 'Poids', value: `${product.weight}` },
+                                    extractSpecField(product.sections, 'Brew') && { label: t('Formats', 'Brew Sizes'), value: extractSpecField(product.sections, 'Brew')! },
+                                    extractSpecField(product.sections, 'Allergen') && { label: t('Allergènes', 'Allergens'), value: extractSpecField(product.sections, 'Allergen')! },
                                 ].filter((s): s is { label: string; value: string } => !!s).map((spec, i) => (
                                     <div key={i} className={`flex justify-between items-center px-6 py-4 ${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
                                         <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{spec.label}</span>
@@ -424,7 +446,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                                             </div>
                                             <div className="flex-1 space-y-2">
                                                 {[5, 4, 3, 2, 1].map(star => {
-                                                    const count = product.reviews!.filter(r => r.rating === star).length;
+                                                    const count = product.reviews!.filter((r: { rating: number }) => r.rating === star).length;
                                                     const pct = (count / product.reviews!.length) * 100;
                                                     return (
                                                         <div key={star} className="flex items-center gap-3">
@@ -447,11 +469,11 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                                     )}
                                     {/* Individual reviews */}
                                     <div className="space-y-4">
-                                        {product.reviews.map(rev => (
+                                        {product.reviews.map((rev: any) => (
                                             <div key={rev.id} className="bg-white rounded-3xl p-6 border border-gray-100">
                                                 <div className="flex items-start justify-between mb-3">
                                                     <div>
-                                                        <p className="font-bold text-sm text-sb-black">{rev.user}</p>
+                                                        <p className="font-bold text-sm text-sb-black">{rev.user_name}</p>
                                                         {rev.verified && <p className="text-[9px] text-sb-green font-bold uppercase tracking-wider mt-0.5">✓ {t('Achat vérifié', 'Verified Purchase')}</p>}
                                                     </div>
                                                     <StarRating rating={rev.rating} />

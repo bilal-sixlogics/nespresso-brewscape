@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react';
-import { enrichedProducts } from '@/lib/productsData';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
-import { FilterDrawer, applyFilters, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
-import { Product } from '@/types';
-import { usePagination } from '@/hooks/usePagination';
+import { FilterDrawer, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
+import { Product, hasTag, getTagLabels } from '@/types';
+import { useProducts, useCategories, useBrands } from '@/hooks/useProducts';
+import { ProductQueryParams } from '@/lib/api/types';
 import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
@@ -16,60 +16,82 @@ import { useDragScroll } from '@/hooks/useDragScroll';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
-const sweetProducts = enrichedProducts.filter(p =>
-    p.category === "Friandises" || p.category === "Thé & Boissons"
-);
-
-const SWEET_TAGS = [
-    { id: 'all', label: 'Toutes les Gourmandises', labelEn: 'All Treats' },
-    { id: 'biscuits', label: 'Biscuits & Spéculoos', labelEn: 'Biscuits' },
-    { id: 'chocolat', label: 'Chocolats', labelEn: 'Chocolates' },
-    { id: 'the', label: 'Thé & Infusions', labelEn: 'Tea & Infusions' },
-    { id: 'vegan', label: 'Vegan', labelEn: 'Vegan' },
-];
-
 export default function SweetsPage() {
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [activeTag, setActiveTag] = useState('all');
     const [filterOpen, setFilterOpen] = useState(false);
     const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
     const [sortBy, setSortBy] = useState<SortOption>('relevance');
     const [sortOpen, setSortOpen] = useState(false);
     const { scrollRef, onMouseDown, onMouseUp, onMouseMove } = useDragScroll();
 
-    const filteredSweets = useMemo(() => {
-        let base = activeTag === 'all'
-            ? sweetProducts
-            : sweetProducts.filter(p => p.tags?.includes(activeTag) || p.category?.toLowerCase().includes(activeTag));
+    // Real categories/brands from backend
+    const { categories: allCategories } = useCategories();
+    const { brands } = useBrands();
+    const sweetCategories = useMemo(
+        () => allCategories.filter(c => c.storefront_page === '/sweets' && c.status === 'active'),
+        [allCategories]
+    );
 
-        let result = applyFilters(base, filters);
+    // Single source of truth: active category name — driven by filters.categories
+    const activeCategory = filters.categories[0] ?? '';
 
-        if (sortBy === 'price_asc') result.sort((a, b) => (a.saleUnits?.[0]?.price ?? a.price) - (b.saleUnits?.[0]?.price ?? b.price));
-        else if (sortBy === 'price_desc') result.sort((a, b) => (b.saleUnits?.[0]?.price ?? b.price) - (a.saleUnits?.[0]?.price ?? a.price));
-        else if (sortBy === 'newest') result.sort((a, b) => (b.tags?.includes('Nouveau') ? 1 : 0) - (a.tags?.includes('Nouveau') ? 1 : 0));
-        else if (sortBy === 'popularity') result.sort((a, b) => (b.tags?.includes('Best Seller') ? 1 : 0) - (a.tags?.includes('Best Seller') ? 1 : 0));
+    // Pill click toggles category in filters (synced with FilterDrawer)
+    const handleCategoryPill = (catName: string) => {
+        setFilters(f => ({ ...f, categories: f.categories[0] === catName ? [] : [catName] }));
+    };
 
-        return result;
-    }, [activeTag, filters, sortBy]);
+    const queryParams = useMemo<ProductQueryParams>(() => {
+        const p: ProductQueryParams = { storefront_page: '/sweets', per_page: 12 };
+
+        if (activeCategory) {
+            const cat = sweetCategories.find(c => c.name === activeCategory);
+            if (cat) p.category = cat.slug;
+        }
+        if (sortBy === 'price_asc' || sortBy === 'price_desc' || sortBy === 'newest') {
+            p.sort_by = sortBy;
+        }
+        if (filters.inStockOnly) p.in_stock = true;
+        if (filters.brands.length > 0) {
+            const b = brands.find(br => br.name === filters.brands[0]);
+            if (b) p.brand = b.slug;
+        }
+        if (filters.priceRange[0] !== 0) p.min_price = filters.priceRange[0];
+        if (filters.priceRange[1] !== 500) p.max_price = filters.priceRange[1];
+        if (filters.tags.length > 0) p.tags = filters.tags.join(',');
+
+        return p;
+    }, [activeCategory, sweetCategories, sortBy, filters, brands]);
+
+    const { products: sweetProducts, isLoading, hasMore, loadMore } = useProducts(queryParams);
+
+    // Client-side sort for popularity (not supported by API)
+    const displayProducts = useMemo(() => {
+        if (sortBy !== 'popularity') return sweetProducts;
+        return [...sweetProducts].sort((a, b) => (hasTag(b, 'best-seller') ? 1 : 0) - (hasTag(a, 'best-seller') ? 1 : 0));
+    }, [sweetProducts, sortBy]);
+
+    // Available filter options derived from fetched products
+    const availableCategories = useMemo(() => sweetCategories.map(c => c.name), [sweetCategories]);
+    const availableBrands = useMemo(() => brands.map(b => b.name), [brands]);
+    const availableTags = useMemo(() => {
+        const set = new Set<string>();
+        sweetProducts.forEach(p => getTagLabels(p).forEach(t => set.add(t)));
+        return Array.from(set);
+    }, [sweetProducts]);
 
     const activeFilterCount = filters.brands.length + filters.categories.length + filters.tags.length +
         (filters.inStockOnly ? 1 : 0) +
         (filters.intensityRange[0] !== 1 || filters.intensityRange[1] !== 13 ? 1 : 0) +
         (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 500 ? 1 : 0);
 
-    const hasActiveFilters = activeFilterCount > 0 || sortBy !== 'relevance' || activeTag !== 'all';
+    const hasActiveFilters = activeFilterCount > 0 || sortBy !== 'relevance';
 
     const resetAll = () => {
         setFilters(DEFAULT_FILTERS);
         setSortBy('relevance');
-        setActiveTag('all');
     };
-
-    const { displayedItems, hasMore, isLoading, loadMore, reset } = usePagination(filteredSweets, 8);
-
-    React.useEffect(() => { reset(); }, [activeTag, filters, sortBy, reset]);
 
     const pairings = [
         { coffee: tx('Espresso Intense', 'Intense Espresso'), sweet: tx('Spéculoos croustillant', 'Crispy Speculoos'), icon: '☕🍪' },
@@ -211,7 +233,7 @@ export default function SweetsPage() {
                             </AnimatePresence>
                         </div>
 
-                        {/* Row 2: Scrollable tag pills */}
+                        {/* Row 2: Real category pills from backend */}
                         <div
                             ref={scrollRef}
                             onMouseDown={onMouseDown}
@@ -220,16 +242,25 @@ export default function SweetsPage() {
                             onMouseMove={onMouseMove}
                             className="flex gap-3 overflow-x-auto no-scrollbar items-center cursor-grab active:cursor-grabbing pb-1"
                         >
-                            {SWEET_TAGS.map(tag => (
+                            <button
+                                onClick={() => setFilters(f => ({ ...f, categories: [] }))}
+                                className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${!activeCategory
+                                    ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
+                                    : 'bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-600/30 hover:text-sb-black'
+                                    }`}
+                            >
+                                {tx('Tout', 'All')}
+                            </button>
+                            {sweetCategories.map(cat => (
                                 <button
-                                    key={tag.id}
-                                    onClick={() => setActiveTag(tag.id)}
-                                    className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${activeTag === tag.id
+                                    key={cat.slug}
+                                    onClick={() => handleCategoryPill(cat.name)}
+                                    className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${activeCategory === cat.name
                                         ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
                                         : 'bg-amber-50 text-amber-700 border border-amber-100 hover:border-amber-600/30 hover:text-sb-black'
                                         }`}
                                 >
-                                    {language === 'fr' ? tag.label : tag.labelEn}
+                                    {cat.name}
                                 </button>
                             ))}
                         </div>
@@ -238,18 +269,15 @@ export default function SweetsPage() {
                     {/* Results header */}
                     <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-10">
                         <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sb-black">
-                            {activeTag === 'all'
-                                ? tx('Toutes les Gourmandises', 'All Treats')
-                                : SWEET_TAGS.find(t => t.id === activeTag)?.[language === 'fr' ? 'label' : 'labelEn'] ?? activeTag
-                            }
+                            {activeCategory === 'all' ? tx('Toutes les Gourmandises', 'All Treats') : activeCategory}
                         </h3>
                         <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">
-                            {filteredSweets.length} {tx('résultats', 'results')}
+                            {displayProducts.length} {tx('résultats', 'results')}
                         </div>
                     </div>
 
                     {/* Grid */}
-                    {filteredSweets.length === 0 ? (
+                    {!isLoading && displayProducts.length === 0 ? (
                         <div className="text-center py-24">
                             <p className="text-6xl mb-4">🍪</p>
                             <p className="font-bold text-xl mb-2">
@@ -261,10 +289,10 @@ export default function SweetsPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8">
-                            {displayedItems.map((product, idx) => (
+                            {displayProducts.map((product, idx) => (
                                 <ProductCard
                                     key={`${product.id}-${idx}`}
-                                    product={product as Product}
+                                    product={product}
                                     index={idx}
                                     onClick={setSelectedProduct}
                                 />
@@ -279,7 +307,7 @@ export default function SweetsPage() {
                         isLoading={isLoading}
                         hasMore={hasMore}
                         onLoadMore={loadMore}
-                        totalCount={filteredSweets.length}
+                        totalCount={displayProducts.length}
                     />
                 </div>
             </section>
@@ -290,7 +318,10 @@ export default function SweetsPage() {
                 onClose={() => setFilterOpen(false)}
                 filters={filters}
                 onChange={setFilters}
-                resultCount={filteredSweets.length}
+                resultCount={displayProducts.length}
+                availableCategories={availableCategories}
+                availableBrands={availableBrands}
+                availableTags={availableTags}
             />
 
             <ProductDetailPanel product={selectedProduct} onClose={() => setSelectedProduct(null)} />

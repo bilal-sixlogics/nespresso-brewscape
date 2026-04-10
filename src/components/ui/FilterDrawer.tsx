@@ -3,9 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, SlidersHorizontal, ChevronDown } from 'lucide-react';
-import { Product } from '@/types';
+import { Product, getDisplayPrice, isInStock, getTagLabels } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
-import { enrichedProducts } from '@/lib/productsData';
 
 export interface FilterState {
     brands: string[];
@@ -24,10 +23,6 @@ const DEFAULT_FILTERS: FilterState = {
     tags: [],
     inStockOnly: false,
 };
-
-const ALL_CATEGORIES = [...new Set(enrichedProducts.map(p => p.category).filter(Boolean))] as string[];
-const ALL_BRANDS = [...new Set(enrichedProducts.map(p => p.brand).filter(Boolean))] as string[];
-const ALL_TAGS = [...new Set(enrichedProducts.flatMap(p => p.tags ?? []))].slice(0, 10);
 
 function RangeSlider({ label, value, min, max, unit = '', onChange }: {
     label: string; value: [number, number]; min: number; max: number; unit?: string;
@@ -109,9 +104,12 @@ interface FilterDrawerProps {
     filters: FilterState;
     onChange: (f: FilterState) => void;
     resultCount: number;
+    availableCategories?: string[];
+    availableBrands?: string[];
+    availableTags?: string[];
 }
 
-export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: FilterDrawerProps) {
+export function FilterDrawer({ open, onClose, filters, onChange, resultCount, availableCategories = [], availableBrands = [], availableTags = [] }: FilterDrawerProps) {
     const { language } = useLanguage();
     const t = (fr: string, en: string) => language === 'fr' ? fr : en;
 
@@ -206,7 +204,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
                     {/* Categories */}
                     <Section title={t('Catégorie', 'Category')}>
                         <div className="flex flex-wrap gap-2 pb-2">
-                            {ALL_CATEGORIES.map(cat => {
+                            {availableCategories.map(cat => {
                                 const active = filters.categories.includes(cat);
                                 return (
                                     <button
@@ -223,10 +221,10 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
                     </Section>
 
                     {/* Brands */}
-                    {ALL_BRANDS.length > 0 && (
+                    {availableBrands.length > 0 && (
                         <Section title={t('Marque', 'Brand')}>
                             <div className="flex flex-wrap gap-2 pb-2">
-                                {ALL_BRANDS.map(brand => {
+                                {availableBrands.map(brand => {
                                     const active = filters.brands.includes(brand);
                                     return (
                                         <button
@@ -269,10 +267,10 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
                     </Section>
 
                     {/* Tags */}
-                    {ALL_TAGS.length > 0 && (
+                    {availableTags.length > 0 && (
                         <Section title="Tags">
                             <div className="flex flex-wrap gap-2 pb-2">
-                                {ALL_TAGS.map(tag => {
+                                {availableTags.map(tag => {
                                     const active = filters.tags.includes(tag);
                                     return (
                                         <button
@@ -315,15 +313,18 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount }: 
 
 export function applyFilters(products: Product[], filters: FilterState): Product[] {
     return products.filter(p => {
-        if (filters.brands.length > 0 && !filters.brands.includes(p.brand ?? '')) return false;
-        if (filters.categories.length > 0 && !filters.categories.includes(p.category ?? '')) return false;
-        if (filters.inStockOnly && p.inStock === false) return false;
+        if (filters.brands.length > 0 && !filters.brands.includes(p.brand?.name ?? '')) return false;
+        if (filters.categories.length > 0 && !filters.categories.includes(p.category?.name ?? '')) return false;
+        if (filters.inStockOnly && !isInStock(p)) return false;
         if (p.intensity != null) {
             if (p.intensity < filters.intensityRange[0] || p.intensity > filters.intensityRange[1]) return false;
         }
-        const price = p.saleUnits?.[0]?.price ?? p.price;
+        const price = getDisplayPrice(p);
         if (price < filters.priceRange[0] || price > filters.priceRange[1]) return false;
-        if (filters.tags.length > 0 && !filters.tags.some(tag => p.tags?.includes(tag))) return false;
+        if (filters.tags.length > 0) {
+            const productTags = getTagLabels(p);
+            if (!filters.tags.some(tag => productTags.includes(tag))) return false;
+        }
         return true;
     });
 }

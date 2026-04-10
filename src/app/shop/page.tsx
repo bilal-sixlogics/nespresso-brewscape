@@ -1,86 +1,122 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, Tag, X, Clock, ChevronDown, RotateCcw } from 'lucide-react';
-import { enrichedProducts, categoriesList } from '@/lib/productsData';
+import { SlidersHorizontal, Clock, ChevronDown, RotateCcw } from 'lucide-react';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
-import { FilterDrawer, applyFilters, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
-import { Product } from '@/types';
-import { usePagination } from '@/hooks/usePagination';
+import { FilterDrawer, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
+import { Product, getProductImage, getDisplayPrice } from '@/types';
 import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
 import { useRecentlyViewed } from '@/context/RecentlyViewedContext';
-import { AppConfig } from '@/lib/config';
 import { useDragScroll } from '@/hooks/useDragScroll';
+import { useProducts, useCategories, useBrands } from '@/hooks/useProducts';
+import { ProductQueryParams } from '@/lib/api/types';
 
-type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
-
+type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
 export default function ShopPage() {
     const { t, language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const { recentlyViewed, addRecentlyViewed, clearRecentlyViewed } = useRecentlyViewed();
 
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [filterOpen, setFilterOpen] = useState(false);
     const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
     const [sortBy, setSortBy] = useState<SortOption>('relevance');
     const [sortOpen, setSortOpen] = useState(false);
-    const [bannerDismissed, setBannerDismissed] = useState(false);
 
     const { scrollRef, onMouseDown, onMouseUp, onMouseMove } = useDragScroll();
 
-    // Admin-controlled sitewide discount banner — reads from AppConfig (backend-driven in production)
-    const { sitewideDiscount } = AppConfig.promo;
-    const showSitewidesBanner = sitewideDiscount.enabled && !bannerDismissed;
+    // Fetch categories and brands for filter options
+    const { categories: allCategories } = useCategories();
+    const { brands } = useBrands();
 
-    const filteredProducts = useMemo(() => {
-        let base = selectedCategory === 'all'
-            ? enrichedProducts
-            : enrichedProducts.filter(p => p.category === selectedCategory);
-        let result = applyFilters(base, filters);
+    // Only show /shop categories
+    const categories = useMemo(
+        () => allCategories.filter(c => c.storefront_page === '/shop' && c.status === 'active'),
+        [allCategories]
+    );
 
-        // Sort
-        if (sortBy === 'price_asc') {
-            result.sort((a, b) => (a.saleUnits?.[0]?.price ?? a.price) - (b.saleUnits?.[0]?.price ?? b.price));
-        } else if (sortBy === 'price_desc') {
-            result.sort((a, b) => (b.saleUnits?.[0]?.price ?? b.price) - (a.saleUnits?.[0]?.price ?? a.price));
-        } else if (sortBy === 'newest') {
-            result.sort((a, b) => (b.tags?.includes('Nouveau') ? 1 : 0) - (a.tags?.includes('Nouveau') ? 1 : 0));
-        } else if (sortBy === 'popularity') {
-            result.sort((a, b) => (b.tags?.includes('Best Seller') ? 1 : 0) - (a.tags?.includes('Best Seller') ? 1 : 0));
+    // Single source of truth: active category name ('' = all)
+    // Category pill and FilterDrawer both read/write this via `filters.categories`
+    const activeCategory = filters.categories[0] ?? '';
+
+    // Pill click: set or toggle the category in filters
+    const handleCategoryPill = (catName: string) => {
+        setFilters(f => ({
+            ...f,
+            categories: f.categories[0] === catName ? [] : [catName],
+        }));
+    };
+
+    // Build API query params — single unified source
+    const queryParams = useMemo<ProductQueryParams>(() => {
+        const params: ProductQueryParams = { per_page: 20, storefront_page: '/shop' };
+
+        // Category — from filters (pill and drawer are synced)
+        if (activeCategory) {
+            const catObj = categories.find(c => c.name === activeCategory);
+            if (catObj) params.category = catObj.slug;
         }
 
-        return result;
-    }, [selectedCategory, filters, sortBy]);
+        // Brand
+        if (filters.brands.length > 0) {
+            const brandObj = brands.find(b => b.name === filters.brands[0]);
+            if (brandObj) params.brand = brandObj.slug;
+        }
 
-    const activeFilterCount = filters.brands.length + filters.categories.length + filters.tags.length +
+        if (filters.inStockOnly) params.in_stock = true;
+        if (filters.intensityRange[0] !== 1) params.intensity_min = filters.intensityRange[0];
+        if (filters.intensityRange[1] !== 13) params.intensity_max = filters.intensityRange[1];
+        if (filters.priceRange[0] !== 0) params.min_price = filters.priceRange[0];
+        if (filters.priceRange[1] !== 500) params.max_price = filters.priceRange[1];
+        if (filters.tags.length > 0) params.tags = filters.tags.join(',');
+        if (sortBy !== 'relevance') params.sort_by = sortBy;
+
+        return params;
+    }, [filters, sortBy, categories, brands, activeCategory]);
+
+    // Fetch products from backend
+    const { products, meta, isLoading, loadMore, hasMore } = useProducts(queryParams);
+
+    const activeFilterCount =
+        filters.brands.length + filters.categories.length + filters.tags.length +
         (filters.inStockOnly ? 1 : 0) +
         (filters.intensityRange[0] !== 1 || filters.intensityRange[1] !== 13 ? 1 : 0) +
         (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 500 ? 1 : 0);
 
-    const hasActiveFilters = activeFilterCount > 0 || sortBy !== 'relevance' || selectedCategory !== 'all';
+    const hasActiveFilters = activeFilterCount > 0 || sortBy !== 'relevance';
 
     const resetAll = () => {
         setFilters(DEFAULT_FILTERS);
         setSortBy('relevance');
-        setSelectedCategory('all');
     };
-
-    const { displayedItems: displayedProducts, hasMore, isLoading, loadMore, reset } = usePagination(filteredProducts, 8);
-
-    React.useEffect(() => { reset(); }, [selectedCategory, filters, reset]);
 
     const handleProductClick = (product: Product) => {
         addRecentlyViewed(product);
         setSelectedProduct(product);
     };
 
-    const categoryLabel = selectedCategory === 'all' ? t('allProducts') : selectedCategory;
+    // Filter options derived from fetched data
+    const availableCategories = useMemo(() => categories.map(c => c.name), [categories]);
+    const availableBrands = useMemo(() => brands.map(b => b.name), [brands]);
+    const availableTags = useMemo(() => {
+        const tagSet = new Set<string>();
+        products.forEach(p => p.tags?.forEach(tag => tagSet.add(tag.label)));
+        return Array.from(tagSet);
+    }, [products]);
+
+    // Category pills: top-level /shop categories sorted
+    const categoryPills = useMemo(() =>
+        categories.filter(c => !c.parent_id).sort((a, b) => a.sort_order - b.sort_order),
+        [categories]
+    );
+
+    const categoryLabel = activeCategory || t('allProducts');
+    const totalCount = meta?.total ?? products.length;
 
     return (
         <div className="w-full relative bg-sb-white text-sb-black overflow-x-hidden min-h-screen">
@@ -116,32 +152,38 @@ export default function ShopPage() {
                                     </button>
                                 </div>
                                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-                                    {recentlyViewed.map((product) => (
-                                        <button
-                                            key={product.id}
-                                            onClick={() => handleProductClick(product)}
-                                            className="flex-shrink-0 flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-4 py-3 hover:border-sb-green hover:shadow-md transition-all group"
-                                        >
-                                            <img
-                                                src={product.images?.[0] ?? product.image}
-                                                alt={product.name}
-                                                className="w-10 h-10 object-cover rounded-xl"
-                                            />
-                                            <div className="text-left">
-                                                <p className="text-[10px] font-black uppercase tracking-wide text-sb-black group-hover:text-sb-green transition-colors line-clamp-1 max-w-28">
-                                                    {product.name}
-                                                </p>
-                                                <p className="text-[10px] text-sb-green font-bold">€{product.price.toFixed(2)}</p>
-                                            </div>
-                                        </button>
-                                    ))}
+                                    {recentlyViewed.map((product) => {
+                                        const img = getProductImage(product as Product);
+                                        const price = getDisplayPrice(product as Product);
+                                        return (
+                                            <button
+                                                key={product.id}
+                                                onClick={() => handleProductClick(product as Product)}
+                                                className="flex-shrink-0 flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-4 py-3 hover:border-sb-green hover:shadow-md transition-all group"
+                                            >
+                                                {img && (
+                                                    <img
+                                                        src={img}
+                                                        alt={product.name}
+                                                        className="w-10 h-10 object-cover rounded-xl"
+                                                    />
+                                                )}
+                                                <div className="text-left">
+                                                    <p className="text-[10px] font-black uppercase tracking-wide text-sb-black group-hover:text-sb-green transition-colors line-clamp-1 max-w-28">
+                                                        {product.name}
+                                                    </p>
+                                                    <p className="text-[10px] text-sb-green font-bold">€{price.toFixed(2)}</p>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
 
                         {/* Controls & Category tabs */}
                         <div className="flex flex-col md:flex-row md:items-center gap-4 mb-12 border-b border-gray-100 pb-6">
-                            {/* Filter and Sort Group - NO overflow-x-auto to ensure dropdown is visible */}
+                            {/* Filter and Sort Group */}
                             <div className="flex items-center gap-2 flex-shrink-0 z-50">
                                 {/* Filter button */}
                                 <button
@@ -165,7 +207,6 @@ export default function ShopPage() {
                                         {sortBy === 'price_asc' && tx('Prix: Croissant', 'Price: Low to High')}
                                         {sortBy === 'price_desc' && tx('Prix: Décroissant', 'Price: High to Low')}
                                         {sortBy === 'newest' && tx('Nouveautés', 'Newest')}
-                                        {sortBy === 'popularity' && tx('Popularité', 'Popularity')}
                                         <ChevronDown size={12} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
                                     </button>
 
@@ -182,7 +223,6 @@ export default function ShopPage() {
                                                         { id: 'price_asc', lbl: tx('Prix: Croissant', 'Price: Low to High') },
                                                         { id: 'price_desc', lbl: tx('Prix: Décroissant', 'Price: High to Low') },
                                                         { id: 'newest', lbl: tx('Nouveautés', 'Newest') },
-                                                        { id: 'popularity', lbl: tx('Popularité', 'Popularity') },
                                                     ].map(opt => (
                                                         <button
                                                             key={opt.id}
@@ -218,7 +258,7 @@ export default function ShopPage() {
                             {/* Divider */}
                             <div className="hidden md:block w-px h-6 bg-gray-200 flex-shrink-0 mx-2" />
 
-                            {/* Category pills - Scrollable */}
+                            {/* Category pills — synced with FilterDrawer */}
                             <div
                                 ref={scrollRef}
                                 onMouseDown={onMouseDown}
@@ -227,16 +267,20 @@ export default function ShopPage() {
                                 onMouseMove={onMouseMove}
                                 className="flex gap-3 overflow-x-auto whitespace-nowrap no-scrollbar items-center w-full cursor-grab active:cursor-grabbing pb-2 md:pb-0"
                             >
-                                {[
-                                    { id: 'all', label: t('allProducts') },
-                                    ...categoriesList.map(cat => ({ id: cat, label: cat }))
-                                ].map(({ id, label }) => (
+                                {/* All pill */}
+                                <button
+                                    onClick={() => setFilters(f => ({ ...f, categories: [] }))}
+                                    className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${!activeCategory ? 'bg-sb-green text-white shadow-xl shadow-sb-green/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-sb-black border border-gray-100 hover:border-gray-200'}`}
+                                >
+                                    {t('allProducts')}
+                                </button>
+                                {categoryPills.map(cat => (
                                     <button
-                                        key={id}
-                                        onClick={() => setSelectedCategory(id)}
-                                        className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${selectedCategory === id ? 'bg-sb-green text-white shadow-xl shadow-sb-green/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-sb-black border border-gray-100 hover:border-gray-200'}`}
+                                        key={cat.slug}
+                                        onClick={() => handleCategoryPill(cat.name)}
+                                        className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${activeCategory === cat.name ? 'bg-sb-green text-white shadow-xl shadow-sb-green/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-sb-black border border-gray-100 hover:border-gray-200'}`}
                                     >
-                                        {label}
+                                        {cat.name}
                                     </button>
                                 ))}
                             </div>
@@ -246,12 +290,12 @@ export default function ShopPage() {
                         <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-12">
                             <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sb-black">{categoryLabel}</h3>
                             <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">
-                                {filteredProducts.length} {t('results') || 'résultats'}
+                                {totalCount} {t('results') || 'résultats'}
                             </div>
                         </div>
 
                         {/* Product grid */}
-                        {filteredProducts.length === 0 ? (
+                        {!isLoading && products.length === 0 ? (
                             <div className="text-center py-24">
                                 <p className="text-6xl mb-4">🔍</p>
                                 <p className="font-bold text-xl mb-2">{tx('Aucun produit trouvé', 'No products found')}</p>
@@ -264,10 +308,10 @@ export default function ShopPage() {
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8">
-                                {displayedProducts.map((product, idx) => (
+                                {products.map((product, idx) => (
                                     <ProductCard
-                                        key={`${product.id}-${idx}`}
-                                        product={product as Product}
+                                        key={product.id}
+                                        product={product}
                                         index={idx}
                                         onClick={handleProductClick}
                                     />
@@ -282,7 +326,7 @@ export default function ShopPage() {
                             isLoading={isLoading}
                             hasMore={hasMore}
                             onLoadMore={loadMore}
-                            totalCount={filteredProducts.length}
+                            totalCount={totalCount}
                             text={t('loadMore')}
                             noMoreText={t('noMoreItems')}
                         />
@@ -296,7 +340,10 @@ export default function ShopPage() {
                 onClose={() => setFilterOpen(false)}
                 filters={filters}
                 onChange={setFilters}
-                resultCount={filteredProducts.length}
+                resultCount={totalCount}
+                availableCategories={availableCategories}
+                availableBrands={availableBrands}
+                availableTags={availableTags}
             />
 
             {/* Product side panel */}

@@ -53,16 +53,21 @@ export interface PaginationParams {
 }
 
 export interface ProductQueryParams extends PaginationParams {
-    category?: string;
-    type?: 'bean' | 'machine' | 'accessory' | 'sweet';
+    category?: string;         // category slug
+    category_id?: number;
+    brand?: string;            // brand slug
+    brand_id?: number;
     search?: string;
     min_price?: number;
     max_price?: number;
     in_stock?: boolean;
-    sort_by?: 'price_asc' | 'price_desc' | 'newest' | 'popularity';
-    tags?: string[];
+    sort_by?: 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'name_asc' | 'name_desc';
+    tags?: string;             // comma-separated tag labels
+    tag?: string;              // single tag label
     intensity_min?: number;
     intensity_max?: number;
+    featured?: boolean;
+    storefront_page?: string;  // e.g. "/shop", "/machines"
 }
 
 export interface BlogQueryParams extends PaginationParams {
