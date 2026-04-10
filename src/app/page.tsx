@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { AppConfig } from "@/lib/config";
-import { ArrowRight, Coffee, Leaf, Award } from "lucide-react";
+import { ArrowRight, Leaf, Award } from "lucide-react";
 
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
@@ -165,24 +165,6 @@ export default function Home() {
                 </motion.p>
               </div>
 
-              {/* Hero Cup */}
-              <div className="w-full lg:w-1/3 flex justify-center items-center relative z-[40] mt-2 sm:mt-4 lg:mt-0 h-[260px] sm:h-[350px] md:h-[400px] lg:h-[500px]">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
-                  className="absolute left-1/2 transform -translate-x-1/2 bg-[#439665] rounded-full z-[1] w-[200px] h-[200px] sm:w-[280px] sm:h-[280px] md:h-[350px] md:w-[350px] lg:w-[420px] lg:h-[420px]"
-                  style={{ top: '50%', marginTop: '-60px' }}
-                />
-                <motion.img
-                  animate={{ y: [0, -12, 0] }}
-                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                  src="/hero-cup.png"
-                  alt="Iced Coffee Cup"
-                  className="absolute left-1/2 transform -translate-x-1/2 z-[2] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.35)] w-[150px] sm:w-[210px] md:w-[250px] lg:w-[300px] h-auto top-[30px] sm:top-[40px] lg:top-[60px]"
-                />
-              </div>
-
               <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-end mb-6 lg:mb-0 space-y-5 sm:space-y-8 z-[50]">
                 <motion.div
                   initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
@@ -323,47 +305,6 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-sb-green/40 to-transparent" />
         </section>
 
-        {/* ── WHY CAFREZZO — 3-pillar strip ────────────────────────────── */}
-        <section className="bg-[#FAF9F6] py-14 sm:py-16 px-4 sm:px-6 border-b border-gray-100">
-          <div className="max-w-[1100px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-200 rounded-3xl overflow-hidden shadow-sm">
-            {[
-              {
-                icon: <Coffee size={20} className="text-sb-green" />,
-                title: language === 'fr' ? 'Sélection Rigoureuse' : 'Rigorous Selection',
-                desc: language === 'fr'
-                  ? 'Seuls les meilleurs grains, issus des plus grandes origines mondiales, sont sélectionnés par nos experts.'
-                  : 'Only the finest beans from the world\'s greatest origins, hand-picked by our experts.',
-              },
-              {
-                icon: <Leaf size={20} className="text-sb-green" />,
-                title: language === 'fr' ? 'Engagement Durable' : 'Sustainable Commitment',
-                desc: language === 'fr'
-                  ? 'Chaque produit est sourcé de manière responsable, respectant les fermiers et la planète.'
-                  : 'Every product is responsibly sourced, supporting farmers and protecting the planet.',
-              },
-              {
-                icon: <Award size={20} className="text-sb-green" />,
-                title: language === 'fr' ? 'Excellence Garantie' : 'Guaranteed Excellence',
-                desc: language === 'fr'
-                  ? 'Un contrôle qualité strict à chaque étape — du grain à la capsule, jusqu\'à votre tasse.'
-                  : 'Strict quality control at every step — from bean to capsule, through to your cup.',
-              },
-            ].map((pillar, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="bg-[#FAF9F6] px-8 py-10 flex flex-col gap-4"
-              >
-                <div className="w-10 h-10 rounded-full bg-sb-green/10 flex items-center justify-center">
-                  {pillar.icon}
-                </div>
-                <h3 className="font-black text-sm uppercase tracking-widest text-sb-black">{pillar.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{pillar.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
         {/* ── FEATURED COLLECTION ───────────────────────────────────────── */}
         <section className="bg-white py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
           {/* Subtle background texture */}
@@ -411,28 +352,6 @@ export default function Home() {
                 {language === 'fr' ? 'Voir toute la collection' : 'View Entire Collection'} <ArrowRight size={11} />
               </Link>
             </div>
-          </div>
-        </section>
-
-        {/* ── FULL-BLEED COFFEE MOMENT ──────────────────────────────────── */}
-        <section className="relative h-[50vh] sm:h-[60vh] lg:h-[70vh] overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1504630083234-14187a9df0f5?q=80&w=2000&auto=format&fit=crop"
-            alt="Premium coffee moment"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-8 sm:p-12 lg:p-16 max-w-[1400px] mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
-            >
-              <p className="text-white/60 text-[10px] font-black tracking-[0.4em] uppercase mb-3">
-                {language === 'fr' ? '— Une Expérience Sensorielle' : '— A Sensory Experience'}
-              </p>
-              <h2 className="font-display text-4xl sm:text-5xl lg:text-7xl text-white uppercase leading-[0.9] max-w-2xl">
-                {language === 'fr' ? 'Chaque Tasse,\nUn Moment.' : 'Every Cup,\nA Moment.'}
-              </h2>
-            </motion.div>
           </div>
         </section>
 
