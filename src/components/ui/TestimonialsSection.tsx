@@ -55,13 +55,23 @@ export const TestimonialsSection = () => {
         }
     }, [count, active]);
 
+    // Use refs so next/prev always read the latest values without stale closures
+    const countRef = React.useRef(count);
+    countRef.current = count;
+
     const next = useCallback(() => {
-        setActive(p => count > 1 ? (p + 1) % count : 0);
-    }, [count]);
+        setActive(p => {
+            const c = countRef.current;
+            return c > 1 ? (p + 1) % c : 0;
+        });
+    }, []);
 
     const prev = useCallback(() => {
-        setActive(p => count > 1 ? (p - 1 + count) % count : 0);
-    }, [count]);
+        setActive(p => {
+            const c = countRef.current;
+            return c > 1 ? (p - 1 + c) % c : 0;
+        });
+    }, []);
 
     // Auto-rotate
     useEffect(() => {
