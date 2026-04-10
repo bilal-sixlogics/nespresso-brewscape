@@ -50,11 +50,18 @@ export const Endpoints = {
     wishlist: `${API_BASE}/wishlist`,
     wishlistItem: (productId: string | number) => `${API_BASE}/wishlist/${productId}`,
     newsletter: `${API_BASE}/newsletter/subscribe`,
+    newsletterUnsubscribe: `${API_BASE}/newsletter/unsubscribe`,
+    contact: `${API_BASE}/contact`,
+
+    // ── Catalog public ───────────────────────────────────────────────────
+    featuredBrands: `${API_BASE}/brands/featured`,
+    featuredReviews: `${API_BASE}/reviews/featured`,
 
     // ── Orders ───────────────────────────────────────────────────────────
     orders: `${API_BASE}/orders`,
     order: (id: string) => `${API_BASE}/orders/${id}`,
     placeOrder: `${API_BASE}/orders`,
+    trackOrder: `${API_BASE}/orders/track`,
     cancelOrder: (id: string) => `${API_BASE}/orders/${id}/cancel`,
     returns: `${API_BASE}/returns`,
     return: (id: string) => `${API_BASE}/returns/${id}`,

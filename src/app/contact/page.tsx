@@ -3,8 +3,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
-import { Mail, Phone, MapPin, Clock, Send, ChevronDown } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, ChevronDown, AlertCircle, Loader2 } from 'lucide-react';
 import { AppConfig } from '@/lib/config';
+import { apiClient } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/types';
+import { Endpoints } from '@/lib/api/endpoints';
 
 const FAQS = [
     {
@@ -59,6 +62,8 @@ export default function ContactPage() {
     const { language } = useLanguage();
     const [formState, setFormState] = useState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
     const [sent, setSent] = useState(false);
+    const [isSending, setIsSending] = useState(false);
+    const [sendError, setSendError] = useState<string | null>(null);
 
     const t = (fr: string, en: string) => language === 'fr' ? fr : en;
 
@@ -88,9 +93,32 @@ export default function ContactPage() {
         },
     ];
 
-    const handleSend = () => {
-        setSent(true);
-        setTimeout(() => setSent(false), 3000);
+    const handleSend = async () => {
+        setSendError(null);
+        if (!formState.firstName || !formState.email || !formState.message) {
+            setSendError(t('Veuillez remplir tous les champs obligatoires.', 'Please fill in all required fields.'));
+            return;
+        }
+        setIsSending(true);
+        try {
+            await apiClient.post(Endpoints.contact, {
+                name: `${formState.firstName} ${formState.lastName}`.trim(),
+                email: formState.email,
+                subject: formState.subject || undefined,
+                message: formState.message,
+            });
+            setSent(true);
+            setFormState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
+        } catch (err) {
+            const apiErr = err as ApiError;
+            if (apiErr.status === 429) {
+                setSendError(t('Trop de tentatives. Réessayez dans quelques minutes.', 'Too many attempts. Please try again in a few minutes.'));
+            } else {
+                setSendError(apiErr.message ?? t('Erreur lors de l\'envoi. Réessayez.', 'Failed to send. Please try again.'));
+            }
+        } finally {
+            setIsSending(false);
+        }
     };
 
     return (
@@ -252,14 +280,21 @@ export default function ContactPage() {
                                     placeholder={t('Votre message...', 'Your message...')}
                                 />
                             </div>
+                            {sendError && (
+                                <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
+                                    <AlertCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
+                                    <p className="text-red-700 text-xs leading-snug">{sendError}</p>
+                                </div>
+                            )}
                             <motion.button
-                                whileHover={{ scale: 1.02 }}
+                                whileHover={{ scale: isSending || sent ? 1 : 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={handleSend}
-                                className={`w-full flex justify-between items-center px-8 py-5 rounded-full font-bold tracking-widest uppercase text-sm shadow-lg transition-all duration-300 ${sent ? 'bg-sb-black text-white' : 'bg-sb-green text-white hover:bg-[#2C6345] shadow-sb-green/25'}`}
+                                disabled={isSending || sent}
+                                className={`w-full flex justify-between items-center px-8 py-5 rounded-full font-bold tracking-widest uppercase text-sm shadow-lg transition-all duration-300 disabled:cursor-not-allowed ${sent ? 'bg-sb-black text-white' : 'bg-sb-green text-white hover:bg-[#2C6345] shadow-sb-green/25 disabled:opacity-60'}`}
                             >
                                 <span>{sent ? t('Message envoyé ✓', 'Message Sent ✓') : t('Envoyer le message', 'Send Message')}</span>
-                                <Send size={16} />
+                                {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                             </motion.button>
                         </div>
                     </motion.div>

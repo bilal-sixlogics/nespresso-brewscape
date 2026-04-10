@@ -1,17 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Check, ArrowRight, ArrowLeft, ChevronRight, MapPin, Phone,
-    CreditCard, Lock, Truck, Package, ShoppingBag, AlertCircle
+    CreditCard, Lock, Truck, Package, ShoppingBag, AlertCircle, Loader2
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { AppConfig } from '@/lib/config';
 import { getProductImage } from '@/types';
+import { apiClient } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/types';
+import { Endpoints } from '@/lib/api/endpoints';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ShippingForm {
@@ -31,6 +35,15 @@ interface PaymentForm {
 }
 
 type Step = 'shipping' | 'payment' | 'confirmation';
+
+interface ApiShippingMethod {
+    id: number;
+    name: string;
+    description: string | null;
+    base_price: number;
+    estimated_days_min: number;
+    estimated_days_max: number;
+}
 
 const STEPS: Step[] = ['shipping', 'payment', 'confirmation'];
 
@@ -204,15 +217,31 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
 function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
     form: ShippingForm; onChange: (f: ShippingForm) => void;
     billing: BillingForm; onBillingChange: (f: BillingForm) => void;
-    onNext: () => void;
+    onNext: (shippingMethodId: number) => void;
 }) {
     const { language } = useLanguage();
-    const { selectedShipping, setShipping, shippingOptions } = useCart();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
-
     const set = (key: keyof ShippingForm) => (v: string) => onChange({ ...form, [key]: v });
 
-    const isValid = form.firstName && form.lastName && form.email && form.address && form.city && form.postalCode && form.country;
+    const [apiMethods, setApiMethods] = useState<ApiShippingMethod[]>([]);
+    const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
+    const [methodsLoading, setMethodsLoading] = useState(true);
+
+    // Fetch real shipping methods from backend
+    useEffect(() => {
+        fetch(Endpoints.shippingMethods + (form.country ? `?country=${form.country}` : ''))
+            .then(r => r.json())
+            .then((data: ApiShippingMethod[]) => {
+                const methods = Array.isArray(data) ? data : [];
+                setApiMethods(methods);
+                if (methods.length > 0 && !selectedMethodId) setSelectedMethodId(methods[0].id);
+            })
+            .catch(() => setApiMethods([]))
+            .finally(() => setMethodsLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [form.country]);
+
+    const isValid = !!(form.firstName && form.lastName && form.email && form.address && form.city && form.postalCode && form.country && selectedMethodId);
 
     return (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
@@ -239,37 +268,34 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
                 className="mb-8"
             />
 
-            {/* Shipping method */}
+            {/* Shipping — auto-selected standard method, shown as info card */}
             <div className="mb-8">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">{tx('Mode de livraison', 'Delivery Method')}</p>
-                <div className="space-y-3">
-                    {shippingOptions.map((method: any) => {
-                        const active = selectedShipping.id === method.id;
-                        const label = language === 'fr' ? method.label : method.labelEn;
-                        return (
-                            <label
-                                key={method.id}
-                                className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${active ? 'border-sb-green bg-sb-green/5' : 'border-gray-100 hover:border-gray-200'}`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${active ? 'border-sb-green' : 'border-gray-200'}`}>
-                                        {active && <div className="w-2.5 h-2.5 rounded-full bg-sb-green" />}
-                                    </div>
-                                    <input type="radio" className="sr-only" checked={active} onChange={() => setShipping(method)} />
-                                    <div>
-                                        <p className="font-bold text-sm">{label}</p>
-                                        <p className="text-[10px] text-gray-400">
-                                            {method.id === 'standard' ? tx('3–5 jours ouvrés', '3–5 Business days') : tx('1–2 jours ouvrés', '1–2 Business days')}
-                                        </p>
-                                    </div>
+                {methodsLoading ? (
+                    <div className="h-16 rounded-2xl bg-gray-50 animate-pulse" />
+                ) : apiMethods.length === 0 ? (
+                    <div className="flex items-center gap-2 text-red-500 text-sm p-4 bg-red-50 rounded-2xl border border-red-100">
+                        <AlertCircle size={15} /> {tx('Livraison indisponible pour ce pays.', 'Shipping unavailable for this country.')}
+                    </div>
+                ) : (() => {
+                    const method = apiMethods[0];
+                    return (
+                        <div className="flex items-center justify-between p-4 rounded-2xl border-2 border-sb-green bg-sb-green/5">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-sb-green/10 flex items-center justify-center">
+                                    <Truck size={16} className="text-sb-green" />
                                 </div>
-                                <span className={`font-black text-base ${active ? 'text-sb-green' : 'text-sb-black'}`}>
-                                    {method.price === 0 ? tx('Gratuit', 'Free') : `€${method.price.toFixed(2)}`}
-                                </span>
-                            </label>
-                        );
-                    })}
-                </div>
+                                <div>
+                                    <p className="font-bold text-sm text-sb-black">{method.name}</p>
+                                    <p className="text-[10px] text-gray-400">{method.estimated_days_min}–{method.estimated_days_max} {tx('jours ouvrés', 'business days')}</p>
+                                </div>
+                            </div>
+                            <span className="font-black text-base text-sb-green">
+                                {method.base_price === 0 ? tx('Gratuit', 'Free') : `€${Number(method.base_price).toFixed(2)}`}
+                            </span>
+                        </div>
+                    );
+                })()}
             </div>
 
             {/* Billing same as shipping */}
@@ -284,7 +310,7 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
             </label>
 
             <button
-                onClick={onNext}
+                onClick={() => selectedMethodId && onNext(selectedMethodId)}
                 disabled={!isValid}
                 className="w-full flex justify-between items-center px-8 py-5 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -296,23 +322,61 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
 }
 
 // ─── Step 2: Payment ──────────────────────────────────────────────────────────
-function PaymentStep({ form, onChange, onNext, onBack }: {
+function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm, shippingMethodId, promoCode }: {
     form: PaymentForm; onChange: (f: PaymentForm) => void;
-    onNext: () => void; onBack: () => void;
+    onNext: (orderId: number) => void; onBack: () => void;
+    shippingForm: ShippingForm; billingForm: BillingForm;
+    shippingMethodId: number;
+    promoCode: string | null;
 }) {
     const { isAuthenticated } = useAuth();
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const set = (key: keyof PaymentForm) => (v: any) => onChange({ ...form, [key]: v });
 
-    const handleProcess = () => {
+    const handleProcess = async () => {
         setIsProcessing(true);
-        // Simulate API delay / redirect
-        setTimeout(() => {
+        setError(null);
+        try {
+            const shippingAddress = {
+                first_name: shippingForm.firstName,
+                last_name: shippingForm.lastName,
+                line_1: shippingForm.address,
+                city: shippingForm.city,
+                zip: shippingForm.postalCode,
+                country: shippingForm.country,
+                phone: shippingForm.phone || undefined,
+                state: shippingForm.state || undefined,
+            };
+            const billingAddress = billingForm.sameAsShipping ? undefined : {
+                first_name: billingForm.firstName,
+                last_name: billingForm.lastName,
+                line_1: billingForm.address,
+                city: billingForm.city,
+                zip: billingForm.postalCode,
+                country: billingForm.country,
+                phone: billingForm.phone || undefined,
+            };
+            const res = await apiClient.post<{ order_id: number; grand_total: number; client_secret?: string }>(
+                Endpoints.placeOrder,
+                {
+                    shipping_address: shippingAddress,
+                    billing_address: billingAddress,
+                    shipping_method_id: shippingMethodId,
+                    promotion_code: promoCode || undefined,
+                    email: shippingForm.email,
+                    phone: shippingForm.phone || undefined,
+                }
+            );
+            onNext(res.order_id);
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setError(apiErr.message ?? 'Payment failed. Please try again.');
+        } finally {
             setIsProcessing(false);
-            onNext();
-        }, 2500);
+        }
     };
 
     const formatCard = (v: string) => v.replace(/\D/g, '').replace(/(\d{4})/g, '$1 ').trim().slice(0, 19);
@@ -476,7 +540,7 @@ function PaymentStep({ form, onChange, onNext, onBack }: {
                 )}
             </AnimatePresence>
 
-            <div className="flex items-center gap-2 mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <div className="flex items-center gap-2 mb-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
                 <Lock size={16} className="text-sb-green flex-shrink-0" />
                 <p className="text-[10px] text-gray-500 opacity-70">
                     {form.method === 'card'
@@ -484,6 +548,14 @@ function PaymentStep({ form, onChange, onNext, onBack }: {
                         : tx('Transaction sécurisée garantie par Cafrezzo.', 'Secure transaction guaranteed by Cafrezzo.')}
                 </p>
             </div>
+
+            {/* Error banner */}
+            {error && (
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 mb-4">
+                    <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                    <p className="text-red-700 text-xs leading-snug">{error}</p>
+                </div>
+            )}
 
             <div className="flex gap-3">
                 <button onClick={onBack} className="flex items-center gap-2 px-6 py-4 rounded-full border-2 border-gray-100 text-sm font-black uppercase tracking-widest text-gray-400 hover:border-gray-200 transition-colors">
@@ -504,7 +576,7 @@ function PaymentStep({ form, onChange, onNext, onBack }: {
 }
 
 // ─── Step 3: Confirmation ─────────────────────────────────────────────────────
-function ConfirmationStep({ orderNum, shipping, billing, paymentMethod }: { orderNum: string, shipping: ShippingForm, billing: BillingForm, paymentMethod: string }) {
+function ConfirmationStep({ orderNum, shipping, billing, paymentMethod }: { orderNum: string | number, shipping: ShippingForm, billing: BillingForm, paymentMethod: string }) {
     const { clearCart, items, total } = useCart();
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
@@ -593,13 +665,15 @@ function ConfirmationStep({ orderNum, shipping, billing, paymentMethod }: { orde
 
 // ─── Main Checkout Page ───────────────────────────────────────────────────────
 export default function CheckoutPage() {
-    const { items, total } = useCart();
+    const { items, total, appliedPromo, clearCart } = useCart();
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const router = useRouter();
 
     const { user } = useAuth();
     const [step, setStep] = useState<Step>('shipping');
-    const [orderNum] = useState(() => `CF${Date.now().toString().slice(-8)}`);
+    const [orderId, setOrderId] = useState<number | null>(null);
+    const [shippingMethodId, setShippingMethodId] = useState<number>(0);
 
     const [shippingForm, setShippingForm] = useState<ShippingForm>({
         firstName: user?.name?.split(' ')[0] || '',
@@ -660,7 +734,7 @@ export default function CheckoutPage() {
                                     onChange={setShippingForm}
                                     billing={billingForm}
                                     onBillingChange={setBillingForm}
-                                    onNext={() => setStep('payment')}
+                                    onNext={(methodId) => { setShippingMethodId(methodId); setStep('payment'); }}
                                 />
                             )}
                             {step === 'payment' && (
@@ -668,14 +742,22 @@ export default function CheckoutPage() {
                                     key="payment"
                                     form={paymentForm}
                                     onChange={setPaymentForm}
-                                    onNext={() => setStep('confirmation')}
+                                    onNext={(oid) => {
+                                        setOrderId(oid);
+                                        clearCart();
+                                        router.push(`/order-success?order=${oid}&payment=${paymentForm.method}&total=${total.toFixed(2)}`);
+                                    }}
                                     onBack={() => setStep('shipping')}
+                                    shippingForm={shippingForm}
+                                    billingForm={billingForm}
+                                    shippingMethodId={shippingMethodId}
+                                    promoCode={appliedPromo?.code ?? null}
                                 />
                             )}
                             {step === 'confirmation' && (
                                 <ConfirmationStep
                                     key="confirmation"
-                                    orderNum={orderNum}
+                                    orderNum={orderId ?? ''}
                                     shipping={shippingForm}
                                     billing={billingForm}
                                     paymentMethod={paymentForm.method}

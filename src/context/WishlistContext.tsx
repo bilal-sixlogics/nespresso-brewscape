@@ -1,51 +1,97 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Product } from '@/types';
+import { apiClient } from '@/lib/api/client';
+import { Endpoints } from '@/lib/api/endpoints';
+import { useAuth } from '@/context/AuthContext';
 
 interface WishlistContextType {
     wishlist: Product[];
-    addToWishlist: (product: Product) => void;
-    removeFromWishlist: (productId: string | number) => void;
-    isWishlisted: (productId: string | number) => boolean;
-    toggleWishlist: (product: Product) => void;
+    isLoading: boolean;
+    addToWishlist: (product: Product) => Promise<void>;
+    removeFromWishlist: (productId: number) => Promise<void>;
+    isWishlisted: (productId: number) => boolean;
+    toggleWishlist: (product: Product) => Promise<void>;
     wishlistCount: number;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
-export function WishlistProvider({ children }: { children: React.ReactNode }) {
-    const [wishlist, setWishlist] = useState<Product[]>([]);
+const LS_KEY = 'brewscape-wishlist-guest';
 
+export function WishlistProvider({ children }: { children: React.ReactNode }) {
+    const { isAuthenticated, isHydrating } = useAuth();
+    const [wishlist, setWishlist] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // ── Load wishlist ─────────────────────────────────────────────────────
     useEffect(() => {
-        try {
-            const saved = localStorage.getItem('cafrezzo-wishlist');
-            if (saved) setWishlist(JSON.parse(saved));
-        } catch (e) { }
+        if (isHydrating) return;
+
+        if (isAuthenticated) {
+            setIsLoading(true);
+            apiClient.get<{ data: Product[] }>(Endpoints.wishlist)
+                .then(res => setWishlist(res.data))
+                .catch(() => setWishlist([]))
+                .finally(() => setIsLoading(false));
+        } else {
+            // Guest: load from localStorage
+            try {
+                const saved = localStorage.getItem(LS_KEY);
+                if (saved) setWishlist(JSON.parse(saved));
+            } catch { /* ignore */ }
+        }
+    }, [isAuthenticated, isHydrating]);
+
+    // Persist guest wishlist to localStorage
+    const saveGuest = useCallback((items: Product[]) => {
+        setWishlist(items);
+        try { localStorage.setItem(LS_KEY, JSON.stringify(items)); } catch { /* ignore */ }
     }, []);
 
-    const save = (items: Product[]) => {
-        setWishlist(items);
-        try { localStorage.setItem('cafrezzo-wishlist', JSON.stringify(items)); } catch (e) { }
-    };
+    // ── Add ───────────────────────────────────────────────────────────────
+    const addToWishlist = useCallback(async (product: Product) => {
+        if (wishlist.some(p => p.id === product.id)) return;
 
-    const addToWishlist = (product: Product) => {
-        if (!wishlist.find(p => p.id === product.id)) save([...wishlist, product]);
-    };
+        if (isAuthenticated) {
+            await apiClient.post(Endpoints.wishlist, { product_id: product.id });
+            setWishlist(prev => [...prev, product]);
+        } else {
+            saveGuest([...wishlist, product]);
+        }
+    }, [isAuthenticated, wishlist, saveGuest]);
 
-    const removeFromWishlist = (productId: string | number) => {
-        save(wishlist.filter(p => p.id !== productId));
-    };
+    // ── Remove ────────────────────────────────────────────────────────────
+    const removeFromWishlist = useCallback(async (productId: number) => {
+        if (isAuthenticated) {
+            await apiClient.delete(Endpoints.wishlistItem(productId));
+            setWishlist(prev => prev.filter(p => p.id !== productId));
+        } else {
+            saveGuest(wishlist.filter(p => p.id !== productId));
+        }
+    }, [isAuthenticated, wishlist, saveGuest]);
 
-    const isWishlisted = (productId: string | number) => wishlist.some(p => p.id === productId);
+    // ── Toggle ────────────────────────────────────────────────────────────
+    const toggleWishlist = useCallback(async (product: Product) => {
+        if (wishlist.some(p => p.id === product.id)) {
+            await removeFromWishlist(product.id);
+        } else {
+            await addToWishlist(product);
+        }
+    }, [wishlist, addToWishlist, removeFromWishlist]);
 
-    const toggleWishlist = (product: Product) => {
-        isWishlisted(product.id) ? removeFromWishlist(product.id) : addToWishlist(product);
-    };
+    const isWishlisted = useCallback((productId: number) =>
+        wishlist.some(p => p.id === productId), [wishlist]);
 
     return (
         <WishlistContext.Provider value={{
-            wishlist, addToWishlist, removeFromWishlist, isWishlisted, toggleWishlist,
+            wishlist,
+            isLoading,
+            addToWishlist,
+            removeFromWishlist,
+            isWishlisted,
+            toggleWishlist,
             wishlistCount: wishlist.length,
         }}>
             {children}

@@ -38,7 +38,7 @@ function OrderSuccessContent() {
     const searchParams = useSearchParams();
     const [showConfetti, setShowConfetti] = useState(true);
 
-    const orderId = searchParams.get('order') || `CF-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    const orderId = searchParams.get('order') || '';
     const paymentMethod = searchParams.get('payment') || 'stripe';
     const total = searchParams.get('total') || '89.90';
 
@@ -181,7 +181,7 @@ function OrderSuccessContent() {
                         className="flex flex-col sm:flex-row gap-3"
                     >
                         <Link
-                            href="/account"
+                            href={`/orders/${orderId}`}
                             className="flex-1 flex items-center justify-center gap-2 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors shadow-lg shadow-sb-green/25"
                         >
                             <Package size={16} /> Track Order

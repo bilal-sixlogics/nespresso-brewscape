@@ -2,22 +2,33 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Coffee, CheckCircle2, Loader2 } from 'lucide-react';
+import { Coffee, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { AppConfig } from '@/lib/config';
 import { useLanguage } from '@/context/LanguageContext';
+import { apiClient } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/types';
+import { Endpoints } from '@/lib/api/endpoints';
 
 export function Footer() {
     const { t } = useLanguage();
     const [nlEmail, setNlEmail] = useState('');
-    const [nlState, setNlState] = useState<'idle' | 'loading' | 'success'>('idle');
+    const [nlState, setNlState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [nlError, setNlError] = useState<string | null>(null);
 
-    const handleSubscribe = () => {
+    const handleSubscribe = async () => {
         if (!nlEmail.trim() || !nlEmail.includes('@')) return;
         setNlState('loading');
-        setTimeout(() => {
+        setNlError(null);
+        try {
+            await apiClient.post(Endpoints.newsletter, { email: nlEmail.trim() });
             setNlState('success');
-            setTimeout(() => { setNlState('idle'); setNlEmail(''); }, 3000);
-        }, 1200);
+            setNlEmail('');
+            setTimeout(() => setNlState('idle'), 4000);
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setNlError(apiErr.message ?? 'Subscription failed. Please try again.');
+            setNlState('error');
+        }
     };
 
     return (
@@ -86,26 +97,34 @@ export function Footer() {
                                 <span className="text-sm font-bold text-white">Subscribed! Welcome aboard ☕</span>
                             </div>
                         ) : (
-                            <div className="flex">
-                                <label htmlFor="footer-newsletter-email" className="sr-only">{t('emailPlaceholder')}</label>
-                                <input
-                                    id="footer-newsletter-email"
-                                    type="email"
-                                    value={nlEmail}
-                                    onChange={e => setNlEmail(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && handleSubscribe()}
-                                    placeholder={t('emailPlaceholder')}
-                                    className="flex-1 bg-white/5 border border-white/10 rounded-l-full px-5 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-sb-green transition-colors"
-                                    disabled={nlState === 'loading'}
-                                />
-                                <button
-                                    onClick={handleSubscribe}
-                                    disabled={nlState === 'loading'}
-                                    className="bg-sb-green hover:bg-sb-dark text-white px-6 py-3 rounded-r-full text-xs font-bold tracking-widest uppercase transition-colors flex items-center gap-2 disabled:opacity-60"
-                                >
-                                    {nlState === 'loading' ? <Loader2 size={14} className="animate-spin" /> : t('join')}
-                                </button>
-                            </div>
+                            <>
+                                <div className="flex">
+                                    <label htmlFor="footer-newsletter-email" className="sr-only">{t('emailPlaceholder')}</label>
+                                    <input
+                                        id="footer-newsletter-email"
+                                        type="email"
+                                        value={nlEmail}
+                                        onChange={e => { setNlEmail(e.target.value); if (nlState === 'error') setNlState('idle'); }}
+                                        onKeyDown={e => e.key === 'Enter' && handleSubscribe()}
+                                        placeholder={t('emailPlaceholder')}
+                                        className="flex-1 bg-white/5 border border-white/10 rounded-l-full px-5 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-sb-green transition-colors"
+                                        disabled={nlState === 'loading'}
+                                    />
+                                    <button
+                                        onClick={handleSubscribe}
+                                        disabled={nlState === 'loading'}
+                                        className="bg-sb-green hover:bg-sb-dark text-white px-6 py-3 rounded-r-full text-xs font-bold tracking-widest uppercase transition-colors flex items-center gap-2 disabled:opacity-60"
+                                    >
+                                        {nlState === 'loading' ? <Loader2 size={14} className="animate-spin" /> : t('join')}
+                                    </button>
+                                </div>
+                                {nlState === 'error' && nlError && (
+                                    <div className="flex items-center gap-2 mt-2 text-red-400 text-xs">
+                                        <AlertCircle size={12} className="shrink-0" />
+                                        <span>{nlError}</span>
+                                    </div>
+                                )}
+                            </>
                         )}
                         <div className="mt-8 flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5">
                             <div className="w-10 h-10 bg-sb-green/20 rounded-full flex items-center justify-center flex-shrink-0">

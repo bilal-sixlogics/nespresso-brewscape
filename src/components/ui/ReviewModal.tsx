@@ -2,8 +2,11 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Star, Loader2, CheckCircle2 } from 'lucide-react';
+import { X, Star, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { OrderItem, getProductImage } from '@/types';
+import { apiClient } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/types';
+import { Endpoints } from '@/lib/api/endpoints';
 
 interface ReviewModalProps {
     isOpen: boolean;
@@ -17,6 +20,7 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
     const [reviewText, setReviewText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Reset state when opened with a new item
     React.useEffect(() => {
@@ -25,23 +29,38 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
             setHoverRating(0);
             setReviewText('');
             setIsSuccess(false);
+            setError(null);
         }
     }, [isOpen, item]);
 
     if (!isOpen || !item) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (rating === 0) return;
         setIsSubmitting(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsSubmitting(false);
+        setError(null);
+        try {
+            await apiClient.post(Endpoints.productReviews(item.product.slug), {
+                rating,
+                comment: reviewText.trim() || undefined,
+            });
             setIsSuccess(true);
-            setTimeout(() => {
-                onClose();
-            }, 2000);
-        }, 1500);
+            setTimeout(() => { onClose(); }, 2500);
+        } catch (err) {
+            const apiErr = err as ApiError;
+            if (apiErr?.status) {
+                if (apiErr.status === 422 && apiErr.message?.toLowerCase().includes('already')) {
+                    setError("You've already reviewed this product. Thank you for your feedback!");
+                } else {
+                    setError(apiErr.message ?? 'Something went wrong. Please try again.');
+                }
+            } else {
+                setError('Something went wrong. Please try again.');
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -126,7 +145,7 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
                                     </p>
 
                                     {/* Text Review */}
-                                    <div className="mb-8">
+                                    <div className="mb-6">
                                         <textarea
                                             value={reviewText}
                                             onChange={(e) => setReviewText(e.target.value)}
@@ -134,6 +153,14 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
                                             className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm resize-none h-32 focus:bg-white focus:border-sb-green focus:ring-2 focus:ring-sb-green/20 outline-none transition-all placeholder:text-gray-400"
                                         />
                                     </div>
+
+                                    {/* Error banner */}
+                                    {error && (
+                                        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
+                                            <AlertCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
+                                            <p className="text-red-700 text-xs leading-snug">{error}</p>
+                                        </div>
+                                    )}
 
                                     <button
                                         type="submit"

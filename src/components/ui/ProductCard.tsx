@@ -54,13 +54,14 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}
             className="group relative cursor-pointer flex flex-col w-full h-full"
+            style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
             role="button"
             tabIndex={0}
             aria-label={`View ${product.name}`}
             onKeyDown={(e) => e.key === 'Enter' && onClick(product)}
         >
             {/* ── Card Shell ── */}
-            <div className="relative flex flex-col h-full bg-white rounded-[28px] overflow-hidden border border-gray-100 shadow-[0_2px_16px_rgba(0,0,0,0.06)] transition-shadow duration-500 group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.13)]">
+            <div className="relative flex flex-col h-full bg-white rounded-[28px] overflow-hidden border border-gray-100 shadow-[0_2px_16px_rgba(0,0,0,0.06)] transition-shadow duration-500 group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.13)]" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
 
                 {/* ── Image Zone ── */}
                 <div

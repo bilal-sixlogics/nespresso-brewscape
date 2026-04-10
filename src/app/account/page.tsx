@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProtectedRoute } from '@/components/ui/ProtectedRoute';
 import { ReviewModal } from '@/components/ui/ReviewModal';
@@ -16,10 +16,59 @@ import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/types';
 
-/** Minimal mock product for demo order display */
-function mockProduct(id: number, slug: string, name: string, image: string, price: number): Product {
-    const now = new Date().toISOString();
-    return { id, slug, name, brand_id: 1, category_id: 1, selling_price: price, status: 'active', featured_image: image, stock_qty: 100, reserved_stock: 0, low_stock_threshold: 5, sort_order: 0, is_featured: false, created_at: now, updated_at: now };
+// ── Backend → frontend order mapper ───────────────────────────────────────
+interface ApiOrderItem {
+    id: number;
+    product_id: number;
+    product_name: string;
+    unit_name: string;
+    unit_price: number;
+    quantity: number;
+    total_price: number;
+}
+interface ApiOrder {
+    id: number;
+    status: string;
+    subtotal: number;
+    discount_total: number;
+    shipping_total: number;
+    grand_total: number;
+    created_at: string;
+    items?: ApiOrderItem[];
+}
+
+function mapApiOrder(o: ApiOrder): Order {
+    const items: OrderItem[] = (o.items ?? []).map(i => ({
+        id: String(i.id),
+        quantity: i.quantity,
+        unitPrice: Number(i.unit_price),
+        product: {
+            id: i.product_id,
+            slug: `product-${i.product_id}`,
+            name: i.product_name,
+            brand_id: 0,
+            category_id: 0,
+            selling_price: Number(i.unit_price),
+            status: 'active' as const,
+            stock_qty: 0,
+            reserved_stock: 0,
+            low_stock_threshold: 0,
+            sort_order: 0,
+            is_featured: false,
+            created_at: o.created_at,
+            updated_at: o.created_at,
+        },
+    }));
+    return {
+        id: String(o.id),
+        date: o.created_at,
+        items,
+        subtotal: Number(o.subtotal),
+        shipping: Number(o.shipping_total),
+        discount: Number(o.discount_total),
+        total: Number(o.grand_total),
+        status: o.status as Order['status'],
+    };
 }
 
 // ── Status helpers ─────────────────────────────────────────────────────────
@@ -352,41 +401,6 @@ function Field({ label, value, onChange, placeholder = '', type = 'text' }: {
 // ── Main Account Page ───────────────────────────────────────────────────────
 const ORDERS_PER_PAGE = 4;
 
-// Mock active order since user orders might be empty
-const MOCK_ORDERS: Order[] = [
-    {
-        id: 'CF-99281A', date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'shipped', trackingNumber: 'TRK99281FR', paymentMethod: 'stripe',
-        subtotal: 89.90, shipping: 0, discount: 0, total: 89.90,
-        items: [{ id: '1', quantity: 2, unitPrice: 44.95, product: mockProduct(1, 'vertuo-pop', 'Vertuo Pop Machine', 'https://images.unsplash.com/photo-1517701550927-30cfcb64c54a?q=80&w=600&auto=format&fit=crop', 89.90) }]
-    },
-    {
-        id: 'CF-88172B', date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'delivered', trackingNumber: 'TRK88172FR', paymentMethod: 'cod',
-        subtotal: 45.00, shipping: 5.90, discount: 5.00, total: 45.90,
-        items: [
-            { id: '2', quantity: 5, unitPrice: 9.00, product: mockProduct(2, 'lavazza-crema-aroma-expert-1kg', 'Lavazza Crema e Aroma Expert 1kg', 'https://images.unsplash.com/photo-1611162458324-aae1eb4129a4?q=80&w=600&auto=format&fit=crop', 9.00) },
-        ]
-    },
-    {
-        id: 'CF-77063C', date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'delivered', paymentMethod: 'wise',
-        subtotal: 32.00, shipping: 0, discount: 0, total: 32.00,
-        items: [{ id: '3', quantity: 4, unitPrice: 8.00, product: mockProduct(3, 'marcilla-ground-coffee', 'Marcilla Ground Coffee', 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?q=80&w=600&auto=format&fit=crop', 8.00) }]
-    },
-    {
-        id: 'CF-66044D', date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'cancelled', paymentMethod: 'stripe',
-        subtotal: 120.00, shipping: 0, discount: 0, total: 120.00,
-        items: [{ id: '4', quantity: 1, unitPrice: 120.00, product: mockProduct(4, 'nespresso-essenza', 'Nespresso Essenza Mini', 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop', 120.00) }]
-    },
-    {
-        id: 'CF-55025E', date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'delivered', paymentMethod: 'card',
-        subtotal: 18.50, shipping: 5.90, discount: 0, total: 24.40,
-        items: [{ id: '5', quantity: 2, unitPrice: 9.25, product: mockProduct(5, 'intenso-blend', 'Intenso Blend Pods x10', 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=600&auto=format&fit=crop', 9.25) }]
-    },
-];
 
 type Tab = 'orders' | 'addresses' | 'profile' | 'wishlist';
 type Filter = 'all' | 'active' | 'delivered' | 'cancelled';
@@ -405,7 +419,28 @@ export default function AccountPage() {
     const [addressError, setAddressError] = useState<string | null>(null);
     const [addressLoading, setAddressLoading] = useState(false);
 
-    const orders = user?.orders?.length ? user.orders : MOCK_ORDERS;
+    // ── Real orders from backend ──────────────────────────────────────────
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [ordersLoading, setOrdersLoading] = useState(false);
+    const [ordersError, setOrdersError] = useState<string | null>(null);
+
+    const fetchOrders = useCallback(async () => {
+        setOrdersLoading(true);
+        setOrdersError(null);
+        try {
+            const res = await apiClient.get<{ data: ApiOrder[] }>(Endpoints.orders);
+            setOrders((res.data ?? []).map(mapApiOrder));
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setOrdersError(apiErr.message ?? 'Failed to load orders.');
+        } finally {
+            setOrdersLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (user) fetchOrders();
+    }, [user, fetchOrders]);
 
     const handleSaveAddress = async (data: Omit<Address, 'id'>) => {
         setAddressError(null);
@@ -588,7 +623,23 @@ export default function AccountPage() {
                                             </div>
                                         </div>
 
-                                        {paginatedOrders.length === 0 ? (
+                                        {/* Loading / Error states */}
+                                        {ordersLoading ? (
+                                            <div className="space-y-4">
+                                                {[1, 2, 3].map(i => (
+                                                    <div key={i} className="bg-white rounded-3xl border border-gray-100 h-24 animate-pulse" />
+                                                ))}
+                                            </div>
+                                        ) : ordersError ? (
+                                            <div className="bg-white rounded-3xl p-8 border border-red-100 flex items-center gap-3">
+                                                <AlertCircle size={20} className="text-red-400 shrink-0" />
+                                                <div>
+                                                    <p className="font-bold text-red-600 text-sm">Failed to load orders</p>
+                                                    <p className="text-xs text-gray-400 mt-0.5">{ordersError}</p>
+                                                </div>
+                                                <button onClick={fetchOrders} className="ml-auto text-xs font-bold text-sb-green hover:underline">Retry</button>
+                                            </div>
+                                        ) : paginatedOrders.length === 0 ? (
                                             <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
                                                 <Package size={40} className="text-gray-200 mx-auto mb-4" />
                                                 <p className="font-bold text-gray-400">No orders found</p>

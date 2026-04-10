@@ -14,27 +14,29 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Product } from "@/types";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductSkeleton } from "@/components/ui/ProductSkeleton";
+import { Endpoints } from "@/lib/api/endpoints";
 
-const BRANDS = [
-  { name: 'Nespresso', logo: 'https://logo.clearbit.com/nespresso.com' },
-  { name: 'Nescafé', logo: 'https://logo.clearbit.com/nescafe.com' },
-  { name: 'Lavazza', logo: 'https://logo.clearbit.com/lavazza.com' },
-  { name: 'illy', logo: 'https://logo.clearbit.com/illy.com' },
-  { name: 'Starbucks', logo: 'https://logo.clearbit.com/starbucks.com' },
-  { name: 'Dolce Gusto', logo: 'https://logo.clearbit.com/dolce-gusto.com' },
-  { name: 'Cadbury', logo: 'https://logo.clearbit.com/cadbury.com' },
-  { name: 'Tassimo', logo: 'https://logo.clearbit.com/tassimo.com' },
-  { name: 'Kimbo', logo: 'https://logo.clearbit.com/kimbo.it' },
-  { name: "L'OR", logo: 'https://logo.clearbit.com/lorcoffee.com' },
-  { name: 'Senseo', logo: 'https://logo.clearbit.com/senseo.com' },
-  { name: 'Delta Q', logo: 'https://logo.clearbit.com/deltaq.com' },
-  { name: 'Jacobs', logo: 'https://logo.clearbit.com/jacobsdouweegberts.com' },
-  { name: 'Carte Noire', logo: 'https://logo.clearbit.com/cartenoire.fr' },
-];
+interface ApiBrand {
+  id: number;
+  name: string;
+  slug: string;
+  logo: string | null;
+}
 
 function BrandsMarqueeSection() {
   const { language } = useLanguage();
-  const brands = [...BRANDS, ...BRANDS];
+  const [apiBrands, setApiBrands] = useState<ApiBrand[]>([]);
+
+  useEffect(() => {
+    fetch(Endpoints.featuredBrands)
+      .then(r => r.json())
+      .then(json => {
+        const data: ApiBrand[] = Array.isArray(json) ? json : (json?.data ?? []);
+        if (data.length > 0) setApiBrands(data);
+      })
+      .catch(() => { /* keep empty, fallback renders nothing */ });
+  }, []);
+
 
   return (
     <section className="bg-sb-green py-12 relative overflow-hidden">
@@ -61,35 +63,55 @@ function BrandsMarqueeSection() {
         </div>
       </div>
 
-      <div className="relative">
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-sb-green to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-sb-green to-transparent" />
+      {apiBrands.length > 0 && (
+        <div className="relative overflow-hidden">
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-sb-green to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-sb-green to-transparent" />
 
-        <div className="flex gap-5 marquee-ltr">
-          {brands.map((brand, i) => (
-            <div
-              key={`b-${i}`}
-              className="shrink-0 w-40 rounded-2xl bg-white/95 shadow-lg shadow-black/10 flex flex-col items-center justify-center gap-1.5 group hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden relative px-4 py-5"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={brand.logo}
-                alt={brand.name}
-                className="w-20 h-10 object-contain group-hover:scale-105 transition-transform duration-300"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  const span = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-                  if (span) span.style.display = 'block';
-                }}
-              />
-              <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest text-center" style={{ display: 'none' }}>
-                {brand.name}
-              </span>
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-sb-green/25 rounded-2xl transition-all duration-300" />
-            </div>
-          ))}
+          {/* Two identical tracks animate in sync — when the first exits the viewport the second is already in place, creating a true seamless loop */}
+          <div className="flex gap-5 marquee-track">
+            {[0, 1].map(trackIdx => (
+              <div key={trackIdx} className="flex gap-5 shrink-0" aria-hidden={trackIdx === 1}>
+                {apiBrands.map((brand, i) => (
+                  <div
+                    key={`${trackIdx}-${i}`}
+                    className="shrink-0 w-40 h-20 rounded-2xl bg-white/95 shadow-lg shadow-black/10 flex items-center justify-center group hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden relative"
+                  >
+                    {brand.logo ? (
+                      /* Logo-only: fill card, object-contain keeps aspect ratio */
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={brand.logo}
+                        alt={brand.name}
+                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          // On load error fall back to the text treatment
+                          const card = (e.target as HTMLImageElement).closest('.brand-card-inner') as HTMLElement;
+                          if (card) card.dataset.textFallback = 'true';
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    {/* Premium text fallback — hidden when logo loads successfully */}
+                    <div
+                      className="brand-card-inner absolute inset-0 flex flex-col items-center justify-center gap-1 px-3"
+                      style={{ display: brand.logo ? 'none' : 'flex' }}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-sb-green/10 flex items-center justify-center mb-0.5">
+                        <span className="text-sb-green font-black text-sm leading-none">{brand.name.charAt(0)}</span>
+                      </div>
+                      <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest text-center leading-tight line-clamp-2">{brand.name}</span>
+                    </div>
+                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-white/40 rounded-2xl transition-all duration-300" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

@@ -104,21 +104,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // ─── Actions ────────────────────────────────────────────────────────────
 
     const addToCart = useCallback((product: Product, saleUnit: SaleUnit, quantity = 1) => {
+        const maxStock = Number(saleUnit.stock) || 0;
+        if (maxStock <= 0) return; // Out of stock — block add
+
         setItems(prev => {
             const existingIdx = prev.findIndex(
                 i => i.product.id === product.id && i.saleUnit.id === saleUnit.id
             );
             const unitPrice = Number(saleUnit.selling_price) || 0;
+            const currentQty = existingIdx > -1 ? prev[existingIdx].quantity : 0;
+            const newQty = Math.min(currentQty + quantity, maxStock);
 
             if (existingIdx > -1) {
                 const next = [...prev];
-                next[existingIdx] = {
-                    ...next[existingIdx],
-                    quantity: next[existingIdx].quantity + quantity,
-                };
+                next[existingIdx] = { ...next[existingIdx], quantity: newQty };
                 return next;
             }
-            return [...prev, { product, saleUnit, quantity, unitPrice }];
+            return [...prev, { product, saleUnit, quantity: Math.min(quantity, maxStock), unitPrice }];
         });
     }, []);
 
@@ -133,11 +135,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
             removeFromCart(productId, saleUnitId);
             return;
         }
-        setItems(prev => prev.map(item =>
-            item.product.id === productId && item.saleUnit.id === saleUnitId
-                ? { ...item, quantity }
-                : item
-        ));
+        setItems(prev => prev.map(item => {
+            if (item.product.id === productId && item.saleUnit.id === saleUnitId) {
+                const maxStock = Number(item.saleUnit.stock) || Infinity;
+                return { ...item, quantity: Math.min(quantity, maxStock) };
+            }
+            return item;
+        }));
     }, [removeFromCart]);
 
     const clearCart = useCallback(() => {

@@ -125,30 +125,22 @@ body {
 }
 
 /* ── Infinite Brand Marquee ───────────────────────────── */
-@keyframes marquee-ltr {
+/* Two-track approach: each inner track translates left by 100% of its own width,
+   so the second track seamlessly replaces the first with zero gap. */
+@keyframes marquee-slide {
   0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  100% { transform: translateX(-100%); }
 }
 
-@keyframes marquee-rtl {
-  0%   { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
-}
-
-.marquee-ltr {
-  animation: marquee-ltr 40s linear infinite;
-  will-change: transform;
+/* Outer wrapper: flex row, clips overflow */
+.marquee-track {
+  display: flex;
   width: max-content;
-}
-
-.marquee-rtl {
-  animation: marquee-rtl 35s linear infinite;
+  animation: marquee-slide 40s linear infinite;
   will-change: transform;
-  width: max-content;
 }
 
-.marquee-ltr:hover,
-.marquee-rtl:hover {
+.marquee-track:hover {
   animation-play-state: paused;
 }
 
@@ -160,8 +152,7 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .marquee-ltr,
-  .marquee-rtl {
+  .marquee-track {
     animation: none !important;
   }
 }
