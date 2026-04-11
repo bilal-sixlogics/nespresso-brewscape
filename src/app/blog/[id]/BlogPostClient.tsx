@@ -1,56 +1,84 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Calendar, Share2, Bookmark } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Share2, Bookmark, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { Endpoints } from '@/lib/api/endpoints';
+
+interface BlogPost {
+    id: number; title: string; slug: string; category: string; excerpt: string | null;
+    body: string | null; featured_image: string | null; author_name: string | null;
+    published_at: string | null;
+}
 
 export default function BlogPostClient({ id }: { id: string }) {
-    const postData = {
-        title: id === '1' ? 'The Art of the Perfect Crema: Science and Passion' : 'Discover the Depth of Modern Coffee Roasting',
-        category: id === '1' ? 'Coffee Science' : 'Journal',
-        date: id === '1' ? 'Oct 12, 2024' : 'Nov 05, 2024',
-        readTime: id === '1' ? '4 min read' : '7 min read',
-        image: id === '1' ? 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?q=80&w=2000&auto=format&fit=crop' : 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?q=80&w=2000&auto=format&fit=crop',
-    };
+    const [post, setPost] = useState<BlogPost | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
+
+    useEffect(() => {
+        fetch(Endpoints.blogPost(id))
+            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+            .then(json => setPost(json?.data ?? null))
+            .catch(() => setNotFound(true))
+            .finally(() => setLoading(false));
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-sb-white">
+                <Loader2 size={32} className="animate-spin text-sb-green" />
+            </div>
+        );
+    }
+
+    if (notFound || !post) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-sb-white">
+                <h2 className="font-display text-3xl uppercase text-sb-black">Post Not Found</h2>
+                <Link href="/blog" className="text-sb-green font-bold hover:underline text-sm">Back to Journal</Link>
+            </div>
+        );
+    }
+
+    const publishDate = post.published_at
+        ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '';
 
     return (
         <div className="w-full relative bg-sb-white text-sb-black overflow-x-hidden min-h-screen">
-            <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
                 <div className="pt-20 lg:pt-32 px-4 lg:px-8 max-w-[1000px] mx-auto">
                     <Link href="/blog" className="inline-flex items-center text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-sb-green transition-colors mb-12 group">
                         <ArrowLeft size={16} className="mr-3 transform group-hover:-translate-x-2 transition-transform" />
                         Back to Journal
                     </Link>
 
-                    <div className="flex items-center gap-4 text-xs font-semibold text-gray-400 mb-8 uppercase tracking-widest">
-                        <span className="text-sb-green bg-sb-green/10 px-3 py-1 rounded-full">{postData.category}</span>
-                        <div className="flex items-center gap-1"><Calendar size={14} className="text-gray-300" /> {postData.date}</div>
-                        <span className="w-1 h-1 rounded-full bg-gray-200"></span>
-                        <div className="flex items-center gap-1"><Clock size={14} className="text-gray-300" /> {postData.readTime}</div>
+                    <div className="flex items-center gap-4 text-xs font-semibold text-gray-400 mb-8 uppercase tracking-widest flex-wrap">
+                        <span className="text-sb-green bg-sb-green/10 px-3 py-1 rounded-full">{post.category}</span>
+                        {publishDate && <div className="flex items-center gap-1"><Calendar size={14} className="text-gray-300" /> {publishDate}</div>}
+                        {post.author_name && (
+                            <>
+                                <span className="w-1 h-1 rounded-full bg-gray-200" />
+                                <span>{post.author_name}</span>
+                            </>
+                        )}
                     </div>
 
                     <h1 className="font-display text-4xl sm:text-5xl lg:text-7xl uppercase tracking-tight text-sb-black mb-12 leading-[1.05]">
-                        {postData.title}
+                        {post.title}
                     </h1>
                 </div>
 
-                <motion.div
-                    initial={{ y: 40, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.8 }}
-                    className="w-full max-w-[1400px] mx-auto px-4 lg:px-8 mb-16"
-                >
-                    <div className="rounded-[40px] overflow-hidden aspect-[21/9] lg:aspect-[3/1] bg-gray-100 relative shadow-2xl">
-                        <img
-                            src={postData.image}
-                            alt={postData.title}
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                </motion.div>
+                {post.featured_image && (
+                    <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }}
+                        className="w-full max-w-[1400px] mx-auto px-4 lg:px-8 mb-16">
+                        <div className="rounded-[40px] overflow-hidden aspect-[21/9] lg:aspect-[3/1] bg-gray-100 relative shadow-2xl">
+                            <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
+                        </div>
+                    </motion.div>
+                )}
 
                 <div className="max-w-[800px] mx-auto px-4 lg:px-8 pb-32">
                     <div className="flex items-start gap-8">
@@ -63,38 +91,22 @@ export default function BlogPostClient({ id }: { id: string }) {
                             </button>
                         </div>
 
-                        <div className="flex-1 text-lg text-gray-600 leading-[1.9] space-y-8 font-serif">
-                            <p className="text-2xl lg:text-3xl text-sb-black font-display uppercase tracking-tight leading-tight mb-12">
-                                In the world of specialty coffee, the pursuit of the perfect cup is an endless journey. It is a harmonious blend of art, science, precision, and passion.
-                            </p>
+                        <div className="flex-1">
+                            {post.excerpt && (
+                                <p className="text-2xl lg:text-3xl text-sb-black font-display uppercase tracking-tight leading-tight mb-12">
+                                    {post.excerpt}
+                                </p>
+                            )}
 
-                            <p>
-                                The golden layer resting atop a perfectly pulled shot of espresso—known as the crema—is often considered the holy grail of coffee extraction. But what exactly is it, and why does it matter so much to baristas and enthusiasts alike?
-                            </p>
-
-                            <p>
-                                Crema is a flavorful, aromatic, reddish-brown froth that rests on top of a shot of espresso. It is formed when water under high pressure dissolves more carbon dioxide, which is a natural byproduct of the coffee roasting process. When the brewed liquid hits the normal atmospheric pressure of your cup, the liquid can no longer hold all of that gas, resulting in tiny, beautiful micro-bubbles.
-                            </p>
-
-                            <h3 className="font-display text-3xl uppercase text-sb-black tracking-tight mt-12 mb-6">The Indicators of Quality</h3>
-
-                            <p>
-                                A rich, tiger-striped crema is a strong indicator of several crucial factors in the brewing process:
-                            </p>
-
-                            <ul className="list-disc pl-6 space-y-4 my-8 marker:text-sb-green">
-                                <li><strong>Freshness of the Roast:</strong> Coffee beans degas over time. A thick crema is a sign that the beans were roasted recently and still retain their essential oils and gases.</li>
-                                <li><strong>Proper Grinding and Tamping:</strong> If the crema is too thin, it may indicate under-extraction (water flowing too quickly through coarse grounds). If it is too dark or dispersed, it might signify over-extraction.</li>
-                                <li><strong>The Perfect Pressure:</strong> Traditional espresso machines use 9 bars of pressure to force water through the tamped grounds. This intense pressure is what creates the emulsion of coffee oils and water.</li>
-                            </ul>
-
-                            <blockquote className="border-l-4 border-sb-green pl-8 py-4 my-12 text-2xl italic font-display text-sb-black tracking-tight">
-                                &quot;The crema is the signature of the barista, a tangible reflection of the care taken in every step of the process.&quot;
-                            </blockquote>
-
-                            <p>
-                                Next time you order an espresso or pull a shot at home, take a moment to admire the crema before taking a sip. Notice its texture, its color, and its longevity. It is more than just foam; it is the physical manifestation of the coffee&apos;s journey from seed to cup.
-                            </p>
+                            {/* Render HTML body from admin */}
+                            {post.body ? (
+                                <div
+                                    className="prose prose-lg max-w-none text-gray-600 leading-[1.9] prose-headings:font-display prose-headings:uppercase prose-headings:tracking-tight prose-headings:text-sb-black prose-a:text-sb-green prose-blockquote:border-sb-green prose-blockquote:font-display prose-blockquote:italic prose-li:marker:text-sb-green"
+                                    dangerouslySetInnerHTML={{ __html: post.body }}
+                                />
+                            ) : (
+                                <p className="text-gray-400 italic">This post has no content yet.</p>
+                            )}
                         </div>
                     </div>
 
@@ -102,14 +114,11 @@ export default function BlogPostClient({ id }: { id: string }) {
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                             <div className="flex items-center gap-4 text-xs font-bold tracking-widest uppercase text-sb-black">
                                 <span>Share Article</span>
-                                <div className="flex gap-2 text-gray-400">
-                                    <button className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-sb-green hover:text-white transition-colors"><Share2 size={16} /></button>
-                                </div>
+                                <button className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-sb-green hover:text-white transition-colors"><Share2 size={16} /></button>
                             </div>
-
-                            <button className="bg-sb-black text-white px-8 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-sb-green transition-colors">
-                                Subscribe for Updates
-                            </button>
+                            <Link href="/blog" className="bg-sb-black text-white px-8 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-sb-green transition-colors">
+                                More Articles
+                            </Link>
                         </div>
                     </div>
                 </div>

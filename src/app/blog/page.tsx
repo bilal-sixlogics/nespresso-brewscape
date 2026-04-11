@@ -1,22 +1,57 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Clock, Calendar } from 'lucide-react';
+import { ArrowRight, Clock, Calendar, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-import { blogPosts } from '@/lib/blogsData';
-
-import { usePagination } from '@/hooks/usePagination';
+import { Endpoints } from '@/lib/api/endpoints';
 import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { useLanguage } from '@/context/LanguageContext';
 
+interface ApiBlogPost {
+    id: number; title: string; slug: string; category: string; excerpt: string | null;
+    body: string | null; featured_image: string | null; status: string;
+    is_featured: boolean; author_name: string | null; published_at: string | null;
+}
+
 export default function BlogPage() {
     const { t } = useLanguage();
-    const postsWithFeatured = blogPosts.map((p, i) => ({ ...p, featured: i === 0, readTime: '5 min read' }));
+    const [allPosts, setAllPosts] = useState<ApiBlogPost[]>([]);
+    const [apiLoading, setApiLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const PER_PAGE = 6;
+
+    useEffect(() => {
+        fetch(Endpoints.blogPosts + '?per_page=50')
+            .then(r => r.json())
+            .then(json => setAllPosts(json?.data ?? []))
+            .catch(() => setAllPosts([]))
+            .finally(() => setApiLoading(false));
+    }, []);
+
+    // Map to display format
+    const postsWithFeatured = allPosts.map((p, i) => ({
+        id: p.id, title: p.title, slug: p.slug, category: p.category,
+        excerpt: p.excerpt || '', image: p.featured_image || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop',
+        date: p.published_at ? new Date(p.published_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '',
+        featured: i === 0, readTime: '5 min read', author_name: p.author_name,
+    }));
     const featuredPost = postsWithFeatured.find(p => p.featured) || postsWithFeatured[0];
     const standardPosts = postsWithFeatured.filter(p => !p.featured);
-    const { displayedItems, hasMore, isLoading, loadMore, totalCount } = usePagination(standardPosts, 6);
+    const displayedItems = standardPosts.slice(0, page * PER_PAGE);
+    const hasMore = displayedItems.length < standardPosts.length;
+    const isLoading = false;
+    const loadMore = () => setPage(p => p + 1);
+    const totalCount = standardPosts.length;
+
+    if (apiLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-sb-offwhite">
+                <Loader2 size={32} className="animate-spin text-sb-green" />
+            </div>
+        );
+    }
 
     return (
         <div className="w-full relative bg-sb-offwhite text-sb-black overflow-x-hidden">
