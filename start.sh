@@ -27,7 +27,7 @@ FRONTEND_DIR="$ROOT_DIR"
 
 BACKEND_PORT=8000
 ADMIN_PORT=3002
-FRONTEND_PORT=3000
+FRONTEND_PORT=3001
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -177,7 +177,12 @@ start_services() {
 print_banner
 check_requirements
 
+# Auto-detect first run: if backend vendor or frontend node_modules missing, run setup
 if [ "$1" = "--setup" ] || [ "$1" = "-s" ]; then
+  run_setup
+elif [ ! -d "$BACKEND_DIR/vendor" ] || [ ! -d "$ADMIN_DIR/node_modules" ] || [ ! -d "$FRONTEND_DIR/node_modules" ]; then
+  echo -e "${YELLOW}First run detected — running setup automatically...${NC}"
+  echo ""
   run_setup
 fi
 

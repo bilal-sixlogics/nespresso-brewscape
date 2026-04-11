@@ -1,5 +1,6 @@
 @echo off
-REM Nespresso Brewscape - Windows Run Script
+REM Nespresso Brewscape - Windows Run Script (Storefront only)
+REM For all services: start.bat (or start.bat --setup for first time)
 
 cd /d "%~dp0"
 
@@ -28,9 +29,9 @@ if not exist "node_modules" (
 )
 
 REM Start the dev server
-echo Starting Nespresso Brewscape...
-echo The app will open at http://localhost:3000
+echo Starting Nespresso Brewscape Storefront...
+echo The app will open at http://localhost:3001
 echo Press Ctrl+C to stop.
 echo.
-call npm run dev
+call npm run dev -- --port 3001
 pause

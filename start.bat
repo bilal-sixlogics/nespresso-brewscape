@@ -26,7 +26,7 @@ set FRONTEND_DIR=%ROOT_DIR%
 
 set BACKEND_PORT=8000
 set ADMIN_PORT=3002
-set FRONTEND_PORT=3000
+set FRONTEND_PORT=3001
 
 echo.
 echo   [32m☕  B R E W S C A P E[0m
@@ -70,10 +70,17 @@ if errorlevel 1 (
 
 echo.
 
-REM ── Setup mode ──
+REM ── Auto-detect first run or explicit setup ──
 if "%1"=="--setup" goto :setup
 if "%1"=="-s" goto :setup
+if not exist "%BACKEND_DIR%\vendor" goto :auto_setup
+if not exist "%ADMIN_DIR%\node_modules" goto :auto_setup
+if not exist "%FRONTEND_DIR%\node_modules" goto :auto_setup
 goto :start
+
+:auto_setup
+echo [33mFirst run detected — running setup automatically...[0m
+echo.
 
 :setup
 echo [33mRunning first-time setup...[0m
