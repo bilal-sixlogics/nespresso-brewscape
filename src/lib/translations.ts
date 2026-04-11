@@ -227,6 +227,9 @@ export const translations = {
         fetes: "Fêtes",
         histoires: "Histoires",
         recettes: "Recettes",
+        readArticle: "Lire l'article",
+        loadMoreArticles: "Charger plus d'articles",
+        youveReadEverything: "Vous avez tout lu !",
 
         // ── ENRICHED TESTIMONIALS ──────────────────────────────────────────
         testimonialsTitle: "L'Expérience Cafrezzo",
@@ -476,6 +479,9 @@ export const translations = {
         fetes: "Holidays",
         histoires: "Stories",
         recettes: "Recipes",
+        readArticle: "Read Article",
+        loadMoreArticles: "Load More Articles",
+        youveReadEverything: "You've read everything!",
 
         // ── ENRICHED TESTIMONIALS ──────────────────────────────────────────
         testimonialsTitle: "The Cafrezzo Experience",

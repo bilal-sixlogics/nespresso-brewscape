@@ -20,6 +20,7 @@ export default function BlogPage() {
     const [allPosts, setAllPosts] = useState<ApiBlogPost[]>([]);
     const [apiLoading, setApiLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const [activeFilter, setActiveFilter] = useState<string | null>(null);
     const PER_PAGE = 6;
 
     useEffect(() => {
@@ -39,8 +40,12 @@ export default function BlogPage() {
     }));
     const featuredPost = postsWithFeatured.find(p => p.featured) || postsWithFeatured[0];
     const standardPosts = postsWithFeatured.filter(p => !p.featured);
-    const displayedItems = standardPosts.slice(0, page * PER_PAGE);
-    const hasMore = displayedItems.length < standardPosts.length;
+    const categories = [...new Set(allPosts.map(p => p.category).filter(Boolean))];
+    const filteredPosts = activeFilter
+        ? standardPosts.filter(p => p.category === activeFilter)
+        : standardPosts;
+    const displayedItems = filteredPosts.slice(0, page * PER_PAGE);
+    const hasMore = displayedItems.length < filteredPosts.length;
     const loadMore = () => setPage(p => p + 1);
     const totalCount = allPosts.length;
 
@@ -90,7 +95,7 @@ export default function BlogPage() {
                     >
                         <div className="text-xs font-bold tracking-widest uppercase text-sb-green mb-6 flex items-center gap-3">
                             <span className="w-8 h-[1px] bg-sb-green inline-block"></span>
-                            Featured Editor\\'s Pick
+                            {t('featuredEditorPick')}
                         </div>
 
                         <div className="flex flex-col lg:flex-row gap-0 lg:gap-12 items-center relative">
@@ -126,7 +131,7 @@ export default function BlogPage() {
                                 </p>
 
                                 <Link href={`/blog/${featuredPost.id}`} className="inline-flex items-center justify-center bg-sb-black text-white px-8 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-sb-green transition-colors group/btn">
-                                    Read Article
+                                    {t('readArticle')}
                                     <motion.div
                                         className="ml-3 bg-white/20 rounded-full p-1"
                                         whileHover={{ x: 5 }}
@@ -140,11 +145,21 @@ export default function BlogPage() {
 
                     {/* Latest Posts Grid */}
                     <div className="mb-12 flex justify-between items-end border-b border-gray-200 pb-6">
-                        <h3 className="font-display text-4xl uppercase tracking-tight text-sb-black">Latest Entries</h3>
+                        <h3 className="font-display text-4xl uppercase tracking-tight text-sb-black">{t('latestEntries')}</h3>
                         <div className="hidden md:flex gap-4">
-                            {['Tout', 'Bons plans', 'Fêtes', 'Histoires', 'Recettes'].map((filter, i) => (
-                                <button key={filter} className={`text-xs font-bold tracking-widest uppercase pb-2 border-b-2 transition-colors ${i === 0 ? 'border-sb-green text-sb-green' : 'border-transparent text-gray-400 hover:text-sb-black'}`}>
-                                    {filter}
+                            <button
+                                onClick={() => { setActiveFilter(null); setPage(1); }}
+                                className={`text-xs font-bold tracking-widest uppercase pb-2 border-b-2 transition-colors ${!activeFilter ? 'border-sb-green text-sb-green' : 'border-transparent text-gray-400 hover:text-sb-black'}`}
+                            >
+                                {t('all')}
+                            </button>
+                            {categories.map((cat) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => { setActiveFilter(cat); setPage(1); }}
+                                    className={`text-xs font-bold tracking-widest uppercase pb-2 border-b-2 transition-colors ${activeFilter === cat ? 'border-sb-green text-sb-green' : 'border-transparent text-gray-400 hover:text-sb-black'}`}
+                                >
+                                    {cat}
                                 </button>
                             ))}
                         </div>
@@ -191,7 +206,7 @@ export default function BlogPage() {
                                         </p>
 
                                         <div className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-sb-green group/link mt-auto">
-                                            Read More
+                                            {t('readMore')}
                                             <ArrowRight size={14} className="transform group-hover/link:translate-x-2 transition-transform duration-300" />
                                         </div>
                                     </div>
@@ -205,8 +220,8 @@ export default function BlogPage() {
                         hasMore={hasMore}
                         onLoadMore={loadMore}
                         totalCount={totalCount}
-                        text="Load More Articles"
-                        noMoreText="You've read everything!"
+                        text={t('loadMoreArticles')}
+                        noMoreText={t('youveReadEverything')}
                     />
                 </div>
             </motion.div>
