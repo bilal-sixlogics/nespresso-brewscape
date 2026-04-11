@@ -33,6 +33,7 @@ interface BillingForm extends ShippingForm { sameAsShipping: boolean; }
 interface PaymentForm {
     method: 'stripe' | 'cod';
     createAccount: boolean;
+    acceptedTerms: boolean;
 }
 
 type Step = 'shipping' | 'payment';
@@ -406,6 +407,23 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
     // After placing the order we store client_secret + order_id to show Stripe Elements
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
+    // Enabled payment methods from admin settings
+    const [enabledMethods, setEnabledMethods] = useState<{ stripe: boolean; cod: boolean; paypal: boolean } | null>(null);
+
+    useEffect(() => {
+        fetch(Endpoints.paymentMethods)
+            .then(r => r.json())
+            .then(data => {
+                setEnabledMethods(data);
+                // If current method was disabled, switch to first enabled
+                if (data && !data[form.method]) {
+                    const first = data.stripe ? 'stripe' : data.cod ? 'cod' : 'stripe';
+                    onChange({ ...form, method: first });
+                }
+            })
+            .catch(() => setEnabledMethods({ stripe: true, cod: true, paypal: false }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const buildPayload = () => {
         const shippingAddress = {
@@ -432,6 +450,7 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
             billing_address: billingAddress,
             shipping_method_id: shippingMethodId,
             promotion_code: promoCode || undefined,
+            payment_method: form.method,
             email: shippingForm.email,
             phone: shippingForm.phone || undefined,
         };
@@ -470,10 +489,13 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
         }
     };
 
-    const paymentMethods = [
+    const allMethods = [
         { id: 'stripe' as const, label: tx('Carte / Apple Pay / Google Pay', 'Card / Apple Pay / Google Pay'), icon: CreditCard },
         { id: 'cod' as const, label: tx('Paiement à la livraison', 'Cash on Delivery'), icon: Truck },
     ];
+    const paymentMethods = enabledMethods
+        ? allMethods.filter(m => enabledMethods[m.id])
+        : allMethods;
 
     // Phase 2: Stripe Elements are ready — show PaymentElement
     if (clientSecret && pendingOrderId) {
@@ -571,6 +593,22 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
                 )}
             </AnimatePresence>
 
+            {/* Terms & Conditions + EU withdrawal right */}
+            <label className="flex items-start gap-3 mb-6 cursor-pointer group">
+                <div
+                    onClick={() => onChange({ ...form, acceptedTerms: !form.acceptedTerms })}
+                    className={`w-5 h-5 mt-0.5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${form.acceptedTerms ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
+                >
+                    {form.acceptedTerms && <Check size={12} className="text-white" />}
+                </div>
+                <span className="text-xs text-gray-500 leading-relaxed">
+                    {tx(
+                        'J\'accepte les Conditions Générales de Vente et la Politique de Confidentialité. Je reconnais mon droit de rétractation de 14 jours conformément à la directive européenne 2011/83/UE.',
+                        'I accept the Terms & Conditions and Privacy Policy. I acknowledge my 14-day right of withdrawal under EU Directive 2011/83/EU.'
+                    )}
+                </span>
+            </label>
+
             {error && (
                 <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 mb-4">
                     <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
@@ -585,7 +623,7 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
                 </button>
                 <button
                     onClick={form.method === 'cod' ? handleCOD : handleContinueToStripe}
-                    disabled={isProcessing}
+                    disabled={isProcessing || !form.acceptedTerms}
                     className="flex-1 flex justify-between items-center px-8 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
                 >
                     <span>{form.method === 'cod' ? tx('Confirmer la commande', 'Confirm Order') : tx('Continuer vers le paiement', 'Continue to Payment')}</span>
@@ -617,7 +655,7 @@ export default function CheckoutPage() {
         ...shippingForm, sameAsShipping: true,
     });
     const [paymentForm, setPaymentForm] = useState<PaymentForm>({
-        method: 'stripe', createAccount: false,
+        method: 'stripe', createAccount: false, acceptedTerms: false,
     });
 
     // If cart is empty, redirect to shop

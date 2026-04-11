@@ -13,6 +13,7 @@ export const Endpoints = {
     // ── Store Config & CMS ───────────────────────────────────────────────
     settings: `${API_BASE}/settings`,
     shippingMethods: `${API_BASE}/shipping-methods`,
+    paymentMethods: `${API_BASE}/payment-methods`,
     applyPromo: `${API_BASE}/promotions/apply`,
     promoStrips: `${API_BASE}/promo-strips`,
     heroBanners: `${API_BASE}/hero-banners`,
