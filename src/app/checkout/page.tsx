@@ -350,6 +350,15 @@ function StripePaymentForm({ onSuccess, onBack, language }: {
         }
     };
 
+    if (!stripe) {
+        return (
+            <div className="text-center py-8">
+                <Loader2 size={24} className="animate-spin text-sb-green mx-auto mb-3" />
+                <p className="text-sm text-gray-500">{tx('Chargement du paiement sécurisé...', 'Loading secure payment...')}</p>
+            </div>
+        );
+    }
+
     return (
         <div>
             <div className="mb-6">
@@ -545,6 +554,14 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
 
             <h2 className="font-display text-3xl uppercase mb-8">{tx('Mode de paiement', 'Payment Method')}</h2>
 
+            {/* No payment methods available */}
+            {paymentMethods.length === 0 && (
+                <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-2xl p-5 mb-8">
+                    <AlertCircle size={20} className="text-red-500 flex-shrink-0" />
+                    <p className="text-sm text-red-700">{tx('Aucun moyen de paiement n\'est actuellement disponible. Veuillez réessayer plus tard.', 'No payment methods are currently available. Please try again later.')}</p>
+                </div>
+            )}
+
             {/* Method Selector */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
                 {paymentMethods.map(m => (
@@ -650,7 +667,7 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
                 </button>
                 <button
                     onClick={form.method === 'cod' ? handleCOD : handleContinueToStripe}
-                    disabled={isProcessing || !form.acceptedTerms || (form.method === 'cod' && (enabledMethods?.cod_config?.max_order_amount ?? 0) > 0 && total > (enabledMethods?.cod_config?.max_order_amount ?? 0))}
+                    disabled={isProcessing || !form.acceptedTerms || paymentMethods.length === 0 || (form.method === 'cod' && (enabledMethods?.cod_config?.max_order_amount ?? 0) > 0 && total > (enabledMethods?.cod_config?.max_order_amount ?? 0))}
                     className="flex-1 flex justify-between items-center px-8 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
                 >
                     <span>{form.method === 'cod' ? tx('Confirmer la commande', 'Confirm Order') : tx('Continuer vers le paiement', 'Continue to Payment')}</span>
