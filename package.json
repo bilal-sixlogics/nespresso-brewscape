@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@fontsource/archivo-black": "^5.2.8",
+    "@stripe/react-stripe-js": "^6.1.0",
+    "@stripe/stripe-js": "^9.1.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.3",
     "isomorphic-dompurify": "^3.8.0",

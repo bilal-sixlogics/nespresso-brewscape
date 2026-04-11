@@ -63,9 +63,10 @@ export const Endpoints = {
     // ── Orders ───────────────────────────────────────────────────────────
     orders: `${API_BASE}/orders`,
     order: (id: string) => `${API_BASE}/orders/${id}`,
-    placeOrder: `${API_BASE}/orders`,
+    placeOrder: `${API_BASE}/checkout`,
     trackOrder: `${API_BASE}/orders/track`,
     cancelOrder: (id: string) => `${API_BASE}/orders/${id}/cancel`,
+    paymentStatus: (id: string | number) => `${API_BASE}/orders/${id}/payment-status`,
     returns: `${API_BASE}/returns`,
     return: (id: string) => `${API_BASE}/returns/${id}`,
 } as const;

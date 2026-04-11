@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Check, ArrowRight, ArrowLeft, ChevronRight, MapPin, Phone,
@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -16,6 +18,8 @@ import { getProductImage } from '@/types';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '');
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ShippingForm {
@@ -27,14 +31,11 @@ interface ShippingForm {
 }
 interface BillingForm extends ShippingForm { sameAsShipping: boolean; }
 interface PaymentForm {
-    method: 'card' | 'cod' | 'stripe';
-    cardHolder: string; cardNumber: string;
-    expiry: string; cvv: string;
-    saveCard: boolean;
+    method: 'stripe' | 'cod';
     createAccount: boolean;
 }
 
-type Step = 'shipping' | 'payment' | 'confirmation';
+type Step = 'shipping' | 'payment';
 
 interface ApiShippingMethod {
     id: number;
@@ -45,7 +46,7 @@ interface ApiShippingMethod {
     estimated_days_max: number;
 }
 
-const STEPS: Step[] = ['shipping', 'payment', 'confirmation'];
+const STEPS: Step[] = ['shipping', 'payment'];
 
 const EU_COUNTRIES = [
     { code: 'FR', name: 'France' }, { code: 'BE', name: 'Belgique' },
@@ -101,7 +102,6 @@ function StepIndicator({ current }: { current: Step }) {
     const steps = [
         { id: 'shipping', label: tx('Livraison', 'Shipping'), icon: Truck },
         { id: 'payment', label: tx('Paiement', 'Payment'), icon: CreditCard },
-        { id: 'confirmation', label: tx('Confirmation', 'Confirmation'), icon: Check },
     ];
     const currentIdx = STEPS.indexOf(current);
     return (
@@ -321,6 +321,76 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
     );
 }
 
+// ─── Stripe Payment Form (rendered inside Elements provider) ─────────────────
+function StripePaymentForm({ onSuccess, onBack, language }: {
+    onSuccess: () => void;
+    onBack: () => void;
+    language: string;
+}) {
+    const stripe = useStripe();
+    const elements = useElements();
+    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const [isConfirming, setIsConfirming] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleConfirm = async () => {
+        if (!stripe || !elements) return;
+        setIsConfirming(true);
+        setError(null);
+        const { error: confirmError } = await stripe.confirmPayment({
+            elements,
+            redirect: 'if_required',
+        });
+        if (confirmError) {
+            setError(confirmError.message ?? tx('Paiement échoué.', 'Payment failed.'));
+            setIsConfirming(false);
+        } else {
+            onSuccess();
+        }
+    };
+
+    return (
+        <div>
+            <div className="mb-6">
+                <PaymentElement options={{ layout: 'tabs' }} />
+            </div>
+            <div className="flex items-center gap-2 mb-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <Lock size={16} className="text-sb-green flex-shrink-0" />
+                <p className="text-[10px] text-gray-500 opacity-70">
+                    {tx('Paiement crypté SSL 256-bit via Stripe. Aucun numéro de carte stocké.', 'SSL 256-bit encrypted via Stripe. No card data stored.')}
+                </p>
+            </div>
+            {error && (
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 mb-4">
+                    <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                    <p className="text-red-700 text-xs leading-snug">{error}</p>
+                </div>
+            )}
+            <div className="flex gap-3">
+                <button
+                    onClick={onBack}
+                    disabled={isConfirming}
+                    className="flex items-center gap-2 px-6 py-4 rounded-full border-2 border-gray-100 text-sm font-black uppercase tracking-widest text-gray-400 hover:border-gray-200 transition-colors disabled:opacity-40"
+                >
+                    <ArrowLeft size={16} />
+                    {tx('Retour', 'Back')}
+                </button>
+                <button
+                    onClick={handleConfirm}
+                    disabled={isConfirming || !stripe || !elements}
+                    className="flex-1 flex justify-between items-center px-8 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
+                >
+                    {isConfirming ? (
+                        <><Loader2 size={18} className="animate-spin" /><span>{tx('Traitement...', 'Processing...')}</span></>
+                    ) : (
+                        <><span>{tx('Payer maintenant', 'Pay Now')}</span><ArrowRight size={18} /></>
+                    )}
+                </button>
+            </div>
+        </div>
+    );
+}
+
 // ─── Step 2: Payment ──────────────────────────────────────────────────────────
 function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm, shippingMethodId, promoCode }: {
     form: PaymentForm; onChange: (f: PaymentForm) => void;
@@ -329,207 +399,168 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
     shippingMethodId: number;
     promoCode: string | null;
 }) {
-    const { isAuthenticated } = useAuth();
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const set = (key: keyof PaymentForm) => (v: any) => onChange({ ...form, [key]: v });
+    // After placing the order we store client_secret + order_id to show Stripe Elements
+    const [clientSecret, setClientSecret] = useState<string | null>(null);
+    const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
 
-    const handleProcess = async () => {
+    const buildPayload = () => {
+        const shippingAddress = {
+            first_name: shippingForm.firstName,
+            last_name: shippingForm.lastName,
+            line_1: shippingForm.address,
+            city: shippingForm.city,
+            zip: shippingForm.postalCode,
+            country: shippingForm.country,
+            phone: shippingForm.phone || undefined,
+            state: shippingForm.state || undefined,
+        };
+        const billingAddress = billingForm.sameAsShipping ? undefined : {
+            first_name: billingForm.firstName,
+            last_name: billingForm.lastName,
+            line_1: billingForm.address,
+            city: billingForm.city,
+            zip: billingForm.postalCode,
+            country: billingForm.country,
+            phone: billingForm.phone || undefined,
+        };
+        return {
+            shipping_address: shippingAddress,
+            billing_address: billingAddress,
+            shipping_method_id: shippingMethodId,
+            promotion_code: promoCode || undefined,
+            email: shippingForm.email,
+            phone: shippingForm.phone || undefined,
+        };
+    };
+
+    const handleContinueToStripe = async () => {
         setIsProcessing(true);
         setError(null);
         try {
-            const shippingAddress = {
-                first_name: shippingForm.firstName,
-                last_name: shippingForm.lastName,
-                line_1: shippingForm.address,
-                city: shippingForm.city,
-                zip: shippingForm.postalCode,
-                country: shippingForm.country,
-                phone: shippingForm.phone || undefined,
-                state: shippingForm.state || undefined,
-            };
-            const billingAddress = billingForm.sameAsShipping ? undefined : {
-                first_name: billingForm.firstName,
-                last_name: billingForm.lastName,
-                line_1: billingForm.address,
-                city: billingForm.city,
-                zip: billingForm.postalCode,
-                country: billingForm.country,
-                phone: billingForm.phone || undefined,
-            };
-            const res = await apiClient.post<{ order_id: number; grand_total: number; client_secret?: string }>(
+            const res = await apiClient.post<{ order_id: number; grand_total: number; client_secret: string }>(
                 Endpoints.placeOrder,
-                {
-                    shipping_address: shippingAddress,
-                    billing_address: billingAddress,
-                    shipping_method_id: shippingMethodId,
-                    promotion_code: promoCode || undefined,
-                    email: shippingForm.email,
-                    phone: shippingForm.phone || undefined,
-                }
+                buildPayload(),
             );
-            onNext(res.order_id);
+            setClientSecret(res.client_secret);
+            setPendingOrderId(res.order_id);
         } catch (err) {
-            const apiErr = err as ApiError;
-            setError(apiErr.message ?? 'Payment failed. Please try again.');
+            setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
         } finally {
             setIsProcessing(false);
         }
     };
 
-    const formatCard = (v: string) => v.replace(/\D/g, '').replace(/(\d{4})/g, '$1 ').trim().slice(0, 19);
-    const formatExpiry = (v: string) => {
-        const digits = v.replace(/\D/g, '');
-        if (digits.length >= 3) return `${digits.slice(0, 2)}/${digits.slice(2, 4)}`;
-        return digits;
+    const handleCOD = async () => {
+        setIsProcessing(true);
+        setError(null);
+        try {
+            const res = await apiClient.post<{ order_id: number; grand_total: number }>(
+                Endpoints.placeOrder,
+                buildPayload(),
+            );
+            onNext(res.order_id);
+        } catch (err) {
+            setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
-    const isCardValid = form.cardHolder && form.cardNumber.replace(/\s/g, '').length === 16 && form.expiry.length === 5 && form.cvv.length >= 3;
-    const isValid = form.method === 'card' ? isCardValid : true;
-
     const paymentMethods = [
-        { id: 'card', label: tx('Carte Bancaire', 'Credit Card'), icon: CreditCard },
-        { id: 'stripe', label: 'Stripe / Apple Pay', icon: ShoppingBag },
-        { id: 'cod', label: tx('Paiement à la livraison', 'Cash on Delivery'), icon: Truck },
+        { id: 'stripe' as const, label: tx('Carte / Apple Pay / Google Pay', 'Card / Apple Pay / Google Pay'), icon: CreditCard },
+        { id: 'cod' as const, label: tx('Paiement à la livraison', 'Cash on Delivery'), icon: Truck },
     ];
 
+    // Phase 2: Stripe Elements are ready — show PaymentElement
+    if (clientSecret && pendingOrderId) {
+        return (
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <h2 className="font-display text-3xl uppercase mb-2">{tx('Paiement sécurisé', 'Secure Payment')}</h2>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-8">
+                    {tx('Commande', 'Order')} #{pendingOrderId}
+                </p>
+                <Elements
+                    stripe={stripePromise}
+                    options={{
+                        clientSecret,
+                        appearance: {
+                            theme: 'stripe',
+                            variables: {
+                                colorPrimary: '#3B7E5A',
+                                borderRadius: '16px',
+                                fontFamily: 'system-ui, sans-serif',
+                            },
+                        },
+                    }}
+                >
+                    <StripePaymentForm
+                        language={language}
+                        onBack={() => { setClientSecret(null); setPendingOrderId(null); }}
+                        onSuccess={() => onNext(pendingOrderId)}
+                    />
+                </Elements>
+            </motion.div>
+        );
+    }
+
+    // Phase 1: Method selector
     return (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="relative">
             {isProcessing && (
                 <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-[40px]">
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                        className="w-12 h-12 border-4 border-sb-green border-t-transparent rounded-full mb-4"
-                    />
-                    <p className="font-display text-xl uppercase tracking-widest text-sb-black">
-                        {form.method === 'stripe' ? tx('Redirection Stripe...', 'Redirecting to Stripe...') : tx('Traitement...', 'Processing...')}
-                    </p>
-                    <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-tighter">Secure API Gateway Integration</p>
+                    <Loader2 size={32} className="animate-spin text-sb-green mb-4" />
+                    <p className="font-display text-xl uppercase tracking-widest text-sb-black">{tx('Préparation...', 'Preparing...')}</p>
                 </div>
             )}
 
             <h2 className="font-display text-3xl uppercase mb-8">{tx('Mode de paiement', 'Payment Method')}</h2>
 
             {/* Method Selector */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
                 {paymentMethods.map(m => (
                     <button
                         key={m.id}
-                        onClick={() => set('method')(m.id as any)}
-                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2 ${form.method === m.id ? 'border-sb-green bg-sb-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                        onClick={() => onChange({ ...form, method: m.id })}
+                        className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all gap-2 ${form.method === m.id ? 'border-sb-green bg-sb-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
                     >
-                        <m.icon size={20} className={form.method === m.id ? 'text-sb-green' : 'text-gray-300'} />
+                        <m.icon size={22} className={form.method === m.id ? 'text-sb-green' : 'text-gray-300'} />
                         <span className={`text-[10px] font-black uppercase tracking-wider text-center ${form.method === m.id ? 'text-sb-green' : 'text-gray-500'}`}>{m.label}</span>
                     </button>
                 ))}
             </div>
 
             <AnimatePresence mode="wait">
-                {form.method === 'card' && (
-                    <motion.div key="card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                        {/* Card preview */}
-                        <div className="bg-gradient-to-br from-sb-black to-[#2a2a2a] rounded-3xl p-6 mb-8 text-white relative overflow-hidden h-44 shadow-2xl">
-                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.4),_transparent_60%)]" />
-                            <div className="absolute top-5 right-5 flex gap-2 z-10">
-                                <div className="w-8 h-8 bg-red-500/80 rounded-full" />
-                                <div className="w-8 h-8 bg-yellow-400/80 rounded-full -ml-4" />
-                            </div>
-                            <div className="relative z-10 h-full flex flex-col justify-between">
-                                <p className="text-[10px] font-bold tracking-widest opacity-60">{tx('CARTE BANCAIRE', 'PAYMENT CARD')}</p>
-                                <div>
-                                    <p className="font-mono text-lg tracking-[0.2em] mb-1">{form.cardNumber || '•••• •••• •••• ••••'}</p>
-                                    <div className="flex justify-between items-end">
-                                        <div>
-                                            <p className="text-[8px] opacity-60 tracking-wider">{tx('TITULAIRE', 'CARD HOLDER')}</p>
-                                            <p className="text-sm font-bold truncate max-w-[150px]">{form.cardHolder || 'MARIE DUPONT'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[8px] opacity-60 tracking-wider">{tx('EXPIRE', 'EXPIRES')}</p>
-                                            <p className="text-sm font-bold">{form.expiry || '••/••'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 mb-6">
-                            <Input label={tx('Titulaire de la carte', 'Card Holder')} value={form.cardHolder} onChange={set('cardHolder')} placeholder="MARIE DUPONT" required />
-                            <Input
-                                label={tx('Numéro de carte', 'Card Number')}
-                                value={form.cardNumber}
-                                onChange={v => set('cardNumber')(formatCard(v))}
-                                placeholder="1234 5678 9012 3456"
-                                required
-                            />
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input
-                                    label={tx('Expiration', 'Expiry')}
-                                    value={form.expiry}
-                                    onChange={v => set('expiry')(formatExpiry(v))}
-                                    placeholder="MM/AA"
-                                    required
-                                />
-                                <Input label="CVV" value={form.cvv} onChange={set('cvv')} placeholder="•••" type="password" required />
-                            </div>
-                        </div>
-
-                        <label className="flex items-center gap-3 mb-6 cursor-pointer group">
-                            <div
-                                onClick={() => onChange({ ...form, saveCard: !form.saveCard })}
-                                className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${form.saveCard ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
-                            >
-                                {form.saveCard && <Check size={12} className="text-white" />}
-                            </div>
-                            <span className="text-sm font-bold text-gray-600">{tx('Sauvegarder pour mes prochains achats', 'Save for future purchases')}</span>
-                        </label>
-
-                        {!isAuthenticated && (
-                            <label className="flex items-center gap-3 mb-6 cursor-pointer group">
-                                <div
-                                    onClick={() => onChange({ ...form, createAccount: !form.createAccount })}
-                                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${form.createAccount ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
-                                >
-                                    {form.createAccount && <Check size={12} className="text-white" />}
-                                </div>
-                                <div>
-                                    <span className="text-sm font-bold text-gray-600 block">{tx('Créer un compte', 'Create an account')}</span>
-                                    <span className="text-[10px] text-gray-400">{tx('Suivez votre commande facilement.', 'Easily track your order.')}</span>
-                                </div>
-                            </label>
-                        )}
-                    </motion.div>
-                )}
-
                 {form.method === 'stripe' && (
                     <motion.div key="stripe" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-8">
-                        <div className="bg-blue-50/50 border border-blue-100 rounded-3xl p-8 text-center">
-                            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                                <ShoppingBag size={32} className="text-blue-600" />
+                        <div className="bg-gray-50 border border-gray-100 rounded-3xl p-6">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <CreditCard size={20} className="text-sb-green" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-sm">{tx('Paiement par Stripe', 'Pay with Stripe')}</p>
+                                    <p className="text-[10px] text-gray-400">{tx('Carte, Apple Pay, Google Pay, Link', 'Card, Apple Pay, Google Pay, Link')}</p>
+                                </div>
                             </div>
-                            <h3 className="font-display text-xl uppercase mb-2">Stripe Secure Checkout</h3>
-                            <p className="text-sm text-gray-500 mb-6">{tx('Vous allez être redirigé vers le portail sécurisé Stripe pour finaliser votre paiement.', 'You will be redirected to the secure Stripe portal to finalize your payment.')}</p>
-                            <div className="flex justify-center gap-4">
-                                {['Apple Pay', 'Google Pay', 'Link'].map(p => (
-                                    <span key={p} className="text-[9px] font-bold text-blue-600/50 uppercase tracking-widest">{p}</span>
-                                ))}
-                            </div>
+                            <p className="text-xs text-gray-500">{tx('Vos données de carte sont traitées directement par Stripe — jamais stockées sur nos serveurs.', 'Your card data is handled directly by Stripe — never stored on our servers.')}</p>
                         </div>
                     </motion.div>
                 )}
 
                 {form.method === 'cod' && (
                     <motion.div key="cod" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-8">
-                        <div className="bg-orange-50/50 border border-orange-100 rounded-3xl p-8">
+                        <div className="bg-orange-50/50 border border-orange-100 rounded-3xl p-6">
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-orange-600">
                                     <Truck size={24} />
                                 </div>
                                 <div>
                                     <h3 className="font-display text-lg uppercase mb-1">{tx('Paiement à la livraison', 'Cash on Delivery')}</h3>
-                                    <p className="text-sm text-gray-500 mb-4">{tx('Préparez le montant exact pour faciliter la réception. Notre livreur vous contactera avant son arrivée.', 'Please prepare the exact amount for easier delivery. Our courier will contact you before arrival.')}</p>
+                                    <p className="text-sm text-gray-500 mb-3">{tx('Préparez le montant exact pour faciliter la réception. Notre livreur vous contactera avant son arrivée.', 'Please prepare the exact amount for easier delivery. Our courier will contact you before arrival.')}</p>
                                     <div className="flex items-center gap-2 text-[10px] font-bold text-orange-700/60 uppercase">
                                         <Check size={12} /> {tx('Échange sans contact disponible', 'Contactless exchange available')}
                                     </div>
@@ -540,16 +571,6 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
                 )}
             </AnimatePresence>
 
-            <div className="flex items-center gap-2 mb-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                <Lock size={16} className="text-sb-green flex-shrink-0" />
-                <p className="text-[10px] text-gray-500 opacity-70">
-                    {form.method === 'card'
-                        ? tx('Données cryptées SSL 256-bit. Aucun stockage bancaire.', 'SSL 256-bit encrypted. No banking storage.')
-                        : tx('Transaction sécurisée garantie par Cafrezzo.', 'Secure transaction guaranteed by Cafrezzo.')}
-                </p>
-            </div>
-
-            {/* Error banner */}
             {error && (
                 <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 mb-4">
                     <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
@@ -563,101 +584,13 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
                     {tx('Retour', 'Back')}
                 </button>
                 <button
-                    onClick={handleProcess}
-                    disabled={!isValid || isProcessing}
+                    onClick={form.method === 'cod' ? handleCOD : handleContinueToStripe}
+                    disabled={isProcessing}
                     className="flex-1 flex justify-between items-center px-8 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
                 >
-                    <span className="group-hover:translate-x-1 transition-transform">{form.method === 'cod' ? tx('Confirmer la commande', 'Confirm Order') : tx('Effectuer le paiement', 'Process Payment')}</span>
+                    <span>{form.method === 'cod' ? tx('Confirmer la commande', 'Confirm Order') : tx('Continuer vers le paiement', 'Continue to Payment')}</span>
                     <ArrowRight size={18} />
                 </button>
-            </div>
-        </motion.div>
-    );
-}
-
-// ─── Step 3: Confirmation ─────────────────────────────────────────────────────
-function ConfirmationStep({ orderNum, shipping, billing, paymentMethod }: { orderNum: string | number, shipping: ShippingForm, billing: BillingForm, paymentMethod: string }) {
-    const { clearCart, items, total } = useCart();
-    const { language } = useLanguage();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
-
-    useEffect(() => {
-        const t = setTimeout(clearCart, 3000); // Clear after 3 seconds to let user see summary
-        return () => clearTimeout(t);
-    }, [clearCart]);
-
-    return (
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="pb-12">
-            <div className="text-center mb-12">
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 300, delay: 0.2 }}
-                    className="w-20 h-20 bg-sb-green rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-sb-green/30"
-                >
-                    <Check size={36} className="text-white" strokeWidth={3} />
-                </motion.div>
-                <h2 className="font-display text-5xl uppercase text-sb-black mb-3 tracking-tighter">{tx('Succès !', 'Success!')}</h2>
-                <p className="text-gray-400 text-lg">
-                    {tx('Votre commande est en route.', 'Your order is on its way.')}
-                </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                {/* Details Card */}
-                <div className="bg-gray-50 rounded-[32px] p-8 border border-gray-100">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-sb-green mb-1">{tx('COMMANDE', 'ORDER')}</p>
-                    <p className="font-mono font-black text-2xl text-sb-black mb-6">#{orderNum}</p>
-
-                    <div className="space-y-6">
-                        <div>
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">{tx('DESTINATION', 'SHIPPING TO')}</p>
-                            <p className="text-sm font-bold text-sb-black">{shipping.firstName} {shipping.lastName}</p>
-                            <p className="text-xs text-gray-500 leading-relaxed">{shipping.address}<br />{shipping.postalCode} {shipping.city}, {shipping.country}</p>
-                        </div>
-                        <div>
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">{tx('PAIEMENT', 'PAYMENT')}</p>
-                            <div className="flex items-center gap-2">
-                                <span className="bg-white px-3 py-1.5 rounded-full border border-gray-200 text-[10px] font-black uppercase text-sb-black">{paymentMethod}</span>
-                                <span className="text-[10px] font-bold text-sb-green uppercase">Authorized</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Tracking / Next Steps */}
-                <div className="bg-sb-black rounded-[32px] p-8 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-sb-green/10 rounded-full -mr-16 -mt-16 blur-3xl" />
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-sb-green mb-6">{tx('RESTEZ CONNECTÉ', 'STAY UPDATED')}</p>
-
-                    <div className="space-y-6">
-                        {[
-                            { icon: Truck, title: tx('Suivi en direct', 'Live Tracking'), desc: tx('Suivez votre colis via notre app.', 'Track via our app.') },
-                            { icon: Phone, title: tx('Support VIP', 'VIP Support'), desc: tx('Un expert dédié pour vous.', 'Dedicated expert for you.') },
-                            { icon: ShoppingBag, title: tx('Accès Anticipe', 'Early Access'), desc: tx('Bientôt : Nouvelle collection.', 'Coming: New collection.') },
-                        ].map((step, i) => (
-                            <div key={i} className="flex items-start gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                                    <step.icon size={18} className="text-sb-green" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold mb-0.5">{step.title}</p>
-                                    <p className="text-[10px] opacity-40 uppercase tracking-widest">{step.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <button className="w-full mt-8 py-4 bg-sb-green rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors">
-                        {tx('Télécharger l\'App', 'Download the App')}
-                    </button>
-                </div>
-            </div>
-
-            <div className="flex border-t border-gray-100 pt-12 justify-center">
-                <Link href="/shop" className="flex items-center gap-3 px-10 py-5 bg-white border-2 border-sb-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-sb-black hover:text-white transition-all shadow-xl shadow-sb-black/5">
-                    {tx('Retour à la boutique', 'Back to Shop')} <ArrowRight size={16} />
-                </Link>
             </div>
         </motion.div>
     );
@@ -672,7 +605,6 @@ export default function CheckoutPage() {
 
     const { user } = useAuth();
     const [step, setStep] = useState<Step>('shipping');
-    const [orderId, setOrderId] = useState<number | null>(null);
     const [shippingMethodId, setShippingMethodId] = useState<number>(0);
 
     const [shippingForm, setShippingForm] = useState<ShippingForm>({
@@ -685,14 +617,11 @@ export default function CheckoutPage() {
         ...shippingForm, sameAsShipping: true,
     });
     const [paymentForm, setPaymentForm] = useState<PaymentForm>({
-        method: 'card', cardHolder: user?.name || '', cardNumber: '', expiry: '', cvv: '', saveCard: false, createAccount: false
+        method: 'stripe', createAccount: false,
     });
 
-    // Account creation after checkout is handled via /register page
-    // (paymentForm.createAccount is kept for future backend integration)
-
-    // If cart is empty and not on confirmation, redirect
-    if (items.length === 0 && step !== 'confirmation') {
+    // If cart is empty, redirect to shop
+    if (items.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAF9F6] gap-6 px-4 sm:px-6">
                 <ShoppingBag size={48} className="text-gray-200" />
@@ -743,7 +672,6 @@ export default function CheckoutPage() {
                                     form={paymentForm}
                                     onChange={setPaymentForm}
                                     onNext={(oid) => {
-                                        setOrderId(oid);
                                         clearCart();
                                         router.push(`/order-success?order=${oid}&payment=${paymentForm.method}&total=${total.toFixed(2)}`);
                                     }}
@@ -754,24 +682,13 @@ export default function CheckoutPage() {
                                     promoCode={appliedPromo?.code ?? null}
                                 />
                             )}
-                            {step === 'confirmation' && (
-                                <ConfirmationStep
-                                    key="confirmation"
-                                    orderNum={orderId ?? ''}
-                                    shipping={shippingForm}
-                                    billing={billingForm}
-                                    paymentMethod={paymentForm.method}
-                                />
-                            )}
                         </AnimatePresence>
                     </div>
 
                     {/* ── Right: Order Summary ── */}
-                    {step !== 'confirmation' && (
-                        <div className="sticky top-8">
-                            <OrderSummary />
-                        </div>
-                    )}
+                    <div className="sticky top-8">
+                        <OrderSummary />
+                    </div>
                 </div>
             </div>
         </div>
