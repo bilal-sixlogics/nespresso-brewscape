@@ -1,9 +1,6 @@
-import { blogPosts } from '@/lib/blogsData';
 import BlogPostClient from './BlogPostClient';
 
-export function generateStaticParams() {
-    return blogPosts.map(post => ({ id: String(post.id) }));
-}
+export const dynamic = 'force-dynamic';
 
 export default async function BlogPostPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;

@@ -41,9 +41,8 @@ export default function BlogPage() {
     const standardPosts = postsWithFeatured.filter(p => !p.featured);
     const displayedItems = standardPosts.slice(0, page * PER_PAGE);
     const hasMore = displayedItems.length < standardPosts.length;
-    const isLoading = false;
     const loadMore = () => setPage(p => p + 1);
-    const totalCount = standardPosts.length;
+    const totalCount = allPosts.length;
 
     if (apiLoading) {
         return (
@@ -202,10 +201,10 @@ export default function BlogPage() {
                     </div>
 
                     <LoadMoreButton
-                        isLoading={isLoading}
+                        isLoading={false}
                         hasMore={hasMore}
                         onLoadMore={loadMore}
-                        totalCount={totalCount + 1} // +1 for the featured post
+                        totalCount={totalCount}
                         text="Load More Articles"
                         noMoreText="You've read everything!"
                     />

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Calendar, Share2, Bookmark, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Share2, Bookmark, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import DOMPurify from 'isomorphic-dompurify';
 import { Endpoints } from '@/lib/api/endpoints';
 
 interface BlogPost {
@@ -16,6 +17,16 @@ export default function BlogPostClient({ id }: { id: string }) {
     const [post, setPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
+    const [bookmarked, setBookmarked] = useState(false);
+
+    const handleShare = async () => {
+        const url = window.location.href;
+        if (navigator.share) {
+            await navigator.share({ title: post?.title ?? '', url });
+        } else {
+            await navigator.clipboard.writeText(url);
+        }
+    };
 
     useEffect(() => {
         fetch(Endpoints.blogPost(id))
@@ -83,11 +94,11 @@ export default function BlogPostClient({ id }: { id: string }) {
                 <div className="max-w-[800px] mx-auto px-4 lg:px-8 pb-32">
                     <div className="flex items-start gap-8">
                         <div className="hidden lg:flex flex-col gap-4 sticky top-40 text-gray-400">
-                            <button className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-sb-green hover:text-white hover:border-sb-green transition-all shadow-sm">
+                            <button onClick={handleShare} className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-sb-green hover:text-white hover:border-sb-green transition-all shadow-sm">
                                 <Share2 size={16} />
                             </button>
-                            <button className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-sb-black hover:text-white hover:border-sb-black transition-all shadow-sm">
-                                <Bookmark size={16} />
+                            <button onClick={() => setBookmarked(b => !b)} className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all shadow-sm ${bookmarked ? 'bg-sb-black text-white border-sb-black' : 'border-gray-200 hover:bg-sb-black hover:text-white hover:border-sb-black'}`}>
+                                <Bookmark size={16} fill={bookmarked ? 'currentColor' : 'none'} />
                             </button>
                         </div>
 
@@ -98,11 +109,11 @@ export default function BlogPostClient({ id }: { id: string }) {
                                 </p>
                             )}
 
-                            {/* Render HTML body from admin */}
+                            {/* Render HTML body from admin — sanitized */}
                             {post.body ? (
                                 <div
                                     className="prose prose-lg max-w-none text-gray-600 leading-[1.9] prose-headings:font-display prose-headings:uppercase prose-headings:tracking-tight prose-headings:text-sb-black prose-a:text-sb-green prose-blockquote:border-sb-green prose-blockquote:font-display prose-blockquote:italic prose-li:marker:text-sb-green"
-                                    dangerouslySetInnerHTML={{ __html: post.body }}
+                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }}
                                 />
                             ) : (
                                 <p className="text-gray-400 italic">This post has no content yet.</p>
@@ -114,7 +125,7 @@ export default function BlogPostClient({ id }: { id: string }) {
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                             <div className="flex items-center gap-4 text-xs font-bold tracking-widest uppercase text-sb-black">
                                 <span>Share Article</span>
-                                <button className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-sb-green hover:text-white transition-colors"><Share2 size={16} /></button>
+                                <button onClick={handleShare} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-sb-green hover:text-white transition-colors"><Share2 size={16} /></button>
                             </div>
                             <Link href="/blog" className="bg-sb-black text-white px-8 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-sb-green transition-colors">
                                 More Articles

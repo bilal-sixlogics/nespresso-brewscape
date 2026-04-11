@@ -296,13 +296,14 @@ export default function ShopPage() {
 
                         {/* Product grid */}
                         {!isLoading && products.length === 0 ? (
-                            <div className="text-center py-24">
-                                <p className="text-6xl mb-4">🔍</p>
-                                <p className="font-bold text-xl mb-2">{tx('Aucun produit trouvé', 'No products found')}</p>
+                            <div className="text-center py-24 flex flex-col items-center gap-4">
+                                <p className="text-6xl">🔍</p>
+                                <p className="font-bold text-xl">{tx('Aucun produit trouvé', 'No products found')}</p>
                                 <button
                                     onClick={resetAll}
-                                    className="text-sb-green font-bold text-sm underline mt-2"
+                                    className="flex items-center gap-2 px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors mt-2"
                                 >
+                                    <RotateCcw size={11} />
                                     {tx('Effacer les filtres', 'Clear filters')}
                                 </button>
                             </div>
