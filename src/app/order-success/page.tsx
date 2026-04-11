@@ -80,11 +80,17 @@ function OrderSuccessContent() {
                         transition={{ delay: 0.3 }}
                         className="text-center mb-10"
                     >
-                        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-sb-green mb-2">Payment Confirmed</p>
+                        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-sb-green mb-2">
+                            {paymentMethod === 'cod' ? 'Order Confirmed' : 'Payment Confirmed'}
+                        </p>
                         <h1 className="font-display text-4xl lg:text-5xl uppercase tracking-tight text-sb-black mb-3">
                             Order Placed!
                         </h1>
-                        <p className="text-gray-500">Thank you for your purchase. Your coffee is on its way! ☕</p>
+                        <p className="text-gray-500">
+                            {paymentMethod === 'cod'
+                                ? 'Thank you! Please prepare the exact amount — payment will be collected on delivery.'
+                                : 'Thank you for your purchase. Your coffee is on its way!'}
+                        </p>
                     </motion.div>
 
                     {/* Order Detail Card */}
@@ -101,7 +107,9 @@ function OrderSuccessContent() {
                                 <p className="text-white font-black text-xl tracking-widest font-mono">{orderId}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-white/70 text-[10px] uppercase tracking-widest font-bold">Total Paid</p>
+                                <p className="text-white/70 text-[10px] uppercase tracking-widest font-bold">
+                                    {paymentMethod === 'cod' ? 'Total Due' : 'Total Paid'}
+                                </p>
                                 <p className="text-white font-display text-2xl">€{parseFloat(total).toFixed(2)}</p>
                             </div>
                         </div>
@@ -135,7 +143,9 @@ function OrderSuccessContent() {
                                 <div>
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Payment Method</p>
                                     <p className="font-semibold text-sm text-sb-black">{PAYMENT_LABELS[paymentMethod] || paymentMethod}</p>
-                                    <p className="text-[10px] text-sb-green mt-0.5 font-bold">No card details stored</p>
+                                    <p className="text-[10px] text-sb-green mt-0.5 font-bold">
+                                        {paymentMethod === 'cod' ? 'Pay on delivery' : 'No card details stored'}
+                                    </p>
                                 </div>
                             </div>
 
@@ -145,10 +155,17 @@ function OrderSuccessContent() {
                                 </div>
                                 <div>
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Status</p>
-                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 border border-amber-200 text-amber-600">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                                        Processing
-                                    </span>
+                                    {paymentMethod === 'cod' ? (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-50 border border-orange-200 text-orange-600">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                                            Awaiting Delivery
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 border border-amber-200 text-amber-600">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                                            Processing
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -157,11 +174,15 @@ function OrderSuccessContent() {
                         <div className="border-t border-gray-100 px-6 py-5 bg-gray-50/50">
                             <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-3">What's next?</p>
                             <div className="space-y-2">
-                                {[
+                                {(paymentMethod === 'cod' ? [
+                                    'You\'ll receive a confirmation email shortly',
+                                    'Our courier will contact you before delivery',
+                                    'Please have €' + parseFloat(total).toFixed(2) + ' ready for the courier',
+                                ] : [
                                     'You\'ll receive a confirmation email shortly',
                                     'We\'ll notify you when your order ships',
                                     'Track real-time status in your dashboard',
-                                ].map((step, i) => (
+                                ]).map((step, i) => (
                                     <div key={i} className="flex items-center gap-3">
                                         <div className="w-5 h-5 rounded-full bg-sb-green/10 flex items-center justify-center flex-shrink-0">
                                             <span className="text-[9px] font-black text-sb-green">{i + 1}</span>

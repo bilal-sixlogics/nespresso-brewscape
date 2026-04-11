@@ -400,6 +400,7 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
     shippingMethodId: number;
     promoCode: string | null;
 }) {
+    const { total } = useCart();
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [isProcessing, setIsProcessing] = useState(false);
@@ -408,7 +409,10 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
     // Enabled payment methods from admin settings
-    const [enabledMethods, setEnabledMethods] = useState<{ stripe: boolean; cod: boolean; paypal: boolean } | null>(null);
+    const [enabledMethods, setEnabledMethods] = useState<{
+        stripe: boolean; cod: boolean; paypal: boolean;
+        cod_config?: { max_order_amount: number; surcharge: number; surcharge_type: string };
+    } | null>(null);
 
     useEffect(() => {
         fetch(Endpoints.paymentMethods)
@@ -573,24 +577,47 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
                     </motion.div>
                 )}
 
-                {form.method === 'cod' && (
-                    <motion.div key="cod" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-8">
-                        <div className="bg-orange-50/50 border border-orange-100 rounded-3xl p-6">
-                            <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-orange-600">
-                                    <Truck size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="font-display text-lg uppercase mb-1">{tx('Paiement à la livraison', 'Cash on Delivery')}</h3>
-                                    <p className="text-sm text-gray-500 mb-3">{tx('Préparez le montant exact pour faciliter la réception. Notre livreur vous contactera avant son arrivée.', 'Please prepare the exact amount for easier delivery. Our courier will contact you before arrival.')}</p>
-                                    <div className="flex items-center gap-2 text-[10px] font-bold text-orange-700/60 uppercase">
-                                        <Check size={12} /> {tx('Échange sans contact disponible', 'Contactless exchange available')}
+                {form.method === 'cod' && (() => {
+                    const codCfg = enabledMethods?.cod_config;
+                    const maxAmount = codCfg?.max_order_amount ?? 0;
+                    const surcharge = codCfg?.surcharge ?? 0;
+                    const surchargeType = codCfg?.surcharge_type ?? 'fixed';
+                    const exceeds = maxAmount > 0 && total > maxAmount;
+                    const surchargeDisplay = surcharge > 0
+                        ? surchargeType === 'percentage' ? `${surcharge}%` : `€${surcharge.toFixed(2)}`
+                        : null;
+
+                    return (
+                        <motion.div key="cod" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-8 space-y-3">
+                            <div className="bg-orange-50/50 border border-orange-100 rounded-3xl p-6">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-orange-600">
+                                        <Truck size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-display text-lg uppercase mb-1">{tx('Paiement à la livraison', 'Cash on Delivery')}</h3>
+                                        <p className="text-sm text-gray-500 mb-3">{tx('Préparez le montant exact pour faciliter la réception. Notre livreur vous contactera avant son arrivée.', 'Please prepare the exact amount for easier delivery. Our courier will contact you before arrival.')}</p>
+                                        <div className="flex items-center gap-2 text-[10px] font-bold text-orange-700/60 uppercase">
+                                            <Check size={12} /> {tx('Échange sans contact disponible', 'Contactless exchange available')}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </motion.div>
-                )}
+                            {surchargeDisplay && (
+                                <div className="flex items-center gap-2 text-xs text-orange-700 bg-orange-50 border border-orange-100 rounded-2xl px-4 py-2.5">
+                                    <AlertCircle size={14} className="flex-shrink-0" />
+                                    {tx(`Un supplément de ${surchargeDisplay} sera appliqué pour le paiement à la livraison.`, `A ${surchargeDisplay} surcharge applies for cash on delivery.`)}
+                                </div>
+                            )}
+                            {exceeds && (
+                                <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
+                                    <AlertCircle size={14} className="flex-shrink-0" />
+                                    {tx(`Le paiement à la livraison n'est pas disponible pour les commandes supérieures à €${maxAmount.toFixed(2)}.`, `Cash on delivery is not available for orders above €${maxAmount.toFixed(2)}.`)}
+                                </div>
+                            )}
+                        </motion.div>
+                    );
+                })()}
             </AnimatePresence>
 
             {/* Terms & Conditions + EU withdrawal right */}
@@ -623,7 +650,7 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
                 </button>
                 <button
                     onClick={form.method === 'cod' ? handleCOD : handleContinueToStripe}
-                    disabled={isProcessing || !form.acceptedTerms}
+                    disabled={isProcessing || !form.acceptedTerms || (form.method === 'cod' && (enabledMethods?.cod_config?.max_order_amount ?? 0) > 0 && total > (enabledMethods?.cod_config?.max_order_amount ?? 0))}
                     className="flex-1 flex justify-between items-center px-8 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
                 >
                     <span>{form.method === 'cod' ? tx('Confirmer la commande', 'Confirm Order') : tx('Continuer vers le paiement', 'Continue to Payment')}</span>
