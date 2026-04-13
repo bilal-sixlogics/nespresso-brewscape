@@ -253,7 +253,7 @@ export function Header() {
 
     return (
         <>
-            <header className="bg-sb-green text-white relative z-[9999] pt-2 pb-[30px] -mb-[30px]">
+            <header className="bg-sb-green text-white relative z-[9999] pb-[15px] -mb-[15px]">
                 <div className="max-w-[1600px] mx-auto w-full flex border-b border-white/20 relative z-[9999]">
 
                     {/* ── Mobile Menu Toggle ────────────────────────────── */}

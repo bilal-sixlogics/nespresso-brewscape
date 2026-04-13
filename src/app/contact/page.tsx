@@ -1,22 +1,42 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
-import { Mail, Phone, MapPin, Clock, Send, ChevronDown, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, ChevronDown, AlertCircle, Loader2, Globe } from 'lucide-react';
 import { AppConfig } from '@/lib/config';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface StoreLocation {
+    id: number;
+    name: string;
+    address: string;
+    city: string;
+    country: string;
+    phone: string;
+    email: string;
+    hours: string;
+    latitude: string;
+    longitude: string;
+    image: string;
+    is_active: boolean;
+    sort_order: number;
+}
+
+// ─── Static data ──────────────────────────────────────────────────────────────
+
 const FAQS = [
     {
         q: { fr: 'Quels sont vos horaires d\'ouverture ?', en: 'What are your opening hours?' },
-        a: { fr: 'Nous sommes ouverts du lundi au samedi de 9h à 19h et le dimanche de 10h à 17h.', en: 'We are open Monday to Saturday 9am–7pm and Sunday 10am–5pm.' },
+        a: { fr: 'Les horaires varient selon la boutique. Consultez la page de chaque boutique pour les horaires locaux.', en: 'Hours vary by location. Check each store\'s page for local opening times.' },
     },
     {
         q: { fr: 'Proposez-vous la livraison à domicile ?', en: 'Do you offer home delivery?' },
-        a: { fr: 'Oui, nous livrons en France métropolitaine sous 2–3 jours ouvrés. Livraison offerte dès 150€.', en: 'Yes, we deliver across mainland France in 2–3 business days. Free shipping from €150.' },
+        a: { fr: 'Oui, nous livrons dans le monde entier. Livraison standard offerte dès 100€.', en: 'Yes, we ship worldwide. Free standard shipping from €100.' },
     },
     {
         q: { fr: 'Puis-je retourner un produit ?', en: 'Can I return a product?' },
@@ -27,6 +47,8 @@ const FAQS = [
         a: { fr: 'Nous lançons bientôt Cafrezzo+. Inscrivez-vous à notre newsletter pour être le premier informé.', en: 'We are launching Cafrezzo+ soon. Sign up to our newsletter to be the first to know.' },
     },
 ];
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function FAQItem({ q, a }: { q: string; a: string }) {
     const [open, setOpen] = useState(false);
@@ -58,6 +80,73 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     );
 }
 
+function StoreCard({ store }: { store: StoreLocation }) {
+    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(store.address)}`;
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-white rounded-3xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-sb-green/20 transition-all duration-300 group"
+        >
+            {/* Image */}
+            <div className="h-44 overflow-hidden bg-gray-50 relative">
+                <img
+                    src={store.image}
+                    alt={store.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <div className="absolute bottom-3 left-4">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-white/80 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/20">
+                        {store.city}
+                    </span>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 space-y-3">
+                <h3 className="font-bold text-sm text-sb-black leading-tight">{store.name}</h3>
+
+                <div className="space-y-2">
+                    <a
+                        href={mapsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-start gap-2 text-gray-400 hover:text-sb-green transition-colors group/link"
+                    >
+                        <MapPin size={13} className="mt-0.5 flex-shrink-0 group-hover/link:text-sb-green" />
+                        <span className="text-[11px] leading-snug">{store.address}</span>
+                    </a>
+                    <a href={`tel:${store.phone.replace(/\s/g, '')}`} className="flex items-center gap-2 text-gray-400 hover:text-sb-green transition-colors">
+                        <Phone size={13} className="flex-shrink-0" />
+                        <span className="text-[11px]">{store.phone}</span>
+                    </a>
+                    <a href={`mailto:${store.email}`} className="flex items-center gap-2 text-gray-400 hover:text-sb-green transition-colors">
+                        <Mail size={13} className="flex-shrink-0" />
+                        <span className="text-[11px]">{store.email}</span>
+                    </a>
+                    <div className="flex items-start gap-2 text-gray-400">
+                        <Clock size={13} className="mt-0.5 flex-shrink-0" />
+                        <span className="text-[11px] leading-snug">{store.hours}</span>
+                    </div>
+                </div>
+
+                <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block w-full mt-2 py-2.5 rounded-full border-2 border-sb-green/20 text-sb-green text-[10px] font-black uppercase tracking-widest text-center hover:bg-sb-green hover:text-white transition-all duration-200"
+                >
+                    Get Directions
+                </a>
+            </div>
+        </motion.div>
+    );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
 export default function ContactPage() {
     const { language } = useLanguage();
     const [formState, setFormState] = useState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
@@ -65,33 +154,31 @@ export default function ContactPage() {
     const [isSending, setIsSending] = useState(false);
     const [sendError, setSendError] = useState<string | null>(null);
 
+    // Store locations state
+    const [locations, setLocations] = useState<StoreLocation[]>([]);
+    const [locationsLoading, setLocationsLoading] = useState(true);
+    const [selectedCountry, setSelectedCountry] = useState<string>('All');
+
     const t = (fr: string, en: string) => language === 'fr' ? fr : en;
 
-    const contactInfo = [
-        {
-            icon: MapPin,
-            label: t('Adresse', 'Address'),
-            value: '16 Boulevard du Général de Gaulle\n95200 Sarcelles, France',
-            link: 'https://maps.google.com/?q=16+Boulevard+du+Général+de+Gaulle+95200+Sarcelles',
-        },
-        {
-            icon: Phone,
-            label: t('Téléphone', 'Phone'),
-            value: '+33 1 34 19 62 10',
-            link: 'tel:+33134196210',
-        },
-        {
-            icon: Mail,
-            label: 'Email',
-            value: 'contact@cafrezzo.com',
-            link: 'mailto:contact@cafrezzo.com',
-        },
-        {
-            icon: Clock,
-            label: t('Horaires', 'Hours'),
-            value: t('Lun–Sam : 9h–19h\nDim : 10h–17h', 'Mon–Sat: 9am–7pm\nSun: 10am–5pm'),
-        },
-    ];
+    // Fetch store locations from API
+    useEffect(() => {
+        apiClient.get<{ data: StoreLocation[] }>(Endpoints.storeLocations)
+            .then(res => {
+                const active = (res.data ?? []).filter(l => l.is_active);
+                active.sort((a, b) => a.sort_order - b.sort_order);
+                setLocations(active);
+            })
+            .catch(() => setLocations([]))
+            .finally(() => setLocationsLoading(false));
+    }, []);
+
+    // Derive countries list
+    const countries = ['All', ...Array.from(new Set(locations.map(l => l.country)))];
+
+    const filteredLocations = selectedCountry === 'All'
+        ? locations
+        : locations.filter(l => l.country === selectedCountry);
 
     const handleSend = async () => {
         setSendError(null);
@@ -143,61 +230,114 @@ export default function ContactPage() {
                 <div className="torn-paper-white-down z-20" />
             </section>
 
-            {/* ── Contact Info Strip ───────────────────────────── */}
-            <section className="bg-white border-b border-gray-100 py-14 px-8">
-                <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                    {contactInfo.map((item, i) => {
-                        const Icon = item.icon;
-                        const content = (
+            {/* ── Store Locations ──────────────────────────────── */}
+            <section className="py-20 px-8 bg-gray-50/50">
+                <div className="max-w-[1400px] mx-auto">
+                    {/* Section header */}
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
+                        <div>
+                            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-2 flex items-center gap-1.5">
+                                <Globe size={10} />
+                                {t('Nos boutiques', 'Our Stores')}
+                            </p>
+                            <h2 className="font-display text-4xl uppercase">
+                                {t('Trouvez-nous', 'Find a Store')}
+                            </h2>
+                        </div>
+
+                        {/* Country filter tabs */}
+                        {!locationsLoading && countries.length > 2 && (
+                            <div className="flex flex-wrap gap-2">
+                                {countries.map(country => (
+                                    <button
+                                        key={country}
+                                        onClick={() => setSelectedCountry(country)}
+                                        className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 ${
+                                            selectedCountry === country
+                                                ? 'bg-sb-green text-white shadow-md shadow-sb-green/20'
+                                                : 'bg-white text-gray-400 border border-gray-100 hover:border-sb-green/30 hover:text-sb-green'
+                                        }`}
+                                    >
+                                        {country === 'All' ? t('Tous', 'All') : country}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Grid */}
+                    {locationsLoading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {[...Array(8)].map((_, i) => (
+                                <div key={i} className="bg-white rounded-3xl border border-gray-100 h-72 animate-pulse" />
+                            ))}
+                        </div>
+                    ) : filteredLocations.length === 0 ? (
+                        <div className="text-center py-20 text-gray-400">
+                            <MapPin size={40} className="mx-auto mb-4 opacity-30" />
+                            <p className="font-bold">{t('Aucune boutique trouvée', 'No stores found')}</p>
+                        </div>
+                    ) : (
+                        <AnimatePresence mode="wait">
                             <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.1 }}
-                                className="flex flex-col items-center text-center p-6 rounded-3xl border border-gray-100 hover:border-sb-green/30 hover:shadow-lg transition-all duration-300 group"
+                                key={selectedCountry}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                             >
-                                <div className="w-14 h-14 bg-sb-green/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-sb-green group-hover:text-white transition-all duration-300">
-                                    <Icon size={22} className="text-sb-green group-hover:text-white transition-colors" />
-                                </div>
-                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">{item.label}</p>
-                                <p className="text-sm font-medium text-sb-black whitespace-pre-line leading-relaxed">{item.value}</p>
+                                {filteredLocations.map(store => (
+                                    <StoreCard key={store.id} store={store} />
+                                ))}
                             </motion.div>
-                        );
-                        return item.link ? (
-                            <a key={i} href={item.link} target="_blank" rel="noreferrer">{content}</a>
-                        ) : (
-                            <div key={i}>{content}</div>
-                        );
-                    })}
+                        </AnimatePresence>
+                    )}
                 </div>
             </section>
 
-            {/* ── Map + Form ───────────────────────────────────── */}
-            <section className="py-20 px-8">
-                <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    {/* ── Embedded Map ── */}
+            {/* ── Contact Form ─────────────────────────────────── */}
+            <section className="py-20 px-8 border-t border-gray-100">
+                <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
+                    {/* Left: info */}
                     <motion.div
                         initial={{ opacity: 0, x: -30 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        className="flex flex-col gap-6"
+                        className="flex flex-col gap-8"
                     >
                         <div>
-                            <h2 className="font-display text-4xl uppercase mb-3">{t('Nous trouver', 'Find Us')}</h2>
-                            <p className="text-gray-400 text-sm">16 Boulevard du Général de Gaulle, 95200 Sarcelles</p>
+                            <h2 className="font-display text-4xl uppercase mb-4">{t('Nous écrire', 'Write to Us')}</h2>
+                            <p className="text-gray-400 text-sm leading-relaxed max-w-md">
+                                {t(
+                                    'Vous avez une question, une demande spéciale ou souhaitez nous faire part de vos impressions ? Notre équipe vous répond sous 24h.',
+                                    'Have a question, special request, or just want to share your thoughts? Our team replies within 24h.'
+                                )}
+                            </p>
                         </div>
-                        <div className="rounded-[32px] overflow-hidden border border-gray-100 shadow-lg h-[420px] bg-gray-50 relative">
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2616.0!2d2.3726!3d48.9964!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66de6d29e9609%3A0x54e1e0a01ab765e0!2s16%20Bd%20du%20G%C3%A9n%C3%A9ral%20de%20Gaulle%2C%2095200%20Sarcelles%2C%20France!5e0!3m2!1sfr!2sfr!4v1709589600000!5m2!1sfr!2sfr"
-                                width="100%"
-                                height="100%"
-                                style={{ border: 0 }}
-                                allowFullScreen
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                            />
+
+                        {/* Contact cards */}
+                        <div className="space-y-4">
+                            <a href="mailto:contact@cafrezzo.com" className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100 hover:border-sb-green/30 hover:shadow-md transition-all group">
+                                <div className="w-11 h-11 bg-sb-green/10 rounded-xl flex items-center justify-center group-hover:bg-sb-green transition-colors">
+                                    <Mail size={18} className="text-sb-green group-hover:text-white transition-colors" />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Email</p>
+                                    <p className="text-sm font-bold">contact@cafrezzo.com</p>
+                                </div>
+                            </a>
+                            <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100">
+                                <div className="w-11 h-11 bg-sb-green/10 rounded-xl flex items-center justify-center">
+                                    <Clock size={18} className="text-sb-green" />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">{t('Délai de réponse', 'Response time')}</p>
+                                    <p className="text-sm font-bold">{t('Sous 24h ouvrées', 'Within 24 business hours')}</p>
+                                </div>
+                            </div>
                         </div>
+
                         {/* Business info */}
                         <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100 grid grid-cols-2 gap-4">
                             <div>
@@ -215,7 +355,7 @@ export default function ContactPage() {
                         </div>
                     </motion.div>
 
-                    {/* ── Contact Form ── */}
+                    {/* Right: form */}
                     <motion.div
                         initial={{ opacity: 0, x: 30 }}
                         whileInView={{ opacity: 1, x: 0 }}

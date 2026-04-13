@@ -11,8 +11,20 @@
 
 import { ApiError } from './types';
 
-// ── Storage key for auth token ────────────────────────────────────────────────
+// ── Storage keys ─────────────────────────────────────────────────────────────
 const TOKEN_KEY = 'cf_auth_token';
+const SESSION_KEY = 'guest_session_id';
+
+// Generate or retrieve a persistent guest session ID
+function getOrCreateSessionId(): string | null {
+    if (typeof window === 'undefined') return null;
+    let id = localStorage.getItem(SESSION_KEY);
+    if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem(SESSION_KEY, id);
+    }
+    return id;
+}
 
 export function getToken(): string | null {
     if (typeof window === 'undefined') return null;
@@ -60,6 +72,7 @@ async function apiFetch<T>(url: string, options: RequestOptions = {}): Promise<T
     }
 
     const token = getToken();
+    const sessionId = getOrCreateSessionId();
 
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -67,6 +80,7 @@ async function apiFetch<T>(url: string, options: RequestOptions = {}): Promise<T
         ...(init.headers as Record<string, string>),
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (sessionId && !token) headers['X-Session-ID'] = sessionId;
 
     let lastError: ApiError = { message: 'Unknown error', status: 0 };
 

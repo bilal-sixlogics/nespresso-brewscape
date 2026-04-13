@@ -253,25 +253,26 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             </AnimatePresence>
                         </div>
 
-                        {/* Shipping method selector */}
-                        <div className="flex gap-2">
-                            {shippingOptions.map((method) => {
-                                const isActive = selectedShipping.id === method.id;
-                                const label = language === 'fr' ? method.label : method.labelEn;
-                                return (
-                                    <button
-                                        key={method.id}
-                                        onClick={() => setShipping(method)}
-                                        className={`flex-1 py-2.5 px-3 rounded-xl border-2 text-[9px] font-bold uppercase tracking-wider transition-all ${isActive ? 'border-sb-green bg-sb-green/5 text-sb-green' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
-                                    >
-                                        <span>{label}</span>
-                                        <span className={`block font-black text-base ${isActive ? 'text-sb-green' : 'text-sb-black'}`}>
-                                            {method.price === 0 ? tx('Gratuit', 'Free') : `€${method.price.toFixed(2)}`}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
+                        {/* Shipping method selector — live from API */}
+                        {shippingOptions.length > 1 && (
+                            <div className="flex gap-2">
+                                {shippingOptions.map((method) => {
+                                    const isActive = selectedShipping?.id === method.id;
+                                    return (
+                                        <button
+                                            key={method.id}
+                                            onClick={() => setShipping(method)}
+                                            className={`flex-1 py-2.5 px-3 rounded-xl border-2 text-[9px] font-bold uppercase tracking-wider transition-all ${isActive ? 'border-sb-green bg-sb-green/5 text-sb-green' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
+                                        >
+                                            <span>{method.name}</span>
+                                            <span className={`block font-black text-base ${isActive ? 'text-sb-green' : 'text-sb-black'}`}>
+                                                {Number(method.base_price) === 0 ? tx('Gratuit', 'Free') : `€${Number(method.base_price).toFixed(2)}`}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
 
                         {/* Order summary */}
                         <div className="space-y-1.5">

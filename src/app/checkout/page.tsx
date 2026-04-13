@@ -167,7 +167,9 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                     return (
                                         <div key={`${item.product.id}-${item.saleUnit.id}`} className="flex items-center gap-3">
                                             <div className="w-12 h-12 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                                <img src={getProductImage(item.product) ?? ''} alt={name} className="w-10 h-10 object-contain" />
+                                                {getProductImage(item.product) && (
+                                                    <img src={getProductImage(item.product)!} alt={name} className="w-10 h-10 object-contain" />
+                                                )}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-xs font-bold text-sb-black truncate">{name}</p>
@@ -184,7 +186,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                 <div className="flex justify-between text-gray-500"><span>{tx('Sous-total', 'Subtotal')}</span><span className="font-bold">€{subtotal.toFixed(2)}</span></div>
                                 {promoDiscount > 0 && <div className="flex justify-between text-sb-green"><span>{appliedPromo?.code}</span><span className="font-bold">-€{promoDiscount.toFixed(2)}</span></div>}
                                 <div className="flex justify-between text-gray-500">
-                                    <span>{tx('Livraison', 'Shipping')} — {language === 'fr' ? selectedShipping.label : selectedShipping.labelEn}</span>
+                                    <span>{tx('Livraison', 'Shipping')}{selectedShipping ? ` — ${selectedShipping.name}` : ''}</span>
                                     <span className={`font-bold ${shippingCost === 0 ? 'text-sb-green' : ''}`}>{shippingCost === 0 ? tx('Gratuite', 'Free') : `€${shippingCost.toFixed(2)}`}</span>
                                 </div>
                                 <div className="flex justify-between text-sb-black font-black pt-2 border-t border-gray-100 text-base">
@@ -223,24 +225,53 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const set = (key: keyof ShippingForm) => (v: string) => onChange({ ...form, [key]: v });
+    const { setShipping } = useCart();
 
     const [apiMethods, setApiMethods] = useState<ApiShippingMethod[]>([]);
     const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
     const [methodsLoading, setMethodsLoading] = useState(true);
 
-    // Fetch real shipping methods from backend
+    // Fetch real shipping methods from backend, re-fetch when country changes
     useEffect(() => {
+        setMethodsLoading(true);
+        setSelectedMethodId(null);
         fetch(Endpoints.shippingMethods + (form.country ? `?country=${form.country}` : ''))
             .then(r => r.json())
             .then((data: ApiShippingMethod[]) => {
                 const methods = Array.isArray(data) ? data : [];
                 setApiMethods(methods);
-                if (methods.length > 0 && !selectedMethodId) setSelectedMethodId(methods[0].id);
+                if (methods.length > 0) {
+                    setSelectedMethodId(methods[0].id);
+                    // Sync first method into cart so order summary pricing is live
+                    setShipping({
+                        id: methods[0].id,
+                        name: methods[0].name,
+                        description: methods[0].description,
+                        base_price: Number(methods[0].base_price),
+                        estimated_days_min: methods[0].estimated_days_min,
+                        estimated_days_max: methods[0].estimated_days_max,
+                        free_shipping_threshold: null,
+                    });
+                }
             })
             .catch(() => setApiMethods([]))
             .finally(() => setMethodsLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.country]);
+
+    const handleSelectMethod = (method: ApiShippingMethod) => {
+        setSelectedMethodId(method.id);
+        // Keep cart in sync so order summary updates immediately
+        setShipping({
+            id: method.id,
+            name: method.name,
+            description: method.description,
+            base_price: Number(method.base_price),
+            estimated_days_min: method.estimated_days_min,
+            estimated_days_max: method.estimated_days_max,
+            free_shipping_threshold: null,
+        });
+    };
 
     const isValid = !!(form.firstName && form.lastName && form.email && form.address && form.city && form.postalCode && form.country && selectedMethodId);
 
@@ -269,34 +300,51 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
                 className="mb-8"
             />
 
-            {/* Shipping — auto-selected standard method, shown as info card */}
+            {/* Shipping — live methods from API, selectable */}
             <div className="mb-8">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">{tx('Mode de livraison', 'Delivery Method')}</p>
                 {methodsLoading ? (
-                    <div className="h-16 rounded-2xl bg-gray-50 animate-pulse" />
+                    <div className="space-y-3">
+                        <div className="h-16 rounded-2xl bg-gray-50 animate-pulse" />
+                        <div className="h-16 rounded-2xl bg-gray-50 animate-pulse opacity-60" />
+                    </div>
                 ) : apiMethods.length === 0 ? (
                     <div className="flex items-center gap-2 text-red-500 text-sm p-4 bg-red-50 rounded-2xl border border-red-100">
                         <AlertCircle size={15} /> {tx('Livraison indisponible pour ce pays.', 'Shipping unavailable for this country.')}
                     </div>
-                ) : (() => {
-                    const method = apiMethods[0];
-                    return (
-                        <div className="flex items-center justify-between p-4 rounded-2xl border-2 border-sb-green bg-sb-green/5">
-                            <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-sb-green/10 flex items-center justify-center">
-                                    <Truck size={16} className="text-sb-green" />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-sm text-sb-black">{method.name}</p>
-                                    <p className="text-[10px] text-gray-400">{method.estimated_days_min}–{method.estimated_days_max} {tx('jours ouvrés', 'business days')}</p>
-                                </div>
-                            </div>
-                            <span className="font-black text-base text-sb-green">
-                                {method.base_price === 0 ? tx('Gratuit', 'Free') : `€${Number(method.base_price).toFixed(2)}`}
-                            </span>
-                        </div>
-                    );
-                })()}
+                ) : (
+                    <div className="space-y-3">
+                        {apiMethods.map(method => {
+                            const isSelected = selectedMethodId === method.id;
+                            return (
+                                <button
+                                    key={method.id}
+                                    type="button"
+                                    onClick={() => handleSelectMethod(method)}
+                                    className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all text-left ${isSelected ? 'border-sb-green bg-sb-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-sb-green/10' : 'bg-gray-50'}`}>
+                                            <Truck size={16} className={isSelected ? 'text-sb-green' : 'text-gray-400'} />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-sm text-sb-black">{method.name}</p>
+                                            <p className="text-[10px] text-gray-400">{method.estimated_days_min}–{method.estimated_days_max} {tx('jours ouvrés', 'business days')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`font-black text-base ${isSelected ? 'text-sb-green' : 'text-sb-black'}`}>
+                                            {method.base_price === 0 ? tx('Gratuit', 'Free') : `€${Number(method.base_price).toFixed(2)}`}
+                                        </span>
+                                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-sb-green' : 'border-gray-300'}`}>
+                                            {isSelected && <div className="w-2 h-2 rounded-full bg-sb-green" />}
+                                        </div>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Billing same as shipping */}

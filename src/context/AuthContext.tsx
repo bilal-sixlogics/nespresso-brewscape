@@ -112,13 +112,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => window.removeEventListener('auth:expired', handleExpired);
     }, []);
 
+    // ── Merge guest cart after login/register ─────────────────────────────────
+    const mergeGuestCart = useCallback(async () => {
+        const sessionId = typeof window !== 'undefined'
+            ? localStorage.getItem('guest_session_id')
+            : null;
+        if (!sessionId) return;
+        try {
+            await apiClient.post(Endpoints.cartMerge, { session_id: sessionId });
+            localStorage.removeItem('guest_session_id');
+        } catch {
+            // Non-fatal — cart merge best-effort
+        }
+    }, []);
+
     // ── Login ─────────────────────────────────────────────────────────────────
     const login = useCallback(async (email: string, password: string) => {
         const res = await apiClient.post<{ token: string; user: BackendUser }>(Endpoints.login, { email, password });
         setToken(res.token);
         setUser(mapUser(res.user));
         setIsLoginModalOpen(false);
-    }, []);
+        await mergeGuestCart();
+    }, [mergeGuestCart]);
 
     // ── Register ──────────────────────────────────────────────────────────────
     const register = useCallback(async (
@@ -136,7 +151,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(res.token);
         setUser(mapUser(res.user));
         setIsLoginModalOpen(false);
-    }, []);
+        await mergeGuestCart();
+    }, [mergeGuestCart]);
 
     // ── Logout ────────────────────────────────────────────────────────────────
     const logout = useCallback(async () => {

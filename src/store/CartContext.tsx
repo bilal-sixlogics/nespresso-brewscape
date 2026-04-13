@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Product, SaleUnit } from '@/types';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
@@ -9,9 +9,9 @@ import { Endpoints } from '@/lib/api/endpoints';
 
 export interface CartItem {
     product: Product;
-    saleUnit: SaleUnit; // Which pack/unit was selected (e.g., "Lot de 50")
-    quantity: number;   // Number of that unit
-    unitPrice: number;  // Effective price per unit after any product-level discount
+    saleUnit: SaleUnit;
+    quantity: number;
+    unitPrice: number;
 }
 
 export interface AppliedPromo {
@@ -20,29 +20,18 @@ export interface AppliedPromo {
     promotion_name: string;
     type: "percentage" | "fixed";
     value: number;
-    discount: number; // pre-calculated discount amount from backend
+    discount: number;
 }
 
 export interface ShippingMethod {
-    id: "standard" | "express";
-    label: string;
-    labelEn: string;
-    price: number;
+    id: number;
+    name: string;
+    description: string | null;
+    base_price: number;
+    estimated_days_min: number;
+    estimated_days_max: number;
+    free_shipping_threshold: number | null;
 }
-
-const DEFAULT_SHIPPING: ShippingMethod = {
-    id: 'standard',
-    label: 'Standard (3–5 jours)',
-    labelEn: 'Standard (3–5 days)',
-    price: 5.99,
-};
-
-const EXPRESS_SHIPPING: ShippingMethod = {
-    id: 'express',
-    label: 'Express (1–2 jours)',
-    labelEn: 'Express (1–2 days)',
-    price: 12.99,
-};
 
 interface CartContextType {
     // Cart Data
@@ -63,10 +52,11 @@ interface CartContextType {
     applyPromoCode: (code: string) => Promise<void>;
     removePromoCode: () => void;
 
-    // Shipping
-    selectedShipping: ShippingMethod;
+    // Shipping — live from API
+    selectedShipping: ShippingMethod | null;
     setShipping: (method: ShippingMethod) => void;
     shippingOptions: ShippingMethod[];
+    shippingLoading: boolean;
 
     // Actions
     addToCart: (product: Product, saleUnit: SaleUnit, quantity?: number) => void;
@@ -79,25 +69,43 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const FREE_SHIPPING_THRESHOLD = 150; // €150
-
 export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
     const [promoError, setPromoError] = useState<string | null>(null);
     const [promoLoading, setPromoLoading] = useState(false);
-    const [selectedShipping, setSelectedShipping] = useState<ShippingMethod>(DEFAULT_SHIPPING);
+    const [shippingOptions, setShippingOptions] = useState<ShippingMethod[]>([]);
+    const [selectedShipping, setSelectedShipping] = useState<ShippingMethod | null>(null);
+    const [shippingLoading, setShippingLoading] = useState(true);
+
+    // ─── Fetch shipping methods from API on mount ──────────────────────────
+    useEffect(() => {
+        apiClient.get<ShippingMethod[]>(Endpoints.shippingMethods)
+            .then(methods => {
+                const active = Array.isArray(methods) ? methods : [];
+                setShippingOptions(active);
+                if (active.length > 0 && !selectedShipping) {
+                    setSelectedShipping(active[0]);
+                }
+            })
+            .catch(() => {
+                // If API fails, leave options empty — checkout will handle error
+                setShippingOptions([]);
+            })
+            .finally(() => setShippingLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // ─── Derived Pricing ───────────────────────────────────────────────────
     const subtotal = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-
-    // Promo discount comes from backend calculation
     const promoDiscount = appliedPromo?.discount ?? 0;
-
     const afterDiscount = Math.max(0, subtotal - promoDiscount);
-    const isFreeShipping = afterDiscount >= FREE_SHIPPING_THRESHOLD;
-    const shippingCost = isFreeShipping ? 0 : selectedShipping.price;
-    const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - afterDiscount);
+
+    // Free shipping threshold comes from the selected method (set by admin)
+    const freeThreshold = selectedShipping?.free_shipping_threshold ?? null;
+    const isFreeShipping = freeThreshold !== null && afterDiscount >= freeThreshold;
+    const shippingCost = !selectedShipping ? 0 : isFreeShipping ? 0 : Number(selectedShipping.base_price);
+    const amountToFreeShipping = freeThreshold ? Math.max(0, freeThreshold - afterDiscount) : 0;
     const total = afterDiscount + shippingCost;
     const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -105,7 +113,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const addToCart = useCallback((product: Product, saleUnit: SaleUnit, quantity = 1) => {
         const maxStock = Number(saleUnit.stock) || 0;
-        if (maxStock <= 0) return; // Out of stock — block add
+        if (maxStock <= 0) return;
 
         setItems(prev => {
             const existingIdx = prev.findIndex(
@@ -150,14 +158,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setPromoError(null);
     }, []);
 
-    // ─── Promo Code — calls backend API ─────────────────────────────────────
+    // ─── Promo Code ─────────────────────────────────────────────────────────
 
     const applyPromoCode = useCallback(async (code: string) => {
         const trimmed = code.trim();
-        if (!trimmed) {
-            setPromoError('Please enter a promo code.');
-            return;
-        }
+        if (!trimmed) { setPromoError('Please enter a promo code.'); return; }
 
         setPromoLoading(true);
         setPromoError(null);
@@ -171,10 +176,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 discount_value: number;
                 discount: number;
                 message?: string;
-            }>(Endpoints.applyPromo, {
-                code: trimmed,
-                order_total: subtotal,
-            });
+            }>(Endpoints.applyPromo, { code: trimmed, order_total: subtotal });
 
             if (res.valid) {
                 setAppliedPromo({
@@ -185,12 +187,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     value: res.discount_value,
                     discount: res.discount,
                 });
-                setPromoError(null);
             } else {
                 setPromoError(res.message || 'Invalid promo code.');
             }
         } catch (err: unknown) {
-            const apiErr = err as { message?: string; status?: number };
+            const apiErr = err as { message?: string };
             setPromoError(apiErr.message || 'Invalid or expired promo code.');
         } finally {
             setPromoLoading(false);
@@ -209,9 +210,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return (
         <CartContext.Provider value={{
             items, cartCount, subtotal, promoDiscount,
-            shippingCost, total, amountToFreeShipping, appliedPromo, promoError,
-            promoLoading, applyPromoCode, removePromoCode,
-            selectedShipping, setShipping, shippingOptions: [DEFAULT_SHIPPING, EXPRESS_SHIPPING],
+            shippingCost, total, amountToFreeShipping,
+            appliedPromo, promoError, promoLoading,
+            applyPromoCode, removePromoCode,
+            selectedShipping, setShipping, shippingOptions, shippingLoading,
             addToCart, removeFromCart, updateQuantity, clearCart,
         }}>
             {children}
@@ -221,8 +223,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
     const context = useContext(CartContext);
-    if (context === undefined) {
-        throw new Error('useCart must be used within a CartProvider');
-    }
+    if (context === undefined) throw new Error('useCart must be used within a CartProvider');
     return context;
 }
