@@ -57,6 +57,14 @@ export default function BlogPage() {
         );
     }
 
+    if (!featuredPost) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-sb-offwhite">
+                <p className="text-gray-400 text-sm font-semibold tracking-widest uppercase">No articles yet</p>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full relative bg-sb-offwhite text-sb-black overflow-x-hidden">
             <motion.div

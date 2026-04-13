@@ -31,6 +31,10 @@ export const Endpoints = {
     blogPosts: `${API_BASE}/blog`,
     blogPost: (id: string | number) => `${API_BASE}/blog/${id}`,
 
+    // ── Brew Guides ──────────────────────────────────────────────────────
+    brewGuides: `${API_BASE}/brew-guides`,
+    brewGuide: (idOrSlug: string | number) => `${API_BASE}/brew-guides/${idOrSlug}`,
+
     // ── Store Locations ─────────────────────────────────────────────────
     storeLocations: `${API_BASE}/store-locations`,
 
