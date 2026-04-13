@@ -63,20 +63,41 @@ interface CartContextType {
     removeFromCart: (productId: string | number, saleUnitId: string | number) => void;
     updateQuantity: (productId: string | number, saleUnitId: string | number, quantity: number) => void;
     clearCart: () => void;
+    syncCartToBackend: () => Promise<void>;
 }
 
 // ─── Context & Provider ────────────────────────────────────────────────────
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const CART_STORAGE_KEY = 'cafrezzo_cart';
+
 export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
+    const [cartHydrated, setCartHydrated] = useState(false);
     const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
     const [promoError, setPromoError] = useState<string | null>(null);
     const [promoLoading, setPromoLoading] = useState(false);
     const [shippingOptions, setShippingOptions] = useState<ShippingMethod[]>([]);
     const [selectedShipping, setSelectedShipping] = useState<ShippingMethod | null>(null);
     const [shippingLoading, setShippingLoading] = useState(true);
+
+    // ─── Load cart from localStorage on client mount (SSR-safe) ──────────
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem(CART_STORAGE_KEY);
+            if (raw) setItems(JSON.parse(raw) as CartItem[]);
+        } catch { /* corrupt data — start fresh */ }
+        setCartHydrated(true);
+    }, []);
+
+    // ─── Persist cart to localStorage (only after hydration) ─────────────
+    useEffect(() => {
+        if (!cartHydrated) return;
+        try {
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+        } catch { /* quota exceeded or private browsing */ }
+    }, [items, cartHydrated]);
 
     // ─── Fetch shipping methods from API on mount ──────────────────────────
     useEffect(() => {
@@ -156,6 +177,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems([]);
         setAppliedPromo(null);
         setPromoError(null);
+        try { localStorage.removeItem(CART_STORAGE_KEY); } catch { /* ignore */ }
     }, []);
 
     // ─── Promo Code ─────────────────────────────────────────────────────────
@@ -207,6 +229,44 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setSelectedShipping(method);
     }, []);
 
+    // ─── Sync local cart → backend (called before checkout) ─────────────────
+    const syncCartToBackend = useCallback(async () => {
+        console.log('[CartSync] items in state:', items);
+        console.log('[CartSync] localStorage raw:', localStorage.getItem(CART_STORAGE_KEY));
+        console.log('[CartSync] cartHydrated:', cartHydrated);
+
+        if (items.length === 0) {
+            console.warn('[CartSync] items array is EMPTY — nothing to sync');
+            return;
+        }
+
+        // Best-effort clear — ignore error if no cart exists yet
+        try {
+            await apiClient.delete(Endpoints.cart);
+            console.log('[CartSync] DELETE /cart OK');
+        } catch (e) {
+            console.warn('[CartSync] DELETE /cart failed (ignored):', e);
+        }
+
+        // Add each item — propagate errors so the checkout UI shows them
+        for (const item of items) {
+            const payload = {
+                product_sales_unit_id: Number(item.saleUnit.id),
+                quantity: item.quantity,
+            };
+            console.log('[CartSync] POST /cart/items payload:', payload);
+            try {
+                const res = await apiClient.post(Endpoints.cartAdd, payload);
+                console.log('[CartSync] POST /cart/items OK:', res);
+            } catch (e) {
+                console.error('[CartSync] POST /cart/items FAILED:', e);
+                throw e;
+            }
+        }
+
+        console.log('[CartSync] sync complete — all items added');
+    }, [items, cartHydrated]);
+
     return (
         <CartContext.Provider value={{
             items, cartCount, subtotal, promoDiscount,
@@ -214,7 +274,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             appliedPromo, promoError, promoLoading,
             applyPromoCode, removePromoCode,
             selectedShipping, setShipping, shippingOptions, shippingLoading,
-            addToCart, removeFromCart, updateQuantity, clearCart,
+            addToCart, removeFromCart, updateQuantity, clearCart, syncCartToBackend,
         }}>
             {children}
         </CartContext.Provider>

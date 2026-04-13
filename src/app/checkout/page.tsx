@@ -457,7 +457,7 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
     shippingMethodId: number;
     promoCode: string | null;
 }) {
-    const { total } = useCart();
+    const { total, syncCartToBackend } = useCart();
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [isProcessing, setIsProcessing] = useState(false);
@@ -521,13 +521,18 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
         setIsProcessing(true);
         setError(null);
         try {
+            console.log('[Checkout] handleContinueToStripe — calling syncCartToBackend');
+            await syncCartToBackend();
+            console.log('[Checkout] syncCartToBackend done — calling placeOrder');
             const res = await apiClient.post<{ order_id: number; grand_total: number; client_secret: string }>(
                 Endpoints.placeOrder,
                 buildPayload(),
             );
+            console.log('[Checkout] placeOrder OK:', res);
             setClientSecret(res.client_secret);
             setPendingOrderId(res.order_id);
         } catch (err) {
+            console.error('[Checkout] error:', err);
             setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
         } finally {
             setIsProcessing(false);
@@ -538,12 +543,17 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
         setIsProcessing(true);
         setError(null);
         try {
+            console.log('[Checkout] handleCOD — calling syncCartToBackend');
+            await syncCartToBackend();
+            console.log('[Checkout] syncCartToBackend done — calling placeOrder');
             const res = await apiClient.post<{ order_id: number; grand_total: number }>(
                 Endpoints.placeOrder,
                 buildPayload(),
             );
+            console.log('[Checkout] placeOrder OK:', res);
             onNext(res.order_id);
         } catch (err) {
+            console.error('[Checkout] error:', err);
             setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
         } finally {
             setIsProcessing(false);

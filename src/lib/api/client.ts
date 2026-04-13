@@ -80,7 +80,7 @@ async function apiFetch<T>(url: string, options: RequestOptions = {}): Promise<T
         ...(init.headers as Record<string, string>),
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (sessionId && !token) headers['X-Session-ID'] = sessionId;
+    if (sessionId) headers['X-Session-ID'] = sessionId;
 
     let lastError: ApiError = { message: 'Unknown error', status: 0 };
 
