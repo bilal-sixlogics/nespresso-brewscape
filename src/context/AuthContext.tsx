@@ -71,6 +71,8 @@ interface AuthContextType {
     isLoginModalOpen: boolean;
     openLoginModal: () => void;
     closeLoginModal: () => void;
+    // Profile management
+    updateUser: (patch: Partial<User>) => void;
     // Address management
     refreshAddresses: () => Promise<void>;
     defaultAddress: Address | null;
@@ -175,6 +177,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const defaultAddress = user?.addresses?.find(a => a.isDefault) ?? user?.addresses?.[0] ?? null;
 
+    const updateUser = useCallback((patch: Partial<User>) => {
+        setUser(prev => prev ? { ...prev, ...patch } : prev);
+    }, []);
+
     const openLoginModal = () => setIsLoginModalOpen(true);
     const closeLoginModal = () => setIsLoginModalOpen(false);
 
@@ -189,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isLoginModalOpen,
             openLoginModal,
             closeLoginModal,
+            updateUser,
             refreshAddresses,
             defaultAddress,
         }}>

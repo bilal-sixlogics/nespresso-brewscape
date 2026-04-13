@@ -6,10 +6,11 @@ import { ProtectedRoute } from '@/components/ui/ProtectedRoute';
 import { ReviewModal } from '@/components/ui/ReviewModal';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import Link from 'next/link';
 import {
     Package, Truck, CheckCircle2, Clock, LogOut, ChevronRight, ChevronLeft,
     MessageSquare, MapPin, User as UserIcon, Star, X, Plus, Edit2, Trash2,
-    AlertCircle, Shield, CreditCard, Home, Briefcase, ChevronDown, Camera, Save, Loader2, Search, Heart
+    AlertCircle, Shield, CreditCard, Home, Briefcase, ChevronDown, Camera, Save, Loader2, Search, Heart, ExternalLink
 } from 'lucide-react';
 import { Order, OrderStatus, OrderItem, Address, Product, getProductImage } from '@/types';
 import { apiClient } from '@/lib/api/client';
@@ -127,11 +128,12 @@ function StatusTimeline({ status }: { status: string }) {
 
 // ── Profile Tab ──────────────────────────────────────────────────────────────
 function ProfileTab({ orders }: { orders: Order[] }) {
-    const { user, refreshAddresses } = useAuth();
+    const { user, updateUser, refreshAddresses } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState(user?.name || '');
     const [editEmail, setEditEmail] = useState(user?.email || '');
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [showSaved, setShowSaved] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
@@ -140,6 +142,7 @@ function ProfileTab({ orders }: { orders: Order[] }) {
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setAvatarFile(file);
             const url = URL.createObjectURL(file);
             setAvatarPreview(url);
         }
@@ -150,7 +153,33 @@ function ProfileTab({ orders }: { orders: Order[] }) {
         setSaveError(null);
         setIsSaving(true);
         try {
-            await apiClient.put(Endpoints.profile, { name: editName, email: editEmail });
+            let updatedAvatar: string | undefined;
+            if (avatarFile) {
+                const formData = new FormData();
+                formData.append('name', editName);
+                formData.append('email', editEmail);
+                formData.append('avatar', avatarFile);
+                // Use fetch directly for multipart upload
+                const token = typeof window !== 'undefined' ? localStorage.getItem('cf_auth_token') : null;
+                const res = await fetch(Endpoints.profile, {
+                    method: 'PUT',
+                    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), Accept: 'application/json' },
+                    body: formData,
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error((err as { message?: string }).message ?? 'Upload failed');
+                }
+                const data = await res.json() as { avatar?: string; name?: string; email?: string };
+                updatedAvatar = data.avatar ?? undefined;
+            } else {
+                await apiClient.put(Endpoints.profile, { name: editName, email: editEmail });
+            }
+            updateUser({ name: editName, email: editEmail, ...(updatedAvatar ? { avatar: updatedAvatar } : {}) });
+            if (updatedAvatar) {
+                setAvatarPreview(updatedAvatar);
+            }
+            setAvatarFile(null);
             setIsEditing(false);
             setShowSaved(true);
             setTimeout(() => setShowSaved(false), 2500);
@@ -204,10 +233,10 @@ function ProfileTab({ orders }: { orders: Order[] }) {
 
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
                 {/* Avatar + Info Header */}
-                <div className="flex items-center gap-6 pb-8 mb-8 border-b border-gray-100">
+                <div className="flex items-start gap-6 pb-8 mb-8 border-b border-gray-100">
                     <div className="relative group">
-                        {avatarPreview ? (
-                            <img src={avatarPreview} alt="Avatar" className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white" />
+                        {(avatarPreview || user?.avatar) ? (
+                            <img src={avatarPreview ?? user!.avatar!} alt="Avatar" className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white" />
                         ) : (
                             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-sb-green to-[#2C6345] flex items-center justify-center text-white font-display text-4xl shadow-lg shadow-sb-green/20">
                                 {user?.name?.charAt(0) || 'U'}
@@ -497,13 +526,17 @@ export default function AccountPage() {
     const addresses = user?.addresses ?? [];
 
     const filteredOrders = orders.filter(o => {
-        const matchesSearch = o.id.toLowerCase().includes(searchQuery.toLowerCase());
-        if (!matchesSearch) return false;
-
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            const matchesId = o.id.toLowerCase().includes(q);
+            const matchesStatus = o.status.toLowerCase().includes(q);
+            const matchesProduct = o.items.some(i => i.product.name.toLowerCase().includes(q));
+            if (!matchesId && !matchesStatus && !matchesProduct) return false;
+        }
         if (filter === 'all') return true;
-        if (filter === 'active') return o.status === 'processing' || o.status === 'shipped';
+        if (filter === 'active') return ['processing', 'shipped', 'paid'].includes(o.status);
         if (filter === 'delivered') return o.status === 'delivered';
-        if (filter === 'cancelled') return o.status === 'cancelled';
+        if (filter === 'cancelled') return ['cancelled', 'refunded'].includes(o.status);
         return true;
     });
 
@@ -610,13 +643,18 @@ export default function AccountPage() {
                                                 </div>
 
                                                 <div className="flex gap-2 flex-wrap bg-white p-1 rounded-full shadow-sm w-max">
-                                                    {(['all', 'active', 'delivered', 'cancelled'] as Filter[]).map(f => (
+                                                    {([
+                                                        { id: 'all', label: 'All' },
+                                                        { id: 'active', label: 'Active' },
+                                                        { id: 'delivered', label: 'Delivered' },
+                                                        { id: 'cancelled', label: 'Cancelled' },
+                                                    ] as { id: Filter; label: string }[]).map(f => (
                                                         <button
-                                                            key={f}
-                                                            onClick={() => handleFilterChange(f)}
-                                                            className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-colors ${filter === f ? 'bg-sb-green text-white shadow-md' : 'bg-transparent text-gray-500 hover:text-sb-black'}`}
+                                                            key={f.id}
+                                                            onClick={() => handleFilterChange(f.id)}
+                                                            className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-colors ${filter === f.id ? 'bg-sb-green text-white shadow-md' : 'bg-transparent text-gray-500 hover:text-sb-black'}`}
                                                         >
-                                                            {f}
+                                                            {f.label}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -654,17 +692,27 @@ export default function AccountPage() {
                                                             className="flex flex-wrap items-center gap-4 px-6 py-5 cursor-pointer hover:bg-gray-50/50 transition-colors"
                                                         >
                                                             <div className="min-w-0 flex-1">
-                                                                <div className="flex items-center gap-3 mb-1">
-                                                                    <p className="font-black text-sb-black">{order.id}</p>
+                                                                <div className="flex items-center gap-3 mb-1 flex-wrap">
+                                                                    <p className="font-black text-sb-black">#{order.id}</p>
                                                                     <StatusBadge status={order.status} />
                                                                 </div>
-                                                                <p className="text-xs text-gray-400">{new Date(order.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} · {order.items.length} item(s)</p>
+                                                                <p className="text-xs text-gray-400">{new Date(order.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} · {order.items.length} item{order.items.length !== 1 ? 's' : ''}</p>
                                                             </div>
-                                                            <div className="text-right">
-                                                                <p className="font-display text-xl text-sb-green">€{order.total.toFixed(2)}</p>
-                                                                {order.paymentMethod && <p className="text-[10px] text-gray-400 uppercase tracking-wider">{PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}</p>}
+                                                            <div className="flex items-center gap-3 flex-shrink-0">
+                                                                <div className="text-right">
+                                                                    <p className="font-display text-xl text-sb-green">€{order.total.toFixed(2)}</p>
+                                                                    {order.paymentMethod && <p className="text-[10px] text-gray-400 uppercase tracking-wider">{PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}</p>}
+                                                                </div>
+                                                                {/* Track Order button */}
+                                                                <Link
+                                                                    href={`/orders/${order.id}`}
+                                                                    onClick={e => e.stopPropagation()}
+                                                                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sb-green/10 text-sb-green hover:bg-sb-green hover:text-white transition-all text-[10px] font-black uppercase tracking-wider flex-shrink-0"
+                                                                >
+                                                                    <ExternalLink size={11} /> Track
+                                                                </Link>
+                                                                <ChevronDown size={16} className={`text-gray-300 transition-transform flex-shrink-0 ${expandedOrder === order.id ? 'rotate-180' : ''}`} />
                                                             </div>
-                                                            <ChevronDown size={16} className={`text-gray-300 transition-transform flex-shrink-0 ${expandedOrder === order.id ? 'rotate-180' : ''}`} />
                                                         </div>
 
                                                         {/* Expandable Detail */}
@@ -676,8 +724,19 @@ export default function AccountPage() {
                                                                     exit={{ height: 0, opacity: 0 }}
                                                                     className="overflow-hidden border-t border-gray-100"
                                                                 >
+                                                                    {/* Delivered — review prompt banner */}
+                                                                    {order.status === 'delivered' && (
+                                                                        <div className="px-6 py-4 bg-emerald-50 border-b border-emerald-100 flex items-center gap-3">
+                                                                            <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                                                                            <div className="flex-1">
+                                                                                <p className="text-sm font-bold text-emerald-700">Order delivered!</p>
+                                                                                <p className="text-xs text-emerald-600/70">Click Review on any item below to share your experience.</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
                                                                     {/* Tracking Timeline */}
-                                                                    {(order.status === 'processing' || order.status === 'shipped') && (
+                                                                    {['processing', 'shipped', 'paid'].includes(order.status) && (
                                                                         <div className="px-6 py-6 bg-sb-green/5 border-b border-gray-100">
                                                                             <div className="flex justify-between items-center mb-4">
                                                                                 <div>
@@ -686,6 +745,13 @@ export default function AccountPage() {
                                                                                     </p>
                                                                                     {order.trackingNumber && <p className="text-xs text-gray-500 mt-1">Tracking: <span className="font-mono text-sb-black">{order.trackingNumber}</span></p>}
                                                                                 </div>
+                                                                                <Link
+                                                                                    href={`/orders/${order.id}`}
+                                                                                    onClick={e => e.stopPropagation()}
+                                                                                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sb-green text-white text-[10px] font-black uppercase tracking-wider hover:bg-[#2C6345] transition-colors flex-shrink-0"
+                                                                                >
+                                                                                    <Truck size={11} /> Track Shipment
+                                                                                </Link>
                                                                             </div>
                                                                             <StatusTimeline status={order.status} />
                                                                         </div>
@@ -706,8 +772,8 @@ export default function AccountPage() {
                                                                                     <p className="font-black text-sm text-sb-black">€{(item.unitPrice * item.quantity).toFixed(2)}</p>
                                                                                     {order.status === 'delivered' && (
                                                                                         <button
-                                                                                            onClick={() => setReviewingItem(item)}
-                                                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 text-gray-600 hover:bg-sb-green hover:text-white transition-colors text-[10px] font-bold uppercase tracking-wider flex-shrink-0"
+                                                                                            onClick={(e) => { e.stopPropagation(); setReviewingItem(item); }}
+                                                                                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all text-[10px] font-black uppercase tracking-wider flex-shrink-0"
                                                                                         >
                                                                                             <Star size={11} /> Review
                                                                                         </button>

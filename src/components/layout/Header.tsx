@@ -248,13 +248,15 @@ export function Header() {
     const bottomRow = BOTTOM_NAV;
 
     const navLinkClass = (href: string) =>
-        `flex-1 p-3 lg:p-4 flex items-center justify-center border-r border-white/20 hover:bg-white/10 transition-colors text-[10px] font-bold tracking-[0.15em] uppercase ${pathname === href ? 'bg-white/10 text-white' : 'text-white/80 hover:text-white'
+        `flex-1 p-3 lg:p-4 flex items-center justify-center border-r border-white/10 transition-all duration-300 text-[10px] font-medium tracking-[0.22em] uppercase relative group ${pathname === href
+            ? 'bg-white/12 text-white after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-5 after:h-[2px] after:bg-white after:rounded-full'
+            : 'text-white/60 hover:text-white hover:bg-white/8'
         }`;
 
     return (
         <>
             <header className="bg-sb-green text-white relative z-[9999] pb-[15px] -mb-[15px]">
-                <div className="max-w-[1600px] mx-auto w-full flex border-b border-white/20 relative z-[9999]">
+                <div className="max-w-[1600px] mx-auto w-full flex border-b border-white/10 relative z-[9999]">
 
                     {/* ── Mobile Menu Toggle ────────────────────────────── */}
                     <button
@@ -266,22 +268,19 @@ export function Header() {
                     </button>
 
                     {/* ── Logo ──────────────────────────────────────────── */}
-                    <div className="flex-1 xl:flex-none flex items-center justify-center xl:justify-start xl:w-[260px] p-4 lg:p-5 border-r border-white/20 hover:bg-white/5 transition-colors">
-                        <Link href="/" className="flex flex-col text-center xl:text-left">
-                            <h1 className="font-display text-xl lg:text-2xl tracking-tight uppercase leading-none">
-                                {AppConfig.brand.name}
-                                <br />
-                                <span className="text-[9px] lg:text-xs font-sans font-bold tracking-[0.2em] opacity-80 mt-1 block">
-                                    {t('brandTagline')}
-                                </span>
-                            </h1>
+                    <div className="flex-1 xl:flex-none flex items-center justify-center xl:justify-start xl:w-[260px] p-4 lg:p-5 border-r border-white/10 hover:bg-white/5 transition-colors">
+                        <Link href="/" className="flex flex-col items-center xl:items-start gap-1.5">
+                            <img src="/assets/logo.svg" alt={AppConfig.brand.name} className="h-6 lg:h-7 invert brightness-200" />
+                            <span className="text-[8px] lg:text-[9px] font-sans font-medium tracking-[0.25em] uppercase text-white/60">
+                                {t('brandTagline')}
+                            </span>
                         </Link>
                     </div>
 
                     {/* ── Desktop Navigation ────────────────────────────── */}
                     <div className="hidden xl:flex flex-1 flex-col min-w-0">
                         {/* Top row */}
-                        <div className="flex border-b border-white/20">
+                        <div className="flex border-b border-white/10">
                             {topRow.map(link => (
                                 <Link key={link.href} href={link.href} className={navLinkClass(link.href)}>
                                     {t(link.labelKey as Parameters<typeof t>[0])}
@@ -373,26 +372,26 @@ export function Header() {
                         </div>
 
                         <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-8">
-                            <div className="flex flex-col gap-4">
-                                <p className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Discover</p>
+                            <div className="flex flex-col gap-5">
+                                <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 font-medium">Discover</p>
                                 {topRow.map((link) => (
                                     <Link
                                         key={link.href}
                                         href={link.href}
-                                        className={`font-display text-3xl uppercase tracking-tight ${pathname === link.href ? 'text-white' : 'text-white/70 hover:text-white'}`}
+                                        className={`font-display text-3xl uppercase tracking-tight transition-colors duration-300 ${pathname === link.href ? 'text-white' : 'text-white/50 hover:text-white'}`}
                                     >
                                         {t(link.labelKey as Parameters<typeof t>[0])}
                                     </Link>
                                 ))}
                             </div>
 
-                            <div className="flex flex-col gap-4">
-                                <p className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Shop</p>
+                            <div className="flex flex-col gap-5">
+                                <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 font-medium">Shop</p>
                                 {bottomRow.map((link) => (
                                     <Link
                                         key={link.href}
                                         href={link.href}
-                                        className={`font-display text-3xl uppercase tracking-tight ${pathname === link.href ? 'text-white' : 'text-white/70 hover:text-white'}`}
+                                        className={`font-display text-3xl uppercase tracking-tight transition-colors duration-300 ${pathname === link.href ? 'text-white' : 'text-white/50 hover:text-white'}`}
                                     >
                                         {t(link.labelKey as Parameters<typeof t>[0])}
                                     </Link>
