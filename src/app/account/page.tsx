@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProtectedRoute } from '@/components/ui/ProtectedRoute';
 import { ReviewModal } from '@/components/ui/ReviewModal';
@@ -10,7 +10,7 @@ import Link from 'next/link';
 import {
     Package, Truck, CheckCircle2, Clock, LogOut, ChevronRight, ChevronLeft,
     MessageSquare, MapPin, User as UserIcon, Star, X, Plus, Edit2, Trash2,
-    AlertCircle, Shield, CreditCard, Home, Briefcase, ChevronDown, Camera, Save, Loader2, Search, Heart, ExternalLink
+    AlertCircle, Shield, CreditCard, Home, Briefcase, ChevronDown, Camera, Save, Loader2, Search, Heart, ExternalLink, SlidersHorizontal
 } from 'lucide-react';
 import { Order, OrderStatus, OrderItem, Address, Product, getProductImage } from '@/types';
 import { apiClient } from '@/lib/api/client';
@@ -74,11 +74,12 @@ function mapApiOrder(o: ApiOrder): Order {
 
 // ── Status helpers ─────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-    pending: { label: 'Order Placed', color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200' },
-    processing: { label: 'Confirmed', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
-    shipped: { label: 'Shipped', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' },
-    delivered: { label: 'Delivered', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
-    cancelled: { label: 'Cancelled', color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
+    pending:    { label: 'Order Placed', color: 'text-gray-600',    bg: 'bg-gray-50 border-gray-200' },
+    processing: { label: 'Confirmed',   color: 'text-amber-600',   bg: 'bg-amber-50 border-amber-200' },
+    shipped:    { label: 'Shipped',     color: 'text-blue-600',    bg: 'bg-blue-50 border-blue-200' },
+    delivered:  { label: 'Delivered',   color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
+    cancelled:  { label: 'Cancelled',   color: 'text-red-600',     bg: 'bg-red-50 border-red-200' },
+    paid:       { label: 'Paid',        color: 'text-violet-600',  bg: 'bg-violet-50 border-violet-200' },
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -93,21 +94,17 @@ function StatusBadge({ status }: { status: string }) {
 
 function StatusTimeline({ status }: { status: string }) {
     const steps = [
-        { id: 'pending', label: 'Order Placed', icon: Package },
-        { id: 'processing', label: 'Confirmed', icon: CheckCircle2 },
-        { id: 'shipped', label: 'Shipped', icon: Truck },
-        { id: 'delivered', label: 'Delivered', icon: CheckCircle2 },
+        { id: 'pending',    label: 'Order Placed', icon: Package },
+        { id: 'processing', label: 'Confirmed',    icon: CheckCircle2 },
+        { id: 'shipped',    label: 'Shipped',      icon: Truck },
+        { id: 'delivered',  label: 'Delivered',    icon: CheckCircle2 },
     ];
-    const ORDER = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
     const currentIndex = status === 'cancelled' ? -1 : steps.findIndex(s => s.id === status);
-    const progressPct = currentIndex <= 0 ? 0 : (currentIndex / (steps.length - 1)) * 100;
+    const progressPct  = currentIndex <= 0 ? 0 : (currentIndex / (steps.length - 1)) * 100;
     return (
         <div className="relative flex justify-between pt-4 pb-2">
             <div className="absolute top-8 left-6 right-6 h-0.5 bg-gray-100 -z-10" />
-            <div
-                className="absolute top-8 left-6 h-0.5 bg-sb-green -z-10 transition-all duration-1000"
-                style={{ width: `calc(${progressPct}% - 3rem)` }}
-            />
+            <div className="absolute top-8 left-6 h-0.5 bg-sb-green -z-10 transition-all duration-1000" style={{ width: `calc(${progressPct}% - 3rem)` }} />
             {steps.map((step, idx) => {
                 const isActive = currentIndex >= 0 && idx <= currentIndex;
                 const Icon = step.icon;
@@ -128,23 +125,22 @@ function StatusTimeline({ status }: { status: string }) {
 
 // ── Profile Tab ──────────────────────────────────────────────────────────────
 function ProfileTab({ orders }: { orders: Order[] }) {
-    const { user, updateUser, refreshAddresses } = useAuth();
-    const [isEditing, setIsEditing] = useState(false);
-    const [editName, setEditName] = useState(user?.name || '');
-    const [editEmail, setEditEmail] = useState(user?.email || '');
+    const { user, updateUser } = useAuth();
+    const [isEditing, setIsEditing]         = useState(false);
+    const [editName, setEditName]           = useState(user?.name || '');
+    const [editEmail, setEditEmail]         = useState(user?.email || '');
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-    const [avatarFile, setAvatarFile] = useState<File | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
-    const [showSaved, setShowSaved] = useState(false);
-    const [saveError, setSaveError] = useState<string | null>(null);
+    const [avatarFile, setAvatarFile]       = useState<File | null>(null);
+    const [isSaving, setIsSaving]           = useState(false);
+    const [showSaved, setShowSaved]         = useState(false);
+    const [saveError, setSaveError]         = useState<string | null>(null);
     const fileRef = React.useRef<HTMLInputElement>(null);
 
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             setAvatarFile(file);
-            const url = URL.createObjectURL(file);
-            setAvatarPreview(url);
+            setAvatarPreview(URL.createObjectURL(file));
         }
     };
 
@@ -159,7 +155,6 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                 formData.append('name', editName);
                 formData.append('email', editEmail);
                 formData.append('avatar', avatarFile);
-                // Use fetch directly for multipart upload
                 const token = typeof window !== 'undefined' ? localStorage.getItem('cf_auth_token') : null;
                 const res = await fetch(Endpoints.profile, {
                     method: 'PUT',
@@ -170,15 +165,13 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                     const err = await res.json().catch(() => ({}));
                     throw new Error((err as { message?: string }).message ?? 'Upload failed');
                 }
-                const data = await res.json() as { avatar?: string; name?: string; email?: string };
-                updatedAvatar = data.avatar ?? undefined;
+                const data = await res.json() as { avatar?: string };
+                updatedAvatar = data.avatar;
             } else {
                 await apiClient.put(Endpoints.profile, { name: editName, email: editEmail });
             }
             updateUser({ name: editName, email: editEmail, ...(updatedAvatar ? { avatar: updatedAvatar } : {}) });
-            if (updatedAvatar) {
-                setAvatarPreview(updatedAvatar);
-            }
+            if (updatedAvatar) setAvatarPreview(updatedAvatar);
             setAvatarFile(null);
             setIsEditing(false);
             setShowSaved(true);
@@ -190,6 +183,8 @@ function ProfileTab({ orders }: { orders: Order[] }) {
             setIsSaving(false);
         }
     };
+
+    const displayAvatar = avatarPreview ?? user?.avatar ?? null;
 
     return (
         <motion.div key="profile" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
@@ -208,23 +203,15 @@ function ProfileTab({ orders }: { orders: Order[] }) {
             {/* Saved Toast */}
             <AnimatePresence>
                 {showSaved && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="bg-sb-green/10 border border-sb-green/20 text-sb-green rounded-xl p-3 flex items-center gap-2 mb-4"
-                    >
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                        className="bg-sb-green/10 border border-sb-green/20 text-sb-green rounded-xl p-3 flex items-center gap-2 mb-4">
                         <CheckCircle2 size={14} />
                         <span className="text-sm font-bold">Profile updated successfully!</span>
                     </motion.div>
                 )}
                 {saveError && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 flex items-center gap-2 mb-4"
-                    >
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                        className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 flex items-center gap-2 mb-4">
                         <AlertCircle size={14} />
                         <span className="text-sm font-bold">{saveError}</span>
                     </motion.div>
@@ -235,18 +222,16 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                 {/* Avatar + Info Header */}
                 <div className="flex items-start gap-6 pb-8 mb-8 border-b border-gray-100">
                     <div className="relative group">
-                        {(avatarPreview || user?.avatar) ? (
-                            <img src={avatarPreview ?? user!.avatar!} alt="Avatar" className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white" />
+                        {displayAvatar ? (
+                            <img src={displayAvatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white" />
                         ) : (
                             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-sb-green to-[#2C6345] flex items-center justify-center text-white font-display text-4xl shadow-lg shadow-sb-green/20">
                                 {user?.name?.charAt(0) || 'U'}
                             </div>
                         )}
                         {isEditing && (
-                            <button
-                                onClick={() => fileRef.current?.click()}
-                                className="absolute inset-0 w-24 h-24 rounded-full bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                            >
+                            <button onClick={() => fileRef.current?.click()}
+                                className="absolute inset-0 w-24 h-24 rounded-full bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                                 <Camera size={20} />
                             </button>
                         )}
@@ -266,33 +251,21 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                     <div className="space-y-6">
                         <div>
                             <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Full Name</label>
-                            <input
-                                value={editName}
-                                onChange={e => setEditName(e.target.value)}
-                                className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-sb-green outline-none transition-colors"
-                            />
+                            <input value={editName} onChange={e => setEditName(e.target.value)}
+                                className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-sb-green outline-none transition-colors" />
                         </div>
                         <div>
                             <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Email Address</label>
-                            <input
-                                value={editEmail}
-                                onChange={e => setEditEmail(e.target.value)}
-                                type="email"
-                                className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-sb-green outline-none transition-colors"
-                            />
+                            <input value={editEmail} onChange={e => setEditEmail(e.target.value)} type="email"
+                                className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-sb-green outline-none transition-colors" />
                         </div>
                         <div className="flex gap-3 pt-4">
-                            <button
-                                onClick={() => setIsEditing(false)}
-                                className="px-6 py-3 rounded-full border-2 border-gray-100 text-sm font-black uppercase tracking-widest text-gray-400 hover:border-gray-200 transition-colors"
-                            >
+                            <button onClick={() => { setIsEditing(false); setSaveError(null); }}
+                                className="px-6 py-3 rounded-full border-2 border-gray-100 text-sm font-black uppercase tracking-widest text-gray-400 hover:border-gray-200 transition-colors">
                                 Cancel
                             </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={isSaving || !editName.trim()}
-                                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-sb-green text-white rounded-full text-sm font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-50 shadow-lg shadow-sb-green/20"
-                            >
+                            <button onClick={handleSave} disabled={isSaving || !editName.trim()}
+                                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-sb-green text-white rounded-full text-sm font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-50 shadow-lg shadow-sb-green/20">
                                 {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                                 {isSaving ? 'Saving...' : 'Save Changes'}
                             </button>
@@ -343,7 +316,6 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
     });
 
     const set = (key: keyof typeof form) => (value: any) => setForm(p => ({ ...p, [key]: value }));
-
     const isValid = form.firstName && form.lastName && form.address && form.city && form.postalCode && form.country;
 
     return (
@@ -363,16 +335,12 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                 </div>
 
                 <div className="space-y-4">
-                    {/* Label */}
                     <div>
                         <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Label</label>
                         <div className="flex gap-2">
                             {['Home', 'Office', 'Other'].map(l => (
-                                <button
-                                    key={l}
-                                    onClick={() => set('label')(l)}
-                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${form.label === l ? 'border-sb-green bg-sb-green/5 text-sb-green' : 'border-gray-100 text-gray-500'}`}
-                                >
+                                <button key={l} onClick={() => set('label')(l)}
+                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${form.label === l ? 'border-sb-green bg-sb-green/5 text-sb-green' : 'border-gray-100 text-gray-500'}`}>
                                     {l === 'Home' && <Home size={12} />}
                                     {l === 'Office' && <Briefcase size={12} />}
                                     {l}
@@ -383,14 +351,14 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
 
                     <div className="grid grid-cols-2 gap-4">
                         <Field label="First Name" value={form.firstName} onChange={set('firstName')} />
-                        <Field label="Last Name" value={form.lastName} onChange={set('lastName')} />
+                        <Field label="Last Name"  value={form.lastName}  onChange={set('lastName')} />
                     </div>
-                    <Field label="Street Address" value={form.address} onChange={set('address')} placeholder="12 Rue de la Paix" />
+                    <Field label="Street Address" value={form.address}    onChange={set('address')}    placeholder="12 Rue de la Paix" />
                     <div className="grid grid-cols-2 gap-4">
-                        <Field label="City" value={form.city} onChange={set('city')} />
+                        <Field label="City"        value={form.city}       onChange={set('city')} />
                         <Field label="Postal Code" value={form.postalCode} onChange={set('postalCode')} />
                     </div>
-                    <Field label="Country" value={form.country} onChange={set('country')} placeholder="France" />
+                    <Field label="Country"          value={form.country}   onChange={set('country')} placeholder="France" />
                     <Field label="Phone (optional)" value={form.phone || ''} onChange={set('phone')} type="tel" />
 
                     <label className="flex items-center gap-3 cursor-pointer">
@@ -399,11 +367,8 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                     </label>
                 </div>
 
-                <button
-                    onClick={() => { if (isValid && !isLoading) onSave(form); }}
-                    disabled={!isValid || isLoading}
-                    className="w-full mt-6 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
+                <button onClick={() => { if (isValid && !isLoading) onSave(form); }} disabled={!isValid || isLoading}
+                    className="w-full mt-6 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                     {isLoading ? <Loader2 size={16} className="animate-spin" /> : null}
                     {address ? 'Save Changes' : 'Add Address'}
                 </button>
@@ -418,40 +383,93 @@ function Field({ label, value, onChange, placeholder = '', type = 'text' }: {
     return (
         <div>
             <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{label}</label>
-            <input
-                type={type} value={value} placeholder={placeholder}
-                onChange={e => onChange(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium focus:border-sb-green focus:outline-none transition-colors"
-            />
+            <input type={type} value={value} placeholder={placeholder} onChange={e => onChange(e.target.value)}
+                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium focus:border-sb-green focus:outline-none transition-colors" />
+        </div>
+    );
+}
+
+// ── Filter Dropdown ────────────────────────────────────────────────────────
+type Filter = 'all' | 'active' | 'delivered' | 'cancelled';
+
+const FILTER_OPTIONS: { id: Filter; label: string; description: string }[] = [
+    { id: 'all',       label: 'All Orders',      description: 'Show every order' },
+    { id: 'active',    label: 'Active',          description: 'Processing & shipped' },
+    { id: 'delivered', label: 'Delivered',       description: 'Successfully delivered' },
+    { id: 'cancelled', label: 'Cancelled',       description: 'Cancelled or refunded' },
+];
+
+function FilterDropdown({ value, onChange }: { value: Filter; onChange: (f: Filter) => void }) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    const current = FILTER_OPTIONS.find(f => f.id === value)!;
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    return (
+        <div ref={ref} className="relative">
+            <button onClick={() => setOpen(o => !o)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${open ? 'border-sb-green bg-sb-green text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-sb-green hover:text-sb-green'}`}>
+                <SlidersHorizontal size={13} />
+                {current.label}
+                <ChevronDown size={12} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
+                    >
+                        <div className="px-3 py-2 border-b border-gray-50">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Filter by status</p>
+                        </div>
+                        {FILTER_OPTIONS.map(opt => (
+                            <button key={opt.id} onClick={() => { onChange(opt.id); setOpen(false); }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50 ${value === opt.id ? 'bg-sb-green/5' : ''}`}>
+                                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${value === opt.id ? 'bg-sb-green' : 'bg-gray-200'}`} />
+                                <div className="min-w-0">
+                                    <p className={`text-xs font-black uppercase tracking-wider ${value === opt.id ? 'text-sb-green' : 'text-gray-700'}`}>{opt.label}</p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">{opt.description}</p>
+                                </div>
+                                {value === opt.id && <CheckCircle2 size={14} className="text-sb-green ml-auto flex-shrink-0" />}
+                            </button>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
 
 // ── Main Account Page ───────────────────────────────────────────────────────
 const ORDERS_PER_PAGE = 4;
-
-
 type Tab = 'orders' | 'addresses' | 'profile' | 'wishlist';
-type Filter = 'all' | 'active' | 'delivered' | 'cancelled';
 
 export default function AccountPage() {
     const { user, logout, refreshAddresses } = useAuth();
     const { t } = useLanguage();
-    const [activeTab, setActiveTab] = useState<Tab>('orders');
-    const [reviewingItem, setReviewingItem] = useState<OrderItem | null>(null);
-    const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
-    const [filter, setFilter] = useState<Filter>('all');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [page, setPage] = useState(1);
+    const [activeTab, setActiveTab]           = useState<Tab>('orders');
+    const [reviewingItem, setReviewingItem]   = useState<OrderItem | null>(null);
+    const [expandedOrder, setExpandedOrder]   = useState<string | null>(null);
+    const [filter, setFilter]                 = useState<Filter>('all');
+    const [searchQuery, setSearchQuery]       = useState('');
+    const [page, setPage]                     = useState(1);
     const [showAddressModal, setShowAddressModal] = useState(false);
-    const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-    const [addressError, setAddressError] = useState<string | null>(null);
-    const [addressLoading, setAddressLoading] = useState(false);
+    const [editingAddress, setEditingAddress]     = useState<Address | null>(null);
+    const [addressError, setAddressError]         = useState<string | null>(null);
+    const [addressLoading, setAddressLoading]     = useState(false);
 
-    // ── Real orders from backend ──────────────────────────────────────────
-    const [orders, setOrders] = useState<Order[]>([]);
+    const [orders, setOrders]               = useState<Order[]>([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
-    const [ordersError, setOrdersError] = useState<string | null>(null);
+    const [ordersError, setOrdersError]     = useState<string | null>(null);
 
     const fetchOrders = useCallback(async () => {
         setOrdersLoading(true);
@@ -467,30 +485,19 @@ export default function AccountPage() {
         }
     }, []);
 
-    useEffect(() => {
-        if (user) fetchOrders();
-    }, [user, fetchOrders]);
+    useEffect(() => { if (user) fetchOrders(); }, [user, fetchOrders]);
 
     const handleSaveAddress = async (data: Omit<Address, 'id'>) => {
         setAddressError(null);
         setAddressLoading(true);
         try {
             const payload = {
-                label: data.label,
-                first_name: data.firstName,
-                last_name: data.lastName,
-                address_1: data.address,
-                city: data.city,
-                postcode: data.postalCode,
-                country: data.country,
-                phone: data.phone || null,
-                is_default: data.isDefault ?? false,
+                label: data.label, first_name: data.firstName, last_name: data.lastName,
+                address_1: data.address, city: data.city, postcode: data.postalCode,
+                country: data.country, phone: data.phone || null, is_default: data.isDefault ?? false,
             };
-            if (editingAddress) {
-                await apiClient.put(Endpoints.address(editingAddress.id), payload);
-            } else {
-                await apiClient.post(Endpoints.addresses, payload);
-            }
+            if (editingAddress) await apiClient.put(Endpoints.address(editingAddress.id), payload);
+            else await apiClient.post(Endpoints.addresses, payload);
             await refreshAddresses();
             setShowAddressModal(false);
             setEditingAddress(null);
@@ -504,52 +511,42 @@ export default function AccountPage() {
 
     const handleDeleteAddress = async (id: string) => {
         setAddressError(null);
-        try {
-            await apiClient.delete(Endpoints.address(id));
-            await refreshAddresses();
-        } catch (err) {
-            const apiErr = err as ApiError;
-            setAddressError(apiErr.message ?? 'Failed to delete address.');
-        }
+        try { await apiClient.delete(Endpoints.address(id)); await refreshAddresses(); }
+        catch (err) { setAddressError((err as ApiError).message ?? 'Failed to delete address.'); }
     };
 
     const handleSetDefault = async (id: string) => {
         setAddressError(null);
-        try {
-            await apiClient.patch(Endpoints.addressDefault(id));
-            await refreshAddresses();
-        } catch (err) {
-            const apiErr = err as ApiError;
-            setAddressError(apiErr.message ?? 'Failed to update default address.');
-        }
+        try { await apiClient.patch(Endpoints.addressDefault(id)); await refreshAddresses(); }
+        catch (err) { setAddressError((err as ApiError).message ?? 'Failed to update default address.'); }
     };
+
     const addresses = user?.addresses ?? [];
 
     const filteredOrders = orders.filter(o => {
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
-            const matchesId = o.id.toLowerCase().includes(q);
-            const matchesStatus = o.status.toLowerCase().includes(q);
+            const matchesId      = o.id.toLowerCase().includes(q);
+            const matchesStatus  = o.status.toLowerCase().includes(q);
             const matchesProduct = o.items.some(i => i.product.name.toLowerCase().includes(q));
             if (!matchesId && !matchesStatus && !matchesProduct) return false;
         }
-        if (filter === 'all') return true;
-        if (filter === 'active') return ['processing', 'shipped', 'paid'].includes(o.status);
+        if (filter === 'all')       return true;
+        if (filter === 'active')    return ['processing', 'shipped', 'paid'].includes(o.status);
         if (filter === 'delivered') return o.status === 'delivered';
         if (filter === 'cancelled') return ['cancelled', 'refunded'].includes(o.status);
         return true;
     });
 
-    const totalPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
+    const totalPages      = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
     const paginatedOrders = filteredOrders.slice((page - 1) * ORDERS_PER_PAGE, page * ORDERS_PER_PAGE);
-
     const handleFilterChange = (f: Filter) => { setFilter(f); setPage(1); };
 
     const TABS = [
-        { id: 'orders' as Tab, label: 'My Orders', icon: Package },
-        { id: 'wishlist' as Tab, label: 'Saved Items', icon: Heart },
-        { id: 'addresses' as Tab, label: 'Addresses', icon: MapPin },
-        { id: 'profile' as Tab, label: 'Profile', icon: UserIcon },
+        { id: 'orders'    as Tab, label: 'My Orders',   icon: Package },
+        { id: 'wishlist'  as Tab, label: 'Saved Items', icon: Heart },
+        { id: 'addresses' as Tab, label: 'Addresses',   icon: MapPin },
+        { id: 'profile'   as Tab, label: 'Profile',     icon: UserIcon },
     ];
 
     const PAYMENT_LABELS: Record<string, string> = {
@@ -570,10 +567,8 @@ export default function AccountPage() {
                             </h1>
                             <p className="text-gray-400 text-sm mt-1">{user?.email}</p>
                         </div>
-                        <button
-                            onClick={() => logout()}
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all text-xs font-bold uppercase tracking-wider w-max"
-                        >
+                        <button onClick={() => logout()}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all text-xs font-bold uppercase tracking-wider w-max">
                             <LogOut size={14} /> Sign Out
                         </button>
                     </div>
@@ -587,11 +582,8 @@ export default function AccountPage() {
                                     const Icon = tab.icon;
                                     const isActive = activeTab === tab.id;
                                     return (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setActiveTab(tab.id)}
-                                            className={`flex items-center gap-3 px-5 py-4 rounded-2xl transition-all whitespace-nowrap ${isActive ? 'bg-white shadow-md text-sb-green border-2 border-sb-green/30' : 'bg-transparent text-gray-500 hover:bg-white hover:shadow-sm border-2 border-transparent'}`}
-                                        >
+                                        <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                                            className={`flex items-center gap-3 px-5 py-4 rounded-2xl transition-all whitespace-nowrap ${isActive ? 'bg-white shadow-md text-sb-green border-2 border-sb-green/30' : 'bg-transparent text-gray-500 hover:bg-white hover:shadow-sm border-2 border-transparent'}`}>
                                             <Icon size={18} />
                                             <span className="text-[10px] font-black uppercase tracking-widest">{tab.label}</span>
                                         </button>
@@ -626,47 +618,53 @@ export default function AccountPage() {
                                 {/* ══ ORDERS TAB ══ */}
                                 {activeTab === 'orders' && (
                                     <motion.div key="orders" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                                        {/* Header + Filters */}
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+
+                                        {/* ── Premium search + filter bar ── */}
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                                             <h2 className="font-display text-2xl uppercase">Order History</h2>
-
-                                            <div className="flex flex-col sm:flex-row gap-4 flex-1 justify-end">
-                                                <div className="relative w-full sm:max-w-xs">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Search Order Number..."
+                                            <div className="flex items-center gap-2">
+                                                {/* Search */}
+                                                <div className="relative flex-1 sm:flex-none sm:w-64">
+                                                    <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                                    <input type="text" placeholder="Search orders, products…"
                                                         value={searchQuery}
-                                                        onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                                                        className="w-full pl-10 pr-4 py-2 bg-white rounded-full text-xs border-2 border-transparent focus:border-sb-green focus:outline-none shadow-sm transition-all"
-                                                    />
-                                                    <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                                                </div>
-
-                                                <div className="flex gap-2 flex-wrap bg-white p-1 rounded-full shadow-sm w-max">
-                                                    {([
-                                                        { id: 'all', label: 'All' },
-                                                        { id: 'active', label: 'Active' },
-                                                        { id: 'delivered', label: 'Delivered' },
-                                                        { id: 'cancelled', label: 'Cancelled' },
-                                                    ] as { id: Filter; label: string }[]).map(f => (
-                                                        <button
-                                                            key={f.id}
-                                                            onClick={() => handleFilterChange(f.id)}
-                                                            className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-colors ${filter === f.id ? 'bg-sb-green text-white shadow-md' : 'bg-transparent text-gray-500 hover:text-sb-black'}`}
-                                                        >
-                                                            {f.label}
+                                                        onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
+                                                        className="w-full pl-9 pr-4 py-2 bg-white rounded-full text-xs border-2 border-gray-100 focus:border-sb-green focus:outline-none shadow-sm transition-all placeholder-gray-400" />
+                                                    {searchQuery && (
+                                                        <button onClick={() => { setSearchQuery(''); setPage(1); }}
+                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors">
+                                                            <X size={13} />
                                                         </button>
-                                                    ))}
+                                                    )}
                                                 </div>
+                                                {/* Filter dropdown */}
+                                                <FilterDropdown value={filter} onChange={handleFilterChange} />
                                             </div>
                                         </div>
 
-                                        {/* Loading / Error states */}
+                                        {/* Active filter chip */}
+                                        {(filter !== 'all' || searchQuery) && (
+                                            <div className="flex items-center gap-2 mb-4 flex-wrap">
+                                                {filter !== 'all' && (
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-sb-green/10 text-sb-green border border-sb-green/20 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                                        {FILTER_OPTIONS.find(f => f.id === filter)?.label}
+                                                        <button onClick={() => handleFilterChange('all')} className="hover:text-sb-green/60 transition-colors"><X size={11} /></button>
+                                                    </span>
+                                                )}
+                                                {searchQuery && (
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] font-bold">
+                                                        "{searchQuery}"
+                                                        <button onClick={() => { setSearchQuery(''); setPage(1); }} className="hover:text-gray-400 transition-colors"><X size={11} /></button>
+                                                    </span>
+                                                )}
+                                                <span className="text-[10px] text-gray-400">{filteredOrders.length} result{filteredOrders.length !== 1 ? 's' : ''}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Loading / Error / Empty states */}
                                         {ordersLoading ? (
                                             <div className="space-y-4">
-                                                {[1, 2, 3].map(i => (
-                                                    <div key={i} className="bg-white rounded-3xl border border-gray-100 h-24 animate-pulse" />
-                                                ))}
+                                                {[1, 2, 3].map(i => <div key={i} className="bg-white rounded-3xl border border-gray-100 h-24 animate-pulse" />)}
                                             </div>
                                         ) : ordersError ? (
                                             <div className="bg-white rounded-3xl p-8 border border-red-100 flex items-center gap-3">
@@ -681,34 +679,34 @@ export default function AccountPage() {
                                             <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
                                                 <Package size={40} className="text-gray-200 mx-auto mb-4" />
                                                 <p className="font-bold text-gray-400">No orders found</p>
+                                                {(filter !== 'all' || searchQuery) && (
+                                                    <button onClick={() => { setFilter('all'); setSearchQuery(''); }} className="mt-3 text-xs font-bold text-sb-green hover:underline">Clear filters</button>
+                                                )}
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
                                                 {paginatedOrders.map((order: Order) => (
                                                     <div key={order.id} className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all">
                                                         {/* Order Header Row */}
-                                                        <div
-                                                            onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                                                            className="flex flex-wrap items-center gap-4 px-6 py-5 cursor-pointer hover:bg-gray-50/50 transition-colors"
-                                                        >
+                                                        <div onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                                                            className="flex flex-wrap items-center gap-4 px-6 py-5 cursor-pointer hover:bg-gray-50/50 transition-colors">
                                                             <div className="min-w-0 flex-1">
                                                                 <div className="flex items-center gap-3 mb-1 flex-wrap">
                                                                     <p className="font-black text-sb-black">#{order.id}</p>
                                                                     <StatusBadge status={order.status} />
                                                                 </div>
-                                                                <p className="text-xs text-gray-400">{new Date(order.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} · {order.items.length} item{order.items.length !== 1 ? 's' : ''}</p>
+                                                                <p className="text-xs text-gray-400">
+                                                                    {new Date(order.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                    {' · '}{order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                                                                </p>
                                                             </div>
                                                             <div className="flex items-center gap-3 flex-shrink-0">
                                                                 <div className="text-right">
                                                                     <p className="font-display text-xl text-sb-green">€{order.total.toFixed(2)}</p>
                                                                     {order.paymentMethod && <p className="text-[10px] text-gray-400 uppercase tracking-wider">{PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}</p>}
                                                                 </div>
-                                                                {/* Track Order button */}
-                                                                <Link
-                                                                    href={`/orders/${order.id}`}
-                                                                    onClick={e => e.stopPropagation()}
-                                                                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sb-green/10 text-sb-green hover:bg-sb-green hover:text-white transition-all text-[10px] font-black uppercase tracking-wider flex-shrink-0"
-                                                                >
+                                                                <Link href={`/orders/${order.id}`} onClick={e => e.stopPropagation()}
+                                                                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sb-green/10 text-sb-green hover:bg-sb-green hover:text-white transition-all text-[10px] font-black uppercase tracking-wider flex-shrink-0">
                                                                     <ExternalLink size={11} /> Track
                                                                 </Link>
                                                                 <ChevronDown size={16} className={`text-gray-300 transition-transform flex-shrink-0 ${expandedOrder === order.id ? 'rotate-180' : ''}`} />
@@ -718,13 +716,10 @@ export default function AccountPage() {
                                                         {/* Expandable Detail */}
                                                         <AnimatePresence>
                                                             {expandedOrder === order.id && (
-                                                                <motion.div
-                                                                    initial={{ height: 0, opacity: 0 }}
-                                                                    animate={{ height: 'auto', opacity: 1 }}
-                                                                    exit={{ height: 0, opacity: 0 }}
-                                                                    className="overflow-hidden border-t border-gray-100"
-                                                                >
-                                                                    {/* Delivered — review prompt banner */}
+                                                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                                                                    className="overflow-hidden border-t border-gray-100">
+
+                                                                    {/* Delivered banner */}
                                                                     {order.status === 'delivered' && (
                                                                         <div className="px-6 py-4 bg-emerald-50 border-b border-emerald-100 flex items-center gap-3">
                                                                             <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
@@ -735,7 +730,7 @@ export default function AccountPage() {
                                                                         </div>
                                                                     )}
 
-                                                                    {/* Tracking Timeline */}
+                                                                    {/* Tracking timeline */}
                                                                     {['processing', 'shipped', 'paid'].includes(order.status) && (
                                                                         <div className="px-6 py-6 bg-sb-green/5 border-b border-gray-100">
                                                                             <div className="flex justify-between items-center mb-4">
@@ -745,11 +740,8 @@ export default function AccountPage() {
                                                                                     </p>
                                                                                     {order.trackingNumber && <p className="text-xs text-gray-500 mt-1">Tracking: <span className="font-mono text-sb-black">{order.trackingNumber}</span></p>}
                                                                                 </div>
-                                                                                <Link
-                                                                                    href={`/orders/${order.id}`}
-                                                                                    onClick={e => e.stopPropagation()}
-                                                                                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sb-green text-white text-[10px] font-black uppercase tracking-wider hover:bg-[#2C6345] transition-colors flex-shrink-0"
-                                                                                >
+                                                                                <Link href={`/orders/${order.id}`} onClick={e => e.stopPropagation()}
+                                                                                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sb-green text-white text-[10px] font-black uppercase tracking-wider hover:bg-[#2C6345] transition-colors flex-shrink-0">
                                                                                     <Truck size={11} /> Track Shipment
                                                                                 </Link>
                                                                             </div>
@@ -771,10 +763,8 @@ export default function AccountPage() {
                                                                                 <div className="text-right flex items-center gap-3">
                                                                                     <p className="font-black text-sm text-sb-black">€{(item.unitPrice * item.quantity).toFixed(2)}</p>
                                                                                     {order.status === 'delivered' && (
-                                                                                        <button
-                                                                                            onClick={(e) => { e.stopPropagation(); setReviewingItem(item); }}
-                                                                                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all text-[10px] font-black uppercase tracking-wider flex-shrink-0"
-                                                                                        >
+                                                                                        <button onClick={e => { e.stopPropagation(); setReviewingItem(item); }}
+                                                                                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all text-[10px] font-black uppercase tracking-wider flex-shrink-0">
                                                                                             <Star size={11} /> Review
                                                                                         </button>
                                                                                     )}
@@ -801,27 +791,18 @@ export default function AccountPage() {
                                         {/* Pagination */}
                                         {totalPages > 1 && (
                                             <div className="flex items-center justify-center gap-2 mt-8">
-                                                <button
-                                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                                    disabled={page === 1}
-                                                    className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-sb-green disabled:opacity-30 transition-colors"
-                                                >
+                                                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                                                    className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-sb-green disabled:opacity-30 transition-colors">
                                                     <ChevronLeft size={16} />
                                                 </button>
                                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                                                    <button
-                                                        key={p}
-                                                        onClick={() => setPage(p)}
-                                                        className={`w-10 h-10 rounded-full text-sm font-black transition-colors ${page === p ? 'bg-sb-green text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-sb-green'}`}
-                                                    >
+                                                    <button key={p} onClick={() => setPage(p)}
+                                                        className={`w-10 h-10 rounded-full text-sm font-black transition-colors ${page === p ? 'bg-sb-green text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-sb-green'}`}>
                                                         {p}
                                                     </button>
                                                 ))}
-                                                <button
-                                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                                    disabled={page === totalPages}
-                                                    className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-sb-green disabled:opacity-30 transition-colors"
-                                                >
+                                                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                                                    className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-sb-green disabled:opacity-30 transition-colors">
                                                     <ChevronRight size={16} />
                                                 </button>
                                             </div>
@@ -834,10 +815,8 @@ export default function AccountPage() {
                                     <motion.div key="addresses" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                                         <div className="flex items-center justify-between mb-6">
                                             <h2 className="font-display text-2xl uppercase">Saved Addresses</h2>
-                                            <button
-                                                onClick={() => { setEditingAddress(null); setAddressError(null); setShowAddressModal(true); }}
-                                                className="flex items-center gap-2 px-5 py-3 bg-sb-green text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors"
-                                            >
+                                            <button onClick={() => { setEditingAddress(null); setAddressError(null); setShowAddressModal(true); }}
+                                                className="flex items-center gap-2 px-5 py-3 bg-sb-green text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors">
                                                 <Plus size={14} /> Add Address
                                             </button>
                                         </div>
@@ -871,12 +850,8 @@ export default function AccountPage() {
                                                     <p className="text-sm text-gray-500 mt-1">{addr.address}</p>
                                                     <p className="text-sm text-gray-500">{addr.postalCode} {addr.city}, {addr.country}</p>
                                                     {addr.phone && <p className="text-sm text-gray-400 mt-1">{addr.phone}</p>}
-
                                                     {!addr.isDefault && (
-                                                        <button
-                                                            onClick={() => handleSetDefault(addr.id)}
-                                                            className="mt-4 text-[10px] font-bold uppercase tracking-widest text-sb-green hover:underline"
-                                                        >
+                                                        <button onClick={() => handleSetDefault(addr.id)} className="mt-4 text-[10px] font-bold uppercase tracking-widest text-sb-green hover:underline">
                                                             Set as Default
                                                         </button>
                                                     )}
@@ -896,7 +871,7 @@ export default function AccountPage() {
 
                                         <div className="mt-6 p-5 bg-sb-green/5 border border-sb-green/20 rounded-2xl flex items-start gap-3">
                                             <Shield size={16} className="text-sb-green flex-shrink-0 mt-0.5" />
-                                            <p className="text-xs text-gray-600">Your addresses are saved locally for convenience. No payment card details are ever stored on our servers.</p>
+                                            <p className="text-xs text-gray-600">Your addresses are saved securely. No payment card details are ever stored on our servers.</p>
                                         </div>
                                     </motion.div>
                                 )}
@@ -918,16 +893,14 @@ export default function AccountPage() {
                                 )}
 
                                 {/* ══ PROFILE TAB ══ */}
-                                {activeTab === 'profile' && (
-                                    <ProfileTab orders={orders} />
-                                )}
+                                {activeTab === 'profile' && <ProfileTab orders={orders} />}
+
                             </AnimatePresence>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* ── Address Form Modal ────────────────────────── */}
             <AnimatePresence>
                 {showAddressModal && (
                     <AddressFormModal
