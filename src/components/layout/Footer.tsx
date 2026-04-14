@@ -81,9 +81,11 @@ export function Footer() {
                     <div>
                         <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-white">{t('support')}</h4>
                         <ul className="space-y-4">
-                            {AppConfig.supportLinks.map((link) => (
-                                <li key={link.label}><Link href={link.url} className="text-gray-400 hover:text-sb-green transition-colors text-sm">{link.label}</Link></li>
-                            ))}
+                            <li><Link href="/contact" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerContact')}</Link></li>
+                            <li><Link href="/faq" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerFaq')}</Link></li>
+                            <li><Link href="/shipping" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerShipping')}</Link></li>
+                            <li><Link href="/privacy" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerPrivacy')}</Link></li>
+                            <li><Link href="/terms" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerTerms')}</Link></li>
                         </ul>
                     </div>
 
@@ -94,7 +96,7 @@ export function Footer() {
                         {nlState === 'success' ? (
                             <div className="flex items-center gap-3 bg-sb-green/20 border border-sb-green/30 rounded-full px-5 py-3">
                                 <CheckCircle2 size={16} className="text-white" />
-                                <span className="text-sm font-bold text-white">Subscribed! Welcome aboard ☕</span>
+                                <span className="text-sm font-bold text-white">{t('footerSubscribed')}</span>
                             </div>
                         ) : (
                             <>

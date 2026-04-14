@@ -6,6 +6,7 @@ import { ArrowLeft, Check, ChevronDown, ArrowRight, Star, Loader2 } from 'lucide
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 import {
     Product, SaleUnit,
     getProductImage, getProductImages, getDefaultUnit, getDisplayPrice,
@@ -99,6 +100,7 @@ interface ProductDetailPanelProps {
 export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps) {
     const { addToCart } = useCart();
     const { t } = useLanguage();
+    const formatPrice = useFormatPrice();
     const router = useRouter();
     const [quantity, setQuantity] = useState(1);
     const [isAdded, setIsAdded] = useState(false);
@@ -219,7 +221,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                         </h2>
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-display text-3xl sm:text-4xl text-sb-green leading-none">€{unitPrice.toFixed(2)}</div>
+                                        <div className="font-display text-3xl sm:text-4xl text-sb-green leading-none">{formatPrice(unitPrice)}</div>
                                     </div>
                                 </div>
 
@@ -244,7 +246,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                                             }`}
                                                     >
                                                         <span className="text-[9px] font-bold uppercase">{unit.name}</span>
-                                                        <span className="text-[10px] font-black opacity-80">€{Number(unit.selling_price).toFixed(2)}</span>
+                                                        <span className="text-[10px] font-black opacity-80">{formatPrice(Number(unit.selling_price))}</span>
                                                     </button>
                                                 );
                                             })}
@@ -372,7 +374,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                             transition={{ duration: 0.2 }}
                                             className="font-display text-2xl leading-none"
                                         >
-                                            {!inStock ? '✕' : isAdded ? '✓' : `€${(unitPrice * quantity).toFixed(2)}`}
+                                            {!inStock ? '✕' : isAdded ? '✓' : formatPrice(unitPrice * quantity)}
                                         </motion.span>
                                     </AnimatePresence>
                                 </div>

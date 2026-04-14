@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/components/ui/ProtectedRoute';
 import { ReviewModal } from '@/components/ui/ReviewModal';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 import Link from 'next/link';
 import {
     Package, Truck, Check, CheckCircle2, Clock, LogOut, ChevronRight, ChevronLeft,
@@ -77,17 +78,21 @@ function mapApiOrder(o: ApiOrder): Order {
 }
 
 // ── Status helpers ─────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-    pending:    { label: 'Order Placed', color: 'text-gray-600',    bg: 'bg-gray-50 border-gray-200' },
-    processing: { label: 'Confirmed',   color: 'text-amber-600',   bg: 'bg-amber-50 border-amber-200' },
-    shipped:    { label: 'Shipped',     color: 'text-blue-600',    bg: 'bg-blue-50 border-blue-200' },
-    delivered:  { label: 'Delivered',   color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
-    cancelled:  { label: 'Cancelled',   color: 'text-red-600',     bg: 'bg-red-50 border-red-200' },
-    paid:       { label: 'Paid',        color: 'text-violet-600',  bg: 'bg-violet-50 border-violet-200' },
-};
+function useStatusConfig() {
+    const { t } = useLanguage();
+    return {
+        pending:    { label: t('accountStatusOrderPlaced'), color: 'text-gray-600',    bg: 'bg-gray-50 border-gray-200' },
+        processing: { label: t('accountStatusConfirmed'),   color: 'text-amber-600',   bg: 'bg-amber-50 border-amber-200' },
+        shipped:    { label: t('accountStatusShipped'),     color: 'text-blue-600',    bg: 'bg-blue-50 border-blue-200' },
+        delivered:  { label: t('accountStatusDelivered'),   color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
+        cancelled:  { label: t('accountStatusCancelled'),   color: 'text-red-600',     bg: 'bg-red-50 border-red-200' },
+        paid:       { label: t('accountStatusPaid'),        color: 'text-violet-600',  bg: 'bg-violet-50 border-violet-200' },
+    } as Record<string, { label: string; color: string; bg: string }>;
+}
 
 function StatusBadge({ status }: { status: string }) {
-    const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG['processing'];
+    const config = useStatusConfig();
+    const cfg = config[status] ?? config['processing'];
     return (
         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${cfg.bg} ${cfg.color}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current" />
@@ -97,11 +102,12 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function StatusTimeline({ status }: { status: string }) {
+    const { t } = useLanguage();
     const steps = [
-        { id: 'pending',    label: 'Order Placed', icon: Package },
-        { id: 'processing', label: 'Confirmed',    icon: CheckCircle2 },
-        { id: 'shipped',    label: 'Shipped',      icon: Truck },
-        { id: 'delivered',  label: 'Delivered',    icon: CheckCircle2 },
+        { id: 'pending',    label: t('accountStatusOrderPlaced'), icon: Package },
+        { id: 'processing', label: t('accountStatusConfirmed'),   icon: CheckCircle2 },
+        { id: 'shipped',    label: t('accountStatusShipped'),     icon: Truck },
+        { id: 'delivered',  label: t('accountStatusDelivered'),   icon: CheckCircle2 },
     ];
     const currentIndex = status === 'cancelled' ? -1 : steps.findIndex(s => s.id === status);
     const progressPct  = currentIndex <= 0 ? 0 : (currentIndex / (steps.length - 1)) * 100;
@@ -130,6 +136,7 @@ function StatusTimeline({ status }: { status: string }) {
 // ── Profile Tab ──────────────────────────────────────────────────────────────
 function ProfileTab({ orders }: { orders: Order[] }) {
     const { user, updateUser } = useAuth();
+    const { t } = useLanguage();
     const [isEditing, setIsEditing]         = useState(false);
     const [editName, setEditName]           = useState(user?.name || '');
     const [editEmail, setEditEmail]         = useState(user?.email || '');
@@ -193,13 +200,13 @@ function ProfileTab({ orders }: { orders: Order[] }) {
     return (
         <motion.div key="profile" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
             <div className="flex items-center justify-between mb-6">
-                <h2 className="font-display text-2xl uppercase">Profile Settings</h2>
+                <h2 className="font-display text-2xl uppercase">{t('accountProfileSettings')}</h2>
                 {!isEditing && (
                     <button
                         onClick={() => { setIsEditing(true); setEditName(user?.name || ''); setEditEmail(user?.email || ''); }}
                         className="flex items-center gap-2 px-4 py-2 rounded-full bg-sb-green text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors shadow-sm"
                     >
-                        <Edit2 size={12} /> Edit Profile
+                        <Edit2 size={12} /> {t('accountEditProfile')}
                     </button>
                 )}
             </div>
@@ -210,7 +217,7 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                         className="bg-sb-green/10 border border-sb-green/20 text-sb-green rounded-xl p-3 flex items-center gap-2 mb-4">
                         <CheckCircle2 size={14} />
-                        <span className="text-sm font-bold">Profile updated successfully!</span>
+                        <span className="text-sm font-bold">{t('accountProfileUpdated')}</span>
                     </motion.div>
                 )}
                 {saveError && (
@@ -246,7 +253,7 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                         <p className="text-gray-500 text-sm">{user?.email}</p>
                         <div className="flex items-center gap-1.5 mt-1">
                             <CheckCircle2 size={12} className="text-sb-green" />
-                            <span className="text-[10px] text-sb-green font-bold uppercase tracking-wider">Verified Member</span>
+                            <span className="text-[10px] text-sb-green font-bold uppercase tracking-wider">{t('accountVerifiedMember')}</span>
                         </div>
                     </div>
                 </div>
@@ -254,43 +261,43 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                 {isEditing ? (
                     <div className="space-y-6">
                         <div>
-                            <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Full Name</label>
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">{t('accountFullName')}</label>
                             <input value={editName} onChange={e => setEditName(e.target.value)}
                                 className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-sb-green outline-none transition-colors" />
                         </div>
                         <div>
-                            <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Email Address</label>
+                            <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">{t('emailAddress')}</label>
                             <input value={editEmail} onChange={e => setEditEmail(e.target.value)} type="email"
                                 className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-sb-green outline-none transition-colors" />
                         </div>
                         <div className="flex gap-3 pt-4">
                             <button onClick={() => { setIsEditing(false); setSaveError(null); }}
                                 className="px-6 py-3 rounded-full border-2 border-gray-100 text-sm font-black uppercase tracking-widest text-gray-400 hover:border-gray-200 transition-colors">
-                                Cancel
+                                {t('accountCancel')}
                             </button>
                             <button onClick={handleSave} disabled={isSaving || !editName.trim()}
                                 className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-sb-green text-white rounded-full text-sm font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-50 shadow-lg shadow-sb-green/20">
                                 {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                                {isSaving ? 'Saving...' : 'Save Changes'}
+                                {isSaving ? t('accountSaving') : t('accountSaveChanges')}
                             </button>
                         </div>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-1">
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Full Name</p>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">{t('accountFullName')}</p>
                             <p className="text-sm font-semibold text-sb-black">{user?.name}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Email</p>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">{t('accountEmail')}</p>
                             <p className="text-sm font-semibold text-sb-black">{user?.email}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Total Orders</p>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">{t('accountTotalOrders')}</p>
                             <p className="text-sm font-semibold text-sb-black">{orders.length}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Member Since</p>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">{t('accountMemberSince')}</p>
                             <p className="text-sm font-semibold text-sb-black">{new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</p>
                         </div>
                     </div>
@@ -301,16 +308,6 @@ function ProfileTab({ orders }: { orders: Order[] }) {
 }
 
 // ── Address Form Modal ──────────────────────────────────────────────────────
-const ADDRESS_COUNTRIES = [
-    { code: 'FR', name: 'France' }, { code: 'BE', name: 'Belgium' },
-    { code: 'CH', name: 'Switzerland' }, { code: 'LU', name: 'Luxembourg' },
-    { code: 'DE', name: 'Germany' }, { code: 'ES', name: 'Spain' },
-    { code: 'IT', name: 'Italy' }, { code: 'NL', name: 'Netherlands' },
-    { code: 'GB', name: 'United Kingdom' }, { code: 'PT', name: 'Portugal' },
-    { code: 'MA', name: 'Morocco' }, { code: 'DZ', name: 'Algeria' },
-    { code: 'TN', name: 'Tunisia' }, { code: 'US', name: 'United States' },
-    { code: 'CA', name: 'Canada' }, { code: 'AE', name: 'UAE' },
-];
 
 function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
     address?: Address | null;
@@ -318,6 +315,7 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
     onClose: () => void;
     isLoading?: boolean;
 }) {
+    const { t } = useLanguage();
     const [form, setForm] = useState<Omit<Address, 'id'>>({
         label: address?.label || 'Home',
         firstName: address?.firstName || '',
@@ -325,13 +323,12 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
         address: address?.address || '',
         city: address?.city || '',
         postalCode: address?.postalCode || '',
-        country: address?.country || 'FR',
         phone: address?.phone || '',
         isDefault: address?.isDefault || false,
     });
 
     const set = (key: keyof typeof form) => (value: any) => setForm(p => ({ ...p, [key]: value }));
-    const isValid = !!(form.firstName && form.lastName && form.address && form.city && form.postalCode && form.country);
+    const isValid = !!(form.firstName && form.lastName && form.address && form.city && form.postalCode);
 
     return (
         <div className="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
@@ -343,7 +340,7 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                 className="w-full max-w-lg bg-white rounded-[32px] p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
             >
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-display text-2xl uppercase">{address ? 'Edit Address' : 'New Address'}</h3>
+                    <h3 className="font-display text-2xl uppercase">{address ? t('accountEditAddress') : t('accountNewAddress')}</h3>
                     <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100">
                         <X size={16} />
                     </button>
@@ -352,45 +349,39 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                 <div className="space-y-4">
                     {/* Label pills */}
                     <div>
-                        <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Label</label>
+                        <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">{t('accountLabelLabel')}</label>
                         <div className="flex gap-2">
-                            {['Home', 'Office', 'Other'].map(l => (
-                                <button type="button" key={l} onClick={() => set('label')(l)}
-                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${form.label === l ? 'border-sb-green bg-sb-green/5 text-sb-green' : 'border-gray-100 text-gray-500 hover:border-gray-300'}`}>
-                                    {l === 'Home' && <Home size={12} />}
-                                    {l === 'Office' && <Briefcase size={12} />}
-                                    {l}
+                            {[
+                                { key: 'Home',   label: t('accountLabelHome'),   icon: <Home size={12} /> },
+                                { key: 'Office', label: t('accountLabelOffice'), icon: <Briefcase size={12} /> },
+                                { key: 'Other',  label: t('accountLabelOther'),  icon: null },
+                            ].map(({ key, label, icon }) => (
+                                <button type="button" key={key} onClick={() => set('label')(key)}
+                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${form.label === key ? 'border-sb-green bg-sb-green/5 text-sb-green' : 'border-gray-100 text-gray-500 hover:border-gray-300'}`}>
+                                    {icon}
+                                    {label}
                                 </button>
                             ))}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <Field label="First Name" value={form.firstName} onChange={set('firstName')} />
-                        <Field label="Last Name"  value={form.lastName}  onChange={set('lastName')} />
+                        <Field label={t('accountFirstName')} value={form.firstName} onChange={set('firstName')} />
+                        <Field label={t('accountLastName')}  value={form.lastName}  onChange={set('lastName')} />
                     </div>
-                    <Field label="Street Address" value={form.address} onChange={set('address')} placeholder="12 Rue de la Paix" />
+                    <Field label={t('accountStreetAddress')} value={form.address} onChange={set('address')} placeholder="12 Rue de la Paix" />
                     <div className="grid grid-cols-2 gap-4">
-                        <Field label="Postal Code" value={form.postalCode} onChange={set('postalCode')} />
-                        <Field label="City" value={form.city} onChange={set('city')} />
+                        <Field label={t('accountPostalCode')} value={form.postalCode} onChange={set('postalCode')} />
+                        <Field label={t('accountCity')} value={form.city} onChange={set('city')} />
                     </div>
 
-                    {/* Country dropdown */}
+                    {/* Country — France only */}
                     <div>
-                        <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Country *</label>
-                        <select
-                            value={form.country}
-                            onChange={e => set('country')(e.target.value)}
-                            className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium focus:border-sb-green focus:outline-none transition-colors bg-white text-gray-700 appearance-none cursor-pointer"
-                        >
-                            <option value="">Select country…</option>
-                            {ADDRESS_COUNTRIES.map(c => (
-                                <option key={c.code} value={c.code}>{c.name}</option>
-                            ))}
-                        </select>
+                        <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{t('accountCountry')}</label>
+                        <div className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium bg-gray-50 text-gray-700">France</div>
                     </div>
 
-                    <Field label="Phone (optional)" value={form.phone || ''} onChange={set('phone')} type="tel" placeholder="+33 6 00 00 00 00" />
+                    <Field label={t('accountPhone')} value={form.phone || ''} onChange={set('phone')} type="tel" placeholder="+33 6 00 00 00 00" />
 
                     <label className="flex items-center gap-3 cursor-pointer">
                         <div
@@ -399,7 +390,7 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                         >
                             {form.isDefault && <Check size={12} className="text-white" />}
                         </div>
-                        <span className="text-sm font-medium text-gray-700">Set as default address</span>
+                        <span className="text-sm font-medium text-gray-700">{t('accountSetAsDefault')}</span>
                     </label>
                 </div>
 
@@ -410,7 +401,7 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                     className="w-full mt-6 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {isLoading ? <Loader2 size={16} className="animate-spin" /> : null}
-                    {address ? 'Save Changes' : 'Add Address'}
+                    {address ? t('accountSaveChanges') : t('accountAddAddress')}
                 </button>
             </motion.div>
         </div>
@@ -432,16 +423,18 @@ function Field({ label, value, onChange, placeholder = '', type = 'text' }: {
 // ── Filter Dropdown ────────────────────────────────────────────────────────
 type Filter = 'all' | 'active' | 'delivered' | 'cancelled';
 
-const FILTER_OPTIONS: { id: Filter; label: string; description: string }[] = [
-    { id: 'all',       label: 'All Orders',      description: 'Show every order' },
-    { id: 'active',    label: 'Active',          description: 'Processing & shipped' },
-    { id: 'delivered', label: 'Delivered',       description: 'Successfully delivered' },
-    { id: 'cancelled', label: 'Cancelled',       description: 'Cancelled or refunded' },
-];
-
 function FilterDropdown({ value, onChange }: { value: Filter; onChange: (f: Filter) => void }) {
+    const { t } = useLanguage();
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
+
+    const FILTER_OPTIONS: { id: Filter; label: string; description: string }[] = [
+        { id: 'all',       label: t('accountFilterAll'),       description: t('accountFilterAllDesc') },
+        { id: 'active',    label: t('accountFilterActive'),    description: t('accountFilterActiveDesc') },
+        { id: 'delivered', label: t('accountFilterDelivered'), description: t('accountFilterDeliveredDesc') },
+        { id: 'cancelled', label: t('accountFilterCancelled'), description: t('accountFilterCancelledDesc') },
+    ];
+
     const current = FILTER_OPTIONS.find(f => f.id === value)!;
 
     useEffect(() => {
@@ -469,7 +462,7 @@ function FilterDropdown({ value, onChange }: { value: Filter; onChange: (f: Filt
                         className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
                     >
                         <div className="px-3 py-2 border-b border-gray-50">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Filter by status</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">{t('accountFilterByStatus')}</p>
                         </div>
                         {FILTER_OPTIONS.map(opt => (
                             <button key={opt.id} onClick={() => { onChange(opt.id); setOpen(false); }}
@@ -496,6 +489,7 @@ type Tab = 'orders' | 'addresses' | 'profile' | 'wishlist';
 export default function AccountPage() {
     const { user, logout, refreshAddresses } = useAuth();
     const { t } = useLanguage();
+    const formatPrice = useFormatPrice();
     const [activeTab, setActiveTab]           = useState<Tab>('orders');
     const [reviewingItem, setReviewingItem]   = useState<OrderItem | null>(null);
     const [expandedOrder, setExpandedOrder]   = useState<string | null>(null);
@@ -534,7 +528,7 @@ export default function AccountPage() {
             const payload = {
                 label: data.label, first_name: data.firstName, last_name: data.lastName,
                 address_1: data.address, city: data.city, postcode: data.postalCode,
-                country: data.country, phone: data.phone || null, is_default: data.isDefault ?? false,
+                country: 'FR', phone: data.phone || null, is_default: data.isDefault ?? false,
             };
             if (editingAddress) await apiClient.put(Endpoints.address(editingAddress.id), payload);
             else await apiClient.post(Endpoints.addresses, payload);
@@ -583,14 +577,18 @@ export default function AccountPage() {
     const handleFilterChange = (f: Filter) => { setFilter(f); setPage(1); };
 
     const TABS = [
-        { id: 'orders'    as Tab, label: 'My Orders',   icon: Package },
-        { id: 'wishlist'  as Tab, label: 'Saved Items', icon: Heart },
-        { id: 'addresses' as Tab, label: 'Addresses',   icon: MapPin },
-        { id: 'profile'   as Tab, label: 'Profile',     icon: UserIcon },
+        { id: 'orders'    as Tab, label: t('accountTabOrders'),    icon: Package },
+        { id: 'wishlist'  as Tab, label: t('accountTabSaved'),     icon: Heart },
+        { id: 'addresses' as Tab, label: t('accountTabAddresses'), icon: MapPin },
+        { id: 'profile'   as Tab, label: t('accountTabProfile'),   icon: UserIcon },
     ];
 
     const PAYMENT_LABELS: Record<string, string> = {
-        cod: 'Cash on Delivery', stripe: 'Stripe', wise: 'Wise Transfer', card: 'Credit Card',
+        cod:   t('accountPaymentCod'),
+        stripe: t('accountPaymentStripe'),
+        wise:   t('accountPaymentWise'),
+        card:   t('accountPaymentCard'),
+        store:  t('accountPaymentStore'),
     };
 
     return (
@@ -601,15 +599,15 @@ export default function AccountPage() {
                     {/* ── Page Header ─────────────────────────────────── */}
                     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
                         <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sb-green mb-1">Your Account</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sb-green mb-1">{t('accountYourAccount')}</p>
                             <h1 className="font-display text-4xl lg:text-5xl uppercase tracking-tight text-sb-black">
-                                Welcome back, {user?.name?.split(' ')[0] || 'User'}
+                                {t('accountWelcomeBack')} {user?.name?.split(' ')[0] || 'User'}
                             </h1>
                             <p className="text-gray-400 text-sm mt-1">{user?.email}</p>
                         </div>
                         <button onClick={() => logout()}
                             className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all text-xs font-bold uppercase tracking-wider w-max">
-                            <LogOut size={14} /> Sign Out
+                            <LogOut size={14} /> {t('accountSignOut')}
                         </button>
                     </div>
 
@@ -632,19 +630,19 @@ export default function AccountPage() {
 
                                 {/* Quick Stats */}
                                 <div className="hidden lg:block mt-6 p-5 bg-white rounded-2xl border border-gray-100">
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-3">Your Stats</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-3">{t('accountYourStats')}</p>
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs text-gray-500">Total Orders</span>
+                                            <span className="text-xs text-gray-500">{t('accountTotalOrders')}</span>
                                             <span className="font-black text-sb-black">{orders.length}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs text-gray-500">Delivered</span>
+                                            <span className="text-xs text-gray-500">{t('accountDelivered')}</span>
                                             <span className="font-black text-emerald-600">{orders.filter(o => o.status === 'delivered').length}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs text-gray-500">Total Spent</span>
-                                            <span className="font-black text-sb-green">€{orders.reduce((s, o) => s + o.total, 0).toFixed(2)}</span>
+                                            <span className="text-xs text-gray-500">{t('accountTotalSpent')}</span>
+                                            <span className="font-black text-sb-green">{formatPrice(orders.reduce((s, o) => s + o.total, 0))}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -661,12 +659,12 @@ export default function AccountPage() {
 
                                         {/* ── Premium search + filter bar ── */}
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-                                            <h2 className="font-display text-2xl uppercase">Order History</h2>
+                                            <h2 className="font-display text-2xl uppercase">{t('accountOrderHistory')}</h2>
                                             <div className="flex items-center gap-2">
                                                 {/* Search */}
                                                 <div className="relative flex-1 sm:flex-none sm:w-64">
                                                     <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                                                    <input type="text" placeholder="Search orders, products…"
+                                                    <input type="text" placeholder={t('accountSearchOrders')}
                                                         value={searchQuery}
                                                         onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
                                                         className="w-full pl-9 pr-4 py-2 bg-white rounded-full text-xs border-2 border-gray-100 focus:border-sb-green focus:outline-none shadow-sm transition-all placeholder-gray-400" />
@@ -687,7 +685,7 @@ export default function AccountPage() {
                                             <div className="flex items-center gap-2 mb-4 flex-wrap">
                                                 {filter !== 'all' && (
                                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-sb-green/10 text-sb-green border border-sb-green/20 rounded-full text-[10px] font-black uppercase tracking-wider">
-                                                        {FILTER_OPTIONS.find(f => f.id === filter)?.label}
+                                                        {filter === 'active' ? t('accountFilterActive') : filter === 'delivered' ? t('accountFilterDelivered') : t('accountFilterCancelled')}
                                                         <button onClick={() => handleFilterChange('all')} className="hover:text-sb-green/60 transition-colors"><X size={11} /></button>
                                                     </span>
                                                 )}
@@ -697,7 +695,7 @@ export default function AccountPage() {
                                                         <button onClick={() => { setSearchQuery(''); setPage(1); }} className="hover:text-gray-400 transition-colors"><X size={11} /></button>
                                                     </span>
                                                 )}
-                                                <span className="text-[10px] text-gray-400">{filteredOrders.length} result{filteredOrders.length !== 1 ? 's' : ''}</span>
+                                                <span className="text-[10px] text-gray-400">{filteredOrders.length} {filteredOrders.length !== 1 ? t('accountResults') : t('accountResult')}</span>
                                             </div>
                                         )}
 
@@ -710,17 +708,17 @@ export default function AccountPage() {
                                             <div className="bg-white rounded-3xl p-8 border border-red-100 flex items-center gap-3">
                                                 <AlertCircle size={20} className="text-red-400 shrink-0" />
                                                 <div>
-                                                    <p className="font-bold text-red-600 text-sm">Failed to load orders</p>
+                                                    <p className="font-bold text-red-600 text-sm">{t('accountFailedOrders')}</p>
                                                     <p className="text-xs text-gray-400 mt-0.5">{ordersError}</p>
                                                 </div>
-                                                <button onClick={fetchOrders} className="ml-auto text-xs font-bold text-sb-green hover:underline">Retry</button>
+                                                <button onClick={fetchOrders} className="ml-auto text-xs font-bold text-sb-green hover:underline">{t('accountRetry')}</button>
                                             </div>
                                         ) : paginatedOrders.length === 0 ? (
                                             <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
                                                 <Package size={40} className="text-gray-200 mx-auto mb-4" />
-                                                <p className="font-bold text-gray-400">No orders found</p>
+                                                <p className="font-bold text-gray-400">{t('accountNoOrders')}</p>
                                                 {(filter !== 'all' || searchQuery) && (
-                                                    <button onClick={() => { setFilter('all'); setSearchQuery(''); }} className="mt-3 text-xs font-bold text-sb-green hover:underline">Clear filters</button>
+                                                    <button onClick={() => { setFilter('all'); setSearchQuery(''); }} className="mt-3 text-xs font-bold text-sb-green hover:underline">{t('accountClearFilters')}</button>
                                                 )}
                                             </div>
                                         ) : (
@@ -737,17 +735,17 @@ export default function AccountPage() {
                                                                 </div>
                                                                 <p className="text-xs text-gray-400">
                                                                     {new Date(order.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                                                    {' · '}{order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                                                                    {' · '}{order.items.length} {order.items.length !== 1 ? t('accountItemsPlural') : t('accountItems')}
                                                                 </p>
                                                             </div>
                                                             <div className="flex items-center gap-3 flex-shrink-0">
                                                                 <div className="text-right">
-                                                                    <p className="font-display text-xl text-sb-green">€{order.total.toFixed(2)}</p>
+                                                                    <p className="font-display text-xl text-sb-green">{formatPrice(order.total)}</p>
                                                                     {order.paymentMethod && <p className="text-[10px] text-gray-400 uppercase tracking-wider">{PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}</p>}
                                                                 </div>
                                                                 <Link href={`/orders/${order.id}`} onClick={e => e.stopPropagation()}
                                                                     className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sb-green/10 text-sb-green hover:bg-sb-green hover:text-white transition-all text-[10px] font-black uppercase tracking-wider flex-shrink-0">
-                                                                    <ExternalLink size={11} /> Track
+                                                                    <ExternalLink size={11} /> {t('accountTrack')}
                                                                 </Link>
                                                                 <ChevronDown size={16} className={`text-gray-300 transition-transform flex-shrink-0 ${expandedOrder === order.id ? 'rotate-180' : ''}`} />
                                                             </div>
@@ -764,8 +762,8 @@ export default function AccountPage() {
                                                                         <div className="px-6 py-4 bg-emerald-50 border-b border-emerald-100 flex items-center gap-3">
                                                                             <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
                                                                             <div className="flex-1">
-                                                                                <p className="text-sm font-bold text-emerald-700">Order delivered!</p>
-                                                                                <p className="text-xs text-emerald-600/70">Click Review on any item below to share your experience.</p>
+                                                                                <p className="text-sm font-bold text-emerald-700">{t('accountOrderDelivered')}</p>
+                                                                                <p className="text-xs text-emerald-600/70">{t('accountOrderDeliveredDesc')}</p>
                                                                             </div>
                                                                         </div>
                                                                     )}
@@ -776,13 +774,13 @@ export default function AccountPage() {
                                                                             <div className="flex justify-between items-center mb-4">
                                                                                 <div>
                                                                                     <p className="font-bold text-sb-green">
-                                                                                        {order.status === 'shipped' ? '🚚 Your order is on the way!' : '⏳ Preparing your order...'}
+                                                                                        {order.status === 'shipped' ? t('accountOrderOnWay') : t('accountOrderPreparing')}
                                                                                     </p>
-                                                                                    {order.trackingNumber && <p className="text-xs text-gray-500 mt-1">Tracking: <span className="font-mono text-sb-black">{order.trackingNumber}</span></p>}
+                                                                                    {order.trackingNumber && <p className="text-xs text-gray-500 mt-1">{t('accountTracking')} <span className="font-mono text-sb-black">{order.trackingNumber}</span></p>}
                                                                                 </div>
                                                                                 <Link href={`/orders/${order.id}`} onClick={e => e.stopPropagation()}
                                                                                     className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sb-green text-white text-[10px] font-black uppercase tracking-wider hover:bg-[#2C6345] transition-colors flex-shrink-0">
-                                                                                    <Truck size={11} /> Track Shipment
+                                                                                    <Truck size={11} /> {t('accountTrackShipment')}
                                                                                 </Link>
                                                                             </div>
                                                                             <StatusTimeline status={order.status} />
@@ -802,14 +800,14 @@ export default function AccountPage() {
                                                                                 </div>
                                                                                 <div className="flex-1 min-w-0">
                                                                                     <p className="font-bold text-sm text-sb-black truncate">{item.product.name}</p>
-                                                                                    <p className="text-xs text-gray-400">Qty: {item.quantity} · €{item.unitPrice.toFixed(2)}/unit</p>
+                                                                                    <p className="text-xs text-gray-400">{t('accountQty')} {item.quantity} · {formatPrice(item.unitPrice)}/unit</p>
                                                                                 </div>
                                                                                 <div className="text-right flex items-center gap-3">
-                                                                                    <p className="font-black text-sm text-sb-black">€{(item.unitPrice * item.quantity).toFixed(2)}</p>
+                                                                                    <p className="font-black text-sm text-sb-black">{formatPrice(item.unitPrice * item.quantity)}</p>
                                                                                     {order.status === 'delivered' && (
                                                                                         <button onClick={e => { e.stopPropagation(); setReviewingItem(item); }}
                                                                                             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-500 hover:text-white hover:border-transparent transition-all text-[10px] font-black uppercase tracking-wider flex-shrink-0">
-                                                                                            <Star size={11} /> Review
+                                                                                            <Star size={11} /> {t('accountReview')}
                                                                                         </button>
                                                                                     )}
                                                                                 </div>
@@ -818,10 +816,10 @@ export default function AccountPage() {
 
                                                                         {/* Order Totals */}
                                                                         <div className="border-t border-gray-100 pt-4 space-y-1.5">
-                                                                            <div className="flex justify-between text-sm text-gray-500"><span>Subtotal</span><span>€{order.subtotal.toFixed(2)}</span></div>
-                                                                            {order.discount > 0 && <div className="flex justify-between text-sm text-sb-green"><span>Discount</span><span>-€{order.discount.toFixed(2)}</span></div>}
-                                                                            <div className="flex justify-between text-sm text-gray-500"><span>Shipping</span><span>{order.shipping === 0 ? 'Free' : `€${order.shipping.toFixed(2)}`}</span></div>
-                                                                            <div className="flex justify-between font-black text-base text-sb-black border-t border-gray-100 pt-2 mt-2"><span>Total</span><span className="text-sb-green">€{order.total.toFixed(2)}</span></div>
+                                                                            <div className="flex justify-between text-sm text-gray-500"><span>{t('accountSubtotal')}</span><span>{formatPrice(order.subtotal)}</span></div>
+                                                                            {order.discount > 0 && <div className="flex justify-between text-sm text-sb-green"><span>{t('accountDiscount')}</span><span>-{formatPrice(order.discount)}</span></div>}
+                                                                            <div className="flex justify-between text-sm text-gray-500"><span>{t('accountShipping')}</span><span>{order.shipping === 0 ? t('accountFree') : formatPrice(order.shipping)}</span></div>
+                                                                            <div className="flex justify-between font-black text-base text-sb-black border-t border-gray-100 pt-2 mt-2"><span>{t('accountTotal')}</span><span className="text-sb-green">{formatPrice(order.total)}</span></div>
                                                                         </div>
                                                                     </div>
                                                                 </motion.div>
@@ -858,10 +856,10 @@ export default function AccountPage() {
                                 {activeTab === 'addresses' && (
                                     <motion.div key="addresses" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                                         <div className="flex items-center justify-between mb-6">
-                                            <h2 className="font-display text-2xl uppercase">Saved Addresses</h2>
+                                            <h2 className="font-display text-2xl uppercase">{t('accountSavedAddresses')}</h2>
                                             <button onClick={() => { setEditingAddress(null); setAddressError(null); setShowAddressModal(true); }}
                                                 className="flex items-center gap-2 px-5 py-3 bg-sb-green text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors">
-                                                <Plus size={14} /> Add Address
+                                                <Plus size={14} /> {t('accountAddAddress')}
                                             </button>
                                         </div>
 
@@ -879,7 +877,7 @@ export default function AccountPage() {
                                                         <div className="flex items-center gap-2">
                                                             {addr.label === 'Home' ? <Home size={16} className="text-sb-green" /> : <Briefcase size={16} className="text-sb-green" />}
                                                             <span className="font-black text-sm uppercase tracking-wider">{addr.label}</span>
-                                                            {addr.isDefault && <span className="px-2 py-0.5 bg-sb-green/10 text-sb-green text-[9px] font-black uppercase tracking-wider rounded-full border border-sb-green/20">Default</span>}
+                                                            {addr.isDefault && <span className="px-2 py-0.5 bg-sb-green/10 text-sb-green text-[9px] font-black uppercase tracking-wider rounded-full border border-sb-green/20">{t('accountDefault')}</span>}
                                                         </div>
                                                         <div className="flex gap-1">
                                                             <button onClick={() => { setEditingAddress(addr); setAddressError(null); setShowAddressModal(true); }} className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center hover:bg-sb-green hover:text-white transition-colors text-gray-400">
@@ -892,11 +890,11 @@ export default function AccountPage() {
                                                     </div>
                                                     <p className="text-sm text-sb-black font-semibold">{addr.firstName} {addr.lastName}</p>
                                                     <p className="text-sm text-gray-500 mt-1">{addr.address}</p>
-                                                    <p className="text-sm text-gray-500">{addr.postalCode} {addr.city}, {addr.country}</p>
+                                                    <p className="text-sm text-gray-500">{addr.postalCode} {addr.city}, France</p>
                                                     {addr.phone && <p className="text-sm text-gray-400 mt-1">{addr.phone}</p>}
                                                     {!addr.isDefault && (
                                                         <button onClick={() => handleSetDefault(addr.id)} className="mt-4 text-[10px] font-bold uppercase tracking-widest text-sb-green hover:underline">
-                                                            Set as Default
+                                                            {t('accountSetDefault')}
                                                         </button>
                                                     )}
                                                 </div>
@@ -905,9 +903,9 @@ export default function AccountPage() {
                                             {addresses.length === 0 && (
                                                 <div className="col-span-2 bg-white rounded-3xl p-12 text-center border border-gray-100">
                                                     <MapPin size={40} className="text-gray-200 mx-auto mb-4" />
-                                                    <p className="font-bold text-gray-400">No saved addresses yet</p>
+                                                    <p className="font-bold text-gray-400">{t('accountNoAddresses')}</p>
                                                     <button onClick={() => setShowAddressModal(true)} className="mt-4 px-6 py-2 bg-sb-green text-white rounded-full text-xs font-bold uppercase tracking-wider">
-                                                        Add your first address
+                                                        {t('accountAddFirstAddress')}
                                                     </button>
                                                 </div>
                                             )}
@@ -915,7 +913,7 @@ export default function AccountPage() {
 
                                         <div className="mt-6 p-5 bg-sb-green/5 border border-sb-green/20 rounded-2xl flex items-start gap-3">
                                             <Shield size={16} className="text-sb-green flex-shrink-0 mt-0.5" />
-                                            <p className="text-xs text-gray-600">Your addresses are saved securely. No payment card details are ever stored on our servers.</p>
+                                            <p className="text-xs text-gray-600">{t('accountAddressSecure')}</p>
                                         </div>
                                     </motion.div>
                                 )}
@@ -924,13 +922,13 @@ export default function AccountPage() {
                                 {activeTab === 'wishlist' && (
                                     <motion.div key="wishlist" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                                         <div className="flex items-center justify-between mb-6">
-                                            <h2 className="font-display text-2xl uppercase">Saved Items</h2>
+                                            <h2 className="font-display text-2xl uppercase">{t('accountSavedItems')}</h2>
                                         </div>
                                         <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
                                             <Heart size={40} className="text-gray-200 mx-auto mb-4" />
-                                            <p className="font-bold text-gray-400">Your wishlist is currently empty</p>
+                                            <p className="font-bold text-gray-400">{t('accountWishlistEmpty')}</p>
                                             <button onClick={() => window.location.href = '/shop'} className="mt-4 px-6 py-2 bg-sb-green text-white rounded-full text-xs font-bold uppercase tracking-wider">
-                                                Explore Shop
+                                                {t('accountExploreShop')}
                                             </button>
                                         </div>
                                     </motion.div>

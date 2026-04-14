@@ -27,6 +27,7 @@ import { NotificationsProvider } from "@/context/NotificationsContext";
 import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { LoginModal } from "@/components/ui/LoginModal";
+import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 
 export default function RootLayout({
   children,
@@ -37,6 +38,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${archivo.variable} antialiased`} suppressHydrationWarning>
         <ThemeProvider>
+          <SiteSettingsProvider>
           <AuthProvider>
             <LanguageProvider>
               <CartProvider>
@@ -53,6 +55,7 @@ export default function RootLayout({
               </CartProvider>
             </LanguageProvider>
           </AuthProvider>
+          </SiteSettingsProvider>
         </ThemeProvider>
       </body>
     </html>

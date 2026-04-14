@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, Package, MapPin, CreditCard, ChevronRight, ShoppingBag, Truck, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 
 // Confetti component
 function Confetti() {
@@ -36,6 +37,7 @@ function Confetti() {
 function OrderSuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const formatPrice = useFormatPrice();
     const [showConfetti, setShowConfetti] = useState(true);
 
     const orderId = searchParams.get('order') || '';
@@ -110,7 +112,7 @@ function OrderSuccessContent() {
                                 <p className="text-white/70 text-[10px] uppercase tracking-widest font-bold">
                                     {paymentMethod === 'cod' ? 'Total Due' : 'Total Paid'}
                                 </p>
-                                <p className="text-white font-display text-2xl">€{parseFloat(total).toFixed(2)}</p>
+                                <p className="text-white font-display text-2xl">{formatPrice(parseFloat(total))}</p>
                             </div>
                         </div>
 
@@ -177,7 +179,7 @@ function OrderSuccessContent() {
                                 {(paymentMethod === 'cod' ? [
                                     'You\'ll receive a confirmation email shortly',
                                     'Our courier will contact you before delivery',
-                                    'Please have €' + parseFloat(total).toFixed(2) + ' ready for the courier',
+                                    'Please have ' + formatPrice(parseFloat(total)) + ' ready for the courier',
                                 ] : [
                                     'You\'ll receive a confirmation email shortly',
                                     'We\'ll notify you when your order ships',

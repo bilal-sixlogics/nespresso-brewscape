@@ -6,6 +6,7 @@ import { Star, ChevronDown, ShoppingBag, Check, ArrowRight, Share2, Heart, Arrow
 import Link from 'next/link';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { useProduct, useProducts } from '@/hooks/useProducts';
 import {
     SaleUnit, Product,
@@ -80,6 +81,7 @@ function Accordion({ title, children, defaultOpen = false }: { title: string; ch
 export default function ProductDetailPageClient({ slug }: { slug: string }) {
     const { addToCart } = useCart();
     const { language } = useLanguage();
+    const formatPrice = useFormatPrice();
     const t = (fr: string, en: string) => language === 'fr' ? fr : en;
 
     const { product, isLoading: productLoading } = useProduct(slug);
@@ -179,7 +181,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
             {/* ── Main Layout ──────────────────────────────────── */}
             <div className="max-w-[1400px] mx-auto px-8 py-16 grid grid-cols-1 lg:grid-cols-2 gap-16 xl:gap-24 items-start">
                 {/* ── Image Gallery ── */}
-                <div className="sticky top-8">
+                <div className="sticky top-[var(--header-h,112px)]">
                     {/* Main image — clickable lightbox */}
                     <div
                         className="bg-[#60A17B] rounded-[48px] overflow-hidden relative border border-white/30 cursor-zoom-in group"
@@ -262,7 +264,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
 
                     {/* Price */}
                     <div className="flex items-baseline gap-4">
-                        <span className="font-display text-6xl text-sb-green">€{unitPrice.toFixed(2)}</span>
+                        <span className="font-display text-6xl text-sb-green">{formatPrice(unitPrice)}</span>
                     </div>
 
                     {/* Intensity */}
@@ -300,7 +302,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                                         >
                                             <span className="text-xs font-bold">{unit.name}</span>
                                             <div className="flex items-center gap-1 mt-0.5">
-                                                <span className="text-base font-black">€{Number(unit.selling_price).toFixed(2)}</span>
+                                                <span className="text-base font-black">{formatPrice(Number(unit.selling_price))}</span>
                                             </div>
                                         </button>
                                     );
@@ -333,7 +335,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                             <div>
                                 <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{isAdded ? t('Ajouté !', 'Added!') : t('Total', 'Total')}</p>
                                 <p className="font-display text-2xl leading-none">
-                                    {isAdded ? '✓' : `€${(unitPrice * quantity).toFixed(2)}`}
+                                    {isAdded ? '✓' : formatPrice(unitPrice * quantity)}
                                 </p>
                             </div>
                             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">

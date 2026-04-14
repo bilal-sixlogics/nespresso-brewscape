@@ -12,6 +12,7 @@ import {
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -176,6 +177,7 @@ function GuestLookup({ orderId, onFound }: { orderId: string; onFound: (order: O
 // ── Order detail view ─────────────────────────────────────────────────────────
 
 function OrderDetail({ order }: { order: Order }) {
+    const formatPrice = useFormatPrice();
     const shippingAddress = order.addresses.find(a => a.type === 'shipping');
     const shipment = order.shipments?.[0];
     const statusIdx = TIMELINE_STEPS.indexOf(order.status);
@@ -202,7 +204,7 @@ function OrderDetail({ order }: { order: Order }) {
                         </div>
                         <div className="text-right">
                             <p className="text-white/70 text-[10px] uppercase tracking-widest font-bold mb-0.5">Grand Total</p>
-                            <p className="text-white font-display text-2xl">{order.currency} {parseFloat(String(order.grand_total)).toFixed(2)}</p>
+                            <p className="text-white font-display text-2xl">{formatPrice(parseFloat(String(order.grand_total)))}</p>
                         </div>
                     </div>
 
@@ -333,7 +335,7 @@ function OrderDetail({ order }: { order: Order }) {
                                     </div>
                                 </div>
                                 <p className="text-sm font-black text-sb-black whitespace-nowrap">
-                                    {order.currency} {parseFloat(String(item.total_price)).toFixed(2)}
+                                    {formatPrice(parseFloat(String(item.total_price)))}
                                 </p>
                             </div>
                         ))}
@@ -342,21 +344,21 @@ function OrderDetail({ order }: { order: Order }) {
                     <div className="border-t border-gray-100 px-6 py-4 space-y-2 bg-gray-50/50">
                         <div className="flex justify-between text-sm text-gray-500">
                             <span>Subtotal</span>
-                            <span>{order.currency} {parseFloat(String(order.subtotal)).toFixed(2)}</span>
+                            <span>{formatPrice(parseFloat(String(order.subtotal)))}</span>
                         </div>
                         {parseFloat(String(order.discount_total)) > 0 && (
                             <div className="flex justify-between text-sm text-sb-green">
                                 <span>Discount</span>
-                                <span>− {order.currency} {parseFloat(String(order.discount_total)).toFixed(2)}</span>
+                                <span>− {formatPrice(parseFloat(String(order.discount_total)))}</span>
                             </div>
                         )}
                         <div className="flex justify-between text-sm text-gray-500">
                             <span>Shipping</span>
-                            <span>{parseFloat(String(order.shipping_total)) === 0 ? 'Free' : `${order.currency} ${parseFloat(String(order.shipping_total)).toFixed(2)}`}</span>
+                            <span>{parseFloat(String(order.shipping_total)) === 0 ? 'Free' : formatPrice(parseFloat(String(order.shipping_total)))}</span>
                         </div>
                         <div className="flex justify-between font-black text-sb-black pt-2 border-t border-gray-200">
                             <span>Total</span>
-                            <span>{order.currency} {parseFloat(String(order.grand_total)).toFixed(2)}</span>
+                            <span>{formatPrice(parseFloat(String(order.grand_total)))}</span>
                         </div>
                     </div>
                 </motion.div>

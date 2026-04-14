@@ -6,6 +6,7 @@ import { X, ShoppingBag, Trash2, Plus, Minus, Tag, Truck, ArrowRight, Check } fr
 import Link from 'next/link';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { getProductImage } from '@/types';
 
 const FREE_SHIPPING_THRESHOLD = 150;
@@ -19,6 +20,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
         removeFromCart, updateQuantity, clearCart,
     } = useCart();
     const { language } = useLanguage();
+    const formatPrice = useFormatPrice();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
 
     const [promoInput, setPromoInput] = useState('');
@@ -87,7 +89,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             <div className="flex justify-between items-center mb-2">
                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500">
                                     <Truck size={11} />
-                                    {tx('Plus que', 'Only')} <span className="text-sb-black font-black">€{amountToFreeShipping.toFixed(2)}</span> {tx('pour la livraison gratuite !', 'away from free shipping!')}
+                                    {tx('Plus que', 'Only')} <span className="text-sb-black font-black">{formatPrice(amountToFreeShipping)}</span> {tx('pour la livraison gratuite !', 'away from free shipping!')}
                                 </div>
                                 <span className="text-[9px] font-bold text-gray-400">{Math.round(freeShippingProgress)}%</span>
                             </div>
@@ -175,7 +177,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                                 </div>
 
                                                 {/* Price */}
-                                                <span className="font-black text-sb-green text-base">€{lineTotal.toFixed(2)}</span>
+                                                <span className="font-black text-sb-green text-base">{formatPrice(lineTotal)}</span>
                                             </div>
                                         </div>
 
@@ -205,7 +207,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             >
                                 <Tag size={11} />
                                 {appliedPromo
-                                    ? <span className="text-sb-green">{appliedPromo.code} (-€{promoDiscount.toFixed(2)})</span>
+                                    ? <span className="text-sb-green">{appliedPromo.code} (-{formatPrice(promoDiscount)})</span>
                                     : tx('Ajouter un code promo', 'Add Promo Code')
                                 }
                             </button>
@@ -257,12 +259,12 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         <div className="space-y-1.5">
                             <div className="flex justify-between text-sm text-gray-500">
                                 <span>{tx('Sous-total', 'Subtotal')}</span>
-                                <span className="font-bold">€{subtotal.toFixed(2)}</span>
+                                <span className="font-bold">{formatPrice(subtotal)}</span>
                             </div>
                             {promoDiscount > 0 && (
                                 <div className="flex justify-between text-sm text-sb-green">
                                     <span>{appliedPromo?.code}</span>
-                                    <span className="font-bold">-€{promoDiscount.toFixed(2)}</span>
+                                    <span className="font-bold">-{formatPrice(promoDiscount)}</span>
                                 </div>
                             )}
                             <div className="flex justify-between text-sm text-gray-400">
@@ -271,7 +273,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             </div>
                             <div className="flex justify-between text-base text-sb-black border-t border-gray-100 pt-2 mt-2">
                                 <span className="font-black uppercase tracking-wider">{tx('Sous-total', 'Subtotal')}</span>
-                                <span className="font-display text-2xl text-sb-green">€{(subtotal - promoDiscount).toFixed(2)}</span>
+                                <span className="font-display text-2xl text-sb-green">{formatPrice(subtotal - promoDiscount)}</span>
                             </div>
                         </div>
 
@@ -283,7 +285,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         >
                             <div>
                                 <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{tx('Total', 'Total')} · {cartCount} article(s)</p>
-                                <p className="font-display text-xl leading-none">€{total.toFixed(2)}</p>
+                                <p className="font-display text-xl leading-none">{formatPrice(total)}</p>
                             </div>
                             <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
                                 {tx('Commander', 'Checkout')} <ArrowRight size={16} />

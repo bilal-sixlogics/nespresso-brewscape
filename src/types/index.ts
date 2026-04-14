@@ -239,7 +239,6 @@ export interface Address {
     address: string;
     city: string;
     postalCode: string;
-    country: string;
     phone?: string;
     isDefault?: boolean;
 }

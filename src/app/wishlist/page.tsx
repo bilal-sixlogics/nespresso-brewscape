@@ -7,12 +7,14 @@ import Link from 'next/link';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { getProductImage, getDisplayPrice, getDefaultUnit } from '@/types';
 
 export default function WishlistPage() {
     const { wishlist, removeFromWishlist } = useWishlist();
     const { addToCart } = useCart();
     const { language } = useLanguage();
+    const formatPrice = useFormatPrice();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
 
     const handleAddToCart = (product: any) => {
@@ -118,7 +120,7 @@ export default function WishlistPage() {
                                                 <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-3 truncate">{defaultUnit.name}</p>
                                             )}
                                             <div className="flex items-center justify-between">
-                                                <span className="font-black text-lg text-sb-green">€{getDisplayPrice(product).toFixed(2)}</span>
+                                                <span className="font-black text-lg text-sb-green">{formatPrice(getDisplayPrice(product))}</span>
                                                 <button
                                                     onClick={() => handleAddToCart(product)}
                                                     className="flex items-center gap-1.5 px-4 py-2 bg-sb-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-sb-green transition-colors"

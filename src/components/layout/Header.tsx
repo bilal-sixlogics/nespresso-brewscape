@@ -9,6 +9,7 @@ import { useCart } from '@/store/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { AppConfig } from '@/lib/config';
 import { useLanguage, SUPPORTED_LANGUAGES, Language } from '@/context/LanguageContext';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { useProducts } from '@/hooks/useProducts';
 import { CartDrawer } from '@/components/ui/CartDrawer';
 import { Product, getProductImage, getDisplayPrice, getDefaultUnit } from '@/types';
@@ -19,6 +20,7 @@ interface NavLink { href: string; labelKey: string; active?: boolean }
 // ─── Search ───────────────────────────────────────────────────────────────
 function SearchOverlay({ onClose }: { onClose: () => void }) {
     const { t } = useLanguage();
+    const formatPrice = useFormatPrice();
     const [query, setQuery] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -95,7 +97,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
                                             {getDefaultUnit(p)?.name && <p className="text-[10px] text-gray-400">{getDefaultUnit(p)?.name}</p>}
                                         </div>
                                         <span className="text-sm font-bold text-sb-green flex-shrink-0">
-                                            €{getDisplayPrice(p).toFixed(2)}
+                                            {formatPrice(getDisplayPrice(p))}
                                         </span>
                                     </Link>
                                 ))}
@@ -255,7 +257,7 @@ export function Header() {
 
     return (
         <>
-            <header className="bg-sb-green text-white relative z-[9999] pb-[15px] -mb-[15px]">
+            <header className="bg-sb-green text-white relative z-[9999]">
                 <div className="max-w-[1600px] mx-auto w-full flex border-b border-white/10 relative z-[9999]">
 
                     {/* ── Mobile Menu Toggle ────────────────────────────── */}

@@ -9,6 +9,7 @@ import {
     isInStock, isNewProduct, hasTag, extractNotes, extractIntensity,
 } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 
 interface ProductCardProps {
     product: Product;
@@ -18,6 +19,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onClick, index }: ProductCardProps) {
     const { t } = useLanguage();
+    const formatPrice = useFormatPrice();
     const [imgIdx, setImgIdx] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -226,11 +228,11 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                     <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-100">
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-[1.15rem] sm:text-[1.25rem] font-black text-sb-green tracking-tight">
-                                €{displayPrice.toFixed(2)}
+                                {formatPrice(displayPrice)}
                             </span>
                             {hasDiscount && originalPrice && (
                                 <span className="text-xs text-gray-400 line-through">
-                                    €{originalPrice.toFixed(2)}
+                                    {formatPrice(originalPrice)}
                                 </span>
                             )}
                         </div>

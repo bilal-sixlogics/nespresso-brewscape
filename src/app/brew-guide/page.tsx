@@ -95,7 +95,7 @@ export default function BrewGuidePage() {
                 </section>
 
                 {/* Sub-navigation */}
-                <div className="sticky top-0 z-[45] bg-white/80 backdrop-blur-xl border-b border-gray-100 shadow-sm py-4 px-4 overflow-x-auto">
+                <div className="sticky top-[var(--header-h,112px)] z-[45] bg-white/80 backdrop-blur-xl border-b border-gray-100 shadow-sm py-4 px-4 overflow-x-auto">
                     <div className="max-w-[1200px] mx-auto flex gap-4 lg:gap-8 justify-start lg:justify-center min-w-max">
                         {guides.map(guide => (
                             <button

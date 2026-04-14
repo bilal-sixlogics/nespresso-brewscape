@@ -10,6 +10,7 @@ import { Product, getProductImage, getDisplayPrice } from '@/types';
 import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { useRecentlyViewed } from '@/context/RecentlyViewedContext';
 import { useDragScroll } from '@/hooks/useDragScroll';
 import { useProducts, useCategories, useBrands } from '@/hooks/useProducts';
@@ -19,6 +20,7 @@ type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
 export default function ShopPage() {
     const { t, language } = useLanguage();
+    const formatPrice = useFormatPrice();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const { recentlyViewed, addRecentlyViewed, clearRecentlyViewed } = useRecentlyViewed();
 
@@ -172,7 +174,7 @@ export default function ShopPage() {
                                                     <p className="text-[10px] font-black uppercase tracking-wide text-sb-black group-hover:text-sb-green transition-colors line-clamp-1 max-w-28">
                                                         {product.name}
                                                     </p>
-                                                    <p className="text-[10px] text-sb-green font-bold">€{price.toFixed(2)}</p>
+                                                    <p className="text-[10px] text-sb-green font-bold">{formatPrice(price)}</p>
                                                 </div>
                                             </button>
                                         );

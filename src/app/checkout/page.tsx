@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Check, ArrowRight, ArrowLeft, ChevronRight, MapPin, Phone,
     CreditCard, Lock, Truck, Package, ShoppingBag, AlertCircle, Loader2,
-    Store, ChevronDown, Search
+    Store, ChevronDown,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import { AppConfig } from '@/lib/config';
 import { getProductImage } from '@/types';
@@ -27,17 +28,15 @@ interface ShippingForm {
     firstName: string; lastName: string;
     email: string; phone: string;
     address: string; city: string;
-    postalCode: string; country: string;
+    postalCode: string;
     state: string;
 }
 interface BillingForm extends ShippingForm { sameAsShipping: boolean; }
 interface PaymentForm {
-    method: 'stripe' | 'cod';
+    method: 'stripe' | 'cod' | 'store';
     createAccount: boolean;
     acceptedTerms: boolean;
 }
-
-type Step = 'shipping' | 'payment';
 
 interface StoreLocation {
     id: number;
@@ -84,16 +83,6 @@ function clearFormFromSession(): void {
     try { sessionStorage.removeItem(CHECKOUT_FORM_KEY); } catch { /* ignore */ }
 }
 
-const STEPS: Step[] = ['shipping', 'payment'];
-
-const EU_COUNTRIES = [
-    { code: 'FR', name: 'France' }, { code: 'BE', name: 'Belgique' },
-    { code: 'CH', name: 'Suisse' }, { code: 'LU', name: 'Luxembourg' },
-    { code: 'DE', name: 'Allemagne' }, { code: 'ES', name: 'Espagne' },
-    { code: 'IT', name: 'Italie' }, { code: 'NL', name: 'Pays-Bas' },
-    { code: 'GB', name: 'Royaume-Uni' }, { code: 'PT', name: 'Portugal' },
-    { code: 'MA', name: 'Maroc' }, { code: 'DZ', name: 'Algérie' },
-];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function Input({ label, value, onChange, type = 'text', placeholder = '', required = false, className = '' }: {
@@ -137,46 +126,13 @@ function Select({ label, value, onChange, options, className = '', required = tr
     );
 }
 
-function StepIndicator({ current }: { current: Step }) {
-    const { language } = useLanguage();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
-    const steps = [
-        { id: 'shipping', label: tx('Livraison', 'Shipping'), icon: Truck },
-        { id: 'payment', label: tx('Paiement', 'Payment'), icon: CreditCard },
-    ];
-    const currentIdx = STEPS.indexOf(current);
-    return (
-        <div className="flex items-center justify-center gap-0 mb-12">
-            {steps.map((step, i) => {
-                const Icon = step.icon;
-                const done = i < currentIdx;
-                const active = i === currentIdx;
-                return (
-                    <React.Fragment key={step.id}>
-                        <div className="flex flex-col items-center">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${done ? 'bg-sb-green border-sb-green' : active ? 'bg-white border-sb-green shadow-lg shadow-sb-green/20' : 'bg-white border-gray-200'}`}>
-                                {done
-                                    ? <Check size={16} className="text-white" />
-                                    : <Icon size={16} className={active ? 'text-sb-green' : 'text-gray-300'} />
-                                }
-                            </div>
-                            <span className={`text-[9px] font-black uppercase tracking-wider mt-2 ${active ? 'text-sb-green' : done ? 'text-gray-500' : 'text-gray-300'}`}>{step.label}</span>
-                        </div>
-                        {i < steps.length - 1 && (
-                            <div className={`h-0.5 w-16 sm:w-24 mb-5 transition-all duration-500 ${i < currentIdx ? 'bg-sb-green' : 'bg-gray-100'}`} />
-                        )}
-                    </React.Fragment>
-                );
-            })}
-        </div>
-    );
-}
-
-function OrderSummary({ compact = false }: { compact?: boolean }) {
+function OrderSummary({ compact = false, codSurcharge = 0 }: { compact?: boolean; codSurcharge?: number }) {
     const { items, subtotal, promoDiscount, shippingCost, total, appliedPromo, selectedShipping } = useCart();
     const { language } = useLanguage();
+    const formatPrice = useFormatPrice();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [expanded, setExpanded] = useState(!compact);
+    const displayTotal = total + codSurcharge;
 
     return (
         <div className={`bg-white rounded-[32px] border border-gray-100 overflow-hidden ${compact ? '' : 'shadow-sm'}`}>
@@ -190,7 +146,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                     <span className="text-xs text-gray-400">({items.length} {tx('articles', 'items')})</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="font-display text-2xl text-sb-green">€{total.toFixed(2)}</span>
+                    <span className="font-display text-2xl text-sb-green">{formatPrice(displayTotal)}</span>
                     {compact && <ChevronRight size={16} className={`text-gray-300 transition-transform ${expanded ? 'rotate-90' : ''}`} />}
                 </div>
             </button>
@@ -215,7 +171,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                                 <p className="text-xs font-bold text-sb-black truncate">{name}</p>
                                                 <p className="text-[9px] text-gray-400">{unit} × {item.quantity}</p>
                                             </div>
-                                            <span className="font-bold text-sm">€{(item.unitPrice * item.quantity).toFixed(2)}</span>
+                                            <span className="font-bold text-sm">{formatPrice(item.unitPrice * item.quantity)}</span>
                                         </div>
                                     );
                                 })}
@@ -223,15 +179,21 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
 
                             {/* Pricing breakdown */}
                             <div className="space-y-2 text-sm">
-                                <div className="flex justify-between text-gray-500"><span>{tx('Sous-total', 'Subtotal')}</span><span className="font-bold">€{subtotal.toFixed(2)}</span></div>
-                                {promoDiscount > 0 && <div className="flex justify-between text-sb-green"><span>{appliedPromo?.code}</span><span className="font-bold">-€{promoDiscount.toFixed(2)}</span></div>}
+                                <div className="flex justify-between text-gray-500"><span>{tx('Sous-total', 'Subtotal')}</span><span className="font-bold">{formatPrice(subtotal)}</span></div>
+                                {promoDiscount > 0 && <div className="flex justify-between text-sb-green"><span>{appliedPromo?.code}</span><span className="font-bold">-{formatPrice(promoDiscount)}</span></div>}
                                 <div className="flex justify-between text-gray-500">
                                     <span>{tx('Livraison', 'Shipping')}{selectedShipping ? ` — ${selectedShipping.name}` : ''}</span>
-                                    <span className={`font-bold ${shippingCost === 0 ? 'text-sb-green' : ''}`}>{shippingCost === 0 ? tx('Gratuite', 'Free') : `€${shippingCost.toFixed(2)}`}</span>
+                                    <span className={`font-bold ${shippingCost === 0 ? 'text-sb-green' : ''}`}>{shippingCost === 0 ? tx('Gratuite', 'Free') : formatPrice(shippingCost)}</span>
                                 </div>
+                                {codSurcharge > 0 && (
+                                    <div className="flex justify-between text-gray-500">
+                                        <span>{tx('Supplément paiement à la livraison', 'COD Surcharge')}</span>
+                                        <span className="font-bold">{formatPrice(codSurcharge)}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between text-sb-black font-black pt-2 border-t border-gray-100 text-base">
                                     <span>Total</span>
-                                    <span className="font-display text-2xl text-sb-green">€{total.toFixed(2)}</span>
+                                    <span className="font-display text-2xl text-sb-green">{formatPrice(displayTotal)}</span>
                                 </div>
                             </div>
 
@@ -253,276 +215,6 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                 )}
             </AnimatePresence>
         </div>
-    );
-}
-
-// ─── Step 1: Shipping ─────────────────────────────────────────────────────────
-function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
-    form: ShippingForm; onChange: (f: ShippingForm) => void;
-    billing: BillingForm; onBillingChange: (f: BillingForm) => void;
-    onNext: (shippingMethodId: number, pickupStoreId?: number) => void;
-}) {
-    const { language } = useLanguage();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
-    const set = useCallback((key: keyof ShippingForm) => (v: string) => {
-        const updated = { ...form, [key]: v };
-        onChange(updated);
-        saveFormToSession(updated);
-    }, [form, onChange]);
-
-    const { setShipping } = useCart();
-
-    const [apiMethods, setApiMethods] = useState<ApiShippingMethod[]>([]);
-    const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
-    const [selectedMethod, setSelectedMethod] = useState<ApiShippingMethod | null>(null);
-    const [methodsLoading, setMethodsLoading] = useState(true);
-
-    // Pickup store state
-    const [pickupStores, setPickupStores] = useState<StoreLocation[]>([]);
-    const [pickupStoresLoading, setPickupStoresLoading] = useState(false);
-    const [selectedPickupStoreId, setSelectedPickupStoreId] = useState<number | null>(null);
-
-    // Fetch shipping methods on country change
-    useEffect(() => {
-        if (!form.country) return;
-        setMethodsLoading(true);
-        setSelectedMethodId(null);
-        setSelectedMethod(null);
-        setPickupStores([]);
-        setSelectedPickupStoreId(null);
-
-        fetch(`${Endpoints.shippingMethods}?country=${form.country}`)
-            .then(r => r.json())
-            .then((data: ApiShippingMethod[]) => {
-                const methods = Array.isArray(data) ? data : [];
-                setApiMethods(methods);
-                if (methods.length > 0) {
-                    const first = methods[0];
-                    setSelectedMethodId(first.id);
-                    setSelectedMethod(first);
-                    setShipping({
-                        id: first.id, name: first.name, description: first.description,
-                        base_price: first.type === 'pickup' ? 0 : Number(first.base_price),
-                        estimated_days_min: first.estimated_days_min,
-                        estimated_days_max: first.estimated_days_max,
-                        free_shipping_threshold: null,
-                    });
-                }
-            })
-            .catch(() => setApiMethods([]))
-            .finally(() => setMethodsLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [form.country]);
-
-    // When a pickup method is selected, fetch stores for the city
-    useEffect(() => {
-        if (!selectedMethod || selectedMethod.type !== 'pickup' || !form.country) {
-            setPickupStores([]);
-            setSelectedPickupStoreId(null);
-            return;
-        }
-        setPickupStoresLoading(true);
-        const url = `${Endpoints.pickupStores}?country=${form.country}${form.city ? `&city=${encodeURIComponent(form.city)}` : ''}`;
-        fetch(url)
-            .then(r => r.json())
-            .then((res: { data: StoreLocation[] }) => {
-                const stores = res.data ?? [];
-                setPickupStores(stores);
-                // Auto-select if only one store
-                if (stores.length === 1) setSelectedPickupStoreId(stores[0].id);
-                else setSelectedPickupStoreId(null);
-            })
-            .catch(() => setPickupStores([]))
-            .finally(() => setPickupStoresLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedMethod, form.country, form.city]);
-
-    const handleSelectMethod = (method: ApiShippingMethod) => {
-        setSelectedMethodId(method.id);
-        setSelectedMethod(method);
-        setPickupStores([]);
-        setSelectedPickupStoreId(null);
-        setShipping({
-            id: method.id, name: method.name, description: method.description,
-            base_price: method.type === 'pickup' ? 0 : Number(method.base_price),
-            estimated_days_min: method.estimated_days_min,
-            estimated_days_max: method.estimated_days_max,
-            free_shipping_threshold: null,
-        });
-    };
-
-    const isPickup = selectedMethod?.type === 'pickup';
-    const pickupReady = !isPickup || selectedPickupStoreId !== null;
-    const isValid = !!(form.firstName && form.lastName && form.email && form.address && form.city && form.postalCode && form.country && selectedMethodId && pickupReady);
-
-    return (
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-            <h2 className="font-display text-3xl uppercase mb-8">{tx('Adresse de livraison', 'Shipping Address')}</h2>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-                <Input label={tx('Prénom', 'First Name')} value={form.firstName} onChange={set('firstName')} required />
-                <Input label={tx('Nom', 'Last Name')} value={form.lastName} onChange={set('lastName')} required />
-            </div>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-                <Input label="Email" value={form.email} onChange={set('email')} type="email" required />
-                <Input label={tx('Téléphone', 'Phone')} value={form.phone} onChange={set('phone')} type="tel" placeholder="+33 6 00 00 00 00" />
-            </div>
-            <Input label={tx('Adresse', 'Address')} value={form.address} onChange={set('address')} placeholder="16 Boulevard du Général de Gaulle" required className="mb-4" />
-            <div className="grid grid-cols-3 gap-4 mb-4">
-                <Input label={tx('Code postal', 'Postal Code')} value={form.postalCode} onChange={set('postalCode')} placeholder="75001" required />
-                <Input label={tx('Ville', 'City')} value={form.city} onChange={set('city')} placeholder="Paris" required className="col-span-2" />
-            </div>
-            <Select
-                label={tx('Pays', 'Country')}
-                value={form.country}
-                onChange={set('country')}
-                options={EU_COUNTRIES.map(c => ({ value: c.code, label: c.name }))}
-                className="mb-8"
-            />
-
-            {/* ── Shipping methods ── */}
-            <div className="mb-8">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">{tx('Mode de livraison', 'Delivery Method')}</p>
-                {!form.country ? (
-                    <p className="text-sm text-gray-400 italic">{tx('Sélectionnez un pays d\'abord.', 'Select a country first.')}</p>
-                ) : methodsLoading ? (
-                    <div className="space-y-3">
-                        <div className="h-16 rounded-2xl bg-gray-50 animate-pulse" />
-                        <div className="h-16 rounded-2xl bg-gray-50 animate-pulse opacity-60" />
-                    </div>
-                ) : apiMethods.length === 0 ? (
-                    <div className="flex items-center gap-2 text-red-500 text-sm p-4 bg-red-50 rounded-2xl border border-red-100">
-                        <AlertCircle size={15} /> {tx('Livraison indisponible pour ce pays.', 'Shipping unavailable for this country.')}
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {apiMethods.map(method => {
-                            const isSelected = selectedMethodId === method.id;
-                            const isPickupMethod = method.type === 'pickup';
-                            const MethodIcon = isPickupMethod ? Store : Truck;
-                            return (
-                                <button
-                                    key={method.id}
-                                    type="button"
-                                    onClick={() => handleSelectMethod(method)}
-                                    className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all text-left ${isSelected ? 'border-sb-green bg-sb-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-sb-green/10' : 'bg-gray-50'}`}>
-                                            <MethodIcon size={16} className={isSelected ? 'text-sb-green' : 'text-gray-400'} />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-sm text-sb-black">{method.name}</p>
-                                            {isPickupMethod
-                                                ? <p className="text-[10px] text-sb-green font-bold uppercase tracking-wider">{tx('Click & Collect', 'Click & Collect')}</p>
-                                                : <p className="text-[10px] text-gray-400">{method.estimated_days_min}–{method.estimated_days_max} {tx('jours ouvrés', 'business days')}</p>
-                                            }
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className={`font-black text-base ${isSelected ? 'text-sb-green' : 'text-sb-black'}`}>
-                                            {isPickupMethod || method.base_price === 0 ? tx('Gratuit', 'Free') : `€${Number(method.base_price).toFixed(2)}`}
-                                        </span>
-                                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-sb-green' : 'border-gray-300'}`}>
-                                            {isSelected && <div className="w-2 h-2 rounded-full bg-sb-green" />}
-                                        </div>
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-
-            {/* ── Pickup store selector (shown when pickup method is selected) ── */}
-            <AnimatePresence>
-                {isPickup && (
-                    <motion.div
-                        key="pickup-stores"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden mb-8"
-                    >
-                        <div className="border-2 border-sb-green/20 bg-sb-green/5 rounded-2xl p-5">
-                            <div className="flex items-center gap-2 mb-4">
-                                <Store size={16} className="text-sb-green" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-sb-green">
-                                    {tx('Choisissez votre point de retrait', 'Choose Pickup Location')}
-                                </p>
-                            </div>
-
-                            {!form.city ? (
-                                <p className="text-sm text-gray-500 italic">{tx('Entrez votre ville pour voir les magasins disponibles.', 'Enter your city to see available stores.')}</p>
-                            ) : pickupStoresLoading ? (
-                                <div className="space-y-2">
-                                    <div className="h-14 rounded-xl bg-white/50 animate-pulse" />
-                                    <div className="h-14 rounded-xl bg-white/50 animate-pulse opacity-60" />
-                                </div>
-                            ) : pickupStores.length === 0 ? (
-                                <div className="flex items-center gap-2 text-orange-600 text-sm bg-orange-50 border border-orange-100 rounded-xl p-3">
-                                    <AlertCircle size={14} />
-                                    {tx('Aucun magasin disponible dans votre ville.', 'No stores available in your city.')}
-                                </div>
-                            ) : (
-                                <div className="space-y-2">
-                                    {pickupStores.map(store => {
-                                        const isStoreSelected = selectedPickupStoreId === store.id;
-                                        return (
-                                            <button
-                                                key={store.id}
-                                                type="button"
-                                                onClick={() => setSelectedPickupStoreId(store.id)}
-                                                className={`w-full flex items-start gap-3 p-4 rounded-xl border-2 transition-all text-left ${isStoreSelected ? 'border-sb-green bg-white shadow-sm' : 'border-transparent bg-white/50 hover:bg-white hover:border-gray-100'}`}
-                                            >
-                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${isStoreSelected ? 'bg-sb-green/10' : 'bg-gray-50'}`}>
-                                                    <MapPin size={14} className={isStoreSelected ? 'text-sb-green' : 'text-gray-400'} />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className={`font-bold text-sm ${isStoreSelected ? 'text-sb-black' : 'text-gray-700'}`}>{store.name}</p>
-                                                    <p className="text-[10px] text-gray-400 mt-0.5">{store.address}, {store.city}</p>
-                                                    {store.hours && <p className="text-[10px] text-gray-400">{store.hours}</p>}
-                                                    {store.phone && (
-                                                        <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                                                            <Phone size={10} /> {store.phone}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 ${isStoreSelected ? 'border-sb-green' : 'border-gray-200'}`}>
-                                                    {isStoreSelected && <div className="w-2 h-2 rounded-full bg-sb-green" />}
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Billing same as shipping */}
-            <label className="flex items-center gap-3 mb-8 cursor-pointer group">
-                <div
-                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${billing.sameAsShipping ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
-                    onClick={() => onBillingChange({ ...billing, sameAsShipping: !billing.sameAsShipping })}
-                >
-                    {billing.sameAsShipping && <Check size={12} className="text-white" />}
-                </div>
-                <span className="text-sm font-bold text-gray-600">{tx('Adresse de facturation identique', 'Billing address same as shipping')}</span>
-            </label>
-
-            <button
-                onClick={() => {
-                    if (selectedMethodId) onNext(selectedMethodId, isPickup ? (selectedPickupStoreId ?? undefined) : undefined);
-                }}
-                disabled={!isValid}
-                className="w-full flex justify-between items-center px-8 py-5 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-                <span>{tx('Continuer vers le paiement', 'Continue to Payment')}</span>
-                <ArrowRight size={18} />
-            </button>
-        </motion.div>
     );
 }
 
@@ -605,330 +297,267 @@ function StripePaymentForm({ onSuccess, onBack, language }: {
     );
 }
 
-// ─── Step 2: Payment ──────────────────────────────────────────────────────────
-function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm, shippingMethodId, pickupStoreId, promoCode }: {
-    form: PaymentForm; onChange: (f: PaymentForm) => void;
-    onNext: (orderId: number) => void; onBack: () => void;
-    shippingForm: ShippingForm; billingForm: BillingForm;
-    shippingMethodId: number;
-    pickupStoreId?: number;
-    promoCode: string | null;
-}) {
-    const { total, syncCartToBackend } = useCart();
-    const { language } = useLanguage();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    // After placing the order we store client_secret + order_id to show Stripe Elements
-    const [clientSecret, setClientSecret] = useState<string | null>(null);
-    const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
-    // Enabled payment methods from admin settings
-    const [enabledMethods, setEnabledMethods] = useState<{
-        stripe: boolean; cod: boolean; paypal: boolean;
-        cod_config?: { max_order_amount: number; surcharge: number; surcharge_type: string };
-    } | null>(null);
-
-    useEffect(() => {
-        fetch(Endpoints.paymentMethods)
-            .then(r => r.json())
-            .then(data => {
-                setEnabledMethods(data);
-                // If current method was disabled, switch to first enabled
-                if (data && !data[form.method]) {
-                    const first = data.stripe ? 'stripe' : data.cod ? 'cod' : 'stripe';
-                    onChange({ ...form, method: first });
-                }
-            })
-            .catch(() => setEnabledMethods({ stripe: true, cod: true, paypal: false }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const buildPayload = () => {
-        const shippingAddress = {
-            first_name: shippingForm.firstName,
-            last_name: shippingForm.lastName,
-            line_1: shippingForm.address,
-            city: shippingForm.city,
-            zip: shippingForm.postalCode,
-            country: shippingForm.country,
-            phone: shippingForm.phone || undefined,
-            state: shippingForm.state || undefined,
-        };
-        const billingAddress = billingForm.sameAsShipping ? undefined : {
-            first_name: billingForm.firstName,
-            last_name: billingForm.lastName,
-            line_1: billingForm.address,
-            city: billingForm.city,
-            zip: billingForm.postalCode,
-            country: billingForm.country,
-            phone: billingForm.phone || undefined,
-        };
-        return {
-            shipping_address: shippingAddress,
-            billing_address: billingAddress,
-            shipping_method_id: shippingMethodId,
-            pickup_store_id: pickupStoreId || undefined,
-            promotion_code: promoCode || undefined,
-            payment_method: form.method,
-            email: shippingForm.email,
-            phone: shippingForm.phone || undefined,
-        };
-    };
-
-    const handleContinueToStripe = async () => {
-        setIsProcessing(true);
-        setError(null);
-        try {
-            console.log('[Checkout] handleContinueToStripe — calling syncCartToBackend');
-            await syncCartToBackend();
-            console.log('[Checkout] syncCartToBackend done — calling placeOrder');
-            const res = await apiClient.post<{ order_id: number; grand_total: number; client_secret: string }>(
-                Endpoints.placeOrder,
-                buildPayload(),
-            );
-            console.log('[Checkout] placeOrder OK:', res);
-            setClientSecret(res.client_secret);
-            setPendingOrderId(res.order_id);
-        } catch (err) {
-            console.error('[Checkout] error:', err);
-            setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    const handleCOD = async () => {
-        setIsProcessing(true);
-        setError(null);
-        try {
-            console.log('[Checkout] handleCOD — calling syncCartToBackend');
-            await syncCartToBackend();
-            console.log('[Checkout] syncCartToBackend done — calling placeOrder');
-            const res = await apiClient.post<{ order_id: number; grand_total: number }>(
-                Endpoints.placeOrder,
-                buildPayload(),
-            );
-            console.log('[Checkout] placeOrder OK:', res);
-            onNext(res.order_id);
-        } catch (err) {
-            console.error('[Checkout] error:', err);
-            setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    const allMethods = [
-        { id: 'stripe' as const, label: tx('Carte / Apple Pay / Google Pay', 'Card / Apple Pay / Google Pay'), icon: CreditCard },
-        { id: 'cod' as const, label: tx('Paiement à la livraison', 'Cash on Delivery'), icon: Truck },
-    ];
-    const paymentMethods = enabledMethods
-        ? allMethods.filter(m => enabledMethods[m.id])
-        : allMethods;
-
-    // Phase 2: Stripe Elements are ready — show PaymentElement
-    if (clientSecret && pendingOrderId) {
-        return (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <h2 className="font-display text-3xl uppercase mb-2">{tx('Paiement sécurisé', 'Secure Payment')}</h2>
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-8">
-                    {tx('Commande', 'Order')} #{pendingOrderId}
-                </p>
-                <Elements
-                    stripe={stripePromise}
-                    options={{
-                        clientSecret,
-                        appearance: {
-                            theme: 'stripe',
-                            variables: {
-                                colorPrimary: '#3B7E5A',
-                                borderRadius: '16px',
-                                fontFamily: 'system-ui, sans-serif',
-                            },
-                        },
-                    }}
-                >
-                    <StripePaymentForm
-                        language={language}
-                        onBack={() => { setClientSecret(null); setPendingOrderId(null); }}
-                        onSuccess={() => onNext(pendingOrderId)}
-                    />
-                </Elements>
-            </motion.div>
-        );
-    }
-
-    // Phase 1: Method selector
+// ─── Section Card wrapper ─────────────────────────────────────────────────────
+function SectionCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
     return (
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="relative">
-            {isProcessing && (
-                <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-[40px]">
-                    <Loader2 size={32} className="animate-spin text-sb-green mb-4" />
-                    <p className="font-display text-xl uppercase tracking-widest text-sb-black">{tx('Préparation...', 'Preparing...')}</p>
-                </div>
-            )}
-
-            <h2 className="font-display text-3xl uppercase mb-8">{tx('Mode de paiement', 'Payment Method')}</h2>
-
-            {/* No payment methods available */}
-            {paymentMethods.length === 0 && (
-                <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-2xl p-5 mb-8">
-                    <AlertCircle size={20} className="text-red-500 flex-shrink-0" />
-                    <p className="text-sm text-red-700">{tx('Aucun moyen de paiement n\'est actuellement disponible. Veuillez réessayer plus tard.', 'No payment methods are currently available. Please try again later.')}</p>
-                </div>
-            )}
-
-            {/* Method Selector */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-                {paymentMethods.map(m => (
-                    <button
-                        key={m.id}
-                        onClick={() => onChange({ ...form, method: m.id })}
-                        className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all gap-2 ${form.method === m.id ? 'border-sb-green bg-sb-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
-                    >
-                        <m.icon size={22} className={form.method === m.id ? 'text-sb-green' : 'text-gray-300'} />
-                        <span className={`text-[10px] font-black uppercase tracking-wider text-center ${form.method === m.id ? 'text-sb-green' : 'text-gray-500'}`}>{m.label}</span>
-                    </button>
-                ))}
-            </div>
-
-            <AnimatePresence mode="wait">
-                {form.method === 'stripe' && (
-                    <motion.div key="stripe" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-8">
-                        <div className="bg-gray-50 border border-gray-100 rounded-3xl p-6">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                                    <CreditCard size={20} className="text-sb-green" />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-sm">{tx('Paiement par Stripe', 'Pay with Stripe')}</p>
-                                    <p className="text-[10px] text-gray-400">{tx('Carte, Apple Pay, Google Pay, Link', 'Card, Apple Pay, Google Pay, Link')}</p>
-                                </div>
-                            </div>
-                            <p className="text-xs text-gray-500">{tx('Vos données de carte sont traitées directement par Stripe — jamais stockées sur nos serveurs.', 'Your card data is handled directly by Stripe — never stored on our servers.')}</p>
-                        </div>
-                    </motion.div>
-                )}
-
-                {form.method === 'cod' && (() => {
-                    const codCfg = enabledMethods?.cod_config;
-                    const maxAmount = codCfg?.max_order_amount ?? 0;
-                    const surcharge = codCfg?.surcharge ?? 0;
-                    const surchargeType = codCfg?.surcharge_type ?? 'fixed';
-                    const exceeds = maxAmount > 0 && total > maxAmount;
-                    const surchargeDisplay = surcharge > 0
-                        ? surchargeType === 'percentage' ? `${surcharge}%` : `€${surcharge.toFixed(2)}`
-                        : null;
-
-                    return (
-                        <motion.div key="cod" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-8 space-y-3">
-                            <div className="bg-orange-50/50 border border-orange-100 rounded-3xl p-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-orange-600">
-                                        <Truck size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-display text-lg uppercase mb-1">{tx('Paiement à la livraison', 'Cash on Delivery')}</h3>
-                                        <p className="text-sm text-gray-500 mb-3">{tx('Préparez le montant exact pour faciliter la réception. Notre livreur vous contactera avant son arrivée.', 'Please prepare the exact amount for easier delivery. Our courier will contact you before arrival.')}</p>
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-orange-700/60 uppercase">
-                                            <Check size={12} /> {tx('Échange sans contact disponible', 'Contactless exchange available')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {surchargeDisplay && (
-                                <div className="flex items-center gap-2 text-xs text-orange-700 bg-orange-50 border border-orange-100 rounded-2xl px-4 py-2.5">
-                                    <AlertCircle size={14} className="flex-shrink-0" />
-                                    {tx(`Un supplément de ${surchargeDisplay} sera appliqué pour le paiement à la livraison.`, `A ${surchargeDisplay} surcharge applies for cash on delivery.`)}
-                                </div>
-                            )}
-                            {exceeds && (
-                                <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
-                                    <AlertCircle size={14} className="flex-shrink-0" />
-                                    {tx(`Le paiement à la livraison n'est pas disponible pour les commandes supérieures à €${maxAmount.toFixed(2)}.`, `Cash on delivery is not available for orders above €${maxAmount.toFixed(2)}.`)}
-                                </div>
-                            )}
-                        </motion.div>
-                    );
-                })()}
-            </AnimatePresence>
-
-            {/* Terms & Conditions + EU withdrawal right */}
-            <label className="flex items-start gap-3 mb-6 cursor-pointer group">
-                <div
-                    onClick={() => onChange({ ...form, acceptedTerms: !form.acceptedTerms })}
-                    className={`w-5 h-5 mt-0.5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${form.acceptedTerms ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
-                >
-                    {form.acceptedTerms && <Check size={12} className="text-white" />}
-                </div>
-                <span className="text-xs text-gray-500 leading-relaxed">
-                    {tx(
-                        'J\'accepte les Conditions Générales de Vente et la Politique de Confidentialité. Je reconnais mon droit de rétractation de 14 jours conformément à la directive européenne 2011/83/UE.',
-                        'I accept the Terms & Conditions and Privacy Policy. I acknowledge my 14-day right of withdrawal under EU Directive 2011/83/EU.'
-                    )}
-                </span>
-            </label>
-
-            {error && (
-                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 mb-4">
-                    <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-red-700 text-xs leading-snug">{error}</p>
-                </div>
-            )}
-
-            <div className="flex gap-3">
-                <button onClick={onBack} className="flex items-center gap-2 px-6 py-4 rounded-full border-2 border-gray-100 text-sm font-black uppercase tracking-widest text-gray-400 hover:border-gray-200 transition-colors">
-                    <ArrowLeft size={16} />
-                    {tx('Retour', 'Back')}
-                </button>
-                <button
-                    onClick={form.method === 'cod' ? handleCOD : handleContinueToStripe}
-                    disabled={isProcessing || !form.acceptedTerms || paymentMethods.length === 0 || (form.method === 'cod' && (enabledMethods?.cod_config?.max_order_amount ?? 0) > 0 && total > (enabledMethods?.cod_config?.max_order_amount ?? 0))}
-                    className="flex-1 flex justify-between items-center px-8 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
-                >
-                    <span>{form.method === 'cod' ? tx('Confirmer la commande', 'Confirm Order') : tx('Continuer vers le paiement', 'Continue to Payment')}</span>
-                    <ArrowRight size={18} />
-                </button>
-            </div>
-        </motion.div>
+        <div className={`bg-white rounded-[28px] border border-gray-100 p-6 sm:p-8 shadow-sm ${className}`}>
+            {children}
+        </div>
     );
 }
 
 // ─── Main Checkout Page ───────────────────────────────────────────────────────
 export default function CheckoutPage() {
-    const { items, total, appliedPromo, clearCart } = useCart();
+    const { items, total, appliedPromo, clearCart, setShipping } = useCart();
     const { language } = useLanguage();
+    const formatPrice = useFormatPrice();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const router = useRouter();
-
     const { user } = useAuth();
-    const [step, setStep] = useState<Step>('shipping');
-    const [shippingMethodId, setShippingMethodId] = useState<number>(0);
-    const [pickupStoreId, setPickupStoreId] = useState<number | undefined>(undefined);
 
-    // Build initial shipping form: prefer sessionStorage → user account → defaults
+    // ── Shipping form state ──
     const savedForm = loadFormFromSession();
     const defaultShippingForm: ShippingForm = {
-        firstName: savedForm?.firstName ?? user?.name?.split(' ')[0] ?? '',
-        lastName:  savedForm?.lastName  ?? user?.name?.split(' ').slice(1).join(' ') ?? '',
-        email:     savedForm?.email     ?? user?.email ?? '',
-        phone:     savedForm?.phone     ?? '',
-        address:   savedForm?.address   ?? '',
-        city:      savedForm?.city      ?? '',
-        postalCode:savedForm?.postalCode?? '',
-        country:   savedForm?.country   ?? 'FR',
-        state:     savedForm?.state     ?? '',
+        firstName:  savedForm?.firstName  ?? user?.name?.split(' ')[0] ?? '',
+        lastName:   savedForm?.lastName   ?? user?.name?.split(' ').slice(1).join(' ') ?? '',
+        email:      savedForm?.email      ?? user?.email ?? '',
+        phone:      savedForm?.phone      ?? '',
+        address:    savedForm?.address    ?? '',
+        city:       savedForm?.city       ?? '',
+        postalCode: savedForm?.postalCode ?? '',
+        state:      savedForm?.state      ?? '',
     };
 
     const [shippingForm, setShippingForm] = useState<ShippingForm>(defaultShippingForm);
-    const [billingForm, setBillingForm] = useState<BillingForm>({
-        ...defaultShippingForm, sameAsShipping: true,
-    });
-    const [paymentForm, setPaymentForm] = useState<PaymentForm>({
-        method: 'stripe', createAccount: false, acceptedTerms: false,
-    });
+    const [billingForm, setBillingForm] = useState<BillingForm>({ ...defaultShippingForm, sameAsShipping: true });
+    const [paymentForm, setPaymentForm] = useState<PaymentForm>({ method: 'stripe', createAccount: false, acceptedTerms: false });
 
-    // If cart is empty, redirect to shop
+    // ── Shipping method state (lifted up from old ShippingStep) ──
+    const [apiMethods, setApiMethods] = useState<ApiShippingMethod[]>([]);
+    const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
+    const [selectedMethod, setSelectedMethod] = useState<ApiShippingMethod | null>(null);
+    const [methodsLoading, setMethodsLoading] = useState(true);
+
+    // ── Pickup store state ──
+    const [pickupStores, setPickupStores] = useState<StoreLocation[]>([]);
+    const [selectedPickupStoreId, setSelectedPickupStoreId] = useState<number | null>(null);
+
+    // ── Payment state ──
+    const [enabledMethods, setEnabledMethods] = useState<{
+        stripe: boolean; cod: boolean;
+        pickup_payment_required?: boolean;
+        cod_config?: { max_order_amount: number; surcharge: number; surcharge_type: string };
+    } | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [clientSecret, setClientSecret] = useState<string | null>(null);
+    const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
+
+    const isPickup = selectedMethod?.type === 'pickup';
+
+    const setShippingField = useCallback((key: keyof ShippingForm) => (v: string) => {
+        setShippingForm(prev => {
+            const updated = { ...prev, [key]: v };
+            saveFormToSession(updated);
+            return updated;
+        });
+    }, []);
+
+    // ── Fetch shipping methods on mount ──
+    useEffect(() => {
+        setMethodsLoading(true);
+        fetch(Endpoints.shippingMethods)
+            .then(r => r.json())
+            .then((data: ApiShippingMethod[]) => {
+                const methods = Array.isArray(data) ? data : [];
+                setApiMethods(methods);
+                if (methods.length > 0) {
+                    const first = methods[0];
+                    setSelectedMethodId(first.id);
+                    setSelectedMethod(first);
+                    setShipping({
+                        id: first.id, name: first.name, description: first.description,
+                        base_price: Number(first.base_price),
+                        estimated_days_min: first.estimated_days_min,
+                        estimated_days_max: first.estimated_days_max,
+                        free_shipping_threshold: null,
+                    });
+                }
+            })
+            .catch(() => setApiMethods([]))
+            .finally(() => setMethodsLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // ── Fetch enabled payment methods ──
+    useEffect(() => {
+        fetch(Endpoints.paymentMethods)
+            .then(r => r.json())
+            .then(data => {
+                setEnabledMethods(data);
+                if (isPickup && paymentForm.method === 'cod') {
+                    setPaymentForm(f => ({ ...f, method: 'stripe' }));
+                } else if (!isPickup && paymentForm.method === 'store') {
+                    setPaymentForm(f => ({ ...f, method: 'stripe' }));
+                } else if (data && !isPickup && paymentForm.method !== 'store' && !data[paymentForm.method as 'stripe' | 'cod']) {
+                    const first = data.stripe ? 'stripe' : data.cod ? 'cod' : 'stripe';
+                    setPaymentForm(f => ({ ...f, method: first as 'stripe' | 'cod' | 'store' }));
+                }
+            })
+            .catch(() => setEnabledMethods({ stripe: true, cod: true }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isPickup]);
+
+    const handleSelectMethod = (method: ApiShippingMethod) => {
+        setSelectedMethodId(method.id);
+        setSelectedMethod(method);
+        setSelectedPickupStoreId(null);
+        // Fetch pickup stores when pickup method selected
+        if (method.type === 'pickup') {
+            fetch(Endpoints.pickupStores)
+                .then(r => r.json())
+                .then((res: { data: StoreLocation[] }) => setPickupStores(res.data ?? []))
+                .catch(() => setPickupStores([]));
+        } else {
+            setPickupStores([]);
+        }
+        setShipping({
+            id: method.id, name: method.name, description: method.description,
+            base_price: Number(method.base_price),
+            estimated_days_min: method.estimated_days_min,
+            estimated_days_max: method.estimated_days_max,
+            free_shipping_threshold: null,
+        });
+        // Reset incompatible payment method
+        if (method.type === 'pickup' && paymentForm.method === 'cod') {
+            setPaymentForm(f => ({ ...f, method: 'stripe' }));
+        } else if (method.type !== 'pickup' && paymentForm.method === 'store') {
+            setPaymentForm(f => ({ ...f, method: 'stripe' }));
+        }
+    };
+
+    // ── Payment methods available ──
+    // Delivery → Stripe + COD (if enabled)
+    // Pickup   → Stripe + Pay in Store (unless admin requires online payment)
+    const pickupPaymentRequired = enabledMethods?.pickup_payment_required ?? false;
+    const paymentMethods: { id: 'stripe' | 'cod' | 'store'; label: string; icon: typeof CreditCard }[] = (() => {
+        const methods: { id: 'stripe' | 'cod' | 'store'; label: string; icon: typeof CreditCard }[] = [];
+        // Stripe is always an option if enabled
+        if (!enabledMethods || enabledMethods.stripe) {
+            methods.push({ id: 'stripe', label: tx('Carte / Apple Pay / Google Pay', 'Card / Apple Pay / Google Pay'), icon: CreditCard });
+        }
+        if (isPickup) {
+            // Pickup: offer "Pay in Store" unless admin requires online payment
+            if (!pickupPaymentRequired) {
+                methods.push({ id: 'store', label: tx('Payer en magasin', 'Pay in Store'), icon: Store });
+            }
+        } else {
+            // Delivery: offer COD if enabled
+            if (!enabledMethods || enabledMethods.cod) {
+                methods.push({ id: 'cod', label: tx('Paiement à la livraison', 'Cash on Delivery'), icon: Truck });
+            }
+        }
+        return methods;
+    })();
+
+    // ── buildPayload ──
+    const buildPayload = useCallback(() => {
+        const shippingAddress = {
+            first_name: shippingForm.firstName,
+            last_name:  shippingForm.lastName,
+            line_1:     shippingForm.address,
+            city:       shippingForm.city,
+            zip:        shippingForm.postalCode,
+            country:    'FR',
+            phone:      shippingForm.phone || undefined,
+            state:      shippingForm.state || undefined,
+        };
+        const billingAddress = billingForm.sameAsShipping ? undefined : {
+            first_name: billingForm.firstName,
+            last_name:  billingForm.lastName,
+            line_1:     billingForm.address,
+            city:       billingForm.city,
+            zip:        billingForm.postalCode,
+            country:    'FR',
+            phone:      billingForm.phone || undefined,
+        };
+        return {
+            shipping_address: shippingAddress,
+            billing_address: billingAddress,
+            shipping_method_id: selectedMethodId ?? 0,
+            pickup_store_id: selectedPickupStoreId || undefined,
+            promotion_code: appliedPromo?.code || undefined,
+            payment_method: paymentForm.method === 'store' ? 'cod' : paymentForm.method,
+            email: shippingForm.email,
+            phone: shippingForm.phone || undefined,
+        };
+    }, [shippingForm, billingForm, selectedMethodId, selectedPickupStoreId, appliedPromo, paymentForm.method]);
+
+    // ── Validation ──
+    const pickupReady = !isPickup || selectedPickupStoreId !== null;
+    const billingValid = billingForm.sameAsShipping || !!(
+        billingForm.firstName && billingForm.lastName &&
+        billingForm.address && billingForm.city &&
+        billingForm.postalCode
+    );
+    const isFormValid = !!(
+        shippingForm.firstName && shippingForm.lastName &&
+        shippingForm.email && shippingForm.address &&
+        shippingForm.city && shippingForm.postalCode &&
+        selectedMethodId &&
+        pickupReady && paymentForm.acceptedTerms && billingValid
+    );
+    const codCfg = enabledMethods?.cod_config;
+    const codMaxAmount = codCfg?.max_order_amount ?? 0;
+    const codSurchargeAmount = codCfg?.surcharge ?? 0;
+    const codSurchargeType = codCfg?.surcharge_type ?? 'fixed';
+    const activeCodSurcharge = paymentForm.method === 'cod' && codSurchargeAmount > 0
+        ? (codSurchargeType === 'percentage' ? +(total * (codSurchargeAmount / 100)).toFixed(2) : codSurchargeAmount)
+        : 0;
+    const codExceeds = paymentForm.method === 'cod' && codMaxAmount > 0 && (total + activeCodSurcharge) > codMaxAmount;
+    const canSubmit = isFormValid && !codExceeds && paymentMethods.length > 0;
+
+    // ── Handlers ──
+    const { syncCartToBackend } = useCart();
+
+    const handleContinueToStripe = async () => {
+        setIsProcessing(true);
+        setError(null);
+        try {
+            await syncCartToBackend();
+            const res = await apiClient.post<{ order_id: number; grand_total: number; client_secret: string }>(
+                Endpoints.placeOrder,
+                buildPayload(),
+            );
+            setClientSecret(res.client_secret);
+            setPendingOrderId(res.order_id);
+        } catch (err) {
+            setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handlePlaceOrder = async () => {
+        setIsProcessing(true);
+        setError(null);
+        try {
+            await syncCartToBackend();
+            const res = await apiClient.post<{ order_id: number; grand_total: number }>(
+                Endpoints.placeOrder,
+                buildPayload(),
+            );
+            clearFormFromSession();
+            clearCart();
+            router.push(`/order-success?order=${res.order_id}&payment=${paymentForm.method}&total=${total.toFixed(2)}`);
+        } catch (err) {
+            setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // ── Empty cart guard ──
     if (items.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAF9F6] gap-6 px-4 sm:px-6">
@@ -944,12 +573,12 @@ export default function CheckoutPage() {
 
     return (
         <div className="bg-[#FAF9F6] min-h-screen">
-            {/* Header */}
+            {/* ── Header ── */}
             <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex items-center justify-between">
-                <Link href="/shop" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-sb-green transition-colors">
+                <button onClick={() => router.back()} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-sb-green transition-colors">
                     <ArrowLeft size={14} />
-                    {tx('Boutique', 'Shop')}
-                </Link>
+                    {tx('Retour', 'Back')}
+                </button>
                 <span className="font-display text-xl uppercase">{AppConfig.brand.name}</span>
                 <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold">
                     <Lock size={11} className="text-sb-green" />
@@ -958,50 +587,411 @@ export default function CheckoutPage() {
             </div>
 
             <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
-                <StepIndicator current={step} />
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
 
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-12 items-start">
-                    {/* ── Left: Form ── */}
-                    <div className="bg-white rounded-[28px] sm:rounded-[40px] border border-gray-100 p-5 sm:p-6 lg:p-8 shadow-sm">
-                        <AnimatePresence mode="wait">
-                            {step === 'shipping' && (
-                                <ShippingStep
-                                    key="shipping"
-                                    form={shippingForm}
-                                    onChange={setShippingForm}
-                                    billing={billingForm}
-                                    onBillingChange={setBillingForm}
-                                    onNext={(methodId, storeId) => {
-                                        setShippingMethodId(methodId);
-                                        setPickupStoreId(storeId);
-                                        setStep('payment');
-                                    }}
-                                />
+                    {/* ── Left column: stacked section cards ── */}
+                    <div className="space-y-6">
+
+                        {/* ── Section 1: Shipping Address ── */}
+                        <SectionCard>
+                            <h2 className="font-display text-xl uppercase mb-4">{tx('Adresse de livraison', 'Shipping Address')}</h2>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <Input label={tx('Prénom', 'First Name')} value={shippingForm.firstName} onChange={setShippingField('firstName')} required />
+                                <Input label={tx('Nom', 'Last Name')} value={shippingForm.lastName} onChange={setShippingField('lastName')} required />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <Input label="Email" value={shippingForm.email} onChange={setShippingField('email')} type="email" required />
+                                <Input label={tx('Téléphone', 'Phone')} value={shippingForm.phone} onChange={setShippingField('phone')} type="tel" placeholder="+33 6 00 00 00 00" />
+                            </div>
+                            <Input label={tx('Adresse', 'Address')} value={shippingForm.address} onChange={setShippingField('address')} placeholder="16 Boulevard du Général de Gaulle" required className="mb-4" />
+                            <div className="grid grid-cols-3 gap-4 mb-4">
+                                <Input label={tx('Code postal', 'Postal Code')} value={shippingForm.postalCode} onChange={setShippingField('postalCode')} placeholder="75001" required />
+                                <Input label={tx('Ville', 'City')} value={shippingForm.city} onChange={setShippingField('city')} placeholder="Paris" required className="col-span-2" />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">{tx('Pays', 'Country')}</label>
+                                <div className="px-4 py-3 bg-gray-50 rounded-xl text-sm text-sb-black font-medium">France</div>
+                            </div>
+                        </SectionCard>
+
+                        {/* ── Section 2: Delivery Method ── */}
+                        <SectionCard>
+                            <h2 className="font-display text-xl uppercase mb-4">{tx('Mode de livraison', 'Delivery Method')}</h2>
+                            {methodsLoading ? (
+                                <div className="space-y-3">
+                                    <div className="h-16 rounded-2xl bg-gray-50 animate-pulse" />
+                                    <div className="h-16 rounded-2xl bg-gray-50 animate-pulse opacity-60" />
+                                </div>
+                            ) : apiMethods.length === 0 ? (
+                                <div className="flex items-center gap-2 text-red-500 text-sm p-4 bg-red-50 rounded-2xl border border-red-100">
+                                    <AlertCircle size={15} /> {tx('Aucune méthode de livraison disponible.', 'No delivery methods available.')}
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {apiMethods.map(method => {
+                                        const isSelected = selectedMethodId === method.id;
+                                        const isPickupMethod = method.type === 'pickup';
+                                        const MethodIcon = isPickupMethod ? Store : Truck;
+                                        return (
+                                            <button
+                                                key={method.id}
+                                                type="button"
+                                                onClick={() => handleSelectMethod(method)}
+                                                className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all text-left ${isSelected ? 'border-sb-green bg-sb-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-sb-green/10' : 'bg-gray-50'}`}>
+                                                        <MethodIcon size={16} className={isSelected ? 'text-sb-green' : 'text-gray-400'} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-sm text-sb-black">{method.name}</p>
+                                                        {isPickupMethod
+                                                            ? <p className="text-[10px] text-sb-green font-bold uppercase tracking-wider">{tx('Click & Collect', 'Click & Collect')}</p>
+                                                            : <p className="text-[10px] text-gray-400">{method.estimated_days_min}–{method.estimated_days_max} {tx('jours ouvrés', 'business days')}</p>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className={`font-black text-base ${isSelected ? 'text-sb-green' : 'text-sb-black'}`}>
+                                                        {Number(method.base_price) === 0
+                                                            ? tx('Gratuit', 'Free')
+                                                            : formatPrice(Number(method.base_price))}
+                                                    </span>
+                                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-sb-green' : 'border-gray-300'}`}>
+                                                        {isSelected && <div className="w-2 h-2 rounded-full bg-sb-green" />}
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             )}
-                            {step === 'payment' && (
-                                <PaymentStep
-                                    key="payment"
-                                    form={paymentForm}
-                                    onChange={setPaymentForm}
-                                    onNext={(oid) => {
-                                        clearFormFromSession();
-                                        clearCart();
-                                        router.push(`/order-success?order=${oid}&payment=${paymentForm.method}&total=${total.toFixed(2)}`);
-                                    }}
-                                    onBack={() => setStep('shipping')}
-                                    shippingForm={shippingForm}
-                                    billingForm={billingForm}
-                                    shippingMethodId={shippingMethodId}
-                                    pickupStoreId={pickupStoreId}
-                                    promoCode={appliedPromo?.code ?? null}
-                                />
+
+                            {/* ── Pickup store picker ── */}
+                            <AnimatePresence>
+                                {isPickup && pickupStores.length > 0 && (
+                                    <motion.div
+                                        key="pickup-stores"
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden mt-5"
+                                    >
+                                        <div className="border-2 border-sb-green/20 bg-sb-green/5 rounded-2xl p-5">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <Store size={16} className="text-sb-green" />
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-sb-green">
+                                                    {tx('Choisissez votre point de retrait', 'Choose Pickup Store')}
+                                                </p>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {pickupStores.map(store => {
+                                                    const isStoreSelected = selectedPickupStoreId === store.id;
+                                                    return (
+                                                        <button
+                                                            key={store.id}
+                                                            type="button"
+                                                            onClick={() => setSelectedPickupStoreId(store.id)}
+                                                            className={`w-full flex items-start gap-3 p-4 rounded-xl border-2 transition-all text-left ${isStoreSelected ? 'border-sb-green bg-white shadow-sm' : 'border-transparent bg-white/50 hover:bg-white hover:border-gray-100'}`}
+                                                        >
+                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${isStoreSelected ? 'bg-sb-green/10' : 'bg-gray-50'}`}>
+                                                                <MapPin size={14} className={isStoreSelected ? 'text-sb-green' : 'text-gray-400'} />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className={`font-bold text-sm ${isStoreSelected ? 'text-sb-black' : 'text-gray-700'}`}>{store.name}</p>
+                                                                <p className="text-[10px] text-gray-400 mt-0.5">{store.address}, {store.city}</p>
+                                                                {store.hours && <p className="text-[10px] text-gray-400">{store.hours}</p>}
+                                                                {store.phone && (
+                                                                    <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+                                                                        <Phone size={10} /> {store.phone}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 ${isStoreSelected ? 'border-sb-green' : 'border-gray-200'}`}>
+                                                                {isStoreSelected && <div className="w-2 h-2 rounded-full bg-sb-green" />}
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </SectionCard>
+
+                        {/* ── Section 3: Billing Address ── */}
+                        <SectionCard>
+                            <h2 className="font-display text-xl uppercase mb-4">{tx('Adresse de facturation', 'Billing Address')}</h2>
+
+                            {/* Same as shipping checkbox */}
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div
+                                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${billingForm.sameAsShipping ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
+                                    onClick={() => setBillingForm(b => ({ ...b, sameAsShipping: !b.sameAsShipping }))}
+                                >
+                                    {billingForm.sameAsShipping && <Check size={12} className="text-white" />}
+                                </div>
+                                <span className="text-sm font-bold text-gray-600">{tx('Identique à l\'adresse de livraison', 'Same as shipping address')}</span>
+                            </label>
+
+                            {/* Billing form fields — only shown when sameAsShipping is false */}
+                            <AnimatePresence>
+                                {!billingForm.sameAsShipping && (
+                                    <motion.div
+                                        key="billing-fields"
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="pt-6 space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <Input
+                                                    label={tx('Prénom', 'First Name')}
+                                                    value={billingForm.firstName}
+                                                    onChange={v => setBillingForm(b => ({ ...b, firstName: v }))}
+                                                    required
+                                                />
+                                                <Input
+                                                    label={tx('Nom', 'Last Name')}
+                                                    value={billingForm.lastName}
+                                                    onChange={v => setBillingForm(b => ({ ...b, lastName: v }))}
+                                                    required
+                                                />
+                                            </div>
+                                            <Input
+                                                label={tx('Adresse', 'Address')}
+                                                value={billingForm.address}
+                                                onChange={v => setBillingForm(b => ({ ...b, address: v }))}
+                                                placeholder="16 Boulevard du Général de Gaulle"
+                                                required
+                                            />
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <Input
+                                                    label={tx('Code postal', 'Postal Code')}
+                                                    value={billingForm.postalCode}
+                                                    onChange={v => setBillingForm(b => ({ ...b, postalCode: v }))}
+                                                    placeholder="75001"
+                                                    required
+                                                />
+                                                <Input
+                                                    label={tx('Ville', 'City')}
+                                                    value={billingForm.city}
+                                                    onChange={v => setBillingForm(b => ({ ...b, city: v }))}
+                                                    placeholder="Paris"
+                                                    required
+                                                    className="col-span-2"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">{tx('Pays', 'Country')}</label>
+                                                <div className="px-4 py-3 bg-gray-50 rounded-xl text-sm text-sb-black font-medium">France</div>
+                                            </div>
+                                            <Input
+                                                label={tx('Téléphone', 'Phone')}
+                                                value={billingForm.phone}
+                                                onChange={v => setBillingForm(b => ({ ...b, phone: v }))}
+                                                type="tel"
+                                                placeholder="+33 6 00 00 00 00"
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </SectionCard>
+
+                        {/* ── Section 4: Payment Method ── */}
+                        <SectionCard className="relative">
+                            {/* Processing overlay */}
+                            {isProcessing && (
+                                <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-[28px]">
+                                    <Loader2 size={32} className="animate-spin text-sb-green mb-4" />
+                                    <p className="font-display text-xl uppercase tracking-widest text-sb-black">{tx('Préparation...', 'Preparing...')}</p>
+                                </div>
                             )}
-                        </AnimatePresence>
+
+                            {/* Stripe Elements phase */}
+                            {clientSecret && pendingOrderId ? (
+                                <div>
+                                    <h2 className="font-display text-xl uppercase mb-2">{tx('Paiement sécurisé', 'Secure Payment')}</h2>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-6">
+                                        {tx('Commande', 'Order')} #{pendingOrderId}
+                                    </p>
+                                    <Elements
+                                        stripe={stripePromise}
+                                        options={{
+                                            clientSecret,
+                                            appearance: {
+                                                theme: 'stripe',
+                                                variables: {
+                                                    colorPrimary: '#3B7E5A',
+                                                    borderRadius: '16px',
+                                                    fontFamily: 'system-ui, sans-serif',
+                                                },
+                                            },
+                                        }}
+                                    >
+                                        <StripePaymentForm
+                                            language={language}
+                                            onBack={() => { setClientSecret(null); setPendingOrderId(null); }}
+                                            onSuccess={() => {
+                                                clearFormFromSession();
+                                                clearCart();
+                                                router.push(`/order-success?order=${pendingOrderId}&payment=stripe&total=${total.toFixed(2)}`);
+                                            }}
+                                        />
+                                    </Elements>
+                                </div>
+                            ) : (
+                                <div>
+                                    <h2 className="font-display text-xl uppercase mb-4">{tx('Mode de paiement', 'Payment Method')}</h2>
+
+                                    {/* No payment methods warning */}
+                                    {paymentMethods.length === 0 && (
+                                        <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-2xl p-5 mb-6">
+                                            <AlertCircle size={20} className="text-red-500 flex-shrink-0" />
+                                            <p className="text-sm text-red-700">{tx('Aucun moyen de paiement n\'est actuellement disponible. Veuillez réessayer plus tard.', 'No payment methods are currently available. Please try again later.')}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Method selector */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                                        {paymentMethods.map(m => (
+                                            <button
+                                                key={m.id}
+                                                onClick={() => setPaymentForm(f => ({ ...f, method: m.id }))}
+                                                className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all gap-2 ${paymentForm.method === m.id ? 'border-sb-green bg-sb-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                                            >
+                                                <m.icon size={22} className={paymentForm.method === m.id ? 'text-sb-green' : 'text-gray-300'} />
+                                                <span className={`text-[10px] font-black uppercase tracking-wider text-center ${paymentForm.method === m.id ? 'text-sb-green' : 'text-gray-500'}`}>{m.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Method details */}
+                                    <AnimatePresence mode="wait">
+                                        {paymentForm.method === 'stripe' && (
+                                            <motion.div key="stripe" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-6">
+                                                <div className="bg-gray-50 border border-gray-100 rounded-3xl p-6">
+                                                    <div className="flex items-center gap-3 mb-3">
+                                                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                                            <CreditCard size={20} className="text-sb-green" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-sm">{tx('Paiement par Stripe', 'Pay with Stripe')}</p>
+                                                            <p className="text-[10px] text-gray-400">{tx('Carte, Apple Pay, Google Pay, Link', 'Card, Apple Pay, Google Pay, Link')}</p>
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-xs text-gray-500">{tx('Vos données de carte sont traitées directement par Stripe — jamais stockées sur nos serveurs.', 'Your card data is handled directly by Stripe — never stored on our servers.')}</p>
+                                                </div>
+                                            </motion.div>
+                                        )}
+
+                                        {paymentForm.method === 'store' && (
+                                            <motion.div key="store" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-6">
+                                                <div className="bg-sb-green/5 border border-sb-green/20 rounded-3xl p-6">
+                                                    <div className="flex items-start gap-4">
+                                                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-sb-green">
+                                                            <Store size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="font-display text-lg uppercase mb-1">{tx('Payer en magasin', 'Pay in Store')}</h3>
+                                                            <p className="text-sm text-gray-500 mb-3">{tx('Votre commande sera mise de côté. Payez directement à votre point de retrait lors de la collecte.', 'Your order will be reserved. Pay directly at the store when you collect.')}</p>
+                                                            <div className="flex items-center gap-2 text-[10px] font-bold text-sb-green/70 uppercase">
+                                                                <Check size={12} /> {tx('Carte & espèces acceptées en magasin', 'Card & cash accepted in store')}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+
+                                        {paymentForm.method === 'cod' && (() => {
+                                            const surcharge = codCfg?.surcharge ?? 0;
+                                            const surchargeType = codCfg?.surcharge_type ?? 'fixed';
+                                            const surchargeDisplay = surcharge > 0
+                                                ? surchargeType === 'percentage' ? `${surcharge}%` : formatPrice(surcharge)
+                                                : null;
+                                            return (
+                                                <motion.div key="cod" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-6 space-y-3">
+                                                    <div className="bg-orange-50/50 border border-orange-100 rounded-3xl p-6">
+                                                        <div className="flex items-start gap-4">
+                                                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-orange-600">
+                                                                <Truck size={24} />
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="font-display text-lg uppercase mb-1">{tx('Paiement à la livraison', 'Cash on Delivery')}</h3>
+                                                                <p className="text-sm text-gray-500 mb-3">{tx('Préparez le montant exact pour faciliter la réception. Notre livreur vous contactera avant son arrivée.', 'Please prepare the exact amount for easier delivery. Our courier will contact you before arrival.')}</p>
+                                                                <div className="flex items-center gap-2 text-[10px] font-bold text-orange-700/60 uppercase">
+                                                                    <Check size={12} /> {tx('Échange sans contact disponible', 'Contactless exchange available')}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {surchargeDisplay && (
+                                                        <div className="flex items-center gap-2 text-xs text-orange-700 bg-orange-50 border border-orange-100 rounded-2xl px-4 py-2.5">
+                                                            <AlertCircle size={14} className="flex-shrink-0" />
+                                                            {tx(`Un supplément de ${surchargeDisplay} sera appliqué pour le paiement à la livraison.`, `A ${surchargeDisplay} surcharge applies for cash on delivery.`)}
+                                                        </div>
+                                                    )}
+                                                    {codExceeds && (
+                                                        <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
+                                                            <AlertCircle size={14} className="flex-shrink-0" />
+                                                            {tx(`Le paiement à la livraison n'est pas disponible pour les commandes supérieures à ${formatPrice(codMaxAmount)}.`, `Cash on delivery is not available for orders above ${formatPrice(codMaxAmount)}.`)}
+                                                        </div>
+                                                    )}
+                                                </motion.div>
+                                            );
+                                        })()}
+                                    </AnimatePresence>
+
+                                    {/* Terms & Conditions */}
+                                    <label className="flex items-start gap-3 mb-6 cursor-pointer group">
+                                        <div
+                                            onClick={() => setPaymentForm(f => ({ ...f, acceptedTerms: !f.acceptedTerms }))}
+                                            className={`w-5 h-5 mt-0.5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${paymentForm.acceptedTerms ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
+                                        >
+                                            {paymentForm.acceptedTerms && <Check size={12} className="text-white" />}
+                                        </div>
+                                        <span className="text-xs text-gray-500 leading-relaxed">
+                                            {tx('J\'accepte les ', 'I accept the ')}
+                                            <Link href="/terms" className="underline hover:text-sb-green">{tx('Conditions Générales', 'Terms & Conditions')}</Link>
+                                            {tx(' et la ', ' and ')}
+                                            <Link href="/privacy" className="underline hover:text-sb-green">{tx('Politique de Confidentialité', 'Privacy Policy')}</Link>.
+                                        </span>
+                                    </label>
+
+                                    {/* Error */}
+                                    {error && (
+                                        <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 mb-4">
+                                            <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                                            <p className="text-red-700 text-xs leading-snug">{error}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Submit button */}
+                                    <button
+                                        onClick={(paymentForm.method === 'cod' || paymentForm.method === 'store') ? handlePlaceOrder : handleContinueToStripe}
+                                        disabled={!canSubmit || isProcessing}
+                                        className="w-full flex justify-between items-center px-8 py-5 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                    >
+                                        <span>
+                                            {(paymentForm.method === 'cod' || paymentForm.method === 'store')
+                                                ? tx('Confirmer la commande', 'Place Order')
+                                                : tx('Continuer vers le paiement sécurisé', 'Continue to Secure Payment')
+                                            }
+                                        </span>
+                                        <ArrowRight size={18} />
+                                    </button>
+                                </div>
+                            )}
+                        </SectionCard>
                     </div>
 
-                    {/* ── Right: Order Summary ── */}
-                    <div className="sticky top-8">
-                        <OrderSummary />
+                    {/* ── Right column: sticky order summary ── */}
+                    <div className="sticky top-[var(--header-h,112px)]">
+                        <OrderSummary codSurcharge={activeCodSurcharge} />
                     </div>
                 </div>
             </div>

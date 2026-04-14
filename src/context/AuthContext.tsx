@@ -42,7 +42,6 @@ function mapAddress(a: BackendAddress): Address {
         address: [a.address_1, a.address_2].filter(Boolean).join(', '),
         city: a.city,
         postalCode: a.postcode,
-        country: a.country,
         phone: a.phone,
         isDefault: a.is_default,
     };
