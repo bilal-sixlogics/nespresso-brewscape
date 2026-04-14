@@ -566,12 +566,12 @@ export default function CheckoutPage() {
         if (!paymentForm.password || paymentForm.password !== paymentForm.passwordConfirm) return;
         const fullName = `${shippingForm.firstName} ${shippingForm.lastName}`.trim();
         try {
-            await register(fullName, shippingForm.email, paymentForm.password, paymentForm.passwordConfirm);
+            await register(fullName, shippingForm.email, paymentForm.password, paymentForm.passwordConfirm, shippingForm.phone || undefined);
             // If register succeeds and email is unverified, OTP modal opens via AuthContext
         } catch {
             // Silently ignore — order is already placed, registration failure is non-blocking
         }
-    }, [paymentForm.createAccount, paymentForm.password, paymentForm.passwordConfirm, isAuthenticated, shippingForm.firstName, shippingForm.lastName, shippingForm.email, register]);
+    }, [paymentForm.createAccount, paymentForm.password, paymentForm.passwordConfirm, isAuthenticated, shippingForm.firstName, shippingForm.lastName, shippingForm.email, shippingForm.phone, register]);
 
     const handleContinueToStripe = async () => {
         setIsProcessing(true);
@@ -668,6 +668,89 @@ export default function CheckoutPage() {
                                 <div className="px-4 py-3 bg-gray-50 rounded-xl text-sm text-sb-black font-medium">France</div>
                             </div>
                         </SectionCard>
+
+                        {/* ── Create Account (guests only, above delivery) ── */}
+                        {!isAuthenticated && (
+                            <SectionCard>
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div
+                                        onClick={() => setPaymentForm(f => ({ ...f, createAccount: !f.createAccount }))}
+                                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${paymentForm.createAccount ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
+                                    >
+                                        {paymentForm.createAccount && <Check size={12} className="text-white" />}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <UserPlus size={14} className={paymentForm.createAccount ? 'text-sb-green' : 'text-gray-400'} />
+                                        <span className="text-sm font-bold text-gray-600">{tx('Créer un compte pour vos prochaines commandes', 'Create an account for faster checkout next time')}</span>
+                                    </div>
+                                </label>
+
+                                <AnimatePresence>
+                                    {paymentForm.createAccount && (
+                                        <motion.div
+                                            key="create-account-fields"
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="mt-4 space-y-4">
+                                                <div>
+                                                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Mot de passe', 'Password')} *</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type={showAccountPassword ? 'text' : 'password'}
+                                                            value={paymentForm.password}
+                                                            onChange={e => setPaymentForm(f => ({ ...f, password: e.target.value }))}
+                                                            onBlur={() => markTouched('accountPassword')}
+                                                            autoComplete="new-password"
+                                                            placeholder={tx('Min. 8 caractères', 'Min. 8 characters')}
+                                                            className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none transition-colors bg-white placeholder:text-gray-300 ${validationErrors['accountPassword'] ? 'border-red-500' : 'border-gray-100 focus:border-sb-green'}`}
+                                                        />
+                                                        <button type="button" tabIndex={-1} onClick={() => setShowAccountPassword(v => !v)}
+                                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green">
+                                                            {showAccountPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                        </button>
+                                                    </div>
+                                                    {validationErrors['accountPassword'] && <p className="mt-1 text-xs text-red-500">{validationErrors['accountPassword']}</p>}
+                                                    {paymentForm.password.length > 0 && (
+                                                        <ul className="mt-2 space-y-1">
+                                                            {PASSWORD_CHECKS.map(rule => {
+                                                                const ok = rule.test(paymentForm.password);
+                                                                return (
+                                                                    <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-sb-green' : 'text-gray-400'}`}>
+                                                                        <CheckCircle2 size={12} className={ok ? 'opacity-100' : 'opacity-30'} /> {rule.label}
+                                                                    </li>
+                                                                );
+                                                            })}
+                                                        </ul>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Confirmer le mot de passe', 'Confirm Password')} *</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type={showAccountPasswordConfirm ? 'text' : 'password'}
+                                                            value={paymentForm.passwordConfirm}
+                                                            onChange={e => setPaymentForm(f => ({ ...f, passwordConfirm: e.target.value }))}
+                                                            onBlur={() => markTouched('accountPasswordConfirm')}
+                                                            autoComplete="new-password"
+                                                            placeholder={tx('Répéter le mot de passe', 'Repeat password')}
+                                                            className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none transition-colors bg-white placeholder:text-gray-300 ${validationErrors['accountPasswordConfirm'] ? 'border-red-500' : 'border-gray-100 focus:border-sb-green'}`}
+                                                        />
+                                                        <button type="button" tabIndex={-1} onClick={() => setShowAccountPasswordConfirm(v => !v)}
+                                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green">
+                                                            {showAccountPasswordConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                        </button>
+                                                    </div>
+                                                    {validationErrors['accountPasswordConfirm'] && <p className="mt-1 text-xs text-red-500">{validationErrors['accountPasswordConfirm']}</p>}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </SectionCard>
+                        )}
 
                         {/* ── Section 2: Delivery Method ── */}
                         <SectionCard>
@@ -982,113 +1065,6 @@ export default function CheckoutPage() {
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
-
-                                    {/* Create Account (guest only) */}
-                                    {!isAuthenticated && (
-                                        <div className="mb-6">
-                                            <label className="flex items-center gap-3 cursor-pointer group">
-                                                <div
-                                                    onClick={() => setPaymentForm(f => ({ ...f, createAccount: !f.createAccount, ...(!f.createAccount ? { accountPhone: shippingForm.phone } : {}) }))}
-                                                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${paymentForm.createAccount ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
-                                                >
-                                                    {paymentForm.createAccount && <Check size={12} className="text-white" />}
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <UserPlus size={14} className={paymentForm.createAccount ? 'text-sb-green' : 'text-gray-400'} />
-                                                    <span className="text-sm font-bold text-gray-600">{tx('Créer un compte pour vos prochaines commandes', 'Create an account for faster checkout next time')}</span>
-                                                </div>
-                                            </label>
-
-                                            <AnimatePresence>
-                                                {paymentForm.createAccount && (
-                                                    <motion.div
-                                                        key="create-account-fields"
-                                                        initial={{ height: 0, opacity: 0 }}
-                                                        animate={{ height: 'auto', opacity: 1 }}
-                                                        exit={{ height: 0, opacity: 0 }}
-                                                        className="overflow-hidden"
-                                                    >
-                                                        <div className="mt-4 p-5 bg-gray-50 border border-gray-100 rounded-2xl space-y-4">
-                                                            {/* Password */}
-                                                            <div>
-                                                                <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Mot de passe', 'Password')} *</label>
-                                                                <div className="relative">
-                                                                    <input
-                                                                        type={showAccountPassword ? 'text' : 'password'}
-                                                                        value={paymentForm.password}
-                                                                        onChange={e => setPaymentForm(f => ({ ...f, password: e.target.value }))}
-                                                                        onBlur={() => markTouched('accountPassword')}
-                                                                        autoComplete="new-password"
-                                                                        placeholder={tx('Min. 8 caractères', 'Min. 8 characters')}
-                                                                        className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors bg-white placeholder:text-gray-300 ${validationErrors['accountPassword'] ? 'border-red-500 focus:border-red-500 focus-visible:outline-red-500' : 'border-gray-100 focus:border-sb-green focus-visible:outline-sb-green'}`}
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        tabIndex={-1}
-                                                                        onClick={() => setShowAccountPassword(v => !v)}
-                                                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green transition-colors"
-                                                                    >
-                                                                        {showAccountPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                                    </button>
-                                                                </div>
-                                                                {validationErrors['accountPassword'] && <p className="mt-1 text-xs text-red-500">{validationErrors['accountPassword']}</p>}
-
-                                                                {/* Password strength */}
-                                                                {paymentForm.password.length > 0 && (
-                                                                    <ul className="mt-2 space-y-1">
-                                                                        {PASSWORD_CHECKS.map(rule => {
-                                                                            const ok = rule.test(paymentForm.password);
-                                                                            return (
-                                                                                <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-sb-green' : 'text-gray-400'}`}>
-                                                                                    <CheckCircle2 size={12} className={ok ? 'opacity-100' : 'opacity-30'} />
-                                                                                    {rule.label}
-                                                                                </li>
-                                                                            );
-                                                                        })}
-                                                                    </ul>
-                                                                )}
-                                                            </div>
-
-                                                            {/* Confirm Password */}
-                                                            <div>
-                                                                <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Confirmer le mot de passe', 'Confirm Password')} *</label>
-                                                                <div className="relative">
-                                                                    <input
-                                                                        type={showAccountPasswordConfirm ? 'text' : 'password'}
-                                                                        value={paymentForm.passwordConfirm}
-                                                                        onChange={e => setPaymentForm(f => ({ ...f, passwordConfirm: e.target.value }))}
-                                                                        onBlur={() => markTouched('accountPasswordConfirm')}
-                                                                        autoComplete="new-password"
-                                                                        placeholder={tx('Répéter le mot de passe', 'Repeat password')}
-                                                                        className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors bg-white placeholder:text-gray-300 ${validationErrors['accountPasswordConfirm'] ? 'border-red-500 focus:border-red-500 focus-visible:outline-red-500' : 'border-gray-100 focus:border-sb-green focus-visible:outline-sb-green'}`}
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        tabIndex={-1}
-                                                                        onClick={() => setShowAccountPasswordConfirm(v => !v)}
-                                                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green transition-colors"
-                                                                    >
-                                                                        {showAccountPasswordConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                                    </button>
-                                                                </div>
-                                                                {validationErrors['accountPasswordConfirm'] && <p className="mt-1 text-xs text-red-500">{validationErrors['accountPasswordConfirm']}</p>}
-                                                            </div>
-
-                                                            {/* Phone (pre-filled) */}
-                                                            <Input
-                                                                label={tx('Téléphone', 'Phone')}
-                                                                value={paymentForm.accountPhone}
-                                                                onChange={v => setPaymentForm(f => ({ ...f, accountPhone: v }))}
-                                                                type="tel"
-                                                                placeholder="+33 6 00 00 00 00"
-                                                                autoComplete="tel"
-                                                            />
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </div>
-                                    )}
 
                                     {/* Terms & Conditions */}
                                     <label className="flex items-start gap-3 mb-6 cursor-pointer group">

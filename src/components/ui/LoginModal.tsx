@@ -28,9 +28,10 @@ export function LoginModal() {
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [confirm, setConfirm] = useState('');
+    const [phone, setPhone] = useState('');
 
     const reset = () => {
-        setEmail(''); setPassword(''); setName(''); setConfirm('');
+        setEmail(''); setPassword(''); setName(''); setConfirm(''); setPhone('');
         setError(null); setFieldErrors({}); setShowPassword(false); setShowConfirm(false);
     };
 
@@ -51,7 +52,7 @@ export function LoginModal() {
             if (view === 'login') {
                 await login(email, password);
             } else {
-                await register(name, email, password, confirm);
+                await register(name, email, password, confirm, phone || undefined);
             }
             reset();
         } catch (err) {
@@ -299,6 +300,19 @@ export function LoginModal() {
                                         {confirm && confirm !== password && (
                                             <p className="mt-1 text-xs text-red-500 pl-1">Passwords do not match.</p>
                                         )}
+                                    </div>
+
+                                    {/* Phone */}
+                                    <div className="relative">
+                                        <input
+                                            type="tel"
+                                            value={phone}
+                                            onChange={e => setPhone(e.target.value)}
+                                            placeholder="Phone (optional)"
+                                            autoComplete="tel"
+                                            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm"
+                                        />
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">+33</span>
                                     </div>
 
                                     <button

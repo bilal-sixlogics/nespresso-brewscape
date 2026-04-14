@@ -67,7 +67,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isHydrating: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (name: string, email: string, password: string, passwordConfirmation: string) => Promise<void>;
+    register: (name: string, email: string, password: string, passwordConfirmation: string, phone?: string) => Promise<void>;
     logout: () => Promise<void>;
     isLoginModalOpen: boolean;
     openLoginModal: () => void;
@@ -154,12 +154,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: string,
         password: string,
         passwordConfirmation: string,
+        phone?: string,
     ) => {
         const res = await apiClient.post<{ token: string; user: BackendUser }>(Endpoints.register, {
             name,
             email,
             password,
             password_confirmation: passwordConfirmation,
+            ...(phone ? { phone } : {}),
         });
         setToken(res.token);
         const mapped = mapUser(res.user);
