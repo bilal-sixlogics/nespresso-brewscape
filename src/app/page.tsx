@@ -385,7 +385,7 @@ export default function Home() {
               </div>
             ) : (
               <MobileCarousel>
-                {featuredProducts.slice(0, 5).map((product, idx) => (
+                {featuredProducts.map((product, idx) => (
                   <ProductCard
                     key={product.id}
                     product={product}
