@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Check, ArrowRight, ArrowLeft, ChevronRight, MapPin, Phone,
     CreditCard, Lock, Truck, Package, ShoppingBag, AlertCircle, Loader2,
-    Store, ChevronDown,
+    Store, ChevronDown, Eye, EyeOff, CheckCircle2, UserPlus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -35,6 +35,9 @@ interface BillingForm extends ShippingForm { sameAsShipping: boolean; }
 interface PaymentForm {
     method: 'stripe' | 'cod' | 'store';
     createAccount: boolean;
+    password: string;
+    passwordConfirm: string;
+    accountPhone: string;
     acceptedTerms: boolean;
 }
 
@@ -85,9 +88,10 @@ function clearFormFromSession(): void {
 
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-function Input({ label, value, onChange, type = 'text', placeholder = '', required = false, className = '' }: {
+function Input({ label, value, onChange, type = 'text', placeholder = '', required = false, className = '', error, onBlur, autoComplete }: {
     label: string; value: string; onChange: (v: string) => void;
     type?: string; placeholder?: string; required?: boolean; className?: string;
+    error?: string; onBlur?: () => void; autoComplete?: string;
 }) {
     const inputId = `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
     return (
@@ -97,8 +101,11 @@ function Input({ label, value, onChange, type = 'text', placeholder = '', requir
                 id={inputId}
                 type={type} value={value} placeholder={placeholder}
                 onChange={e => onChange(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3.5 text-sm font-medium focus:border-sb-green focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-green transition-colors bg-white placeholder:text-gray-300"
+                onBlur={onBlur}
+                autoComplete={autoComplete}
+                className={`w-full border-2 rounded-2xl px-4 py-3.5 text-sm font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors bg-white placeholder:text-gray-300 ${error ? 'border-red-500 focus:border-red-500 focus-visible:outline-red-500' : 'border-gray-100 focus:border-sb-green focus-visible:outline-sb-green'}`}
             />
+            {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
         </div>
     );
 }
@@ -307,7 +314,7 @@ export default function CheckoutPage() {
     const formatPrice = useFormatPrice();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, isAuthenticated, register } = useAuth();
 
     // ── Shipping form state ──
     const savedForm = loadFormFromSession();
@@ -324,7 +331,7 @@ export default function CheckoutPage() {
 
     const [shippingForm, setShippingForm] = useState<ShippingForm>(defaultShippingForm);
     const [billingForm, setBillingForm] = useState<BillingForm>({ ...defaultShippingForm, sameAsShipping: true });
-    const [paymentForm, setPaymentForm] = useState<PaymentForm>({ method: 'stripe', createAccount: false, acceptedTerms: false });
+    const [paymentForm, setPaymentForm] = useState<PaymentForm>({ method: 'stripe', createAccount: false, password: '', passwordConfirm: '', accountPhone: '', acceptedTerms: false });
 
     // ── Shipping method state (lifted up from old ShippingStep) ──
     const [apiMethods, setApiMethods] = useState<ApiShippingMethod[]>([]);
@@ -340,6 +347,7 @@ export default function CheckoutPage() {
     const [enabledMethods, setEnabledMethods] = useState<{
         stripe: boolean; cod: boolean; pickup?: boolean;
         pickup_payment_required?: boolean;
+        cod_config?: { max_order_amount: number; surcharge: number; surcharge_type: string };
     } | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -347,6 +355,45 @@ export default function CheckoutPage() {
     const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
 
     const isPickup = selectedMethod?.type === 'pickup';
+
+    // ── Real-time validation state ──
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [showAccountPassword, setShowAccountPassword] = useState(false);
+    const [showAccountPasswordConfirm, setShowAccountPasswordConfirm] = useState(false);
+
+    const markTouched = useCallback((field: string) => {
+        setTouched(prev => ({ ...prev, [field]: true }));
+    }, []);
+
+    // ── Compute validation errors ──
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const validationErrors: Record<string, string | undefined> = {};
+    if (touched['firstName'] && !shippingForm.firstName) validationErrors['firstName'] = 'Required';
+    if (touched['lastName'] && !shippingForm.lastName) validationErrors['lastName'] = 'Required';
+    if (touched['email']) {
+        if (!shippingForm.email) validationErrors['email'] = 'Required';
+        else if (!EMAIL_REGEX.test(shippingForm.email)) validationErrors['email'] = 'Invalid email';
+    }
+    if (touched['address'] && !shippingForm.address) validationErrors['address'] = 'Required';
+    if (touched['postalCode'] && !shippingForm.postalCode) validationErrors['postalCode'] = 'Required';
+    if (touched['city'] && !shippingForm.city) validationErrors['city'] = 'Required';
+    if (paymentForm.createAccount && !isAuthenticated) {
+        if (touched['accountPassword']) {
+            if (!paymentForm.password) validationErrors['accountPassword'] = 'Required';
+            else if (paymentForm.password.length < 8) validationErrors['accountPassword'] = 'Min 8 characters';
+        }
+        if (touched['accountPasswordConfirm']) {
+            if (!paymentForm.passwordConfirm) validationErrors['accountPasswordConfirm'] = 'Required';
+            else if (paymentForm.passwordConfirm !== paymentForm.password) validationErrors['accountPasswordConfirm'] = 'Passwords don\'t match';
+        }
+    }
+
+    // ── Password strength indicators ──
+    const PASSWORD_CHECKS = [
+        { label: 'Has uppercase', test: (p: string) => /[A-Z]/.test(p) },
+        { label: 'Has a number', test: (p: string) => /[0-9]/.test(p) },
+        { label: 'Min 8 characters', test: (p: string) => p.length >= 8 },
+    ];
 
     const setShippingField = useCallback((key: keyof ShippingForm) => (v: string) => {
         setShippingForm(prev => {
@@ -388,13 +435,21 @@ export default function CheckoutPage() {
             .then(r => r.json())
             .then(data => {
                 setEnabledMethods(data);
-                if (isPickup && paymentForm.method === 'cod') {
-                    setPaymentForm(f => ({ ...f, method: 'stripe' }));
-                } else if (!isPickup && paymentForm.method === 'store') {
-                    setPaymentForm(f => ({ ...f, method: 'stripe' }));
-                } else if (data && !isPickup && paymentForm.method !== 'store' && !data[paymentForm.method as 'stripe' | 'cod']) {
-                    const first = data.stripe ? 'stripe' : data.cod ? 'cod' : 'stripe';
-                    setPaymentForm(f => ({ ...f, method: first as 'stripe' | 'cod' | 'store' }));
+                // Auto-select first valid payment method for current delivery type
+                const current = paymentForm.method;
+                if (isPickup) {
+                    // Pickup: valid options are stripe (if on) or store (if allowed)
+                    if (current === 'cod') {
+                        setPaymentForm(f => ({ ...f, method: data.stripe ? 'stripe' : 'store' }));
+                    }
+                } else {
+                    // Delivery: valid options are stripe (if on) or cod (if on)
+                    if (current === 'store') {
+                        setPaymentForm(f => ({ ...f, method: data.stripe ? 'stripe' : data.cod ? 'cod' : 'stripe' }));
+                    } else if (!data[current as 'stripe' | 'cod']) {
+                        const first = data.stripe ? 'stripe' : data.cod ? 'cod' : 'stripe';
+                        setPaymentForm(f => ({ ...f, method: first as 'stripe' | 'cod' | 'store' }));
+                    }
                 }
             })
             .catch(() => setEnabledMethods({ stripe: true, cod: true }));
@@ -435,18 +490,18 @@ export default function CheckoutPage() {
     const pickupPaymentRequired = enabledMethods?.pickup_payment_required ?? false;
     const paymentMethods: { id: 'stripe' | 'cod' | 'store'; label: string; icon: typeof CreditCard }[] = (() => {
         const methods: { id: 'stripe' | 'cod' | 'store'; label: string; icon: typeof CreditCard }[] = [];
-        // Stripe is always an option if enabled
-        if (!enabledMethods || enabledMethods.stripe) {
+        // Stripe if enabled
+        if (enabledMethods?.stripe) {
             methods.push({ id: 'stripe', label: tx('Carte / Apple Pay / Google Pay', 'Card / Apple Pay / Google Pay'), icon: CreditCard });
         }
         if (isPickup) {
-            // Pickup: offer "Pay in Store" if enabled and admin doesn't require online payment
-            if (enabledMethods?.pickup && !pickupPaymentRequired) {
+            // Pickup: offer "Pay in Store" unless admin requires online payment
+            if (!pickupPaymentRequired) {
                 methods.push({ id: 'store', label: tx('Payer en magasin', 'Pay in Store'), icon: Store });
             }
         } else {
             // Delivery: offer COD if enabled
-            if (!enabledMethods || enabledMethods.cod) {
+            if (enabledMethods?.cod) {
                 methods.push({ id: 'cod', label: tx('Paiement à la livraison', 'Cash on Delivery'), icon: Truck });
             }
         }
@@ -505,6 +560,19 @@ export default function CheckoutPage() {
     // ── Handlers ──
     const { syncCartToBackend } = useCart();
 
+    // Attempt account creation after order — best-effort, never blocks checkout
+    const attemptCheckoutRegistration = useCallback(async () => {
+        if (!paymentForm.createAccount || isAuthenticated) return;
+        if (!paymentForm.password || paymentForm.password !== paymentForm.passwordConfirm) return;
+        const fullName = `${shippingForm.firstName} ${shippingForm.lastName}`.trim();
+        try {
+            await register(fullName, shippingForm.email, paymentForm.password, paymentForm.passwordConfirm);
+            // If register succeeds and email is unverified, OTP modal opens via AuthContext
+        } catch {
+            // Silently ignore — order is already placed, registration failure is non-blocking
+        }
+    }, [paymentForm.createAccount, paymentForm.password, paymentForm.passwordConfirm, isAuthenticated, shippingForm.firstName, shippingForm.lastName, shippingForm.email, register]);
+
     const handleContinueToStripe = async () => {
         setIsProcessing(true);
         setError(null);
@@ -532,6 +600,8 @@ export default function CheckoutPage() {
                 Endpoints.placeOrder,
                 buildPayload(),
             );
+            // Attempt checkout registration (best-effort, non-blocking)
+            await attemptCheckoutRegistration();
             clearFormFromSession();
             clearCart();
             router.push(`/order-success?order=${res.order_id}&payment=${paymentForm.method}&total=${total.toFixed(2)}`);
@@ -581,17 +651,17 @@ export default function CheckoutPage() {
                         <SectionCard>
                             <h2 className="font-display text-xl uppercase mb-4">{tx('Adresse de livraison', 'Shipping Address')}</h2>
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                                <Input label={tx('Prénom', 'First Name')} value={shippingForm.firstName} onChange={setShippingField('firstName')} required />
-                                <Input label={tx('Nom', 'Last Name')} value={shippingForm.lastName} onChange={setShippingField('lastName')} required />
+                                <Input label={tx('Prénom', 'First Name')} value={shippingForm.firstName} onChange={setShippingField('firstName')} required onBlur={() => markTouched('firstName')} error={validationErrors['firstName']} autoComplete="given-name" />
+                                <Input label={tx('Nom', 'Last Name')} value={shippingForm.lastName} onChange={setShippingField('lastName')} required onBlur={() => markTouched('lastName')} error={validationErrors['lastName']} autoComplete="family-name" />
                             </div>
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                                <Input label="Email" value={shippingForm.email} onChange={setShippingField('email')} type="email" required />
-                                <Input label={tx('Téléphone', 'Phone')} value={shippingForm.phone} onChange={setShippingField('phone')} type="tel" placeholder="+33 6 00 00 00 00" />
+                                <Input label="Email" value={shippingForm.email} onChange={setShippingField('email')} type="email" required onBlur={() => markTouched('email')} error={validationErrors['email']} autoComplete="email" />
+                                <Input label={tx('Téléphone', 'Phone')} value={shippingForm.phone} onChange={setShippingField('phone')} type="tel" placeholder="+33 6 00 00 00 00" autoComplete="tel" />
                             </div>
-                            <Input label={tx('Adresse', 'Address')} value={shippingForm.address} onChange={setShippingField('address')} placeholder="16 Boulevard du Général de Gaulle" required className="mb-4" />
+                            <Input label={tx('Adresse', 'Address')} value={shippingForm.address} onChange={setShippingField('address')} placeholder="16 Boulevard du Général de Gaulle" required className="mb-4" onBlur={() => markTouched('address')} error={validationErrors['address']} autoComplete="street-address" />
                             <div className="grid grid-cols-3 gap-4 mb-4">
-                                <Input label={tx('Code postal', 'Postal Code')} value={shippingForm.postalCode} onChange={setShippingField('postalCode')} placeholder="75001" required />
-                                <Input label={tx('Ville', 'City')} value={shippingForm.city} onChange={setShippingField('city')} placeholder="Paris" required className="col-span-2" />
+                                <Input label={tx('Code postal', 'Postal Code')} value={shippingForm.postalCode} onChange={setShippingField('postalCode')} placeholder="75001" required onBlur={() => markTouched('postalCode')} error={validationErrors['postalCode']} autoComplete="postal-code" />
+                                <Input label={tx('Ville', 'City')} value={shippingForm.city} onChange={setShippingField('city')} placeholder="Paris" required className="col-span-2" onBlur={() => markTouched('city')} error={validationErrors['city']} autoComplete="address-level2" />
                             </div>
                             <div className="mb-4">
                                 <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">{tx('Pays', 'Country')}</label>
@@ -820,7 +890,8 @@ export default function CheckoutPage() {
                                         <StripePaymentForm
                                             language={language}
                                             onBack={() => { setClientSecret(null); setPendingOrderId(null); }}
-                                            onSuccess={() => {
+                                            onSuccess={async () => {
+                                                await attemptCheckoutRegistration();
                                                 clearFormFromSession();
                                                 clearCart();
                                                 router.push(`/order-success?order=${pendingOrderId}&payment=stripe&total=${total.toFixed(2)}`);
@@ -912,6 +983,113 @@ export default function CheckoutPage() {
                                         )}
                                     </AnimatePresence>
 
+                                    {/* Create Account (guest only) */}
+                                    {!isAuthenticated && (
+                                        <div className="mb-6">
+                                            <label className="flex items-center gap-3 cursor-pointer group">
+                                                <div
+                                                    onClick={() => setPaymentForm(f => ({ ...f, createAccount: !f.createAccount, ...(!f.createAccount ? { accountPhone: shippingForm.phone } : {}) }))}
+                                                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${paymentForm.createAccount ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
+                                                >
+                                                    {paymentForm.createAccount && <Check size={12} className="text-white" />}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <UserPlus size={14} className={paymentForm.createAccount ? 'text-sb-green' : 'text-gray-400'} />
+                                                    <span className="text-sm font-bold text-gray-600">{tx('Créer un compte pour vos prochaines commandes', 'Create an account for faster checkout next time')}</span>
+                                                </div>
+                                            </label>
+
+                                            <AnimatePresence>
+                                                {paymentForm.createAccount && (
+                                                    <motion.div
+                                                        key="create-account-fields"
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        className="overflow-hidden"
+                                                    >
+                                                        <div className="mt-4 p-5 bg-gray-50 border border-gray-100 rounded-2xl space-y-4">
+                                                            {/* Password */}
+                                                            <div>
+                                                                <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Mot de passe', 'Password')} *</label>
+                                                                <div className="relative">
+                                                                    <input
+                                                                        type={showAccountPassword ? 'text' : 'password'}
+                                                                        value={paymentForm.password}
+                                                                        onChange={e => setPaymentForm(f => ({ ...f, password: e.target.value }))}
+                                                                        onBlur={() => markTouched('accountPassword')}
+                                                                        autoComplete="new-password"
+                                                                        placeholder={tx('Min. 8 caractères', 'Min. 8 characters')}
+                                                                        className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors bg-white placeholder:text-gray-300 ${validationErrors['accountPassword'] ? 'border-red-500 focus:border-red-500 focus-visible:outline-red-500' : 'border-gray-100 focus:border-sb-green focus-visible:outline-sb-green'}`}
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        tabIndex={-1}
+                                                                        onClick={() => setShowAccountPassword(v => !v)}
+                                                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green transition-colors"
+                                                                    >
+                                                                        {showAccountPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                                    </button>
+                                                                </div>
+                                                                {validationErrors['accountPassword'] && <p className="mt-1 text-xs text-red-500">{validationErrors['accountPassword']}</p>}
+
+                                                                {/* Password strength */}
+                                                                {paymentForm.password.length > 0 && (
+                                                                    <ul className="mt-2 space-y-1">
+                                                                        {PASSWORD_CHECKS.map(rule => {
+                                                                            const ok = rule.test(paymentForm.password);
+                                                                            return (
+                                                                                <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-sb-green' : 'text-gray-400'}`}>
+                                                                                    <CheckCircle2 size={12} className={ok ? 'opacity-100' : 'opacity-30'} />
+                                                                                    {rule.label}
+                                                                                </li>
+                                                                            );
+                                                                        })}
+                                                                    </ul>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Confirm Password */}
+                                                            <div>
+                                                                <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Confirmer le mot de passe', 'Confirm Password')} *</label>
+                                                                <div className="relative">
+                                                                    <input
+                                                                        type={showAccountPasswordConfirm ? 'text' : 'password'}
+                                                                        value={paymentForm.passwordConfirm}
+                                                                        onChange={e => setPaymentForm(f => ({ ...f, passwordConfirm: e.target.value }))}
+                                                                        onBlur={() => markTouched('accountPasswordConfirm')}
+                                                                        autoComplete="new-password"
+                                                                        placeholder={tx('Répéter le mot de passe', 'Repeat password')}
+                                                                        className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors bg-white placeholder:text-gray-300 ${validationErrors['accountPasswordConfirm'] ? 'border-red-500 focus:border-red-500 focus-visible:outline-red-500' : 'border-gray-100 focus:border-sb-green focus-visible:outline-sb-green'}`}
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        tabIndex={-1}
+                                                                        onClick={() => setShowAccountPasswordConfirm(v => !v)}
+                                                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green transition-colors"
+                                                                    >
+                                                                        {showAccountPasswordConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                                    </button>
+                                                                </div>
+                                                                {validationErrors['accountPasswordConfirm'] && <p className="mt-1 text-xs text-red-500">{validationErrors['accountPasswordConfirm']}</p>}
+                                                            </div>
+
+                                                            {/* Phone (pre-filled) */}
+                                                            <Input
+                                                                label={tx('Téléphone', 'Phone')}
+                                                                value={paymentForm.accountPhone}
+                                                                onChange={v => setPaymentForm(f => ({ ...f, accountPhone: v }))}
+                                                                type="tel"
+                                                                placeholder="+33 6 00 00 00 00"
+                                                                autoComplete="tel"
+                                                            />
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    )}
+
                                     {/* Terms & Conditions */}
                                     <label className="flex items-start gap-3 mb-6 cursor-pointer group">
                                         <div
@@ -956,7 +1134,7 @@ export default function CheckoutPage() {
                     </div>
 
                     {/* ── Right column: sticky order summary ── */}
-                    <div className="sticky top-[var(--header-h,112px)]">
+                    <div className="sticky top-[calc(var(--header-h,112px)+16px)]">
                         <OrderSummary />
                     </div>
                 </div>

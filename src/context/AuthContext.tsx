@@ -14,6 +14,7 @@ interface BackendUser {
     avatar: string | null;
     locale: string;
     is_blocked: boolean;
+    email_verified?: boolean;
     addresses: BackendAddress[];
 }
 
@@ -54,6 +55,7 @@ function mapUser(b: BackendUser): User {
         name: b.name,
         email: b.email,
         avatar: b.avatar ?? undefined,
+        emailVerified: b.email_verified ?? true,
         orders: [],
         addresses: (b.addresses ?? []).map(mapAddress),
     };
@@ -70,6 +72,11 @@ interface AuthContextType {
     isLoginModalOpen: boolean;
     openLoginModal: () => void;
     closeLoginModal: () => void;
+    // OTP verification
+    isOtpModalOpen: boolean;
+    verifyOtp: (otp: string) => Promise<void>;
+    resendOtp: () => Promise<void>;
+    closeOtpModal: () => void;
     // Profile management
     updateUser: (patch: Partial<User>) => void;
     // Address management
@@ -83,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isHydrating, setIsHydrating] = useState(true);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
 
     const isAuthenticated = user !== null;
 
@@ -131,8 +139,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const login = useCallback(async (email: string, password: string) => {
         const res = await apiClient.post<{ token: string; user: BackendUser }>(Endpoints.login, { email, password });
         setToken(res.token);
-        setUser(mapUser(res.user));
+        const mapped = mapUser(res.user);
+        setUser(mapped);
         setIsLoginModalOpen(false);
+        if (res.user.email_verified === false) {
+            setIsOtpModalOpen(true);
+        }
         await mergeGuestCart();
     }, [mergeGuestCart]);
 
@@ -150,8 +162,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             password_confirmation: passwordConfirmation,
         });
         setToken(res.token);
-        setUser(mapUser(res.user));
+        const mapped = mapUser(res.user);
+        setUser(mapped);
         setIsLoginModalOpen(false);
+        if (res.user.email_verified === false) {
+            setIsOtpModalOpen(true);
+        }
         await mergeGuestCart();
     }, [mergeGuestCart]);
 
@@ -180,6 +196,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(prev => prev ? { ...prev, ...patch } : prev);
     }, []);
 
+    // ── OTP Verification ────────────────────────────────────────────────────
+    const verifyOtp = useCallback(async (otp: string) => {
+        await apiClient.post(Endpoints.verifyOtp, { otp });
+        setUser(prev => prev ? { ...prev, emailVerified: true } : prev);
+        setIsOtpModalOpen(false);
+    }, []);
+
+    const resendOtp = useCallback(async () => {
+        await apiClient.post(Endpoints.resendOtp);
+    }, []);
+
+    const closeOtpModal = useCallback(() => {
+        setIsOtpModalOpen(false);
+    }, []);
+
     const openLoginModal = () => setIsLoginModalOpen(true);
     const closeLoginModal = () => setIsLoginModalOpen(false);
 
@@ -194,6 +225,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isLoginModalOpen,
             openLoginModal,
             closeLoginModal,
+            isOtpModalOpen,
+            verifyOtp,
+            resendOtp,
+            closeOtpModal,
             updateUser,
             refreshAddresses,
             defaultAddress,

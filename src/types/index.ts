@@ -272,6 +272,7 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    emailVerified?: boolean;
     orders: Order[];
     addresses?: Address[];
 }

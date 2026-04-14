@@ -605,7 +605,7 @@ export default function AccountPage() {
                             </h1>
                             <p className="text-gray-400 text-sm mt-1">{user?.email}</p>
                         </div>
-                        <button onClick={() => logout()}
+                        <button onClick={async () => { await logout(); window.location.href = '/'; }}
                             className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all text-xs font-bold uppercase tracking-wider w-max">
                             <LogOut size={14} /> {t('accountSignOut')}
                         </button>

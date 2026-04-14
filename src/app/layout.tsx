@@ -27,6 +27,7 @@ import { NotificationsProvider } from "@/context/NotificationsContext";
 import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { LoginModal } from "@/components/ui/LoginModal";
+import { OtpModalConnector } from "@/components/ui/OtpModalConnector";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 
 export default function RootLayout({
@@ -49,6 +50,7 @@ export default function RootLayout({
                         {children}
                       </SiteChrome>
                       <LoginModal />
+                      <OtpModalConnector />
                     </RecentlyViewedProvider>
                   </NotificationsProvider>
                 </WishlistProvider>
