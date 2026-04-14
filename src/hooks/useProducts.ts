@@ -67,9 +67,12 @@ export function useProducts(params: ProductQueryParams = {}): UseProductsResult 
     // Stable string key — only changes when param values actually differ
     const paramKey = JSON.stringify(params);
 
+    // Skip sessionStorage cache for featured queries — admin changes must show immediately
+    const skipCache = Boolean(params.featured);
+
     // Seed initial state from cache so back-navigation shows data immediately
-    const [products, setProducts] = useState<Product[]>(() => readCache(paramKey)?.products ?? []);
-    const [meta, setMeta] = useState<PaginationMeta | null>(() => readCache(paramKey)?.meta ?? null);
+    const [products, setProducts] = useState<Product[]>(() => skipCache ? [] : (readCache(paramKey)?.products ?? []));
+    const [meta, setMeta] = useState<PaginationMeta | null>(() => skipCache ? null : (readCache(paramKey)?.meta ?? null));
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
@@ -97,7 +100,8 @@ export function useProducts(params: ProductQueryParams = {}): UseProductsResult 
             setMeta(res.meta);
 
             // Only cache page-1 results (the canonical list for this param set)
-            if (pageNum === 1) {
+            // Featured queries skip cache — admin changes must be reflected immediately
+            if (pageNum === 1 && !skipCache) {
                 writeCache(paramKey, res.data, res.meta);
             }
         } catch (err) {
@@ -117,10 +121,13 @@ export function useProducts(params: ProductQueryParams = {}): UseProductsResult 
     useEffect(() => {
         setPage(1);
         // Restore cache for the new param set so the grid isn't cleared
-        const cached = readCache(paramKey);
-        if (cached) {
-            setProducts(cached.products);
-            setMeta(cached.meta);
+        // Featured queries skip cache — admin changes must be reflected immediately
+        if (!skipCache) {
+            const cached = readCache(paramKey);
+            if (cached) {
+                setProducts(cached.products);
+                setMeta(cached.meta);
+            }
         }
         fetchProducts(1, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
