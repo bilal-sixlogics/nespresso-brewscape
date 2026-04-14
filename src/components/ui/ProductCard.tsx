@@ -100,7 +100,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                                         <path d="M14 28 Q16 22 20 20 Q24 18 26 14" strokeLinecap="round" opacity="0.5"/>
                                     </svg>
                                 </div>
-                                <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#9e8f80]">{product.brand?.name ?? 'Brewscape'}</span>
+                                <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#9e8f80]">{product.brand?.name ?? 'Cafrezzo'}</span>
                             </div>
                         )}
                     </AnimatePresence>

@@ -1,18 +1,19 @@
 "use client";
 
 import React, { useEffect, useState, Suspense } from 'react';
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
     Package, Truck, CheckCircle2, XCircle, Clock, MapPin,
-    CreditCard, RefreshCw, AlertCircle, ArrowLeft, Loader2,
-    ShoppingBag, Calendar, Hash, Mail, Phone
+    RefreshCw, AlertCircle, ArrowLeft, Loader2,
+    ShoppingBag, Calendar, Hash, Mail, Phone,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
 import { useFormatPrice } from '@/context/SiteSettingsContext';
+import { useAuth } from '@/context/AuthContext';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -83,7 +84,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
     refunded:        { label: 'Refunded',         color: 'text-gray-600',   bg: 'bg-gray-50 border-gray-200',   icon: <RefreshCw size={14} /> },
 };
 
-// Ordered timeline steps (filter by what's been reached)
 const TIMELINE_STEPS = ['pending_payment', 'paid', 'processing', 'shipped', 'delivered'];
 
 function StatusBadge({ status }: { status: string }) {
@@ -99,30 +99,49 @@ function StatusBadge({ status }: { status: string }) {
 // ── Guest lookup gate ─────────────────────────────────────────────────────────
 
 function GuestLookup({ orderId, onFound }: { orderId: string; onFound: (order: Order) => void }) {
-    const [email, setEmail] = useState('');
+    const [orderInput, setOrderInput] = useState(orderId);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleLookup = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email.trim()) return;
+    // Auto-submit when coming directly from order-success (order ID is known)
+    useEffect(() => {
+        if (orderId) {
+            doLookup(orderId);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const doLookup = async (id: string) => {
+        const numId = parseInt(id);
+        if (!numId) return;
         setLoading(true);
         setError(null);
         try {
             const res = await apiClient.post<{ data: Order }>(Endpoints.trackOrder, {
-                order_id: parseInt(orderId),
-                email: email.trim(),
+                order_id: numId,
             });
             onFound(res.data ?? (res as unknown as Order));
         } catch (err) {
             const apiErr = err as ApiError;
             setError(apiErr.status === 404
-                ? 'No order found with that ID and email combination.'
+                ? 'No order found with that order number.'
                 : (apiErr.message ?? 'Something went wrong. Please try again.'));
-        } finally {
             setLoading(false);
         }
     };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        doLookup(orderInput);
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 size={32} className="animate-spin text-sb-green" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-sb-green/5 to-white pt-24 pb-32 px-4">
@@ -135,19 +154,19 @@ function GuestLookup({ orderId, onFound }: { orderId: string; onFound: (order: O
                     </div>
                     <div className="text-center mb-8">
                         <p className="text-[11px] font-black uppercase tracking-[0.3em] text-sb-green mb-2">Order Tracking</p>
-                        <h1 className="font-display text-3xl uppercase tracking-tight text-sb-black mb-2">Track Order #{orderId}</h1>
-                        <p className="text-gray-500 text-sm">Enter the email address used when placing your order.</p>
+                        <h1 className="font-display text-3xl uppercase tracking-tight text-sb-black mb-2">Track Your Order</h1>
+                        <p className="text-gray-500 text-sm">Enter your order number to see the latest status.</p>
                     </div>
-                    <form onSubmit={handleLookup} className="bg-white rounded-[28px] border border-gray-100 shadow-xl p-6 space-y-4">
+                    <form onSubmit={handleSubmit} className="bg-white rounded-[28px] border border-gray-100 shadow-xl p-6 space-y-4">
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Email Address</label>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Order Number</label>
                             <div className="relative">
-                                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                                 <input
-                                    type="email"
-                                    value={email}
-                                    onChange={e => setEmail(e.target.value)}
-                                    placeholder="you@example.com"
+                                    type="number"
+                                    value={orderInput}
+                                    onChange={e => setOrderInput(e.target.value)}
+                                    placeholder="e.g. 1042"
                                     required
                                     className="w-full pl-10 pr-4 py-3.5 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-sb-green transition-colors"
                                 />
@@ -397,29 +416,31 @@ function OrderDetail({ order }: { order: Order }) {
 function OrderPageContent() {
     const params = useParams();
     const searchParams = useSearchParams();
-    const router = useRouter();
+    const { user, isAuthenticated, isHydrating } = useAuth();
     const orderId = String(params.id ?? '');
 
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
-    const [needsVerify, setNeedsVerify] = useState(false);
 
-    // Auto-load for authenticated users (the auth endpoint uses token)
+    // If the user is authenticated, try to load the order with their token first
     useEffect(() => {
-        if (!orderId) return;
+        if (isHydrating) return;
 
+        if (!isAuthenticated) {
+            setLoading(false);
+            return;
+        }
+
+        // Authenticated: try to load directly
         apiClient.get<Order>(`${Endpoints.orders}/${orderId}`)
             .then(res => setOrder(res as unknown as Order))
-            .catch((err: ApiError) => {
-                if (err.status === 401 || err.status === 403 || err.status === 404) {
-                    // Not authenticated or not their order — show guest lookup
-                    setNeedsVerify(true);
-                }
+            .catch(() => {
+                // If their token doesn't grant access to this order, fall through to guest lookup
             })
             .finally(() => setLoading(false));
-    }, [orderId]);
+    }, [orderId, isAuthenticated, isHydrating]);
 
-    if (loading) {
+    if (loading || isHydrating) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <Loader2 size={32} className="animate-spin text-sb-green" />
@@ -427,17 +448,12 @@ function OrderPageContent() {
         );
     }
 
-    if (needsVerify && !order) {
-        return <GuestLookup orderId={orderId} onFound={setOrder} />;
-    }
-
     if (!order) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
-                <XCircle size={48} className="text-red-400" />
-                <h2 className="font-display text-2xl uppercase text-sb-black">Order Not Found</h2>
-                <Link href="/shop" className="text-sb-green font-bold hover:underline text-sm">Continue Shopping</Link>
-            </div>
+            <GuestLookup
+                orderId={orderId}
+                onFound={setOrder}
+            />
         );
     }
 

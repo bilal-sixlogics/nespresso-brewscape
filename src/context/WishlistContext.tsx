@@ -18,7 +18,7 @@ interface WishlistContextType {
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
-const LS_KEY = 'brewscape-wishlist-guest';
+const LS_KEY = 'cafrezzo-wishlist-guest';
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isHydrating } = useAuth();

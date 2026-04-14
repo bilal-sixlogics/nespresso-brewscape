@@ -6,7 +6,7 @@ import { Star, ChevronDown, ShoppingBag, Check, ArrowRight, Share2, Heart, Arrow
 import Link from 'next/link';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { useFormatPrice } from '@/context/SiteSettingsContext';
+import { useFormatPrice, useSiteSettings } from '@/context/SiteSettingsContext';
 import { useProduct, useProducts } from '@/hooks/useProducts';
 import {
     SaleUnit, Product,
@@ -82,6 +82,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
     const { addToCart } = useCart();
     const { language } = useLanguage();
     const formatPrice = useFormatPrice();
+    const { currency_symbol } = useSiteSettings();
     const t = (fr: string, en: string) => language === 'fr' ? fr : en;
 
     const { product, isLoading: productLoading } = useProduct(slug);
@@ -352,7 +353,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
 
                     {/* Shipping note */}
                     <p className="text-xs text-gray-400 text-center">
-                        {t('🚚 Livraison offerte dès 150€ · Retours sous 14 jours', '🚚 Free shipping from €150 · Returns within 14 days')}
+                        {t(`🚚 Livraison offerte dès ${currency_symbol}150 · Retours sous 14 jours`, `🚚 Free shipping from ${currency_symbol}150 · Returns within 14 days`)}
                     </p>
                 </div>
             </div>

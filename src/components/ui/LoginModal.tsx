@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, User as UserIcon, CheckCircle2 } from 'lucide-react';
+import { X, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, User as UserIcon, CheckCircle2, Phone as PhoneIcon } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { apiClient } from '@/lib/api/client';
+import { Endpoints } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/types';
 import Link from 'next/link';
 
@@ -14,8 +17,14 @@ const PASSWORD_RULES = [
     { label: 'Number', test: (p: string) => /[0-9]/.test(p) },
 ];
 
+const OTP_LENGTH = 6;
+const RESEND_COOLDOWN = 60;
+
+type RegisterStep = 'form' | 'otp' | 'verified';
+
 export function LoginModal() {
     const { isLoginModalOpen, closeLoginModal, login, register } = useAuth();
+    const { language } = useLanguage();
     const [view, setView] = useState<'login' | 'register'>('login');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -30,9 +39,35 @@ export function LoginModal() {
     const [confirm, setConfirm] = useState('');
     const [phone, setPhone] = useState('');
 
+    // OTP state
+    const [registerStep, setRegisterStep] = useState<RegisterStep>('form');
+    const [otpDigits, setOtpDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
+    const [verificationToken, setVerificationToken] = useState('');
+    const [resendTimer, setResendTimer] = useState(0);
+    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+    const [isResendingOtp, setIsResendingOtp] = useState(false);
+    const [otpError, setOtpError] = useState<string | null>(null);
+    const [resendSuccess, setResendSuccess] = useState(false);
+    const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    // Resend timer countdown
+    useEffect(() => {
+        if (resendTimer <= 0) return;
+        const interval = setInterval(() => {
+            setResendTimer(prev => {
+                if (prev <= 1) { clearInterval(interval); return 0; }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [resendTimer]);
+
     const reset = () => {
         setEmail(''); setPassword(''); setName(''); setConfirm(''); setPhone('');
         setError(null); setFieldErrors({}); setShowPassword(false); setShowConfirm(false);
+        setRegisterStep('form'); setOtpDigits(Array(OTP_LENGTH).fill(''));
+        setVerificationToken(''); setResendTimer(0); setOtpError(null);
+        setResendSuccess(false);
     };
 
     const switchView = (v: 'login' | 'register') => { reset(); setView(v); };
@@ -43,17 +78,14 @@ export function LoginModal() {
         closeLoginModal();
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    // ── Login submit ──
+    const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setFieldErrors({});
         setIsLoading(true);
         try {
-            if (view === 'login') {
-                await login(email, password);
-            } else {
-                await register(name, email, password, confirm, phone || undefined);
-            }
+            await login(email, password);
             reset();
         } catch (err) {
             const apiErr = err as ApiError;
@@ -64,7 +96,113 @@ export function LoginModal() {
         }
     };
 
+    // ── Send OTP ──
+    const handleSendOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setFieldErrors({});
+        setIsLoading(true);
+        try {
+            await apiClient.post(Endpoints.sendOtp, { email, name, locale: (['en', 'fr', 'ar'].includes(language) ? language : 'fr') });
+            setRegisterStep('otp');
+            setResendTimer(RESEND_COOLDOWN);
+            setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+        } catch (err) {
+            const apiErr = err as ApiError;
+            if (apiErr.status === 422 && (apiErr as ApiError & { email_exists?: boolean }).email_exists) {
+                setError('This email is already registered. Please log in instead.');
+            } else if (apiErr.errors) {
+                setFieldErrors(apiErr.errors);
+            } else {
+                setError(apiErr.message ?? 'Failed to send verification code. Please try again.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // ── OTP digit handling ──
+    const handleOtpDigitChange = useCallback((index: number, value: string) => {
+        const digit = value.replace(/\D/g, '').slice(-1);
+        setOtpDigits(prev => {
+            const next = [...prev];
+            next[index] = digit;
+            return next;
+        });
+        setOtpError(null);
+        if (digit && index < OTP_LENGTH - 1) {
+            otpInputRefs.current[index + 1]?.focus();
+        }
+    }, []);
+
+    const handleOtpKeyDown = useCallback((index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+            otpInputRefs.current[index - 1]?.focus();
+        }
+    }, [otpDigits]);
+
+    const handleOtpPaste = useCallback((e: React.ClipboardEvent) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
+        if (pasted.length > 0) {
+            const newDigits = Array(OTP_LENGTH).fill('');
+            for (let i = 0; i < pasted.length; i++) {
+                newDigits[i] = pasted[i];
+            }
+            setOtpDigits(newDigits);
+            setOtpError(null);
+            const focusIndex = Math.min(pasted.length, OTP_LENGTH - 1);
+            otpInputRefs.current[focusIndex]?.focus();
+        }
+    }, []);
+
+    // ── Verify OTP → then register ──
+    const handleVerifyOtp = async () => {
+        const otpCode = otpDigits.join('');
+        if (otpCode.length !== OTP_LENGTH) return;
+        setIsVerifyingOtp(true);
+        setOtpError(null);
+        try {
+            const res = await apiClient.post<{ message: string; verification_token: string }>(
+                Endpoints.verifyOtp, { email, otp: otpCode }
+            );
+            setVerificationToken(res.verification_token);
+            setRegisterStep('verified');
+            // Auto-register
+            await register(name, email, password, confirm, phone || undefined, res.verification_token);
+            reset();
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setOtpError(apiErr.message ?? 'Invalid verification code. Please try again.');
+        } finally {
+            setIsVerifyingOtp(false);
+        }
+    };
+
+    // ── Resend OTP ──
+    const handleResendOtp = async () => {
+        if (resendTimer > 0 || isResendingOtp) return;
+        setIsResendingOtp(true);
+        setOtpError(null);
+        setResendSuccess(false);
+        try {
+            await apiClient.post(Endpoints.resendOtp, { email, name, locale: (['en', 'fr', 'ar'].includes(language) ? language : 'fr') });
+            setResendTimer(RESEND_COOLDOWN);
+            setResendSuccess(true);
+            setOtpDigits(Array(OTP_LENGTH).fill(''));
+            otpInputRefs.current[0]?.focus();
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setOtpError(apiErr.message ?? 'Failed to resend code. Please try again.');
+        } finally {
+            setIsResendingOtp(false);
+        }
+    };
+
     const firstFieldError = (key: string) => fieldErrors[key]?.[0];
+    const otpComplete = otpDigits.join('').length === OTP_LENGTH;
+    const allPasswordRulesPassed = PASSWORD_RULES.every(r => r.test(password));
+    const canSendOtp = !!(name && email && password && confirm && confirm === password && allPasswordRulesPassed);
 
     if (!isLoginModalOpen) return null;
 
@@ -99,12 +237,14 @@ export function LoginModal() {
 
                         <div className="text-center mb-8">
                             <h2 className="font-display text-3xl uppercase tracking-tight text-gray-900 mb-2">
-                                {view === 'login' ? 'Welcome Back' : 'Create Account'}
+                                {view === 'login' ? 'Welcome Back' : registerStep === 'otp' ? 'Verify Email' : 'Create Account'}
                             </h2>
                             <p className="text-sm text-gray-500">
                                 {view === 'login'
                                     ? 'Sign in to track your orders and manage your account.'
-                                    : 'Join Brewscape for exclusive offers and order tracking.'}
+                                    : registerStep === 'otp'
+                                    ? <>We sent a 6-digit code to <span className="font-bold text-gray-700">{email}</span>.</>
+                                    : 'Join Cafrezzo for exclusive offers and order tracking.'}
                             </p>
                         </div>
 
@@ -127,7 +267,7 @@ export function LoginModal() {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 20 }}
                                     transition={{ duration: 0.2 }}
-                                    onSubmit={handleSubmit}
+                                    onSubmit={handleLoginSubmit}
                                     className="space-y-4"
                                 >
                                     <div className="relative">
@@ -183,14 +323,14 @@ export function LoginModal() {
                                         {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Sign In'}
                                     </button>
                                 </motion.form>
-                            ) : (
+                            ) : registerStep === 'form' ? (
                                 <motion.form
-                                    key="register"
+                                    key="register-form"
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                     transition={{ duration: 0.2 }}
-                                    onSubmit={handleSubmit}
+                                    onSubmit={handleSendOtp}
                                     className="space-y-4"
                                 >
                                     {/* Name */}
@@ -229,6 +369,23 @@ export function LoginModal() {
                                             />
                                         </div>
                                         {firstFieldError('email') && <p className="mt-1 text-xs text-red-500 pl-1">{firstFieldError('email')}</p>}
+                                    </div>
+
+                                    {/* Phone */}
+                                    <div>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                                <PhoneIcon size={18} />
+                                            </div>
+                                            <input
+                                                type="tel"
+                                                value={phone}
+                                                onChange={e => setPhone(e.target.value)}
+                                                placeholder="Phone (optional)"
+                                                autoComplete="tel"
+                                                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Password */}
@@ -302,27 +459,103 @@ export function LoginModal() {
                                         )}
                                     </div>
 
-                                    {/* Phone */}
-                                    <div className="relative">
-                                        <input
-                                            type="tel"
-                                            value={phone}
-                                            onChange={e => setPhone(e.target.value)}
-                                            placeholder="Phone (optional)"
-                                            autoComplete="tel"
-                                            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm"
-                                        />
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">+33</span>
-                                    </div>
-
                                     <button
                                         type="submit"
-                                        disabled={isLoading || (confirm.length > 0 && confirm !== password)}
+                                        disabled={isLoading || !canSendOtp}
                                         className="w-full bg-[#3B7E5A] text-white rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
-                                        {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Create Account'}
+                                        {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Send Verification Code'}
                                     </button>
                                 </motion.form>
+                            ) : (
+                                /* OTP step (covers both 'otp' and 'verified') */
+                                <motion.div
+                                    key="register-otp"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="space-y-6"
+                                >
+                                    {/* OTP error */}
+                                    {otpError && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -8 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-200 text-red-600 text-sm"
+                                        >
+                                            <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                                            <span>{otpError}</span>
+                                        </motion.div>
+                                    )}
+
+                                    {/* Resend success */}
+                                    {resendSuccess && !otpError && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -8 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="flex items-start gap-3 p-4 rounded-xl bg-[#3B7E5A]/10 border border-[#3B7E5A]/20 text-[#3B7E5A] text-sm"
+                                        >
+                                            <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
+                                            <span>A new code has been sent to your email.</span>
+                                        </motion.div>
+                                    )}
+
+                                    {/* OTP Digit Inputs */}
+                                    <div className="flex justify-center gap-3" onPaste={handleOtpPaste}>
+                                        {otpDigits.map((digit, i) => (
+                                            <input
+                                                key={i}
+                                                ref={el => { otpInputRefs.current[i] = el; }}
+                                                type="text"
+                                                inputMode="numeric"
+                                                autoComplete="one-time-code"
+                                                maxLength={1}
+                                                value={digit}
+                                                onChange={e => handleOtpDigitChange(i, e.target.value)}
+                                                onKeyDown={e => handleOtpKeyDown(i, e)}
+                                                className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 transition-all outline-none
+                                                    ${digit ? 'border-[#3B7E5A] bg-[#3B7E5A]/5' : 'border-gray-200 bg-gray-50'}
+                                                    focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 focus:bg-white`}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    {/* Verify Button */}
+                                    <button
+                                        onClick={handleVerifyOtp}
+                                        disabled={!otpComplete || isVerifyingOtp}
+                                        className="w-full bg-[#3B7E5A] text-white rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                    >
+                                        {isVerifyingOtp ? <Loader2 size={16} className="animate-spin" /> : 'Verify & Create Account'}
+                                    </button>
+
+                                    {/* Resend */}
+                                    <div className="text-center">
+                                        <p className="text-sm text-gray-500 mb-1">Didn&apos;t receive the code?</p>
+                                        {resendTimer > 0 ? (
+                                            <p className="text-sm text-gray-400">
+                                                Resend in <span className="font-bold text-gray-600">{resendTimer}s</span>
+                                            </p>
+                                        ) : (
+                                            <button
+                                                onClick={handleResendOtp}
+                                                disabled={isResendingOtp}
+                                                className="text-sm font-bold text-[#3B7E5A] hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
+                                            >
+                                                {isResendingOtp ? 'Sending...' : 'Resend Code'}
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Back to form */}
+                                    <button
+                                        onClick={() => { setRegisterStep('form'); setOtpError(null); setResendSuccess(false); setOtpDigits(Array(OTP_LENGTH).fill('')); }}
+                                        className="w-full text-center text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        Back to registration form
+                                    </button>
+                                </motion.div>
                             )}
                         </AnimatePresence>
 
@@ -334,14 +567,14 @@ export function LoginModal() {
                                         Sign up
                                     </button>
                                 </>
-                            ) : (
+                            ) : registerStep === 'form' ? (
                                 <>
                                     Already have an account?{' '}
                                     <button onClick={() => switchView('login')} className="text-[#3B7E5A] font-bold hover:underline">
                                         Log in
                                     </button>
                                 </>
-                            )}
+                            ) : null}
                         </div>
                     </div>
                 </motion.div>

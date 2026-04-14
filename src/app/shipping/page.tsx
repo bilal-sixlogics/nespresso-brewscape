@@ -4,18 +4,21 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Truck, RotateCcw, Shield, Clock, Package, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useFormatPrice, useSiteSettings } from '@/context/SiteSettingsContext';
 
 export default function ShippingPage() {
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const formatPrice = useFormatPrice();
+    const { currency_symbol } = useSiteSettings();
 
     const shippingOptions = [
         {
             icon: Truck,
             title: tx('Standard', 'Standard'),
             subtitle: tx('3–5 jours ouvrés', '3–5 working days'),
-            price: '€5.99',
-            free: tx('Gratuit dès €150', 'Free from €150'),
+            price: formatPrice(5.99),
+            free: tx(`Gratuit dès ${currency_symbol}150`, `Free from ${currency_symbol}150`),
             color: 'bg-sb-green',
             features: [
                 tx('Suivi en temps réel', 'Real-time tracking'),
@@ -27,7 +30,7 @@ export default function ShippingPage() {
             icon: Clock,
             title: tx('Express', 'Express'),
             subtitle: tx('1–2 jours ouvrés', '1–2 working days'),
-            price: '€12.99',
+            price: formatPrice(12.99),
             free: null,
             color: 'bg-sb-black',
             features: [
@@ -120,8 +123,8 @@ export default function ShippingPage() {
                     <Package size={28} className="text-white flex-shrink-0" />
                     <p className="text-white font-semibold text-sm">
                         {tx(
-                            '🎉 Livraison standard offerte pour toute commande de €150 ou plus !',
-                            '🎉 Free standard shipping on all orders of €150 or more!'
+                            `🎉 Livraison standard offerte pour toute commande de ${currency_symbol}150 ou plus !`,
+                            `🎉 Free standard shipping on all orders of ${currency_symbol}150 or more!`
                         )}
                     </p>
                 </motion.div>

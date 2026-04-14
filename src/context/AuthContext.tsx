@@ -67,16 +67,11 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isHydrating: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (name: string, email: string, password: string, passwordConfirmation: string, phone?: string) => Promise<void>;
+    register: (name: string, email: string, password: string, passwordConfirmation: string, phone?: string, verificationToken?: string) => Promise<void>;
     logout: () => Promise<void>;
     isLoginModalOpen: boolean;
     openLoginModal: () => void;
     closeLoginModal: () => void;
-    // OTP verification
-    isOtpModalOpen: boolean;
-    verifyOtp: (otp: string) => Promise<void>;
-    resendOtp: () => Promise<void>;
-    closeOtpModal: () => void;
     // Profile management
     updateUser: (patch: Partial<User>) => void;
     // Address management
@@ -90,7 +85,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isHydrating, setIsHydrating] = useState(true);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-    const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
 
     const isAuthenticated = user !== null;
 
@@ -115,6 +109,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             clearToken();
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('auth:session-cleared'));
+                // Redirect to homepage unless already there
+                if (window.location.pathname !== '/') {
+                    window.location.href = '/';
+                }
             }
         };
         window.addEventListener('auth:expired', handleExpired);
@@ -142,9 +140,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const mapped = mapUser(res.user);
         setUser(mapped);
         setIsLoginModalOpen(false);
-        if (res.user.email_verified === false) {
-            setIsOtpModalOpen(true);
-        }
         await mergeGuestCart();
     }, [mergeGuestCart]);
 
@@ -155,6 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password: string,
         passwordConfirmation: string,
         phone?: string,
+        verificationToken?: string,
     ) => {
         const res = await apiClient.post<{ token: string; user: BackendUser }>(Endpoints.register, {
             name,
@@ -162,14 +158,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             password,
             password_confirmation: passwordConfirmation,
             ...(phone ? { phone } : {}),
+            ...(verificationToken ? { verification_token: verificationToken } : {}),
         });
         setToken(res.token);
         const mapped = mapUser(res.user);
         setUser(mapped);
         setIsLoginModalOpen(false);
-        if (res.user.email_verified === false) {
-            setIsOtpModalOpen(true);
-        }
         await mergeGuestCart();
     }, [mergeGuestCart]);
 
@@ -198,21 +192,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(prev => prev ? { ...prev, ...patch } : prev);
     }, []);
 
-    // ── OTP Verification ────────────────────────────────────────────────────
-    const verifyOtp = useCallback(async (otp: string) => {
-        await apiClient.post(Endpoints.verifyOtp, { otp });
-        setUser(prev => prev ? { ...prev, emailVerified: true } : prev);
-        setIsOtpModalOpen(false);
-    }, []);
-
-    const resendOtp = useCallback(async () => {
-        await apiClient.post(Endpoints.resendOtp);
-    }, []);
-
-    const closeOtpModal = useCallback(() => {
-        setIsOtpModalOpen(false);
-    }, []);
-
     const openLoginModal = () => setIsLoginModalOpen(true);
     const closeLoginModal = () => setIsLoginModalOpen(false);
 
@@ -227,10 +206,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isLoginModalOpen,
             openLoginModal,
             closeLoginModal,
-            isOtpModalOpen,
-            verifyOtp,
-            resendOtp,
-            closeOtpModal,
             updateUser,
             refreshAddresses,
             defaultAddress,

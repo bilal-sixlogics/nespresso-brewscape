@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { Product, getDisplayPrice, isInStock, getTagLabels } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 export interface FilterState {
     brands: string[];
@@ -112,6 +113,7 @@ interface FilterDrawerProps {
 export function FilterDrawer({ open, onClose, filters, onChange, resultCount, availableCategories = [], availableBrands = [], availableTags = [] }: FilterDrawerProps) {
     const { language } = useLanguage();
     const t = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const { currency_symbol } = useSiteSettings();
 
     // Detect mobile for bottom-sheet vs left-drawer
     const [isMobile, setIsMobile] = useState(false);
@@ -257,10 +259,10 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                     </Section>
 
                     {/* Price */}
-                    <Section title={t('Prix (€)', 'Price (€)')}>
+                    <Section title={t(`Prix (${currency_symbol})`, `Price (${currency_symbol})`)}>
                         <div className="pb-3">
                             <RangeSlider
-                                label="" value={filters.priceRange} min={0} max={500} unit="€"
+                                label="" value={filters.priceRange} min={0} max={500} unit={currency_symbol}
                                 onChange={v => onChange({ ...filters, priceRange: v })}
                             />
                         </div>

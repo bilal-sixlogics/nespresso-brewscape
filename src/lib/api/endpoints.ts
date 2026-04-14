@@ -44,6 +44,7 @@ export const Endpoints = {
     register: `${API_BASE}/auth/register`,
     logout: `${API_BASE}/auth/logout`,
     me: `${API_BASE}/auth/me`,
+    sendOtp: `${API_BASE}/auth/send-otp`,
     verifyOtp: `${API_BASE}/auth/verify-otp`,
     resendOtp: `${API_BASE}/auth/resend-otp`,
     forgotPassword: `${API_BASE}/auth/forgot-password`,

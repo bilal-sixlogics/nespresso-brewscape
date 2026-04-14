@@ -111,7 +111,7 @@ export const TestimonialsSection = () => {
     const authorName = current.user?.name ?? current.user_name;
     const avatarSrc = current.user?.avatar || fallbackAvatar(authorName);
     const productImage = current.product?.featured_image || current.product?.image || null;
-    const productName = current.product?.name ?? 'Brewscape Selection';
+    const productName = current.product?.name ?? 'Cafrezzo Selection';
 
     return (
         <section className="bg-[#FAF9F6] border-t border-black/5 py-10 sm:py-12 lg:py-14 px-4 sm:px-6 lg:px-12 overflow-hidden">

@@ -72,13 +72,13 @@ export default function RegisterPage() {
                     {/* Brand */}
                     <div className="text-center mb-8">
                         <Link href="/" className="inline-block">
-                            <span className="font-display text-2xl uppercase tracking-widest text-[#3B7E5A]">Brewscape</span>
+                            <span className="font-display text-2xl uppercase tracking-widest text-[#3B7E5A]">Cafrezzo</span>
                         </Link>
                         <h1 className={`mt-4 font-display text-3xl uppercase tracking-tight ${headingColor}`}>
                             Create Account
                         </h1>
                         <p className={`mt-2 text-sm ${labelColor}`}>
-                            Join Brewscape for exclusive offers and order tracking.
+                            Join Cafrezzo for exclusive offers and order tracking.
                         </p>
                     </div>
 

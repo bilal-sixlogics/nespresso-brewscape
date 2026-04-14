@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Check, ArrowRight, ArrowLeft, ChevronRight, MapPin, Phone,
     CreditCard, Lock, Truck, Package, ShoppingBag, AlertCircle, Loader2,
-    Store, ChevronDown, Eye, EyeOff, CheckCircle2, UserPlus,
+    Store, ChevronDown, Eye, EyeOff, CheckCircle2, UserPlus, Mail,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -34,10 +34,6 @@ interface ShippingForm {
 interface BillingForm extends ShippingForm { sameAsShipping: boolean; }
 interface PaymentForm {
     method: 'stripe' | 'cod' | 'store';
-    createAccount: boolean;
-    password: string;
-    passwordConfirm: string;
-    accountPhone: string;
     acceptedTerms: boolean;
 }
 
@@ -331,7 +327,7 @@ export default function CheckoutPage() {
 
     const [shippingForm, setShippingForm] = useState<ShippingForm>(defaultShippingForm);
     const [billingForm, setBillingForm] = useState<BillingForm>({ ...defaultShippingForm, sameAsShipping: true });
-    const [paymentForm, setPaymentForm] = useState<PaymentForm>({ method: 'stripe', createAccount: false, password: '', passwordConfirm: '', accountPhone: '', acceptedTerms: false });
+    const [paymentForm, setPaymentForm] = useState<PaymentForm>({ method: 'stripe', acceptedTerms: false });
 
     // ── Shipping method state (lifted up from old ShippingStep) ──
     const [apiMethods, setApiMethods] = useState<ApiShippingMethod[]>([]);
@@ -358,8 +354,38 @@ export default function CheckoutPage() {
 
     // ── Real-time validation state ──
     const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+    // ── Create Account (OTP flow) state ──
+    const OTP_LENGTH = 6;
+    const RESEND_COOLDOWN = 60;
+    type AccountStep = 'form' | 'otp' | 'verified';
+    const [createAccount, setCreateAccount] = useState(false);
+    const [accountStep, setAccountStep] = useState<AccountStep>('form');
+    const [accountPassword, setAccountPassword] = useState('');
+    const [accountPasswordConfirm, setAccountPasswordConfirm] = useState('');
     const [showAccountPassword, setShowAccountPassword] = useState(false);
     const [showAccountPasswordConfirm, setShowAccountPasswordConfirm] = useState(false);
+    const [accountOtpDigits, setAccountOtpDigits] = useState<string[]>(Array(6).fill(''));
+    const [accountOtpError, setAccountOtpError] = useState<string | null>(null);
+    const [accountError, setAccountError] = useState<string | null>(null);
+    const [accountResendTimer, setAccountResendTimer] = useState(0);
+    const [accountSendingOtp, setAccountSendingOtp] = useState(false);
+    const [accountVerifyingOtp, setAccountVerifyingOtp] = useState(false);
+    const [accountResendingOtp, setAccountResendingOtp] = useState(false);
+    const [accountResendSuccess, setAccountResendSuccess] = useState(false);
+    const accountOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    // Resend timer countdown
+    useEffect(() => {
+        if (accountResendTimer <= 0) return;
+        const interval = setInterval(() => {
+            setAccountResendTimer(prev => {
+                if (prev <= 1) { clearInterval(interval); return 0; }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [accountResendTimer]);
 
     const markTouched = useCallback((field: string) => {
         setTouched(prev => ({ ...prev, [field]: true }));
@@ -377,16 +403,6 @@ export default function CheckoutPage() {
     if (touched['address'] && !shippingForm.address) validationErrors['address'] = 'Required';
     if (touched['postalCode'] && !shippingForm.postalCode) validationErrors['postalCode'] = 'Required';
     if (touched['city'] && !shippingForm.city) validationErrors['city'] = 'Required';
-    if (paymentForm.createAccount && !isAuthenticated) {
-        if (touched['accountPassword']) {
-            if (!paymentForm.password) validationErrors['accountPassword'] = 'Required';
-            else if (paymentForm.password.length < 8) validationErrors['accountPassword'] = 'Min 8 characters';
-        }
-        if (touched['accountPasswordConfirm']) {
-            if (!paymentForm.passwordConfirm) validationErrors['accountPasswordConfirm'] = 'Required';
-            else if (paymentForm.passwordConfirm !== paymentForm.password) validationErrors['accountPasswordConfirm'] = 'Passwords don\'t match';
-        }
-    }
 
     // ── Password strength indicators ──
     const PASSWORD_CHECKS = [
@@ -560,18 +576,105 @@ export default function CheckoutPage() {
     // ── Handlers ──
     const { syncCartToBackend } = useCart();
 
-    // Attempt account creation after order — best-effort, never blocks checkout
-    const attemptCheckoutRegistration = useCallback(async () => {
-        if (!paymentForm.createAccount || isAuthenticated) return;
-        if (!paymentForm.password || paymentForm.password !== paymentForm.passwordConfirm) return;
+    // ── Create Account OTP handlers ──
+    const handleAccountSendOtp = async () => {
+        setAccountError(null);
+        setAccountSendingOtp(true);
         const fullName = `${shippingForm.firstName} ${shippingForm.lastName}`.trim();
         try {
-            await register(fullName, shippingForm.email, paymentForm.password, paymentForm.passwordConfirm, shippingForm.phone || undefined);
-            // If register succeeds and email is unverified, OTP modal opens via AuthContext
-        } catch {
-            // Silently ignore — order is already placed, registration failure is non-blocking
+            await apiClient.post(Endpoints.sendOtp, { email: shippingForm.email, name: fullName, locale: (['en', 'fr', 'ar'].includes(language) ? language : 'fr') });
+            setAccountStep('otp');
+            setAccountResendTimer(RESEND_COOLDOWN);
+            setTimeout(() => accountOtpRefs.current[0]?.focus(), 100);
+        } catch (err) {
+            const apiErr = err as ApiError;
+            if (apiErr.status === 422 && (apiErr as ApiError & { email_exists?: boolean }).email_exists) {
+                setAccountError(tx('Cet email est déjà enregistré. Veuillez vous connecter.', 'This email is already registered. Please log in instead.'));
+            } else {
+                setAccountError(apiErr.message ?? tx('Impossible d\'envoyer le code.', 'Failed to send verification code.'));
+            }
+        } finally {
+            setAccountSendingOtp(false);
         }
-    }, [paymentForm.createAccount, paymentForm.password, paymentForm.passwordConfirm, isAuthenticated, shippingForm.firstName, shippingForm.lastName, shippingForm.email, shippingForm.phone, register]);
+    };
+
+    const handleAccountOtpDigitChange = useCallback((index: number, value: string) => {
+        const digit = value.replace(/\D/g, '').slice(-1);
+        setAccountOtpDigits(prev => {
+            const next = [...prev];
+            next[index] = digit;
+            return next;
+        });
+        setAccountOtpError(null);
+        if (digit && index < OTP_LENGTH - 1) {
+            accountOtpRefs.current[index + 1]?.focus();
+        }
+    }, [OTP_LENGTH]);
+
+    const handleAccountOtpKeyDown = useCallback((index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Backspace' && !accountOtpDigits[index] && index > 0) {
+            accountOtpRefs.current[index - 1]?.focus();
+        }
+    }, [accountOtpDigits]);
+
+    const handleAccountOtpPaste = useCallback((e: React.ClipboardEvent) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
+        if (pasted.length > 0) {
+            const newDigits = Array(OTP_LENGTH).fill('');
+            for (let i = 0; i < pasted.length; i++) {
+                newDigits[i] = pasted[i];
+            }
+            setAccountOtpDigits(newDigits);
+            setAccountOtpError(null);
+            const focusIndex = Math.min(pasted.length, OTP_LENGTH - 1);
+            accountOtpRefs.current[focusIndex]?.focus();
+        }
+    }, [OTP_LENGTH]);
+
+    const handleAccountVerifyOtp = async () => {
+        const otpCode = accountOtpDigits.join('');
+        if (otpCode.length !== OTP_LENGTH) return;
+        setAccountVerifyingOtp(true);
+        setAccountOtpError(null);
+        try {
+            const res = await apiClient.post<{ message: string; verification_token: string }>(
+                Endpoints.verifyOtp, { email: shippingForm.email, otp: otpCode }
+            );
+            setAccountStep('verified');
+            // Auto-register
+            const fullName = `${shippingForm.firstName} ${shippingForm.lastName}`.trim();
+            await register(fullName, shippingForm.email, accountPassword, accountPasswordConfirm, shippingForm.phone || undefined, res.verification_token);
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setAccountOtpError(apiErr.message ?? tx('Code invalide. Réessayez.', 'Invalid verification code. Please try again.'));
+        } finally {
+            setAccountVerifyingOtp(false);
+        }
+    };
+
+    const handleAccountResendOtp = async () => {
+        if (accountResendTimer > 0 || accountResendingOtp) return;
+        setAccountResendingOtp(true);
+        setAccountOtpError(null);
+        setAccountResendSuccess(false);
+        const fullName = `${shippingForm.firstName} ${shippingForm.lastName}`.trim();
+        try {
+            await apiClient.post(Endpoints.resendOtp, { email: shippingForm.email, name: fullName, locale: (['en', 'fr', 'ar'].includes(language) ? language : 'fr') });
+            setAccountResendTimer(RESEND_COOLDOWN);
+            setAccountResendSuccess(true);
+            setAccountOtpDigits(Array(OTP_LENGTH).fill(''));
+            accountOtpRefs.current[0]?.focus();
+        } catch (err) {
+            const apiErr = err as ApiError;
+            setAccountOtpError(apiErr.message ?? tx('Impossible de renvoyer le code.', 'Failed to resend code.'));
+        } finally {
+            setAccountResendingOtp(false);
+        }
+    };
+
+    const accountOtpComplete = accountOtpDigits.join('').length === OTP_LENGTH;
+    const canSendAccountOtp = !!(accountPassword && accountPasswordConfirm && accountPassword === accountPasswordConfirm && accountPassword.length >= 8 && /[A-Z]/.test(accountPassword) && /[0-9]/.test(accountPassword));
 
     const handleContinueToStripe = async () => {
         setIsProcessing(true);
@@ -600,11 +703,9 @@ export default function CheckoutPage() {
                 Endpoints.placeOrder,
                 buildPayload(),
             );
-            // Attempt checkout registration (best-effort, non-blocking)
-            await attemptCheckoutRegistration();
             clearFormFromSession();
             clearCart();
-            router.push(`/order-success?order=${res.order_id}&payment=${paymentForm.method}&total=${total.toFixed(2)}`);
+            router.push(`/order-success?order=${res.order_id}&payment=${paymentForm.method}&total=${total.toFixed(2)}&email=${encodeURIComponent(shippingForm.email)}`);
         } catch (err) {
             setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
         } finally {
@@ -674,19 +775,19 @@ export default function CheckoutPage() {
                             <SectionCard>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <div
-                                        onClick={() => setPaymentForm(f => ({ ...f, createAccount: !f.createAccount }))}
-                                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${paymentForm.createAccount ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
+                                        onClick={() => { setCreateAccount(v => !v); setAccountStep('form'); setAccountError(null); setAccountOtpError(null); }}
+                                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 ${createAccount ? 'bg-sb-green border-sb-green' : 'border-gray-200 group-hover:border-sb-green/50'}`}
                                     >
-                                        {paymentForm.createAccount && <Check size={12} className="text-white" />}
+                                        {createAccount && <Check size={12} className="text-white" />}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <UserPlus size={14} className={paymentForm.createAccount ? 'text-sb-green' : 'text-gray-400'} />
+                                        <UserPlus size={14} className={createAccount ? 'text-sb-green' : 'text-gray-400'} />
                                         <span className="text-sm font-bold text-gray-600">{tx('Créer un compte pour vos prochaines commandes', 'Create an account for faster checkout next time')}</span>
                                     </div>
                                 </label>
 
                                 <AnimatePresence>
-                                    {paymentForm.createAccount && (
+                                    {createAccount && (
                                         <motion.div
                                             key="create-account-fields"
                                             initial={{ height: 0, opacity: 0 }}
@@ -694,58 +795,181 @@ export default function CheckoutPage() {
                                             exit={{ height: 0, opacity: 0 }}
                                             className="overflow-hidden"
                                         >
-                                            <div className="mt-4 space-y-4">
-                                                <div>
-                                                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Mot de passe', 'Password')} *</label>
-                                                    <div className="relative">
-                                                        <input
-                                                            type={showAccountPassword ? 'text' : 'password'}
-                                                            value={paymentForm.password}
-                                                            onChange={e => setPaymentForm(f => ({ ...f, password: e.target.value }))}
-                                                            onBlur={() => markTouched('accountPassword')}
-                                                            autoComplete="new-password"
-                                                            placeholder={tx('Min. 8 caractères', 'Min. 8 characters')}
-                                                            className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none transition-colors bg-white placeholder:text-gray-300 ${validationErrors['accountPassword'] ? 'border-red-500' : 'border-gray-100 focus:border-sb-green'}`}
-                                                        />
-                                                        <button type="button" tabIndex={-1} onClick={() => setShowAccountPassword(v => !v)}
-                                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green">
-                                                            {showAccountPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                        </button>
+                                            {accountStep === 'verified' ? (
+                                                /* ── Verified: green badge ── */
+                                                <div className="mt-4 flex items-center gap-3 p-4 rounded-2xl bg-sb-green/5 border-2 border-sb-green/20">
+                                                    <div className="w-10 h-10 rounded-xl bg-sb-green/10 flex items-center justify-center flex-shrink-0">
+                                                        <CheckCircle2 size={20} className="text-sb-green" />
                                                     </div>
-                                                    {validationErrors['accountPassword'] && <p className="mt-1 text-xs text-red-500">{validationErrors['accountPassword']}</p>}
-                                                    {paymentForm.password.length > 0 && (
-                                                        <ul className="mt-2 space-y-1">
-                                                            {PASSWORD_CHECKS.map(rule => {
-                                                                const ok = rule.test(paymentForm.password);
-                                                                return (
-                                                                    <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-sb-green' : 'text-gray-400'}`}>
-                                                                        <CheckCircle2 size={12} className={ok ? 'opacity-100' : 'opacity-30'} /> {rule.label}
-                                                                    </li>
-                                                                );
-                                                            })}
-                                                        </ul>
+                                                    <div>
+                                                        <p className="font-bold text-sm text-sb-green">{tx('Email vérifié', 'Email Verified')}</p>
+                                                        <p className="text-[10px] text-gray-500">{tx('Votre compte a été créé avec succès.', 'Your account has been created successfully.')}</p>
+                                                    </div>
+                                                </div>
+                                            ) : accountStep === 'otp' ? (
+                                                /* ── OTP step: inline 6-digit input ── */
+                                                <div className="mt-4 space-y-4">
+                                                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                                                        <div className="w-10 h-10 rounded-xl bg-sb-green/10 flex items-center justify-center flex-shrink-0">
+                                                            <Mail size={18} className="text-sb-green" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-sm text-sb-black">{tx('Vérifiez votre email', 'Verify Your Email')}</p>
+                                                            <p className="text-[10px] text-gray-400">
+                                                                {tx('Code envoyé à', 'Code sent to')} <span className="font-bold text-gray-600">{shippingForm.email}</span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* OTP error */}
+                                                    {accountOtpError && (
+                                                        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                                                            className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-200 text-red-600 text-xs">
+                                                            <AlertCircle size={14} className="mt-0.5 shrink-0" />
+                                                            <span>{accountOtpError}</span>
+                                                        </motion.div>
+                                                    )}
+
+                                                    {/* Resend success */}
+                                                    {accountResendSuccess && !accountOtpError && (
+                                                        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                                                            className="flex items-start gap-3 p-3 rounded-xl bg-sb-green/10 border border-sb-green/20 text-sb-green text-xs">
+                                                            <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
+                                                            <span>{tx('Un nouveau code a été envoyé.', 'A new code has been sent to your email.')}</span>
+                                                        </motion.div>
+                                                    )}
+
+                                                    {/* 6-digit OTP inputs */}
+                                                    <div className="flex justify-center gap-2.5" onPaste={handleAccountOtpPaste}>
+                                                        {accountOtpDigits.map((digit, i) => (
+                                                            <input
+                                                                key={i}
+                                                                ref={el => { accountOtpRefs.current[i] = el; }}
+                                                                type="text"
+                                                                inputMode="numeric"
+                                                                autoComplete="one-time-code"
+                                                                maxLength={1}
+                                                                value={digit}
+                                                                onChange={e => handleAccountOtpDigitChange(i, e.target.value)}
+                                                                onKeyDown={e => handleAccountOtpKeyDown(i, e)}
+                                                                className={`w-11 h-13 text-center text-lg font-bold rounded-xl border-2 transition-all outline-none
+                                                                    ${digit ? 'border-sb-green bg-sb-green/5' : 'border-gray-200 bg-gray-50'}
+                                                                    focus:border-sb-green focus:ring-2 focus:ring-sb-green/20 focus:bg-white`}
+                                                            />
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Verify button */}
+                                                    <button
+                                                        onClick={handleAccountVerifyOtp}
+                                                        disabled={!accountOtpComplete || accountVerifyingOtp}
+                                                        className="w-full bg-sb-green text-white rounded-2xl py-3.5 font-black uppercase tracking-widest text-[10px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                                    >
+                                                        {accountVerifyingOtp ? <Loader2 size={16} className="animate-spin" /> : tx('Vérifier et créer le compte', 'Verify & Create Account')}
+                                                    </button>
+
+                                                    {/* Resend / timer */}
+                                                    <div className="text-center">
+                                                        <p className="text-xs text-gray-500 mb-1">{tx('Code non reçu ?', "Didn't receive the code?")}</p>
+                                                        {accountResendTimer > 0 ? (
+                                                            <p className="text-xs text-gray-400">
+                                                                {tx('Renvoyer dans', 'Resend in')} <span className="font-bold text-gray-600">{accountResendTimer}s</span>
+                                                            </p>
+                                                        ) : (
+                                                            <button
+                                                                onClick={handleAccountResendOtp}
+                                                                disabled={accountResendingOtp}
+                                                                className="text-xs font-bold text-sb-green hover:underline disabled:opacity-60"
+                                                            >
+                                                                {accountResendingOtp ? tx('Envoi...', 'Sending...') : tx('Renvoyer le code', 'Resend Code')}
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Back to password form */}
+                                                    <button
+                                                        onClick={() => { setAccountStep('form'); setAccountOtpError(null); setAccountResendSuccess(false); setAccountOtpDigits(Array(OTP_LENGTH).fill('')); }}
+                                                        className="w-full text-center text-[10px] text-gray-400 hover:text-gray-600 transition-colors"
+                                                    >
+                                                        {tx('Retour au formulaire', 'Back to form')}
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                /* ── Step 1: password fields + send OTP button ── */
+                                                <div className="mt-4 space-y-4">
+                                                    {/* Account error */}
+                                                    {accountError && (
+                                                        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                                                            className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-200 text-red-600 text-xs">
+                                                            <AlertCircle size={14} className="mt-0.5 shrink-0" />
+                                                            <span>{accountError}</span>
+                                                        </motion.div>
+                                                    )}
+
+                                                    <div>
+                                                        <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Mot de passe', 'Password')} *</label>
+                                                        <div className="relative">
+                                                            <input
+                                                                type={showAccountPassword ? 'text' : 'password'}
+                                                                value={accountPassword}
+                                                                onChange={e => setAccountPassword(e.target.value)}
+                                                                autoComplete="new-password"
+                                                                placeholder={tx('Min. 8 caractères', 'Min. 8 characters')}
+                                                                className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none transition-colors bg-white placeholder:text-gray-300 border-gray-100 focus:border-sb-green`}
+                                                            />
+                                                            <button type="button" tabIndex={-1} onClick={() => setShowAccountPassword(v => !v)}
+                                                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green">
+                                                                {showAccountPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                            </button>
+                                                        </div>
+                                                        {accountPassword.length > 0 && (
+                                                            <ul className="mt-2 space-y-1">
+                                                                {PASSWORD_CHECKS.map(rule => {
+                                                                    const ok = rule.test(accountPassword);
+                                                                    return (
+                                                                        <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-sb-green' : 'text-gray-400'}`}>
+                                                                            <CheckCircle2 size={12} className={ok ? 'opacity-100' : 'opacity-30'} /> {rule.label}
+                                                                        </li>
+                                                                    );
+                                                                })}
+                                                            </ul>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Confirmer le mot de passe', 'Confirm Password')} *</label>
+                                                        <div className="relative">
+                                                            <input
+                                                                type={showAccountPasswordConfirm ? 'text' : 'password'}
+                                                                value={accountPasswordConfirm}
+                                                                onChange={e => setAccountPasswordConfirm(e.target.value)}
+                                                                autoComplete="new-password"
+                                                                placeholder={tx('Répéter le mot de passe', 'Repeat password')}
+                                                                className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none transition-colors bg-white placeholder:text-gray-300 ${accountPasswordConfirm && accountPasswordConfirm !== accountPassword ? 'border-red-500' : 'border-gray-100 focus:border-sb-green'}`}
+                                                            />
+                                                            <button type="button" tabIndex={-1} onClick={() => setShowAccountPasswordConfirm(v => !v)}
+                                                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green">
+                                                                {showAccountPasswordConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                            </button>
+                                                        </div>
+                                                        {accountPasswordConfirm && accountPasswordConfirm !== accountPassword && (
+                                                            <p className="mt-1 text-xs text-red-500">{tx('Les mots de passe ne correspondent pas.', 'Passwords do not match.')}</p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Send Verification Code button */}
+                                                    <button
+                                                        onClick={handleAccountSendOtp}
+                                                        disabled={!canSendAccountOtp || accountSendingOtp || !shippingForm.email || !shippingForm.firstName}
+                                                        className="w-full bg-sb-green text-white rounded-2xl py-3.5 font-black uppercase tracking-widest text-[10px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                                    >
+                                                        {accountSendingOtp ? <Loader2 size={16} className="animate-spin" /> : tx('Envoyer le code de vérification', 'Send Verification Code')}
+                                                    </button>
+
+                                                    {!shippingForm.email && (
+                                                        <p className="text-[10px] text-gray-400 text-center">{tx('Remplissez votre email dans le formulaire ci-dessus.', 'Fill in your email in the shipping form above.')}</p>
                                                     )}
                                                 </div>
-                                                <div>
-                                                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{tx('Confirmer le mot de passe', 'Confirm Password')} *</label>
-                                                    <div className="relative">
-                                                        <input
-                                                            type={showAccountPasswordConfirm ? 'text' : 'password'}
-                                                            value={paymentForm.passwordConfirm}
-                                                            onChange={e => setPaymentForm(f => ({ ...f, passwordConfirm: e.target.value }))}
-                                                            onBlur={() => markTouched('accountPasswordConfirm')}
-                                                            autoComplete="new-password"
-                                                            placeholder={tx('Répéter le mot de passe', 'Repeat password')}
-                                                            className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none transition-colors bg-white placeholder:text-gray-300 ${validationErrors['accountPasswordConfirm'] ? 'border-red-500' : 'border-gray-100 focus:border-sb-green'}`}
-                                                        />
-                                                        <button type="button" tabIndex={-1} onClick={() => setShowAccountPasswordConfirm(v => !v)}
-                                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-sb-green">
-                                                            {showAccountPasswordConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                        </button>
-                                                    </div>
-                                                    {validationErrors['accountPasswordConfirm'] && <p className="mt-1 text-xs text-red-500">{validationErrors['accountPasswordConfirm']}</p>}
-                                                </div>
-                                            </div>
+                                            )}
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -974,10 +1198,9 @@ export default function CheckoutPage() {
                                             language={language}
                                             onBack={() => { setClientSecret(null); setPendingOrderId(null); }}
                                             onSuccess={async () => {
-                                                await attemptCheckoutRegistration();
                                                 clearFormFromSession();
                                                 clearCart();
-                                                router.push(`/order-success?order=${pendingOrderId}&payment=stripe&total=${total.toFixed(2)}`);
+                                                router.push(`/order-success?order=${pendingOrderId}&payment=stripe&total=${total.toFixed(2)}&email=${encodeURIComponent(shippingForm.email)}`);
                                             }}
                                         />
                                     </Elements>

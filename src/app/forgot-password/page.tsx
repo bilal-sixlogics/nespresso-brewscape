@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
             >
                 <div className="text-center mb-8">
                     <Link href="/" className="inline-block">
-                        <span className="font-display text-2xl uppercase tracking-widest text-[#3B7E5A]">Brewscape</span>
+                        <span className="font-display text-2xl uppercase tracking-widest text-[#3B7E5A]">Cafrezzo</span>
                     </Link>
                     <h1 className={`mt-4 font-display text-3xl uppercase tracking-tight ${headingColor}`}>
                         Reset Password
