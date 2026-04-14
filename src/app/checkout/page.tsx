@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Check, ArrowRight, ArrowLeft, ChevronRight, MapPin, Phone,
-    CreditCard, Lock, Truck, Package, ShoppingBag, AlertCircle, Loader2
+    CreditCard, Lock, Truck, Package, ShoppingBag, AlertCircle, Loader2,
+    Store, ChevronDown, Search
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -38,6 +39,19 @@ interface PaymentForm {
 
 type Step = 'shipping' | 'payment';
 
+interface StoreLocation {
+    id: number;
+    name: string;
+    address: string;
+    city: string;
+    country: string;
+    phone: string | null;
+    email: string | null;
+    hours: string | null;
+    latitude: number | null;
+    longitude: number | null;
+}
+
 interface ApiShippingMethod {
     id: number;
     name: string;
@@ -45,6 +59,29 @@ interface ApiShippingMethod {
     base_price: number;
     estimated_days_min: number;
     estimated_days_max: number;
+    type?: 'delivery' | 'pickup';
+    store_location?: StoreLocation | null;
+}
+
+const CHECKOUT_FORM_KEY = 'checkout_shipping_form';
+
+// ─── Session persistence helpers ──────────────────────────────────────────────
+function saveFormToSession(form: ShippingForm): void {
+    if (typeof window === 'undefined') return;
+    try { sessionStorage.setItem(CHECKOUT_FORM_KEY, JSON.stringify(form)); } catch { /* ignore */ }
+}
+
+function loadFormFromSession(): Partial<ShippingForm> | null {
+    if (typeof window === 'undefined') return null;
+    try {
+        const raw = sessionStorage.getItem(CHECKOUT_FORM_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+}
+
+function clearFormFromSession(): void {
+    if (typeof window === 'undefined') return;
+    try { sessionStorage.removeItem(CHECKOUT_FORM_KEY); } catch { /* ignore */ }
 }
 
 const STEPS: Step[] = ['shipping', 'payment'];
@@ -77,22 +114,25 @@ function Input({ label, value, onChange, type = 'text', placeholder = '', requir
     );
 }
 
-function Select({ label, value, onChange, options, className = '' }: {
+function Select({ label, value, onChange, options, className = '', required = true }: {
     label: string; value: string; onChange: (v: string) => void;
-    options: { value: string; label: string }[]; className?: string;
+    options: { value: string; label: string }[]; className?: string; required?: boolean;
 }) {
     const selectId = `select-${label.toLowerCase().replace(/\s+/g, '-')}`;
     return (
         <div className={className}>
-            <label htmlFor={selectId} className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{label} *</label>
-            <select
-                id={selectId}
-                value={value} onChange={e => onChange(e.target.value)}
-                className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3.5 text-sm font-medium focus:border-sb-green focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-green transition-colors bg-white text-gray-700"
-            >
-                <option value="">Sélectionner...</option>
-                {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
+            <label htmlFor={selectId} className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">{label}{required ? ' *' : ''}</label>
+            <div className="relative">
+                <select
+                    id={selectId}
+                    value={value} onChange={e => onChange(e.target.value)}
+                    className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3.5 pr-10 text-sm font-medium focus:border-sb-green focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-green transition-colors bg-white text-gray-700 appearance-none cursor-pointer"
+                >
+                    <option value="">Select…</option>
+                    {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                <ChevronDown size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            </div>
         </div>
     );
 }
@@ -220,36 +260,51 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
 function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
     form: ShippingForm; onChange: (f: ShippingForm) => void;
     billing: BillingForm; onBillingChange: (f: BillingForm) => void;
-    onNext: (shippingMethodId: number) => void;
+    onNext: (shippingMethodId: number, pickupStoreId?: number) => void;
 }) {
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
-    const set = (key: keyof ShippingForm) => (v: string) => onChange({ ...form, [key]: v });
+    const set = useCallback((key: keyof ShippingForm) => (v: string) => {
+        const updated = { ...form, [key]: v };
+        onChange(updated);
+        saveFormToSession(updated);
+    }, [form, onChange]);
+
     const { setShipping } = useCart();
 
     const [apiMethods, setApiMethods] = useState<ApiShippingMethod[]>([]);
     const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
+    const [selectedMethod, setSelectedMethod] = useState<ApiShippingMethod | null>(null);
     const [methodsLoading, setMethodsLoading] = useState(true);
 
-    // Fetch real shipping methods from backend, re-fetch when country changes
+    // Pickup store state
+    const [pickupStores, setPickupStores] = useState<StoreLocation[]>([]);
+    const [pickupStoresLoading, setPickupStoresLoading] = useState(false);
+    const [selectedPickupStoreId, setSelectedPickupStoreId] = useState<number | null>(null);
+
+    // Fetch shipping methods on country change
     useEffect(() => {
+        if (!form.country) return;
         setMethodsLoading(true);
         setSelectedMethodId(null);
-        fetch(Endpoints.shippingMethods + (form.country ? `?country=${form.country}` : ''))
+        setSelectedMethod(null);
+        setPickupStores([]);
+        setSelectedPickupStoreId(null);
+
+        fetch(`${Endpoints.shippingMethods}?country=${form.country}`)
             .then(r => r.json())
             .then((data: ApiShippingMethod[]) => {
                 const methods = Array.isArray(data) ? data : [];
                 setApiMethods(methods);
                 if (methods.length > 0) {
-                    setSelectedMethodId(methods[0].id);
-                    // Sync first method into cart so order summary pricing is live
+                    const first = methods[0];
+                    setSelectedMethodId(first.id);
+                    setSelectedMethod(first);
                     setShipping({
-                        id: methods[0].id,
-                        name: methods[0].name,
-                        description: methods[0].description,
-                        base_price: Number(methods[0].base_price),
-                        estimated_days_min: methods[0].estimated_days_min,
-                        estimated_days_max: methods[0].estimated_days_max,
+                        id: first.id, name: first.name, description: first.description,
+                        base_price: first.type === 'pickup' ? 0 : Number(first.base_price),
+                        estimated_days_min: first.estimated_days_min,
+                        estimated_days_max: first.estimated_days_max,
                         free_shipping_threshold: null,
                     });
                 }
@@ -259,21 +314,46 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.country]);
 
+    // When a pickup method is selected, fetch stores for the city
+    useEffect(() => {
+        if (!selectedMethod || selectedMethod.type !== 'pickup' || !form.country) {
+            setPickupStores([]);
+            setSelectedPickupStoreId(null);
+            return;
+        }
+        setPickupStoresLoading(true);
+        const url = `${Endpoints.pickupStores}?country=${form.country}${form.city ? `&city=${encodeURIComponent(form.city)}` : ''}`;
+        fetch(url)
+            .then(r => r.json())
+            .then((res: { data: StoreLocation[] }) => {
+                const stores = res.data ?? [];
+                setPickupStores(stores);
+                // Auto-select if only one store
+                if (stores.length === 1) setSelectedPickupStoreId(stores[0].id);
+                else setSelectedPickupStoreId(null);
+            })
+            .catch(() => setPickupStores([]))
+            .finally(() => setPickupStoresLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedMethod, form.country, form.city]);
+
     const handleSelectMethod = (method: ApiShippingMethod) => {
         setSelectedMethodId(method.id);
-        // Keep cart in sync so order summary updates immediately
+        setSelectedMethod(method);
+        setPickupStores([]);
+        setSelectedPickupStoreId(null);
         setShipping({
-            id: method.id,
-            name: method.name,
-            description: method.description,
-            base_price: Number(method.base_price),
+            id: method.id, name: method.name, description: method.description,
+            base_price: method.type === 'pickup' ? 0 : Number(method.base_price),
             estimated_days_min: method.estimated_days_min,
             estimated_days_max: method.estimated_days_max,
             free_shipping_threshold: null,
         });
     };
 
-    const isValid = !!(form.firstName && form.lastName && form.email && form.address && form.city && form.postalCode && form.country && selectedMethodId);
+    const isPickup = selectedMethod?.type === 'pickup';
+    const pickupReady = !isPickup || selectedPickupStoreId !== null;
+    const isValid = !!(form.firstName && form.lastName && form.email && form.address && form.city && form.postalCode && form.country && selectedMethodId && pickupReady);
 
     return (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
@@ -300,10 +380,12 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
                 className="mb-8"
             />
 
-            {/* Shipping — live methods from API, selectable */}
+            {/* ── Shipping methods ── */}
             <div className="mb-8">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">{tx('Mode de livraison', 'Delivery Method')}</p>
-                {methodsLoading ? (
+                {!form.country ? (
+                    <p className="text-sm text-gray-400 italic">{tx('Sélectionnez un pays d\'abord.', 'Select a country first.')}</p>
+                ) : methodsLoading ? (
                     <div className="space-y-3">
                         <div className="h-16 rounded-2xl bg-gray-50 animate-pulse" />
                         <div className="h-16 rounded-2xl bg-gray-50 animate-pulse opacity-60" />
@@ -316,6 +398,8 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
                     <div className="space-y-3">
                         {apiMethods.map(method => {
                             const isSelected = selectedMethodId === method.id;
+                            const isPickupMethod = method.type === 'pickup';
+                            const MethodIcon = isPickupMethod ? Store : Truck;
                             return (
                                 <button
                                     key={method.id}
@@ -325,16 +409,19 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-sb-green/10' : 'bg-gray-50'}`}>
-                                            <Truck size={16} className={isSelected ? 'text-sb-green' : 'text-gray-400'} />
+                                            <MethodIcon size={16} className={isSelected ? 'text-sb-green' : 'text-gray-400'} />
                                         </div>
                                         <div>
                                             <p className="font-bold text-sm text-sb-black">{method.name}</p>
-                                            <p className="text-[10px] text-gray-400">{method.estimated_days_min}–{method.estimated_days_max} {tx('jours ouvrés', 'business days')}</p>
+                                            {isPickupMethod
+                                                ? <p className="text-[10px] text-sb-green font-bold uppercase tracking-wider">{tx('Click & Collect', 'Click & Collect')}</p>
+                                                : <p className="text-[10px] text-gray-400">{method.estimated_days_min}–{method.estimated_days_max} {tx('jours ouvrés', 'business days')}</p>
+                                            }
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <span className={`font-black text-base ${isSelected ? 'text-sb-green' : 'text-sb-black'}`}>
-                                            {method.base_price === 0 ? tx('Gratuit', 'Free') : `€${Number(method.base_price).toFixed(2)}`}
+                                            {isPickupMethod || method.base_price === 0 ? tx('Gratuit', 'Free') : `€${Number(method.base_price).toFixed(2)}`}
                                         </span>
                                         <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-sb-green' : 'border-gray-300'}`}>
                                             {isSelected && <div className="w-2 h-2 rounded-full bg-sb-green" />}
@@ -346,6 +433,73 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
                     </div>
                 )}
             </div>
+
+            {/* ── Pickup store selector (shown when pickup method is selected) ── */}
+            <AnimatePresence>
+                {isPickup && (
+                    <motion.div
+                        key="pickup-stores"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden mb-8"
+                    >
+                        <div className="border-2 border-sb-green/20 bg-sb-green/5 rounded-2xl p-5">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Store size={16} className="text-sb-green" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-sb-green">
+                                    {tx('Choisissez votre point de retrait', 'Choose Pickup Location')}
+                                </p>
+                            </div>
+
+                            {!form.city ? (
+                                <p className="text-sm text-gray-500 italic">{tx('Entrez votre ville pour voir les magasins disponibles.', 'Enter your city to see available stores.')}</p>
+                            ) : pickupStoresLoading ? (
+                                <div className="space-y-2">
+                                    <div className="h-14 rounded-xl bg-white/50 animate-pulse" />
+                                    <div className="h-14 rounded-xl bg-white/50 animate-pulse opacity-60" />
+                                </div>
+                            ) : pickupStores.length === 0 ? (
+                                <div className="flex items-center gap-2 text-orange-600 text-sm bg-orange-50 border border-orange-100 rounded-xl p-3">
+                                    <AlertCircle size={14} />
+                                    {tx('Aucun magasin disponible dans votre ville.', 'No stores available in your city.')}
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {pickupStores.map(store => {
+                                        const isStoreSelected = selectedPickupStoreId === store.id;
+                                        return (
+                                            <button
+                                                key={store.id}
+                                                type="button"
+                                                onClick={() => setSelectedPickupStoreId(store.id)}
+                                                className={`w-full flex items-start gap-3 p-4 rounded-xl border-2 transition-all text-left ${isStoreSelected ? 'border-sb-green bg-white shadow-sm' : 'border-transparent bg-white/50 hover:bg-white hover:border-gray-100'}`}
+                                            >
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${isStoreSelected ? 'bg-sb-green/10' : 'bg-gray-50'}`}>
+                                                    <MapPin size={14} className={isStoreSelected ? 'text-sb-green' : 'text-gray-400'} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`font-bold text-sm ${isStoreSelected ? 'text-sb-black' : 'text-gray-700'}`}>{store.name}</p>
+                                                    <p className="text-[10px] text-gray-400 mt-0.5">{store.address}, {store.city}</p>
+                                                    {store.hours && <p className="text-[10px] text-gray-400">{store.hours}</p>}
+                                                    {store.phone && (
+                                                        <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+                                                            <Phone size={10} /> {store.phone}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 ${isStoreSelected ? 'border-sb-green' : 'border-gray-200'}`}>
+                                                    {isStoreSelected && <div className="w-2 h-2 rounded-full bg-sb-green" />}
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Billing same as shipping */}
             <label className="flex items-center gap-3 mb-8 cursor-pointer group">
@@ -359,7 +513,9 @@ function ShippingStep({ form, onChange, billing, onBillingChange, onNext }: {
             </label>
 
             <button
-                onClick={() => selectedMethodId && onNext(selectedMethodId)}
+                onClick={() => {
+                    if (selectedMethodId) onNext(selectedMethodId, isPickup ? (selectedPickupStoreId ?? undefined) : undefined);
+                }}
                 disabled={!isValid}
                 className="w-full flex justify-between items-center px-8 py-5 bg-sb-green text-white rounded-full font-black uppercase tracking-widest shadow-lg shadow-sb-green/25 hover:bg-[#2C6345] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -450,11 +606,12 @@ function StripePaymentForm({ onSuccess, onBack, language }: {
 }
 
 // ─── Step 2: Payment ──────────────────────────────────────────────────────────
-function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm, shippingMethodId, promoCode }: {
+function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm, shippingMethodId, pickupStoreId, promoCode }: {
     form: PaymentForm; onChange: (f: PaymentForm) => void;
     onNext: (orderId: number) => void; onBack: () => void;
     shippingForm: ShippingForm; billingForm: BillingForm;
     shippingMethodId: number;
+    pickupStoreId?: number;
     promoCode: string | null;
 }) {
     const { total, syncCartToBackend } = useCart();
@@ -510,6 +667,7 @@ function PaymentStep({ form, onChange, onNext, onBack, shippingForm, billingForm
             shipping_address: shippingAddress,
             billing_address: billingAddress,
             shipping_method_id: shippingMethodId,
+            pickup_store_id: pickupStoreId || undefined,
             promotion_code: promoCode || undefined,
             payment_method: form.method,
             email: shippingForm.email,
@@ -746,15 +904,25 @@ export default function CheckoutPage() {
     const { user } = useAuth();
     const [step, setStep] = useState<Step>('shipping');
     const [shippingMethodId, setShippingMethodId] = useState<number>(0);
+    const [pickupStoreId, setPickupStoreId] = useState<number | undefined>(undefined);
 
-    const [shippingForm, setShippingForm] = useState<ShippingForm>({
-        firstName: user?.name?.split(' ')[0] || '',
-        lastName: user?.name?.split(' ')[1] || '',
-        email: user?.email || '', phone: '',
-        address: '', city: '', postalCode: '', country: 'FR', state: '',
-    });
+    // Build initial shipping form: prefer sessionStorage → user account → defaults
+    const savedForm = loadFormFromSession();
+    const defaultShippingForm: ShippingForm = {
+        firstName: savedForm?.firstName ?? user?.name?.split(' ')[0] ?? '',
+        lastName:  savedForm?.lastName  ?? user?.name?.split(' ').slice(1).join(' ') ?? '',
+        email:     savedForm?.email     ?? user?.email ?? '',
+        phone:     savedForm?.phone     ?? '',
+        address:   savedForm?.address   ?? '',
+        city:      savedForm?.city      ?? '',
+        postalCode:savedForm?.postalCode?? '',
+        country:   savedForm?.country   ?? 'FR',
+        state:     savedForm?.state     ?? '',
+    };
+
+    const [shippingForm, setShippingForm] = useState<ShippingForm>(defaultShippingForm);
     const [billingForm, setBillingForm] = useState<BillingForm>({
-        ...shippingForm, sameAsShipping: true,
+        ...defaultShippingForm, sameAsShipping: true,
     });
     const [paymentForm, setPaymentForm] = useState<PaymentForm>({
         method: 'stripe', createAccount: false, acceptedTerms: false,
@@ -803,7 +971,11 @@ export default function CheckoutPage() {
                                     onChange={setShippingForm}
                                     billing={billingForm}
                                     onBillingChange={setBillingForm}
-                                    onNext={(methodId) => { setShippingMethodId(methodId); setStep('payment'); }}
+                                    onNext={(methodId, storeId) => {
+                                        setShippingMethodId(methodId);
+                                        setPickupStoreId(storeId);
+                                        setStep('payment');
+                                    }}
                                 />
                             )}
                             {step === 'payment' && (
@@ -812,6 +984,7 @@ export default function CheckoutPage() {
                                     form={paymentForm}
                                     onChange={setPaymentForm}
                                     onNext={(oid) => {
+                                        clearFormFromSession();
                                         clearCart();
                                         router.push(`/order-success?order=${oid}&payment=${paymentForm.method}&total=${total.toFixed(2)}`);
                                     }}
@@ -819,6 +992,7 @@ export default function CheckoutPage() {
                                     shippingForm={shippingForm}
                                     billingForm={billingForm}
                                     shippingMethodId={shippingMethodId}
+                                    pickupStoreId={pickupStoreId}
                                     promoCode={appliedPromo?.code ?? null}
                                 />
                             )}

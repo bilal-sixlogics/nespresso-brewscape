@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import Link from 'next/link';
 import {
-    Package, Truck, CheckCircle2, Clock, LogOut, ChevronRight, ChevronLeft,
+    Package, Truck, Check, CheckCircle2, Clock, LogOut, ChevronRight, ChevronLeft,
     MessageSquare, MapPin, User as UserIcon, Star, X, Plus, Edit2, Trash2,
     AlertCircle, Shield, CreditCard, Home, Briefcase, ChevronDown, Camera, Save, Loader2, Search, Heart, ExternalLink, SlidersHorizontal
 } from 'lucide-react';
@@ -21,11 +21,13 @@ import { ApiError } from '@/lib/api/types';
 interface ApiOrderItem {
     id: number;
     product_id: number;
-    product_name: string;
-    unit_name: string;
-    unit_price: number;
+    // Backend returns these snapshot fields from OrderItemResource
+    product_name_snapshot: string;
+    unit_name_snapshot: string;
+    unit_price_snapshot: number;
+    final_unit_price?: number;
     quantity: number;
-    total_price: number;
+    line_total?: number;
 }
 interface ApiOrder {
     id: number;
@@ -34,6 +36,7 @@ interface ApiOrder {
     discount_total: number;
     shipping_total: number;
     grand_total: number;
+    payment_method?: string;
     created_at: string;
     items?: ApiOrderItem[];
 }
@@ -42,14 +45,14 @@ function mapApiOrder(o: ApiOrder): Order {
     const items: OrderItem[] = (o.items ?? []).map(i => ({
         id: String(i.id),
         quantity: i.quantity,
-        unitPrice: Number(i.unit_price),
+        unitPrice: Number(i.unit_price_snapshot ?? i.final_unit_price ?? 0),
         product: {
             id: i.product_id,
             slug: `product-${i.product_id}`,
-            name: i.product_name,
+            name: i.product_name_snapshot ?? '',
             brand_id: 0,
             category_id: 0,
-            selling_price: Number(i.unit_price),
+            selling_price: Number(i.unit_price_snapshot ?? 0),
             status: 'active' as const,
             stock_qty: 0,
             reserved_stock: 0,
@@ -69,6 +72,7 @@ function mapApiOrder(o: ApiOrder): Order {
         discount: Number(o.discount_total),
         total: Number(o.grand_total),
         status: o.status as Order['status'],
+        paymentMethod: o.payment_method,
     };
 }
 
@@ -297,6 +301,17 @@ function ProfileTab({ orders }: { orders: Order[] }) {
 }
 
 // ── Address Form Modal ──────────────────────────────────────────────────────
+const ADDRESS_COUNTRIES = [
+    { code: 'FR', name: 'France' }, { code: 'BE', name: 'Belgium' },
+    { code: 'CH', name: 'Switzerland' }, { code: 'LU', name: 'Luxembourg' },
+    { code: 'DE', name: 'Germany' }, { code: 'ES', name: 'Spain' },
+    { code: 'IT', name: 'Italy' }, { code: 'NL', name: 'Netherlands' },
+    { code: 'GB', name: 'United Kingdom' }, { code: 'PT', name: 'Portugal' },
+    { code: 'MA', name: 'Morocco' }, { code: 'DZ', name: 'Algeria' },
+    { code: 'TN', name: 'Tunisia' }, { code: 'US', name: 'United States' },
+    { code: 'CA', name: 'Canada' }, { code: 'AE', name: 'UAE' },
+];
+
 function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
     address?: Address | null;
     onSave: (data: Omit<Address, 'id'>) => void;
@@ -310,13 +325,13 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
         address: address?.address || '',
         city: address?.city || '',
         postalCode: address?.postalCode || '',
-        country: address?.country || 'France',
+        country: address?.country || 'FR',
         phone: address?.phone || '',
         isDefault: address?.isDefault || false,
     });
 
     const set = (key: keyof typeof form) => (value: any) => setForm(p => ({ ...p, [key]: value }));
-    const isValid = form.firstName && form.lastName && form.address && form.city && form.postalCode && form.country;
+    const isValid = !!(form.firstName && form.lastName && form.address && form.city && form.postalCode && form.country);
 
     return (
         <div className="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
@@ -325,7 +340,7 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg bg-white rounded-[32px] p-8 shadow-2xl"
+                className="w-full max-w-lg bg-white rounded-[32px] p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
             >
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="font-display text-2xl uppercase">{address ? 'Edit Address' : 'New Address'}</h3>
@@ -335,12 +350,13 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                 </div>
 
                 <div className="space-y-4">
+                    {/* Label pills */}
                     <div>
                         <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">Label</label>
                         <div className="flex gap-2">
                             {['Home', 'Office', 'Other'].map(l => (
-                                <button key={l} onClick={() => set('label')(l)}
-                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${form.label === l ? 'border-sb-green bg-sb-green/5 text-sb-green' : 'border-gray-100 text-gray-500'}`}>
+                                <button type="button" key={l} onClick={() => set('label')(l)}
+                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${form.label === l ? 'border-sb-green bg-sb-green/5 text-sb-green' : 'border-gray-100 text-gray-500 hover:border-gray-300'}`}>
                                     {l === 'Home' && <Home size={12} />}
                                     {l === 'Office' && <Briefcase size={12} />}
                                     {l}
@@ -353,22 +369,46 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                         <Field label="First Name" value={form.firstName} onChange={set('firstName')} />
                         <Field label="Last Name"  value={form.lastName}  onChange={set('lastName')} />
                     </div>
-                    <Field label="Street Address" value={form.address}    onChange={set('address')}    placeholder="12 Rue de la Paix" />
+                    <Field label="Street Address" value={form.address} onChange={set('address')} placeholder="12 Rue de la Paix" />
                     <div className="grid grid-cols-2 gap-4">
-                        <Field label="City"        value={form.city}       onChange={set('city')} />
                         <Field label="Postal Code" value={form.postalCode} onChange={set('postalCode')} />
+                        <Field label="City" value={form.city} onChange={set('city')} />
                     </div>
-                    <Field label="Country"          value={form.country}   onChange={set('country')} placeholder="France" />
-                    <Field label="Phone (optional)" value={form.phone || ''} onChange={set('phone')} type="tel" />
+
+                    {/* Country dropdown */}
+                    <div>
+                        <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Country *</label>
+                        <select
+                            value={form.country}
+                            onChange={e => set('country')(e.target.value)}
+                            className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium focus:border-sb-green focus:outline-none transition-colors bg-white text-gray-700 appearance-none cursor-pointer"
+                        >
+                            <option value="">Select country…</option>
+                            {ADDRESS_COUNTRIES.map(c => (
+                                <option key={c.code} value={c.code}>{c.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <Field label="Phone (optional)" value={form.phone || ''} onChange={set('phone')} type="tel" placeholder="+33 6 00 00 00 00" />
 
                     <label className="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" checked={form.isDefault} onChange={e => set('isDefault')(e.target.checked)} className="w-4 h-4 accent-sb-green" />
+                        <div
+                            onClick={() => set('isDefault')(!form.isDefault)}
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 cursor-pointer ${form.isDefault ? 'bg-sb-green border-sb-green' : 'border-gray-200 hover:border-sb-green/50'}`}
+                        >
+                            {form.isDefault && <Check size={12} className="text-white" />}
+                        </div>
                         <span className="text-sm font-medium text-gray-700">Set as default address</span>
                     </label>
                 </div>
 
-                <button onClick={() => { if (isValid && !isLoading) onSave(form); }} disabled={!isValid || isLoading}
-                    className="w-full mt-6 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => { if (isValid && !isLoading) onSave(form); }}
+                    disabled={!isValid || isLoading}
+                    className="w-full mt-6 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
                     {isLoading ? <Loader2 size={16} className="animate-spin" /> : null}
                     {address ? 'Save Changes' : 'Add Address'}
                 </button>
@@ -753,8 +793,12 @@ export default function AccountPage() {
                                                                     <div className="p-6 space-y-4">
                                                                         {order.items.map((item: OrderItem) => (
                                                                             <div key={item.id} className="flex gap-4 items-center">
-                                                                                <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0">
-                                                                                    <img src={getProductImage(item.product) ?? ''} alt={item.product.name} className="w-full h-full object-cover" />
+                                                                                <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                                                                    {getProductImage(item.product) ? (
+                                                                                        <img src={getProductImage(item.product)!} alt={item.product.name} className="w-full h-full object-cover" />
+                                                                                    ) : (
+                                                                                        <span className="text-2xl">&#9749;</span>
+                                                                                    )}
                                                                                 </div>
                                                                                 <div className="flex-1 min-w-0">
                                                                                     <p className="font-bold text-sm text-sb-black truncate">{item.product.name}</p>

@@ -77,10 +77,10 @@ function BrandsMarqueeSection() {
           <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-sb-green to-transparent" />
           <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-sb-green to-transparent" />
 
-          {/* Two identical tracks: translateX(-100%) of one track width creates seamless infinite loop */}
-          <div className="flex gap-5 marquee-track">
+          {/* Two identical tracks: each track is 50% of total width. Animation moves -50% for seamless loop. */}
+          <div className="flex marquee-track">
             {[0, 1].map(trackIdx => (
-              <div key={trackIdx} className="flex gap-5 shrink-0" aria-hidden={trackIdx === 1}>
+              <div key={trackIdx} className="flex gap-5 shrink-0 pr-5" aria-hidden={trackIdx === 1}>
                 {filledBrands.map((brand, i) => (
                   <div
                     key={`${trackIdx}-${i}`}

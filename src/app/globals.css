@@ -137,18 +137,18 @@ body {
 }
 
 /* ── Infinite Brand Marquee ───────────────────────────── */
-/* Two-track approach: each inner track translates left by 100% of its own width,
-   so the second track seamlessly replaces the first with zero gap. */
+/* Two-track approach: the outer track holds 2 identical halves.
+   We animate by -50% of total width = one full track width, creating a seamless loop. */
 @keyframes marquee-slide {
   0%   { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
+  100% { transform: translateX(-50%); }
 }
 
-/* Outer wrapper: flex row, clips overflow */
+/* Outer wrapper: flex row, no gap so tracks are seamlessly adjacent */
 .marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee-slide 40s linear infinite;
+  animation: marquee-slide 35s linear infinite;
   will-change: transform;
 }
 
