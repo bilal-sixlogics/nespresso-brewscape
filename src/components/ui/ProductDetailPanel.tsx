@@ -64,15 +64,20 @@ function PanelImageCarousel({ product }: { product: Product }) {
 function Accordion({ title, children }: { title: string; children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
     return (
-        <div className="border-b border-gray-100 last:border-0">
+        <div className={`rounded-2xl border-2 transition-colors duration-200 ${open ? 'border-sb-green/20 bg-white' : 'border-gray-100 bg-white hover:border-sb-green/30'}`}>
             <button
                 onClick={() => setOpen(p => !p)}
-                className="w-full flex justify-between items-center py-4 text-left hover:text-sb-green transition-colors"
+                className="w-full flex justify-between items-center px-4 py-3.5 text-left group cursor-pointer"
             >
-                <span className="text-xs font-bold uppercase tracking-widest text-sb-black">{title}</span>
-                <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                    <ChevronDown size={14} className="text-gray-400" />
-                </motion.div>
+                <div className="flex items-center gap-3">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors duration-200 ${open ? 'bg-sb-green text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-sb-green/10 group-hover:text-sb-green'}`}>
+                        <ChevronDown size={14} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                    </div>
+                    <span className={`text-xs font-black uppercase tracking-widest transition-colors duration-200 ${open ? 'text-sb-green' : 'text-sb-black group-hover:text-sb-green'}`}>{title}</span>
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-200 ${open ? 'text-sb-green' : 'text-gray-300 group-hover:text-sb-green/60'}`}>
+                    {open ? 'Close' : 'Read'}
+                </span>
             </button>
             <AnimatePresence>
                 {open && (
@@ -83,7 +88,7 @@ function Accordion({ title, children }: { title: string; children: React.ReactNo
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden"
                     >
-                        <div className="pb-4 text-sm text-gray-500 leading-relaxed">{children}</div>
+                        <div className="px-4 pb-4 text-sm text-gray-500 leading-relaxed border-t border-gray-100 pt-3">{children}</div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -114,6 +119,19 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
         setIsRedirecting(false);
         setSelectedUnit(null);
     }, [product?.id]);
+
+    // Lock body scroll and handle Escape key while panel is open
+    React.useEffect(() => {
+        if (!product) return;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', onKey);
+        return () => {
+            document.body.style.overflow = prev;
+            window.removeEventListener('keydown', onKey);
+        };
+    }, [product, onClose]);
 
     if (!product) return null;
 
@@ -161,7 +179,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] cursor-pointer"
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10000] cursor-pointer"
                     />
 
                     {/* Panel */}
@@ -173,7 +191,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                         role="dialog"
                         aria-modal="true"
                         aria-label={displayName}
-                        className="fixed top-0 right-0 h-full w-full sm:w-[500px] lg:w-[600px] bg-[#FAF9F6] z-[110] shadow-2xl overflow-y-auto overflow-x-hidden border-l border-white/20 flex flex-col"
+                        className="fixed top-0 right-0 h-full w-full sm:w-[500px] lg:w-[600px] bg-[#FAF9F6] z-[10001] shadow-2xl overflow-y-auto overflow-x-hidden border-l border-white/20 flex flex-col"
                     >
                         {/* ── Sticky Header ──────────────────────────── */}
                         <div className="sticky top-0 bg-[#FAF9F6]/90 backdrop-blur-xl border-b border-gray-100 z-20 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center flex-shrink-0">
@@ -215,9 +233,6 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                     <div className="flex-1">
                                         <h2 className="font-display text-2xl sm:text-3xl uppercase leading-[0.9] text-sb-black">
                                             {displayName}
-                                            {displayPart2 && (
-                                                <span className="text-gray-300 block text-xl mt-1">{displayPart2}</span>
-                                            )}
                                         </h2>
                                     </div>
                                     <div className="text-right">
@@ -230,7 +245,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                 )}
 
                                 {/* ── Compact Sale Units ── */}
-                                {product.sales_units && product.sales_units.length > 1 && (
+                                {product.sales_units && product.sales_units.length > 0 && (
                                     <div className="pt-2">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t('selectPack')}</p>
                                         <div className="flex flex-wrap gap-2">

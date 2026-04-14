@@ -126,13 +126,13 @@ function Select({ label, value, onChange, options, className = '', required = tr
     );
 }
 
-function OrderSummary({ compact = false, codSurcharge = 0 }: { compact?: boolean; codSurcharge?: number }) {
+function OrderSummary({ compact = false }: { compact?: boolean }) {
     const { items, subtotal, promoDiscount, shippingCost, total, appliedPromo, selectedShipping } = useCart();
     const { language } = useLanguage();
     const formatPrice = useFormatPrice();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [expanded, setExpanded] = useState(!compact);
-    const displayTotal = total + codSurcharge;
+    const displayTotal = total;
 
     return (
         <div className={`bg-white rounded-[32px] border border-gray-100 overflow-hidden ${compact ? '' : 'shadow-sm'}`}>
@@ -185,12 +185,6 @@ function OrderSummary({ compact = false, codSurcharge = 0 }: { compact?: boolean
                                     <span>{tx('Livraison', 'Shipping')}{selectedShipping ? ` — ${selectedShipping.name}` : ''}</span>
                                     <span className={`font-bold ${shippingCost === 0 ? 'text-sb-green' : ''}`}>{shippingCost === 0 ? tx('Gratuite', 'Free') : formatPrice(shippingCost)}</span>
                                 </div>
-                                {codSurcharge > 0 && (
-                                    <div className="flex justify-between text-gray-500">
-                                        <span>{tx('Supplément paiement à la livraison', 'COD Surcharge')}</span>
-                                        <span className="font-bold">{formatPrice(codSurcharge)}</span>
-                                    </div>
-                                )}
                                 <div className="flex justify-between text-sb-black font-black pt-2 border-t border-gray-100 text-base">
                                     <span>Total</span>
                                     <span className="font-display text-2xl text-sb-green">{formatPrice(displayTotal)}</span>
@@ -344,9 +338,8 @@ export default function CheckoutPage() {
 
     // ── Payment state ──
     const [enabledMethods, setEnabledMethods] = useState<{
-        stripe: boolean; cod: boolean;
+        stripe: boolean; cod: boolean; pickup?: boolean;
         pickup_payment_required?: boolean;
-        cod_config?: { max_order_amount: number; surcharge: number; surcharge_type: string };
     } | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -447,8 +440,8 @@ export default function CheckoutPage() {
             methods.push({ id: 'stripe', label: tx('Carte / Apple Pay / Google Pay', 'Card / Apple Pay / Google Pay'), icon: CreditCard });
         }
         if (isPickup) {
-            // Pickup: offer "Pay in Store" unless admin requires online payment
-            if (!pickupPaymentRequired) {
+            // Pickup: offer "Pay in Store" if enabled and admin doesn't require online payment
+            if (enabledMethods?.pickup && !pickupPaymentRequired) {
                 methods.push({ id: 'store', label: tx('Payer en magasin', 'Pay in Store'), icon: Store });
             }
         } else {
@@ -507,15 +500,7 @@ export default function CheckoutPage() {
         selectedMethodId &&
         pickupReady && paymentForm.acceptedTerms && billingValid
     );
-    const codCfg = enabledMethods?.cod_config;
-    const codMaxAmount = codCfg?.max_order_amount ?? 0;
-    const codSurchargeAmount = codCfg?.surcharge ?? 0;
-    const codSurchargeType = codCfg?.surcharge_type ?? 'fixed';
-    const activeCodSurcharge = paymentForm.method === 'cod' && codSurchargeAmount > 0
-        ? (codSurchargeType === 'percentage' ? +(total * (codSurchargeAmount / 100)).toFixed(2) : codSurchargeAmount)
-        : 0;
-    const codExceeds = paymentForm.method === 'cod' && codMaxAmount > 0 && (total + activeCodSurcharge) > codMaxAmount;
-    const canSubmit = isFormValid && !codExceeds && paymentMethods.length > 0;
+    const canSubmit = isFormValid && paymentMethods.length > 0;
 
     // ── Handlers ──
     const { syncCartToBackend } = useCart();
@@ -907,43 +892,24 @@ export default function CheckoutPage() {
                                             </motion.div>
                                         )}
 
-                                        {paymentForm.method === 'cod' && (() => {
-                                            const surcharge = codCfg?.surcharge ?? 0;
-                                            const surchargeType = codCfg?.surcharge_type ?? 'fixed';
-                                            const surchargeDisplay = surcharge > 0
-                                                ? surchargeType === 'percentage' ? `${surcharge}%` : formatPrice(surcharge)
-                                                : null;
-                                            return (
-                                                <motion.div key="cod" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-6 space-y-3">
-                                                    <div className="bg-orange-50/50 border border-orange-100 rounded-3xl p-6">
-                                                        <div className="flex items-start gap-4">
-                                                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-orange-600">
-                                                                <Truck size={24} />
-                                                            </div>
-                                                            <div>
-                                                                <h3 className="font-display text-lg uppercase mb-1">{tx('Paiement à la livraison', 'Cash on Delivery')}</h3>
-                                                                <p className="text-sm text-gray-500 mb-3">{tx('Préparez le montant exact pour faciliter la réception. Notre livreur vous contactera avant son arrivée.', 'Please prepare the exact amount for easier delivery. Our courier will contact you before arrival.')}</p>
-                                                                <div className="flex items-center gap-2 text-[10px] font-bold text-orange-700/60 uppercase">
-                                                                    <Check size={12} /> {tx('Échange sans contact disponible', 'Contactless exchange available')}
-                                                                </div>
+                                        {paymentForm.method === 'cod' && (
+                                            <motion.div key="cod" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-6">
+                                                <div className="bg-orange-50/50 border border-orange-100 rounded-3xl p-6">
+                                                    <div className="flex items-start gap-4">
+                                                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-orange-600">
+                                                            <Truck size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="font-display text-lg uppercase mb-1">{tx('Paiement à la livraison', 'Cash on Delivery')}</h3>
+                                                            <p className="text-sm text-gray-500 mb-3">{tx('Préparez le montant exact pour faciliter la réception. Notre livreur vous contactera avant son arrivée.', 'Please prepare the exact amount for easier delivery. Our courier will contact you before arrival.')}</p>
+                                                            <div className="flex items-center gap-2 text-[10px] font-bold text-orange-700/60 uppercase">
+                                                                <Check size={12} /> {tx('Échange sans contact disponible', 'Contactless exchange available')}
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    {surchargeDisplay && (
-                                                        <div className="flex items-center gap-2 text-xs text-orange-700 bg-orange-50 border border-orange-100 rounded-2xl px-4 py-2.5">
-                                                            <AlertCircle size={14} className="flex-shrink-0" />
-                                                            {tx(`Un supplément de ${surchargeDisplay} sera appliqué pour le paiement à la livraison.`, `A ${surchargeDisplay} surcharge applies for cash on delivery.`)}
-                                                        </div>
-                                                    )}
-                                                    {codExceeds && (
-                                                        <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-100 rounded-2xl px-4 py-2.5">
-                                                            <AlertCircle size={14} className="flex-shrink-0" />
-                                                            {tx(`Le paiement à la livraison n'est pas disponible pour les commandes supérieures à ${formatPrice(codMaxAmount)}.`, `Cash on delivery is not available for orders above ${formatPrice(codMaxAmount)}.`)}
-                                                        </div>
-                                                    )}
-                                                </motion.div>
-                                            );
-                                        })()}
+                                                </div>
+                                            </motion.div>
+                                        )}
                                     </AnimatePresence>
 
                                     {/* Terms & Conditions */}
@@ -991,7 +957,7 @@ export default function CheckoutPage() {
 
                     {/* ── Right column: sticky order summary ── */}
                     <div className="sticky top-[var(--header-h,112px)]">
-                        <OrderSummary codSurcharge={activeCodSurcharge} />
+                        <OrderSummary />
                     </div>
                 </div>
             </div>
