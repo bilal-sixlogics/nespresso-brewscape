@@ -11,7 +11,7 @@ import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
 import { MobileCarousel } from "@/components/ui/MobileCarousel";
 import { TestimonialsSection } from '@/components/ui/TestimonialsSection';
 import { useLanguage } from "@/context/LanguageContext";
-import { Product } from "@/types";
+import { Product, getProductImage } from "@/types";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductSkeleton } from "@/components/ui/ProductSkeleton";
 import { Endpoints } from "@/lib/api/endpoints";
@@ -129,6 +129,19 @@ export default function Home() {
 
   const { products: featuredProducts, isLoading: featuredLoading } = useProducts({ featured: true, per_page: 20 });
 
+  // Daily pick — fetched from admin-configured section config
+  const [dailyPick, setDailyPick] = useState<{ product: Product | null; label: string | null }>({ product: null, label: null });
+  useEffect(() => {
+    fetch(Endpoints.dailyPick)
+      .then(r => r.json())
+      .then(json => {
+        if (json?.data) {
+          setDailyPick({ product: json.data, label: json.label || null });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (selectedProduct) {
       document.body.style.overflow = 'hidden';
@@ -173,7 +186,7 @@ export default function Home() {
               />
             </motion.div>
 
-            <div className="flex flex-col lg:flex-row justify-between items-center lg:items-end -mt-2 sm:-mt-4 lg:-mt-16 xl:-mt-24 relative z-10 w-full px-4 lg:px-12">
+            <div className="flex flex-col lg:flex-row justify-between items-center lg:items-end -mt-10 sm:-mt-16 lg:-mt-40 xl:-mt-52 relative z-10 w-full px-4 lg:px-12">
 
               <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-start mb-6 lg:mb-0 space-y-4 sm:space-y-6">
                 <motion.div
@@ -222,16 +235,17 @@ export default function Home() {
               <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-end mb-6 lg:mb-0 space-y-5 sm:space-y-8 z-[50]">
                 <motion.div
                   initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
-                  onClick={() => setSelectedProduct(featuredProducts.find(p => p.category?.name?.includes('Capsule')) || featuredProducts[0] || null)}
+                  onClick={() => setSelectedProduct(dailyPick.product || featuredProducts[0] || null)}
                   className="flex items-center space-x-6 mr-4 bg-white/70 backdrop-blur-md p-4 rounded-3xl border border-white/80 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)] group cursor-pointer hover:bg-white/90 hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] transition-all duration-300"
                 >
                   <div className="flex flex-col text-right">
-                    <span className="font-bold text-sm tracking-wide text-sb-black group-hover:text-sb-green transition-colors">{t('dailyPick')}</span>
-                    <span className="text-xs text-gray-500">{language === 'en' ? 'Chilled Coffee Drink' : 'Boisson au café glacé'}</span>
+                    <span className="font-bold text-sm tracking-wide text-sb-black group-hover:text-sb-green transition-colors">{dailyPick.label || t('dailyPick')}</span>
+                    <span className="text-xs text-gray-500 max-w-[120px] truncate">{dailyPick.product?.name || (language === 'en' ? 'Chilled Coffee Drink' : 'Boisson au café glacé')}</span>
                   </div>
-                  <div className="w-16 h-20 bg-[#E1CDA4] rounded-xl p-1 relative shadow-inner transform group-hover:rotate-12 transition-transform duration-500">
+                  <div className="w-16 h-20 bg-[#E1CDA4] rounded-xl p-1 relative shadow-inner transform group-hover:rotate-12 transition-transform duration-500 overflow-hidden">
                     <div className="w-full h-full border border-black/5 rounded-lg"></div>
-                    <img src="https://www.starbucks.com/weblx/images/rewards/reward-tiers/400.png" className="w-full h-full object-cover absolute top-0 left-0 scale-[0.8] drop-shadow-md" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={(dailyPick.product && getProductImage(dailyPick.product)) || "https://www.starbucks.com/weblx/images/rewards/reward-tiers/400.png"} alt={dailyPick.product?.name || "Daily Pick"} className="w-full h-full object-cover absolute top-0 left-0 scale-[0.8] drop-shadow-md" />
                   </div>
                 </motion.div>
 
