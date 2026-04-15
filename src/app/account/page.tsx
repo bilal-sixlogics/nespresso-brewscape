@@ -22,6 +22,8 @@ import { ApiError } from '@/lib/api/types';
 interface ApiOrderItem {
     id: number;
     product_id: number;
+    product_slug?: string;
+    product_image?: string;
     // Backend returns these snapshot fields from OrderItemResource
     product_name_snapshot: string;
     unit_name_snapshot: string;
@@ -49,8 +51,9 @@ function mapApiOrder(o: ApiOrder): Order {
         unitPrice: Number(i.unit_price_snapshot ?? i.final_unit_price ?? 0),
         product: {
             id: i.product_id,
-            slug: `product-${i.product_id}`,
+            slug: i.product_slug ?? `product-${i.product_id}`,
             name: i.product_name_snapshot ?? '',
+            featured_image: i.product_image,
             brand_id: 0,
             category_id: 0,
             selling_price: Number(i.unit_price_snapshot ?? 0),

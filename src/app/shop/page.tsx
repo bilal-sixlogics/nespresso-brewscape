@@ -19,9 +19,8 @@ import { ProductQueryParams } from '@/lib/api/types';
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
 export default function ShopPage() {
-    const { t, language } = useLanguage();
+    const { t } = useLanguage();
     const formatPrice = useFormatPrice();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const { recentlyViewed, addRecentlyViewed, clearRecentlyViewed } = useRecentlyViewed();
 
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -143,14 +142,14 @@ export default function ShopPage() {
                                     <div className="flex items-center gap-2">
                                         <Clock size={14} className="text-gray-400" />
                                         <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                            {tx('Récemment consultés', 'Recently Viewed')}
+                                            {t('recentlyViewed')}
                                         </h3>
                                     </div>
                                     <button
                                         onClick={clearRecentlyViewed}
                                         className="text-[9px] font-bold uppercase tracking-widest text-gray-300 hover:text-red-400 transition-colors"
                                     >
-                                        {tx('Effacer', 'Clear')}
+                                        {t('clear')}
                                     </button>
                                 </div>
                                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
@@ -193,7 +192,7 @@ export default function ShopPage() {
                                     className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sb-black text-white hover:bg-gray-800 transition-colors relative"
                                 >
                                     <SlidersHorizontal size={12} />
-                                    <span className="hidden sm:inline">{t('filters') || 'Filtres'}</span>
+                                    <span className="hidden sm:inline">{t('filters')}</span>
                                     {activeFilterCount > 0 && (
                                         <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-sb-green text-white text-[8px] font-black rounded-full flex items-center justify-center">{activeFilterCount}</span>
                                     )}
@@ -205,10 +204,10 @@ export default function ShopPage() {
                                         onClick={() => setSortOpen(!sortOpen)}
                                         className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gray-50 text-gray-600 border border-gray-100 hover:border-gray-300 transition-colors"
                                     >
-                                        {sortBy === 'relevance' && tx('Pertinence', 'Relevance')}
-                                        {sortBy === 'price_asc' && tx('Prix: Croissant', 'Price: Low to High')}
-                                        {sortBy === 'price_desc' && tx('Prix: Décroissant', 'Price: High to Low')}
-                                        {sortBy === 'newest' && tx('Nouveautés', 'Newest')}
+                                        {sortBy === 'relevance' && t('sortRelevance')}
+                                        {sortBy === 'price_asc' && t('sortPriceLow')}
+                                        {sortBy === 'price_desc' && t('sortPriceHigh')}
+                                        {sortBy === 'newest' && t('sortNewest')}
                                         <ChevronDown size={12} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
                                     </button>
 
@@ -221,10 +220,10 @@ export default function ShopPage() {
                                                     className="absolute top-full left-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-[90] overflow-hidden py-2"
                                                 >
                                                     {[
-                                                        { id: 'relevance', lbl: tx('Pertinence', 'Relevance') },
-                                                        { id: 'price_asc', lbl: tx('Prix: Croissant', 'Price: Low to High') },
-                                                        { id: 'price_desc', lbl: tx('Prix: Décroissant', 'Price: High to Low') },
-                                                        { id: 'newest', lbl: tx('Nouveautés', 'Newest') },
+                                                        { id: 'relevance', lbl: t('sortRelevance') },
+                                                        { id: 'price_asc', lbl: t('sortPriceLow') },
+                                                        { id: 'price_desc', lbl: t('sortPriceHigh') },
+                                                        { id: 'newest', lbl: t('sortNewest') },
                                                     ].map(opt => (
                                                         <button
                                                             key={opt.id}
@@ -252,7 +251,7 @@ export default function ShopPage() {
                                         className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors"
                                     >
                                         <RotateCcw size={11} />
-                                        {tx('Réinitialiser', 'Reset')}
+                                        {t('reset')}
                                     </motion.button>
                                 )}
                             </AnimatePresence>
@@ -292,7 +291,7 @@ export default function ShopPage() {
                         <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-12">
                             <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sb-black">{categoryLabel}</h3>
                             <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">
-                                {totalCount} {t('results') || 'résultats'}
+                                {totalCount} {t('results')}
                             </div>
                         </div>
 
@@ -300,13 +299,13 @@ export default function ShopPage() {
                         {!isLoading && products.length === 0 ? (
                             <div className="text-center py-24 flex flex-col items-center gap-4">
                                 <p className="text-6xl">🔍</p>
-                                <p className="font-bold text-xl">{tx('Aucun produit trouvé', 'No products found')}</p>
+                                <p className="font-bold text-xl">{t('noProductsFound')}</p>
                                 <button
                                     onClick={resetAll}
                                     className="flex items-center gap-2 px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors mt-2"
                                 >
                                     <RotateCcw size={11} />
-                                    {tx('Effacer les filtres', 'Clear filters')}
+                                    {t('clearFilters')}
                                 </button>
                             </div>
                         ) : (

@@ -148,6 +148,7 @@ export default function Home() {
         {/* ── HERO ─────────────────────────────────────────────────────── */}
         <section className="relative w-full pt-16 pb-12 sm:pb-20 lg:pb-32 bg-sb-white z-10 overflow-visible min-h-[500px] sm:min-h-[600px] lg:min-h-[800px] flex flex-col justify-center">
           {/* Coffee Beans Decoration */}
+        
           <div
             className="absolute left-0 top-0 bottom-0 w-[300px] lg:w-[500px] pointer-events-none z-0"
             style={{
@@ -159,14 +160,18 @@ export default function Home() {
           </div>
 
           <div className="max-w-[1700px] mx-auto px-4 sm:px-8 relative mb-6 sm:mb-12">
-            <motion.h2
+            <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="font-display text-[11vw] sm:text-[12vw] lg:text-[13vw] xl:text-[14rem] leading-[0.7] text-center text-[#111111] uppercase tracking-tighter mb-4 w-full relative z-0 mt-8 whitespace-nowrap opacity-[0.97]"
+              className="flex justify-center items-center w-full relative z-0 mt-8 mb-4"
             >
-              {AppConfig.brand.name.toUpperCase()}
-            </motion.h2>
+              <img
+                src="/assets/logo.svg"
+                alt={AppConfig.brand.name}
+                className="w-[80vw] sm:w-[78vw] lg:w-[75vw] xl:w-[72rem] opacity-[0.97]"
+              />
+            </motion.div>
 
             <div className="flex flex-col lg:flex-row justify-between items-center lg:items-end -mt-2 sm:-mt-4 lg:-mt-16 xl:-mt-24 relative z-10 w-full px-4 lg:px-12">
 
