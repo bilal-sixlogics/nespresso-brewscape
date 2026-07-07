@@ -36,7 +36,7 @@ const FAQS = [
     },
     {
         q: { fr: 'Proposez-vous la livraison à domicile ?', en: 'Do you offer home delivery?' },
-        a: { fr: 'Oui, nous livrons dans le monde entier. Livraison standard offerte dès 100€.', en: 'Yes, we ship worldwide. Free standard shipping from €100.' },
+        a: { fr: 'Oui, nous livrons dans le monde entier. Livraison standard offerte dès 150€.', en: 'Yes, we ship worldwide. Free standard shipping from €150.' },
     },
     {
         q: { fr: 'Puis-je retourner un produit ?', en: 'Can I return a product?' },

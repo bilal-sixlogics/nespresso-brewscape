@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Eye, Trash2, Mail } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -52,6 +52,7 @@ Pour exercer ces droits, contactez notre Délégué à la Protection des Donnée
 To exercise these rights, contact our Data Protection Officer at: dpo@cafrezzo.com. We respond to all requests within 30 days.`,
     },
     {
+        slug: 'cookies',
         icon: Mail,
         title: 'Cookies',
         titleEn: 'Cookies',
@@ -68,6 +69,16 @@ export default function PrivacyPage() {
     const { language } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [active, setActive] = useState<number | null>(null);
+
+    // Deep-link support — e.g. Footer's "Cookie Policy" links to /privacy#cookies
+    useEffect(() => {
+        const hash = window.location.hash.replace('#', '');
+        if (!hash) return;
+        const index = sections.findIndex(s => s.slug === hash);
+        if (index === -1) return;
+        setActive(index);
+        document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, []);
 
     return (
         <div className="w-full bg-sb-white text-sb-black min-h-screen">
@@ -102,11 +113,12 @@ export default function PrivacyPage() {
                         return (
                             <motion.div
                                 key={i}
+                                id={sec.slug}
                                 initial={{ opacity: 0, y: 16 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.08 }}
-                                className="bg-white border border-gray-100 rounded-[20px] overflow-hidden shadow-sm"
+                                className="bg-white border border-gray-100 rounded-[20px] overflow-hidden shadow-sm scroll-mt-24"
                             >
                                 <button
                                     onClick={() => setActive(open ? null : i)}

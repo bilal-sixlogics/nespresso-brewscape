@@ -30,11 +30,11 @@ export const AppConfig = {
     },
 
     socials: [
-        { name: 'Fb', url: '#' },
-        { name: 'Ig', url: '#' },
-        { name: 'Tw', url: '#' },
-        { name: 'Yt', url: '#' },
-    ],
+        { name: 'Facebook', icon: 'facebook', url: '#' },
+        { name: 'Instagram', icon: 'instagram', url: '#' },
+        { name: 'Twitter', icon: 'twitter', url: '#' },
+        { name: 'Youtube', icon: 'youtube', url: '#' },
+    ] as { name: string; icon: 'facebook' | 'instagram' | 'twitter' | 'youtube'; url: string }[],
 
     supportLinks: [
         { label: 'Contact & Boutiques', url: '/contact' },

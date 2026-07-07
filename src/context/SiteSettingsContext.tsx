@@ -57,6 +57,7 @@ export function useFormatPrice() {
     return (amount: number | string) => {
         const n = typeof amount === 'string' ? parseFloat(amount) : amount;
         if (isNaN(n)) return `${currency_symbol}0.00`;
-        return `${currency_symbol}${n.toFixed(2)}`;
+        // Clamp to 0 so float rounding error (e.g. -1e-10) never renders as "-0.00"
+        return `${currency_symbol}${Math.max(0, n).toFixed(2)}`;
     };
 }

@@ -9,6 +9,7 @@ import { useCart } from '@/store/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { AppConfig } from '@/lib/config';
 import { useLanguage, SUPPORTED_LANGUAGES, Language } from '@/context/LanguageContext';
+import { FlagIcon } from '@/components/ui/FlagIcon';
 import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { useProducts } from '@/hooks/useProducts';
 import { CartDrawer } from '@/components/ui/CartDrawer';
@@ -150,7 +151,7 @@ function LanguageToggle({ direction = 'down' }: { direction?: 'up' | 'down' }) {
                 onClick={() => setOpen(prev => !prev)}
                 className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full px-3 py-1.5 transition-all duration-200 group"
             >
-                <span className="text-base leading-none">{currentLanguageMeta.flag}</span>
+                <FlagIcon code={currentLanguageMeta.code} className="w-5 h-3.5" />
                 <span className="text-[10px] font-black tracking-[0.1em] text-white">
                     {currentLanguageMeta.label}
                 </span>
@@ -175,7 +176,7 @@ function LanguageToggle({ direction = 'down' }: { direction?: 'up' | 'down' }) {
                                 className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${language === lang.code ? 'bg-sb-green/5' : ''
                                     }`}
                             >
-                                <span className="text-base">{lang.flag}</span>
+                                <FlagIcon code={lang.code} className="w-5 h-3.5" />
                                 <div className="flex flex-col">
                                     <span className="text-[11px] font-bold text-sb-black">{lang.nativeName}</span>
                                 </div>

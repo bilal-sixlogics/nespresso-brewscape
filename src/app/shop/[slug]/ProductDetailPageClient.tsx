@@ -95,6 +95,22 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
     const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
     const [wishlist, setWishlist] = useState(false);
     const [panelProduct, setPanelProduct] = useState<Product | null>(null);
+    const [shareCopied, setShareCopied] = useState(false);
+
+    const handleShare = async () => {
+        const url = typeof window !== 'undefined' ? window.location.href : '';
+        try {
+            if (typeof navigator !== 'undefined' && navigator.share) {
+                await navigator.share({ title: product?.name ?? '', url });
+            } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                await navigator.clipboard.writeText(url);
+                setShareCopied(true);
+                setTimeout(() => setShareCopied(false), 2000);
+            }
+        } catch {
+            // user cancelled the native share sheet — no-op
+        }
+    };
 
     // Derive image list — safe to compute before hooks (no hooks below yet)
     const imageUrls = product ? getProductImages(product) : [];
@@ -224,9 +240,9 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                                 <button
                                     key={i}
                                     onClick={() => setActiveImg(i)}
-                                    className={`w-16 h-16 rounded-2xl overflow-hidden border-2 transition-all duration-200 ${i === activeImg ? 'border-sb-green scale-105 shadow-lg shadow-sb-green/20' : 'border-gray-100 opacity-60 hover:opacity-100'}`}
+                                    className={`w-16 h-16 rounded-2xl overflow-hidden border-2 transition-all duration-200 ${i === activeImg ? 'border-sb-green shadow-lg shadow-sb-green/20' : 'border-gray-100 opacity-60 hover:opacity-100'}`}
                                 >
-                                    <img src={img} alt={`View ${i + 1}`} className="w-full h-full object-contain p-1" />
+                                    <img src={img} alt={`View ${i + 1}`} className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>
@@ -344,10 +360,16 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                             </div>
                         </motion.button>
                         <button
-                            className="w-14 h-14 border-2 border-gray-100 rounded-full flex items-center justify-center hover:border-sb-green transition-colors flex-shrink-0"
+                            onClick={handleShare}
+                            className="relative w-14 h-14 border-2 border-gray-100 rounded-full flex items-center justify-center hover:border-sb-green transition-colors flex-shrink-0"
                             title={t('Partager', 'Share')}
                         >
                             <Share2 size={18} className="text-gray-400" />
+                            {shareCopied && (
+                                <span className="absolute -top-9 right-0 whitespace-nowrap bg-sb-black text-white text-[10px] font-bold px-3 py-1.5 rounded-full">
+                                    {t('Lien copié', 'Link copied')}
+                                </span>
+                            )}
                         </button>
                     </div>
 

@@ -59,6 +59,7 @@ interface ApiShippingMethod {
     estimated_days_max: number;
     type?: 'delivery' | 'pickup';
     store_location?: StoreLocation | null;
+    free_shipping_threshold?: number | null;
 }
 
 const CHECKOUT_FORM_KEY = 'checkout_shipping_form';
@@ -143,14 +144,14 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                 onClick={() => compact && setExpanded(p => !p)}
                 className={`w-full flex items-center justify-between p-6 ${compact ? 'cursor-pointer' : ''}`}
             >
-                <div className="flex items-center gap-3">
-                    <ShoppingBag size={18} className="text-sb-green" />
-                    <span className="font-black text-sm uppercase tracking-widest">{tx('Récapitulatif', 'Order Summary')}</span>
-                    <span className="text-xs text-gray-400">({items.length} {tx('articles', 'items')})</span>
+                <div className="flex items-center gap-3 min-w-0 flex-shrink">
+                    <ShoppingBag size={18} className="text-sb-green flex-shrink-0" />
+                    <span className="font-black text-sm uppercase tracking-widest whitespace-nowrap">{tx('Récapitulatif', 'Order Summary')}</span>
+                    <span className="text-xs text-gray-400 whitespace-nowrap">({items.length} {tx('articles', 'items')})</span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="font-display text-2xl text-sb-green">{formatPrice(displayTotal)}</span>
-                    {compact && <ChevronRight size={16} className={`text-gray-300 transition-transform ${expanded ? 'rotate-90' : ''}`} />}
+                <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                    <span className="font-display text-2xl text-sb-green whitespace-nowrap">{formatPrice(displayTotal)}</span>
+                    {compact && <ChevronRight size={16} className={`text-gray-300 transition-transform flex-shrink-0 ${expanded ? 'rotate-90' : ''}`} />}
                 </div>
             </button>
 
@@ -188,9 +189,9 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                     <span>{tx('Livraison', 'Shipping')}{selectedShipping ? ` — ${selectedShipping.name}` : ''}</span>
                                     <span className={`font-bold ${shippingCost === 0 ? 'text-sb-green' : ''}`}>{shippingCost === 0 ? tx('Gratuite', 'Free') : formatPrice(shippingCost)}</span>
                                 </div>
-                                <div className="flex justify-between text-sb-black font-black pt-2 border-t border-gray-100 text-base">
-                                    <span>Total</span>
-                                    <span className="font-display text-2xl text-sb-green">{formatPrice(displayTotal)}</span>
+                                <div className="flex justify-between items-center gap-3 text-sb-black font-black pt-2 border-t border-gray-100 text-base">
+                                    <span className="flex-shrink-0">Total</span>
+                                    <span className="font-display text-2xl text-sb-green whitespace-nowrap">{formatPrice(displayTotal)}</span>
                                 </div>
                             </div>
 
@@ -436,8 +437,18 @@ export default function CheckoutPage() {
                         base_price: Number(first.base_price),
                         estimated_days_min: first.estimated_days_min,
                         estimated_days_max: first.estimated_days_max,
-                        free_shipping_threshold: null,
+                        free_shipping_threshold: first.free_shipping_threshold ?? null,
                     });
+                    // If the pre-selected default method is a pickup method, fetch
+                    // pickup stores immediately — otherwise the store picker never
+                    // renders and "Continue" stays disabled forever (pickupReady
+                    // can never become true).
+                    if (first.type === 'pickup') {
+                        fetch(Endpoints.pickupStores)
+                            .then(r => r.json())
+                            .then((res: { data: StoreLocation[] }) => setPickupStores(res.data ?? []))
+                            .catch(() => setPickupStores([]));
+                    }
                 }
             })
             .catch(() => setApiMethods([]))
@@ -454,9 +465,14 @@ export default function CheckoutPage() {
                 // Auto-select first valid payment method for current delivery type
                 const current = paymentForm.method;
                 if (isPickup) {
-                    // Pickup: valid options are stripe (if on) or store (if allowed)
-                    if (current === 'cod') {
-                        setPaymentForm(f => ({ ...f, method: data.stripe ? 'stripe' : 'store' }));
+                    // Pickup ("Click & Collect"): default to Pay at Store unless the
+                    // store explicitly requires online prepayment for pickup orders.
+                    if (data.pickup_payment_required) {
+                        if (current === 'cod' || current === 'store') {
+                            setPaymentForm(f => ({ ...f, method: data.stripe ? 'stripe' : 'store' }));
+                        }
+                    } else if (current !== 'store') {
+                        setPaymentForm(f => ({ ...f, method: 'store' }));
                     }
                 } else {
                     // Delivery: valid options are stripe (if on) or cod (if on)
@@ -490,7 +506,7 @@ export default function CheckoutPage() {
             base_price: Number(method.base_price),
             estimated_days_min: method.estimated_days_min,
             estimated_days_max: method.estimated_days_max,
-            free_shipping_threshold: null,
+            free_shipping_threshold: method.free_shipping_threshold ?? null,
         });
         // Reset incompatible payment method
         if (method.type === 'pickup' && paymentForm.method === 'cod') {
@@ -1299,9 +1315,9 @@ export default function CheckoutPage() {
                                         </div>
                                         <span className="text-xs text-gray-500 leading-relaxed">
                                             {tx('J\'accepte les ', 'I accept the ')}
-                                            <Link href="/terms" className="underline hover:text-sb-green">{tx('Conditions Générales', 'Terms & Conditions')}</Link>
+                                            <Link href="/terms" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="underline hover:text-sb-green">{tx('Conditions Générales', 'Terms & Conditions')}</Link>
                                             {tx(' et la ', ' and ')}
-                                            <Link href="/privacy" className="underline hover:text-sb-green">{tx('Politique de Confidentialité', 'Privacy Policy')}</Link>.
+                                            <Link href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="underline hover:text-sb-green">{tx('Politique de Confidentialité', 'Privacy Policy')}</Link>.
                                         </span>
                                     </label>
 

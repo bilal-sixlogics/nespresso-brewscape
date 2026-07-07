@@ -260,6 +260,12 @@ export default function Home() {
                     <div className="w-1.5 h-1.5 ml-3 bg-white rounded-full"></div>
                   </motion.div>
                 </Link>
+                <Link
+                  href="/orders/track"
+                  className="text-[10px] font-bold tracking-[0.15em] uppercase text-sb-black/60 hover:text-sb-green transition-colors underline underline-offset-4"
+                >
+                  {t('footerTrackOrder')}
+                </Link>
               </div>
             </div>
           </div>

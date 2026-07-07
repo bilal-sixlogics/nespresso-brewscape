@@ -44,11 +44,11 @@ interface Shipment {
 
 interface OrderItem {
     id: number;
-    product_name: string;
-    unit_name: string;
-    unit_price: number;
+    product_name_snapshot: string;
+    unit_name_snapshot: string;
+    unit_price_snapshot: number;
     quantity: number;
-    total_price: number;
+    line_total: number;
 }
 
 interface Order {
@@ -99,7 +99,7 @@ function StatusBadge({ status }: { status: string }) {
 // ── Guest lookup gate ─────────────────────────────────────────────────────────
 
 function GuestLookup({ orderId, onFound }: { orderId: string; onFound: (order: Order) => void }) {
-    const [orderInput, setOrderInput] = useState(orderId);
+    const [orderInput, setOrderInput] = useState(/^\d+$/.test(orderId) ? orderId : '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -349,12 +349,12 @@ function OrderDetail({ order }: { order: Order }) {
                                         <Package size={16} className="text-sb-green" />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold text-sb-black truncate">{item.product_name}</p>
-                                        <p className="text-xs text-gray-500">{item.unit_name} × {item.quantity}</p>
+                                        <p className="text-sm font-bold text-sb-black truncate">{item.product_name_snapshot}</p>
+                                        <p className="text-xs text-gray-500">{item.unit_name_snapshot} × {item.quantity}</p>
                                     </div>
                                 </div>
                                 <p className="text-sm font-black text-sb-black whitespace-nowrap">
-                                    {formatPrice(parseFloat(String(item.total_price)))}
+                                    {formatPrice(parseFloat(String(item.line_total)))}
                                 </p>
                             </div>
                         ))}

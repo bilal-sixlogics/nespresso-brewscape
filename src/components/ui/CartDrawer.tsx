@@ -9,14 +9,11 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { getProductImage } from '@/types';
 
-const FREE_SHIPPING_THRESHOLD = 150;
-
 export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     const {
         items, cartCount, subtotal, promoDiscount,
-        shippingCost, total, amountToFreeShipping,
+        amountToFreeShipping, freeShippingThreshold,
         appliedPromo, promoError, promoLoading, applyPromoCode, removePromoCode,
-        selectedShipping, setShipping, shippingOptions,
         removeFromCart, updateQuantity, clearCart,
     } = useCart();
     const { language } = useLanguage();
@@ -26,7 +23,9 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
     const [promoInput, setPromoInput] = useState('');
     const [promoExpanded, setPromoExpanded] = useState(false);
 
-    const freeShippingProgress = Math.min(100, ((subtotal - promoDiscount) / FREE_SHIPPING_THRESHOLD) * 100);
+    const freeShippingProgress = freeShippingThreshold
+        ? Math.min(100, ((subtotal - promoDiscount) / freeShippingThreshold) * 100)
+        : 0;
 
     const handleApplyPromo = () => {
         if (promoInput.trim()) applyPromoCode(promoInput.trim());
@@ -207,7 +206,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             >
                                 <Tag size={11} />
                                 {appliedPromo
-                                    ? <span className="text-sb-green">{appliedPromo.code} (-{formatPrice(promoDiscount)})</span>
+                                    ? <span className="text-sb-green">{appliedPromo.code}{promoDiscount > 0 && ` (-${formatPrice(promoDiscount)})`}</span>
                                     : tx('Ajouter un code promo', 'Add Promo Code')
                                 }
                             </button>
@@ -283,9 +282,9 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             onClick={onClose}
                             className="flex justify-between items-center w-full bg-sb-green text-white px-7 py-4 rounded-full shadow-lg shadow-sb-green/25 hover:bg-sb-dark transition-colors focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2"
                         >
-                            <div>
-                                <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{tx('Total', 'Total')} · {cartCount} article(s)</p>
-                                <p className="font-display text-xl leading-none">{formatPrice(total)}</p>
+                            <div className="min-w-0">
+                                <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{tx('Sous-total', 'Subtotal')} · {cartCount} article(s)</p>
+                                <p className="font-display text-xl leading-none truncate">{formatPrice(subtotal - promoDiscount)}</p>
                             </div>
                             <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
                                 {tx('Commander', 'Checkout')} <ArrowRight size={16} />

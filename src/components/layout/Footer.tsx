@@ -2,12 +2,19 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Coffee, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Coffee, CheckCircle2, Loader2, AlertCircle, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { AppConfig } from '@/lib/config';
 import { useLanguage } from '@/context/LanguageContext';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
+
+const SOCIAL_ICONS = {
+    facebook: Facebook,
+    instagram: Instagram,
+    twitter: Twitter,
+    youtube: Youtube,
+} as const;
 
 export function Footer() {
     const { t } = useLanguage();
@@ -49,18 +56,21 @@ export function Footer() {
                             {t('brandDescription')}
                         </p>
                         <div className="flex space-x-3">
-                            {AppConfig.socials.map((social) => (
-                                <a
-                                    key={social.name}
-                                    href={social.url}
-                                    aria-label={social.name}
-                                    rel="noopener noreferrer"
-                                    target="_blank"
-                                    className="w-11 h-11 bg-white/5 hover:bg-sb-green border border-white/10 hover:border-sb-green rounded-full flex items-center justify-center text-xs font-bold text-gray-400 hover:text-white transition-all duration-300 focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2"
-                                >
-                                    {social.name}
-                                </a>
-                            ))}
+                            {AppConfig.socials.map((social) => {
+                                const Icon = SOCIAL_ICONS[social.icon];
+                                return (
+                                    <a
+                                        key={social.name}
+                                        href={social.url}
+                                        aria-label={social.name}
+                                        rel="noopener noreferrer"
+                                        target="_blank"
+                                        className="w-11 h-11 bg-white/5 hover:bg-sb-green border border-white/10 hover:border-sb-green rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2"
+                                    >
+                                        <Icon size={16} strokeWidth={2} />
+                                    </a>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -82,6 +92,7 @@ export function Footer() {
                         <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-white">{t('support')}</h4>
                         <ul className="space-y-4">
                             <li><Link href="/contact" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerContact')}</Link></li>
+                            <li><Link href="/orders/track" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerTrackOrder')}</Link></li>
                             <li><Link href="/faq" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerFaq')}</Link></li>
                             <li><Link href="/shipping" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerShipping')}</Link></li>
                             <li><Link href="/privacy" className="text-gray-400 hover:text-sb-green transition-colors text-sm">{t('footerPrivacy')}</Link></li>
@@ -109,7 +120,7 @@ export function Footer() {
                                         onChange={e => { setNlEmail(e.target.value); if (nlState === 'error') setNlState('idle'); }}
                                         onKeyDown={e => e.key === 'Enter' && handleSubscribe()}
                                         placeholder={t('emailPlaceholder')}
-                                        className="flex-1 bg-white/5 border border-white/10 rounded-l-full px-5 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-sb-green transition-colors"
+                                        className="flex-1 min-w-0 w-full bg-white/5 border border-white/10 rounded-l-full px-5 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-sb-green transition-colors"
                                         disabled={nlState === 'loading'}
                                     />
                                     <button
@@ -144,9 +155,9 @@ export function Footer() {
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
                     <p className="text-gray-500 text-xs tracking-widest uppercase">© {AppConfig.brand.copyrightYear} {AppConfig.brand.name}. {t('copyright')}</p>
                     <div className="flex space-x-8 mt-4 md:mt-0">
-                        <button className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{t('privacy')}</button>
-                        <button className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{t('terms')}</button>
-                        <button className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{t('cookies')}</button>
+                        <Link href="/privacy" className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{t('privacy')}</Link>
+                        <Link href="/terms" className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{t('terms')}</Link>
+                        <Link href="/privacy#cookies" className="text-gray-500 hover:text-white text-xs tracking-widest uppercase transition-colors">{t('cookies')}</Link>
                     </div>
                 </div>
             </div>

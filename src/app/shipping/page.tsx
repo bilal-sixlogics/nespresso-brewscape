@@ -1,10 +1,23 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Truck, RotateCcw, Shield, Clock, Package, CheckCircle } from 'lucide-react';
+import { Truck, RotateCcw, Shield, Clock, Zap, Package, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useFormatPrice, useSiteSettings } from '@/context/SiteSettingsContext';
+import { apiClient } from '@/lib/api/client';
+import { Endpoints } from '@/lib/api/endpoints';
+
+interface ApiShippingMethod {
+    id: number;
+    name: string;
+    description: string | null;
+    base_price: number | string;
+    estimated_days_min: number;
+    estimated_days_max: number;
+    type?: 'delivery' | 'pickup';
+    free_shipping_threshold?: number | null;
+}
 
 export default function ShippingPage() {
     const { language } = useLanguage();
@@ -12,34 +25,43 @@ export default function ShippingPage() {
     const formatPrice = useFormatPrice();
     const { currency_symbol } = useSiteSettings();
 
-    const shippingOptions = [
-        {
-            icon: Truck,
-            title: tx('Standard', 'Standard'),
-            subtitle: tx('3–5 jours ouvrés', '3–5 working days'),
-            price: formatPrice(5.99),
-            free: tx(`Gratuit dès ${currency_symbol}150`, `Free from ${currency_symbol}150`),
-            color: 'bg-sb-green',
-            features: [
-                tx('Suivi en temps réel', 'Real-time tracking'),
-                tx('Livraison à domicile ou en point relais', 'Home or pickup point delivery'),
-                tx('Avis de passage en cas d\'absence', 'Delivery notice if absent'),
-            ],
-        },
-        {
-            icon: Clock,
-            title: tx('Express', 'Express'),
-            subtitle: tx('1–2 jours ouvrés', '1–2 working days'),
-            price: formatPrice(12.99),
-            free: null,
-            color: 'bg-sb-black',
-            features: [
-                tx('Commandez avant 14h pour livraison le lendemain', 'Order before 2pm for next-day delivery'),
-                tx('Suivi prioritaire', 'Priority tracking'),
-                tx('Signature requise', 'Signature required'),
-            ],
-        },
-    ];
+    const [methods, setMethods] = useState<ApiShippingMethod[]>([]);
+    const [freeThreshold, setFreeThreshold] = useState<number | null>(null);
+
+    // Live from API — keeps this page's delivery estimates in sync with checkout
+    // instead of a hardcoded, easily-stale list of shipping tiers.
+    useEffect(() => {
+        apiClient.get<ApiShippingMethod[]>(Endpoints.shippingMethods)
+            .then(data => {
+                const delivery = Array.isArray(data) ? data.filter(m => m.type !== 'pickup') : [];
+                setMethods(delivery);
+                setFreeThreshold(delivery.find(m => m.free_shipping_threshold)?.free_shipping_threshold ?? null);
+            })
+            .catch(() => setMethods([]));
+    }, []);
+
+    const iconFor = (name: string) => {
+        const n = name.toLowerCase();
+        if (n.includes('overnight') || n.includes('express')) return n.includes('overnight') ? Zap : Clock;
+        return Truck;
+    };
+
+    const dayLabel = (min: number, max: number) => {
+        const days = min === max ? `${min}` : `${min}–${max}`;
+        return tx(`${days} jour(s) ouvré(s)`, `${days} business day${max > 1 ? 's' : ''}`);
+    };
+
+    const shippingOptions = methods.map((m, i) => ({
+        icon: iconFor(m.name),
+        title: m.name,
+        subtitle: dayLabel(m.estimated_days_min, m.estimated_days_max),
+        price: formatPrice(Number(m.base_price)),
+        free: (m.free_shipping_threshold && i === 0)
+            ? tx(`Gratuit dès ${currency_symbol}${m.free_shipping_threshold}`, `Free from ${currency_symbol}${m.free_shipping_threshold}`)
+            : null,
+        color: i === 0 ? 'bg-sb-green' : 'bg-sb-black',
+        features: m.description ? [m.description] : [],
+    }));
 
     const returnSteps = [
         { step: '01', title: tx('Initiez votre retour', 'Initiate your return'), desc: tx('Contactez-nous sous 14 jours à partir de la réception.', 'Contact us within 14 days of receiving your order.') },
@@ -114,20 +136,22 @@ export default function ShippingPage() {
                 </div>
 
                 {/* Free shipping banner */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="mt-8 bg-gradient-to-r from-sb-green to-[#2C6345] rounded-[24px] p-6 flex items-center gap-4"
-                >
-                    <Package size={28} className="text-white flex-shrink-0" />
-                    <p className="text-white font-semibold text-sm">
-                        {tx(
-                            `🎉 Livraison standard offerte pour toute commande de ${currency_symbol}150 ou plus !`,
-                            `🎉 Free standard shipping on all orders of ${currency_symbol}150 or more!`
-                        )}
-                    </p>
-                </motion.div>
+                {freeThreshold && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="mt-8 bg-gradient-to-r from-sb-green to-[#2C6345] rounded-[24px] p-6 flex items-center gap-4"
+                    >
+                        <Package size={28} className="text-white flex-shrink-0" />
+                        <p className="text-white font-semibold text-sm">
+                            {tx(
+                                `🎉 Livraison standard offerte pour toute commande de ${currency_symbol}${freeThreshold} ou plus !`,
+                                `🎉 Free standard shipping on all orders of ${currency_symbol}${freeThreshold} or more!`
+                            )}
+                        </p>
+                    </motion.div>
+                )}
             </section>
 
             {/* Returns */}

@@ -44,6 +44,7 @@ interface CartContextType {
     shippingCost: number;
     total: number;
     amountToFreeShipping: number;
+    freeShippingThreshold: number | null;
 
     // Promo Code
     appliedPromo: AppliedPromo | null;
@@ -270,7 +271,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return (
         <CartContext.Provider value={{
             items, cartCount, subtotal, promoDiscount,
-            shippingCost, total, amountToFreeShipping,
+            shippingCost, total, amountToFreeShipping, freeShippingThreshold: freeThreshold,
             appliedPromo, promoError, promoLoading,
             applyPromoCode, removePromoCode,
             selectedShipping, setShipping, shippingOptions, shippingLoading,
