@@ -440,6 +440,28 @@ function OrderPageContent() {
             .finally(() => setLoading(false));
     }, [orderId, isAuthenticated, isHydrating]);
 
+    // Poll while payment is still in flight — a Stripe webhook can take a few
+    // seconds to arrive, and this page would otherwise keep showing "Pending
+    // Payment" forever until the customer manually reloads. Throttled slowly
+    // (15s) since the guest track endpoint is rate-limited (5 requests/min).
+    useEffect(() => {
+        if (!order || order.status !== 'pending_payment') return;
+
+        const poll = async () => {
+            try {
+                const res = isAuthenticated
+                    ? await apiClient.get<Order>(`${Endpoints.orders}/${order.id}`)
+                    : (await apiClient.post<{ data: Order }>(Endpoints.trackOrder, { order_id: order.id })).data;
+                if (res) setOrder(res as Order);
+            } catch {
+                // transient — will retry on the next tick
+            }
+        };
+
+        const interval = setInterval(poll, 15000);
+        return () => clearInterval(interval);
+    }, [order, isAuthenticated]);
+
     if (loading || isHydrating) {
         return (
             <div className="min-h-screen flex items-center justify-center">
