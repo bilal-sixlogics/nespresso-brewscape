@@ -86,10 +86,15 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
 
 const TIMELINE_STEPS = ['pending_payment', 'paid', 'processing', 'shipped', 'delivered'];
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, muted = false }: { status: string; muted?: boolean }) {
     const cfg = STATUS_CONFIG[status] ?? { label: status, color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200', icon: <Clock size={14} /> };
+    // Muted variant — used for older status-history entries so they read as
+    // history rather than looking like another "current" status.
+    const classes = muted
+        ? 'bg-gray-50 border-gray-200 text-gray-400'
+        : `${cfg.bg} ${cfg.color}`;
     return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${cfg.bg} ${cfg.color}`}>
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${classes}`}>
             {cfg.icon}
             {cfg.label}
         </span>
@@ -318,10 +323,15 @@ function OrderDetail({ order }: { order: Order }) {
                         <div className="space-y-3">
                             {[...order.status_logs].reverse().map((log, i) => (
                                 <div key={i} className="flex items-start gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-sb-green mt-2 shrink-0" />
+                                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${i === 0 ? 'bg-sb-green' : 'bg-gray-300'}`} />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <StatusBadge status={log.status} />
+                                            <StatusBadge status={log.status} muted={i !== 0} />
+                                            {i === 0 && (
+                                                <span className="text-[9px] font-black uppercase tracking-wider text-sb-green bg-sb-green/10 px-1.5 py-0.5 rounded-full">
+                                                    Current
+                                                </span>
+                                            )}
                                             <span className="text-[10px] text-gray-400">
                                                 {new Date(log.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                             </span>
