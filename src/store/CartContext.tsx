@@ -181,6 +181,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
         try { localStorage.removeItem(CART_STORAGE_KEY); } catch { /* ignore */ }
     }, []);
 
+    // ─── Sync local cart → backend ───────────────────────────────────────────
+    // Needed before both checkout AND promo code application — promotions are
+    // evaluated server-side against the real cart contents (targets, stacking),
+    // so a backend Cart record matching the current local state must exist.
+    const syncCartToBackend = useCallback(async () => {
+        if (items.length === 0) return;
+
+        // Best-effort clear — ignore error if no cart exists yet
+        try {
+            await apiClient.delete(Endpoints.cart);
+        } catch { /* no existing cart to clear — fine */ }
+
+        // Add each item — propagate errors so the caller can surface them
+        for (const item of items) {
+            await apiClient.post(Endpoints.cartAdd, {
+                product_sales_unit_id: Number(item.saleUnit.id),
+                quantity: item.quantity,
+            });
+        }
+    }, [items]);
+
     // ─── Promo Code ─────────────────────────────────────────────────────────
 
     const applyPromoCode = useCallback(async (code: string) => {
@@ -191,6 +212,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setPromoError(null);
 
         try {
+            // Promo evaluation happens against the real backend cart (targets,
+            // stackability) — make sure one exists and matches local state first.
+            await syncCartToBackend();
+
             const res = await apiClient.post<{
                 valid: boolean;
                 promotion_id: number;
@@ -219,7 +244,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         } finally {
             setPromoLoading(false);
         }
-    }, [subtotal]);
+    }, [subtotal, syncCartToBackend]);
 
     const removePromoCode = useCallback(() => {
         setAppliedPromo(null);
@@ -229,44 +254,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const setShipping = useCallback((method: ShippingMethod) => {
         setSelectedShipping(method);
     }, []);
-
-    // ─── Sync local cart → backend (called before checkout) ─────────────────
-    const syncCartToBackend = useCallback(async () => {
-        console.log('[CartSync] items in state:', items);
-        console.log('[CartSync] localStorage raw:', localStorage.getItem(CART_STORAGE_KEY));
-        console.log('[CartSync] cartHydrated:', cartHydrated);
-
-        if (items.length === 0) {
-            console.warn('[CartSync] items array is EMPTY — nothing to sync');
-            return;
-        }
-
-        // Best-effort clear — ignore error if no cart exists yet
-        try {
-            await apiClient.delete(Endpoints.cart);
-            console.log('[CartSync] DELETE /cart OK');
-        } catch (e) {
-            console.warn('[CartSync] DELETE /cart failed (ignored):', e);
-        }
-
-        // Add each item — propagate errors so the checkout UI shows them
-        for (const item of items) {
-            const payload = {
-                product_sales_unit_id: Number(item.saleUnit.id),
-                quantity: item.quantity,
-            };
-            console.log('[CartSync] POST /cart/items payload:', payload);
-            try {
-                const res = await apiClient.post(Endpoints.cartAdd, payload);
-                console.log('[CartSync] POST /cart/items OK:', res);
-            } catch (e) {
-                console.error('[CartSync] POST /cart/items FAILED:', e);
-                throw e;
-            }
-        }
-
-        console.log('[CartSync] sync complete — all items added');
-    }, [items, cartHydrated]);
 
     return (
         <CartContext.Provider value={{
