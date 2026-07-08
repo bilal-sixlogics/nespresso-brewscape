@@ -251,7 +251,7 @@ export interface OrderItem {
     saleUnit?: SaleUnit;
 }
 
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderStatus = 'draft' | 'pending' | 'pending_payment' | 'payment_failed' | 'paid' | 'processing' | 'shipped' | 'ready_for_pickup' | 'delivered' | 'cancelled' | 'refunded';
 
 export interface Order {
     id: string;

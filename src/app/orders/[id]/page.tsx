@@ -7,7 +7,7 @@ import Link from 'next/link';
 import {
     Package, Truck, CheckCircle2, XCircle, Clock, MapPin,
     RefreshCw, AlertCircle, ArrowLeft, Loader2,
-    ShoppingBag, Calendar, Hash, Mail, Phone,
+    ShoppingBag, Calendar, Hash, Mail, Phone, Store,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
@@ -68,26 +68,39 @@ interface Order {
     shipments: Shipment[];
     status_logs: StatusLog[];
     created_at: string;
+    shipping_method?: { id: number; name: string; type: 'delivery' | 'pickup' } | null;
+    is_pickup?: boolean;
 }
 
 // ── Status config ─────────────────────────────────────────────────────────────
+// 'delivered' is reused as the terminal state for both fulfillment paths —
+// its display label is resolved dynamically (see StatusBadge) rather than
+// hardcoded here, mirroring the backend's OrderStatus::label().
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-    draft:           { label: 'Draft',           color: 'text-gray-500',   bg: 'bg-gray-50 border-gray-200',   icon: <Clock size={14} /> },
-    pending_payment: { label: 'Pending Payment',  color: 'text-amber-600',  bg: 'bg-amber-50 border-amber-200', icon: <Clock size={14} /> },
-    payment_failed:  { label: 'Payment Failed',   color: 'text-red-600',    bg: 'bg-red-50 border-red-200',     icon: <XCircle size={14} /> },
-    paid:            { label: 'Order Confirmed',  color: 'text-sb-green',   bg: 'bg-sb-green/10 border-sb-green/20', icon: <CheckCircle2 size={14} /> },
-    processing:      { label: 'Processing',       color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200',   icon: <RefreshCw size={14} /> },
-    shipped:         { label: 'Shipped',          color: 'text-violet-600', bg: 'bg-violet-50 border-violet-200', icon: <Truck size={14} /> },
-    delivered:       { label: 'Delivered',        color: 'text-sb-green',   bg: 'bg-sb-green/10 border-sb-green/20', icon: <CheckCircle2 size={14} /> },
-    cancelled:       { label: 'Cancelled',        color: 'text-red-600',    bg: 'bg-red-50 border-red-200',     icon: <XCircle size={14} /> },
-    refunded:        { label: 'Refunded',         color: 'text-gray-600',   bg: 'bg-gray-50 border-gray-200',   icon: <RefreshCw size={14} /> },
+    draft:            { label: 'Draft',           color: 'text-gray-500',   bg: 'bg-gray-50 border-gray-200',   icon: <Clock size={14} /> },
+    pending_payment:  { label: 'Pending Payment',  color: 'text-amber-600',  bg: 'bg-amber-50 border-amber-200', icon: <Clock size={14} /> },
+    payment_failed:   { label: 'Payment Failed',   color: 'text-red-600',    bg: 'bg-red-50 border-red-200',     icon: <XCircle size={14} /> },
+    paid:             { label: 'Order Confirmed',  color: 'text-sb-green',   bg: 'bg-sb-green/10 border-sb-green/20', icon: <CheckCircle2 size={14} /> },
+    processing:       { label: 'Processing',       color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200',   icon: <RefreshCw size={14} /> },
+    shipped:          { label: 'Shipped',          color: 'text-violet-600', bg: 'bg-violet-50 border-violet-200', icon: <Truck size={14} /> },
+    ready_for_pickup: { label: 'Ready for Pickup', color: 'text-teal-600',   bg: 'bg-teal-50 border-teal-200',   icon: <Store size={14} /> },
+    delivered:        { label: 'Delivered',        color: 'text-sb-green',   bg: 'bg-sb-green/10 border-sb-green/20', icon: <CheckCircle2 size={14} /> },
+    cancelled:        { label: 'Cancelled',        color: 'text-red-600',    bg: 'bg-red-50 border-red-200',     icon: <XCircle size={14} /> },
+    refunded:         { label: 'Refunded',         color: 'text-gray-600',   bg: 'bg-gray-50 border-gray-200',   icon: <RefreshCw size={14} /> },
 };
 
-const TIMELINE_STEPS = ['pending_payment', 'paid', 'processing', 'shipped', 'delivered'];
+// Pickup orders never ship — they go straight from Processing to Ready for
+// Pickup to (picked up/)Delivered, skipping the carrier-flavored Shipped step.
+function getTimelineSteps(isPickup: boolean): string[] {
+    return isPickup
+        ? ['pending_payment', 'paid', 'processing', 'ready_for_pickup', 'delivered']
+        : ['pending_payment', 'paid', 'processing', 'shipped', 'delivered'];
+}
 
-function StatusBadge({ status, muted = false }: { status: string; muted?: boolean }) {
+function StatusBadge({ status, isPickup = false, muted = false }: { status: string; isPickup?: boolean; muted?: boolean }) {
     const cfg = STATUS_CONFIG[status] ?? { label: status, color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200', icon: <Clock size={14} /> };
+    const label = status === 'delivered' && isPickup ? 'Picked Up' : cfg.label;
     // Muted variant — used for older status-history entries so they read as
     // history rather than looking like another "current" status.
     const classes = muted
@@ -96,7 +109,7 @@ function StatusBadge({ status, muted = false }: { status: string; muted?: boolea
     return (
         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${classes}`}>
             {cfg.icon}
-            {cfg.label}
+            {label}
         </span>
     );
 }
@@ -204,7 +217,9 @@ function OrderDetail({ order }: { order: Order }) {
     const formatPrice = useFormatPrice();
     const shippingAddress = order.addresses.find(a => a.type === 'shipping');
     const shipment = order.shipments?.[0];
-    const statusIdx = TIMELINE_STEPS.indexOf(order.status);
+    const isPickupOrder = order.shipping_method?.type === 'pickup' || !!order.is_pickup;
+    const timelineSteps = getTimelineSteps(isPickupOrder);
+    const statusIdx = timelineSteps.indexOf(order.status);
     const isTerminal = ['cancelled', 'refunded', 'payment_failed'].includes(order.status);
 
     return (
@@ -247,7 +262,7 @@ function OrderDetail({ order }: { order: Order }) {
                             <Hash size={15} className="text-gray-400 mt-0.5 shrink-0" />
                             <div>
                                 <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Status</p>
-                                <div className="mt-0.5"><StatusBadge status={order.status} /></div>
+                                <div className="mt-0.5"><StatusBadge status={order.status} isPickup={isPickupOrder} /></div>
                             </div>
                         </div>
                         <div className="flex items-start gap-2">
@@ -289,10 +304,11 @@ function OrderDetail({ order }: { order: Order }) {
                         className="bg-white rounded-[28px] border border-gray-100 shadow-md p-6 mb-6">
                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-5">Order Progress</p>
                         <div className="flex items-center gap-0">
-                            {TIMELINE_STEPS.map((step, i) => {
+                            {timelineSteps.map((step, i) => {
                                 const reached  = statusIdx >= i;
                                 const current  = statusIdx === i;
                                 const cfg      = STATUS_CONFIG[step];
+                                const label    = step === 'delivered' && isPickupOrder ? 'Picked Up' : cfg.label;
                                 return (
                                     <React.Fragment key={step}>
                                         <div className="flex flex-col items-center flex-1 min-w-0">
@@ -302,10 +318,10 @@ function OrderDetail({ order }: { order: Order }) {
                                                 {reached ? <CheckCircle2 size={16} /> : cfg.icon}
                                             </div>
                                             <p className={`text-[9px] font-black uppercase tracking-wide mt-2 text-center leading-tight ${reached ? 'text-sb-green' : 'text-gray-400'}`}>
-                                                {cfg.label}
+                                                {label}
                                             </p>
                                         </div>
-                                        {i < TIMELINE_STEPS.length - 1 && (
+                                        {i < timelineSteps.length - 1 && (
                                             <div className={`flex-1 h-0.5 mb-5 ${i < statusIdx ? 'bg-sb-green' : 'bg-gray-100'}`} />
                                         )}
                                     </React.Fragment>
@@ -326,7 +342,7 @@ function OrderDetail({ order }: { order: Order }) {
                                     <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${i === 0 ? 'bg-sb-green' : 'bg-gray-300'}`} />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <StatusBadge status={log.status} muted={i !== 0} />
+                                            <StatusBadge status={log.status} isPickup={isPickupOrder} muted={i !== 0} />
                                             {i === 0 && (
                                                 <span className="text-[9px] font-black uppercase tracking-wider text-sb-green bg-sb-green/10 px-1.5 py-0.5 rounded-full">
                                                     Current

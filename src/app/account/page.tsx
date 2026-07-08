@@ -87,6 +87,7 @@ function useStatusConfig() {
         pending:    { label: t('accountStatusOrderPlaced'), color: 'text-gray-600',    bg: 'bg-gray-50 border-gray-200' },
         processing: { label: t('accountStatusConfirmed'),   color: 'text-amber-600',   bg: 'bg-amber-50 border-amber-200' },
         shipped:    { label: t('accountStatusShipped'),     color: 'text-blue-600',    bg: 'bg-blue-50 border-blue-200' },
+        ready_for_pickup: { label: t('accountStatusReadyForPickup'), color: 'text-teal-600', bg: 'bg-teal-50 border-teal-200' },
         delivered:  { label: t('accountStatusDelivered'),   color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
         cancelled:  { label: t('accountStatusCancelled'),   color: 'text-red-600',     bg: 'bg-red-50 border-red-200' },
         paid:       { label: t('accountStatusPaid'),        color: 'text-violet-600',  bg: 'bg-violet-50 border-violet-200' },
@@ -569,7 +570,7 @@ export default function AccountPage() {
             if (!matchesId && !matchesStatus && !matchesProduct) return false;
         }
         if (filter === 'all')       return true;
-        if (filter === 'active')    return ['processing', 'shipped', 'paid'].includes(o.status);
+        if (filter === 'active')    return ['processing', 'shipped', 'ready_for_pickup', 'paid'].includes(o.status);
         if (filter === 'delivered') return o.status === 'delivered';
         if (filter === 'cancelled') return ['cancelled', 'refunded'].includes(o.status);
         return true;
@@ -772,12 +773,14 @@ export default function AccountPage() {
                                                                     )}
 
                                                                     {/* Tracking timeline */}
-                                                                    {['processing', 'shipped', 'paid'].includes(order.status) && (
+                                                                    {['processing', 'shipped', 'ready_for_pickup', 'paid'].includes(order.status) && (
                                                                         <div className="px-6 py-6 bg-sb-green/5 border-b border-gray-100">
                                                                             <div className="flex justify-between items-center mb-4">
                                                                                 <div>
                                                                                     <p className="font-bold text-sb-green">
-                                                                                        {order.status === 'shipped' ? t('accountOrderOnWay') : t('accountOrderPreparing')}
+                                                                                        {order.status === 'shipped' ? t('accountOrderOnWay')
+                                                                                            : order.status === 'ready_for_pickup' ? t('accountOrderReadyForPickup')
+                                                                                            : t('accountOrderPreparing')}
                                                                                     </p>
                                                                                     {order.trackingNumber && <p className="text-xs text-gray-500 mt-1">{t('accountTracking')} <span className="font-mono text-sb-black">{order.trackingNumber}</span></p>}
                                                                                 </div>
