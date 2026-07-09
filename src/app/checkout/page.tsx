@@ -150,7 +150,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                     <span className="text-xs text-gray-400 whitespace-nowrap">({items.length} {tx('articles', 'items')})</span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                    <span className="font-display text-2xl text-sb-green whitespace-nowrap">{formatPrice(displayTotal)}</span>
+                    <span className="font-display text-1xl text-sb-green whitespace-nowrap">{formatPrice(displayTotal)}</span>
                     {compact && <ChevronRight size={16} className={`text-gray-300 transition-transform flex-shrink-0 ${expanded ? 'rotate-90' : ''}`} />}
                 </div>
             </button>
@@ -191,7 +191,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                 </div>
                                 <div className="flex justify-between items-center gap-3 text-sb-black font-black pt-2 border-t border-gray-100 text-base">
                                     <span className="flex-shrink-0">Total</span>
-                                    <span className="font-display text-2xl text-sb-green whitespace-nowrap">{formatPrice(displayTotal)}</span>
+                                    <span className="font-display text-1xl text-sb-green whitespace-nowrap">{formatPrice(displayTotal)}</span>
                                 </div>
                             </div>
 
@@ -306,7 +306,7 @@ function SectionCard({ children, className = '' }: { children: React.ReactNode; 
 
 // ─── Main Checkout Page ───────────────────────────────────────────────────────
 export default function CheckoutPage() {
-    const { items, total, appliedPromo, clearCart, setShipping } = useCart();
+    const { items, subtotal, promoDiscount, total, appliedPromo, clearCart, setShipping } = useCart();
     const { language } = useLanguage();
     const formatPrice = useFormatPrice();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
@@ -1010,6 +1010,12 @@ export default function CheckoutPage() {
                                         const isSelected = selectedMethodId === method.id;
                                         const isPickupMethod = method.type === 'pickup';
                                         const MethodIcon = isPickupMethod ? Store : Truck;
+                                        // Free-shipping threshold applies per method regardless of which one is
+                                        // currently selected — otherwise this list keeps showing e.g. "€5.99" for
+                                        // Standard Shipping even though the order total already qualifies it for free.
+                                        const methodFreeThreshold = method.free_shipping_threshold ?? null;
+                                        const isMethodFree = Number(method.base_price) === 0
+                                            || (methodFreeThreshold !== null && (subtotal - promoDiscount) >= methodFreeThreshold);
                                         return (
                                             <button
                                                 key={method.id}
@@ -1031,7 +1037,7 @@ export default function CheckoutPage() {
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <span className={`font-black text-base ${isSelected ? 'text-sb-green' : 'text-sb-black'}`}>
-                                                        {Number(method.base_price) === 0
+                                                        {isMethodFree
                                                             ? tx('Gratuit', 'Free')
                                                             : formatPrice(Number(method.base_price))}
                                                     </span>

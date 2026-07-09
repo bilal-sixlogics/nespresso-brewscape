@@ -3,9 +3,39 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle2, Package, MapPin, CreditCard, ChevronRight, ShoppingBag, Truck, Calendar } from 'lucide-react';
+import { CheckCircle2, Package, MapPin, CreditCard, ChevronRight, ShoppingBag, Truck, Calendar, Store } from 'lucide-react';
 import Link from 'next/link';
 import { useFormatPrice } from '@/context/SiteSettingsContext';
+import { apiClient } from '@/lib/api/client';
+import { Endpoints } from '@/lib/api/endpoints';
+
+interface OrderShippingMethod {
+    id: number;
+    name: string;
+    type?: 'delivery' | 'pickup';
+    estimated_days_min: number;
+    estimated_days_max: number;
+}
+
+interface OrderDetails {
+    shipping_total: number;
+    shipping_method: OrderShippingMethod | null;
+    created_at: string;
+}
+
+/** Formats a date range like "Wed, 15 Jul" or "15–17 Jul" from business-day offsets. */
+function formatEstimatedDelivery(fromDate: Date, minDays: number, maxDays: number): string {
+    const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 24 * 60 * 60 * 1000);
+    const start = addDays(fromDate, minDays);
+    const end = addDays(fromDate, maxDays);
+
+    if (minDays === maxDays) {
+        return start.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    const startLabel = start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+    const endLabel = end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+    return `${startLabel} – ${endLabel}`;
+}
 
 // Confetti component
 function Confetti() {
@@ -45,18 +75,38 @@ function OrderSuccessContent() {
     const total = searchParams.get('total') || '89.90';
     const email = searchParams.get('email') || '';
 
+    const [order, setOrder] = useState<OrderDetails | null>(null);
+
     useEffect(() => {
         const t = setTimeout(() => setShowConfetti(false), 3000);
         return () => clearTimeout(t);
     }, []);
 
+    // Fetch the real order so delivery estimate + shipping cost reflect this
+    // specific order's shipping method, instead of a hardcoded "3 days" guess.
+    useEffect(() => {
+        const numId = parseInt(orderId, 10);
+        if (!numId) return;
+        apiClient.post<{ data: OrderDetails }>(Endpoints.trackOrder, { order_id: numId, email: email || undefined })
+            .then(res => setOrder(res.data ?? (res as unknown as OrderDetails)))
+            .catch(() => { /* fall back to defaults below if lookup fails */ });
+    }, [orderId, email]);
+
     const PAYMENT_LABELS: Record<string, string> = {
         cod: 'Cash on Delivery', stripe: 'Stripe', wise: 'Wise Transfer', card: 'Credit / Debit Card',
     };
 
-    const estimatedDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', {
-        weekday: 'long', day: 'numeric', month: 'long'
-    });
+    const shippingMethod = order?.shipping_method ?? null;
+    const isPickup = shippingMethod?.type === 'pickup';
+    const shippingCost = order ? Number(order.shipping_total) : null;
+    const isFreeShipping = shippingCost === 0;
+
+    const orderCreatedAt = order?.created_at ? new Date(order.created_at) : new Date();
+    const estimatedDate = shippingMethod
+        ? formatEstimatedDelivery(orderCreatedAt, shippingMethod.estimated_days_min, shippingMethod.estimated_days_max)
+        // Fallback while the order hasn't loaded yet (or lookup failed) — same
+        // "3 business days" placeholder as before, just not the final value.
+        : formatEstimatedDelivery(new Date(), 3, 3);
 
     return (
         <>
@@ -91,7 +141,7 @@ function OrderSuccessContent() {
                         </h1>
                         <p className="text-gray-500">
                             {paymentMethod === 'cod'
-                                ? 'Thank you! Please prepare the exact amount — payment will be collected on delivery.'
+                                ? 'Thank you! Please prepare the exact amount. Payment will be collected on delivery.'
                                 : 'Thank you for your purchase. Your coffee is on its way!'}
                         </p>
                     </motion.div>
@@ -125,17 +175,32 @@ function OrderSuccessContent() {
                                 </div>
                                 <div>
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Order Date</p>
-                                    <p className="font-semibold text-sm text-sb-black">{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                    <p className="font-semibold text-sm text-sb-black">{orderCreatedAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                    <Truck size={18} className="text-blue-500" />
+                                    {isPickup ? <Store size={18} className="text-blue-500" /> : <Truck size={18} className="text-blue-500" />}
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Est. Delivery</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+                                        {isPickup ? 'Ready for Pickup' : 'Est. Delivery'}
+                                    </p>
                                     <p className="font-semibold text-sm text-sb-black">{estimatedDate}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 rounded-2xl bg-sb-green/10 flex items-center justify-center flex-shrink-0">
+                                    {isPickup ? <Store size={18} className="text-sb-green" /> : <Truck size={18} className="text-sb-green" />}
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Delivery Method</p>
+                                    <p className="font-semibold text-sm text-sb-black">{shippingMethod?.name ?? '—'}</p>
+                                    <p className="text-[10px] text-sb-green mt-0.5 font-bold">
+                                        {shippingCost === null ? '' : isFreeShipping ? 'Free' : formatPrice(shippingCost)}
+                                    </p>
                                 </div>
                             </div>
 
