@@ -13,7 +13,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { useFormatPrice } from '@/context/SiteSettingsContext';
+import { useFormatPrice, useSiteSettings } from '@/context/SiteSettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import { AppConfig } from '@/lib/config';
 import { getProductImage } from '@/types';
@@ -131,9 +131,10 @@ function Select({ label, value, onChange, options, className = '', required = tr
 }
 
 function OrderSummary({ compact = false }: { compact?: boolean }) {
-    const { items, subtotal, promoDiscount, shippingCost, total, appliedPromo, selectedShipping } = useCart();
+    const { items, subtotal, promoDiscount, shippingCost, total, vatAmount, appliedPromo, selectedShipping } = useCart();
     const { language } = useLanguage();
     const formatPrice = useFormatPrice();
+    const { tax_label: taxLabel, tax_included_in_price: taxIncluded } = useSiteSettings();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [expanded, setExpanded] = useState(!compact);
     const displayTotal = total;
@@ -189,10 +190,22 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                     <span>{tx('Livraison', 'Shipping')}{selectedShipping ? ` — ${selectedShipping.name}` : ''}</span>
                                     <span className={`font-bold ${shippingCost === 0 ? 'text-sb-green' : ''}`}>{shippingCost === 0 ? tx('Gratuite', 'Free') : formatPrice(shippingCost)}</span>
                                 </div>
+                                {!taxIncluded && vatAmount > 0 && (
+                                    <div className="flex justify-between text-gray-500">
+                                        <span>{taxLabel || tx('TVA', 'VAT')}</span>
+                                        <span className="font-bold">{formatPrice(vatAmount)}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center gap-3 text-sb-black font-black pt-2 border-t border-gray-100 text-base">
                                     <span className="flex-shrink-0">Total</span>
                                     <span className="font-display text-1xl text-sb-green whitespace-nowrap">{formatPrice(displayTotal)}</span>
                                 </div>
+                                {taxIncluded && vatAmount > 0 && (
+                                    <div className="flex justify-between text-[11px] text-gray-400">
+                                        <span>{tx('dont', 'incl.')} {taxLabel || tx('TVA', 'VAT')}</span>
+                                        <span>{formatPrice(vatAmount)}</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Guarantees */}

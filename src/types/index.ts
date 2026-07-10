@@ -100,6 +100,7 @@ export interface Product {
     category?: Category;
     selling_price: number;
     cost_price?: number;
+    vat_rate?: number | null;
     status: 'active' | 'inactive' | 'draft';
     weight?: number;
     featured_image?: string;

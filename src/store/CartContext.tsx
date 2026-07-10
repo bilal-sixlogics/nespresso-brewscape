@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { Product, SaleUnit } from '@/types';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -45,6 +46,9 @@ interface CartContextType {
     total: number;
     amountToFreeShipping: number;
     freeShippingThreshold: number | null;
+    // VAT (inclusive) — the portion of the discounted subtotal that is VAT.
+    // Informational only; since prices are tax-inclusive it does not change `total`.
+    vatAmount: number;
 
     // Promo Code
     appliedPromo: AppliedPromo | null;
@@ -74,6 +78,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const CART_STORAGE_KEY = 'cafrezzo_cart';
 
 export function CartProvider({ children }: { children: ReactNode }) {
+    const { tax_rate: globalTaxRate, tax_included_in_price: taxIncluded } = useSiteSettings();
     const [items, setItems] = useState<CartItem[]>([]);
     const [cartHydrated, setCartHydrated] = useState(false);
     const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
@@ -122,6 +127,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const subtotal = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
     const promoDiscount = appliedPromo?.discount ?? 0;
     const afterDiscount = Math.max(0, subtotal - promoDiscount);
+
+    // VAT (inclusive) — per-product rate, falling back to the global rate.
+    // Discount is apportioned proportionally, mirroring the backend checkout math
+    // so the number shown here matches the order's recorded tax_total exactly.
+    const discountRatio = subtotal > 0 ? afterDiscount / subtotal : 0;
+    const vatAmount = items.reduce((sum, item) => {
+        const rate = item.product.vat_rate ?? globalTaxRate ?? 0;
+        if (rate <= 0) return sum;
+        const discountedGross = item.unitPrice * item.quantity * discountRatio;
+        const lineVat = taxIncluded
+            ? discountedGross * rate / (100 + rate)
+            : discountedGross * rate / 100;
+        return sum + lineVat;
+    }, 0);
 
     // Free shipping threshold comes from the selected method (set by admin)
     const freeThreshold = selectedShipping?.free_shipping_threshold ?? null;
@@ -259,6 +278,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         <CartContext.Provider value={{
             items, cartCount, subtotal, promoDiscount,
             shippingCost, total, amountToFreeShipping, freeShippingThreshold: freeThreshold,
+            vatAmount,
             appliedPromo, promoError, promoLoading,
             applyPromoCode, removePromoCode,
             selectedShipping, setShipping, shippingOptions, shippingLoading,

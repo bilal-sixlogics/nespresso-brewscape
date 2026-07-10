@@ -60,6 +60,7 @@ interface Order {
     subtotal: number;
     discount_total: number;
     shipping_total: number;
+    tax_total: number;
     grand_total: number;
     currency: string;
     notes: string | null;
@@ -405,6 +406,12 @@ function OrderDetail({ order }: { order: Order }) {
                             <span>Total</span>
                             <span>{formatPrice(parseFloat(String(order.grand_total)))}</span>
                         </div>
+                        {parseFloat(String(order.tax_total)) > 0 && (
+                            <div className="flex justify-between text-[11px] text-gray-400">
+                                <span>incl. VAT</span>
+                                <span>{formatPrice(parseFloat(String(order.tax_total)))}</span>
+                            </div>
+                        )}
                     </div>
                 </motion.div>
 
