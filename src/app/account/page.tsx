@@ -271,7 +271,7 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                         </div>
                         <div>
                             <label className="block text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">{t('emailAddress')}</label>
-                            <input value={editEmail} onChange={e => setEditEmail(e.target.value)} type="email"
+                            <input readOnly value={editEmail} onChange={e => setEditEmail(e.target.value)} type="email"
                                 className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:border-sb-green outline-none transition-colors" />
                         </div>
                         <div className="flex gap-3 pt-4">
