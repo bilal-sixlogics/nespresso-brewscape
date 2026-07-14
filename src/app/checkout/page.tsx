@@ -16,7 +16,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useFormatPrice, useSiteSettings } from '@/context/SiteSettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import { AppConfig } from '@/lib/config';
-import { getProductImage } from '@/types';
+import { getProductImage, Address } from '@/types';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
@@ -425,13 +425,36 @@ export default function CheckoutPage() {
         { label: 'Min 8 characters', test: (p: string) => p.length >= 8 },
     ];
 
+    // ── Saved addresses (logged-in users) — pick one to fill the form ──
+    const savedAddresses = user?.addresses ?? [];
+    const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
     const setShippingField = useCallback((key: keyof ShippingForm) => (v: string) => {
+        // Manual edit → no longer matches a saved address, so drop the highlight.
+        setSelectedAddressId(null);
         setShippingForm(prev => {
             const updated = { ...prev, [key]: v };
             saveFormToSession(updated);
             return updated;
         });
     }, []);
+
+    const applySavedAddress = useCallback((addr: Address) => {
+        setSelectedAddressId(addr.id);
+        setShippingForm(prev => {
+            const updated: ShippingForm = {
+                ...prev,
+                firstName:  addr.firstName || prev.firstName,
+                lastName:   addr.lastName || prev.lastName,
+                phone:      addr.phone || prev.phone,
+                address:    addr.address,
+                city:       addr.city,
+                postalCode: addr.postalCode,
+            };
+            saveFormToSession(updated);
+            return updated;
+        });
+    }, [user]);
 
     // ── Fetch shipping methods on mount ──
     useEffect(() => {
@@ -780,6 +803,43 @@ export default function CheckoutPage() {
                         {/* ── Section 1: Shipping Address ── */}
                         <SectionCard>
                             <h2 className="font-display text-xl uppercase mb-4">{tx('Adresse de livraison', 'Shipping Address')}</h2>
+
+                            {/* Saved addresses — pick one to autofill (logged-in users) */}
+                            {isAuthenticated && savedAddresses.length > 0 && (
+                                <div className="mb-5">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2.5">
+                                        {tx('Vos adresses enregistrées', 'Your saved addresses')}
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {savedAddresses.map(addr => {
+                                            const active = selectedAddressId === addr.id;
+                                            return (
+                                                <button
+                                                    key={addr.id}
+                                                    type="button"
+                                                    onClick={() => applySavedAddress(addr)}
+                                                    className={`text-left p-3.5 rounded-2xl border-2 transition-all ${active ? 'border-sb-green bg-sb-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                                                >
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-[10px] font-black uppercase tracking-wider text-sb-black">{addr.label}</span>
+                                                        {addr.isDefault && (
+                                                            <span className="text-[8px] font-bold uppercase tracking-wider text-sb-green bg-sb-green/10 px-1.5 py-0.5 rounded-full">
+                                                                {tx('Par défaut', 'Default')}
+                                                            </span>
+                                                        )}
+                                                        {active && <Check size={13} className="text-sb-green ml-auto" />}
+                                                    </div>
+                                                    <p className="text-xs font-bold text-sb-black truncate">{addr.firstName} {addr.lastName}</p>
+                                                    <p className="text-[11px] text-gray-500 leading-snug">{addr.address}, {addr.postalCode} {addr.city}</p>
+                                                    {addr.phone && <p className="text-[11px] text-gray-400 mt-0.5">{addr.phone}</p>}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-2.5">{tx('Ou saisissez une nouvelle adresse ci-dessous.', 'Or enter a new address below.')}</p>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <Input label={tx('Prénom', 'First Name')} value={shippingForm.firstName} onChange={setShippingField('firstName')} required onBlur={() => markTouched('firstName')} error={validationErrors['firstName']} autoComplete="given-name" />
                                 <Input label={tx('Nom', 'Last Name')} value={shippingForm.lastName} onChange={setShippingField('lastName')} required onBlur={() => markTouched('lastName')} error={validationErrors['lastName']} autoComplete="family-name" />
