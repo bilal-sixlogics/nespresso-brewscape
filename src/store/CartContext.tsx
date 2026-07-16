@@ -49,6 +49,8 @@ interface CartContextType {
     // VAT (inclusive) — the portion of the discounted subtotal that is VAT.
     // Informational only; since prices are tax-inclusive it does not change `total`.
     vatAmount: number;
+    // Per-line VAT for a single cart item — same math as vatAmount, one line.
+    getItemVat: (item: CartItem) => number;
 
     // Promo Code
     appliedPromo: AppliedPromo | null;
@@ -132,22 +134,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // Discount is apportioned proportionally, mirroring the backend checkout math
     // so the number shown here matches the order's recorded tax_total exactly.
     const discountRatio = subtotal > 0 ? afterDiscount / subtotal : 0;
-    const vatAmount = items.reduce((sum, item) => {
-        const rate = item.product.vat_rate ?? globalTaxRate ?? 0;
-        if (rate <= 0) return sum;
+
+    // Shared per-line calculator — also exposed via context so the checkout
+    // page can show each product's own VAT without duplicating this math.
+    const getItemVat = useCallback((item: CartItem): number => {
+        // vat_rate arrives from the API as a string (Laravel's decimal cast
+        // serializes to JSON as e.g. "5.50") — without Number(), `100 + rate`
+        // silently string-concatenates ("100" + "5.50" = "1005.50") instead of
+        // adding, producing a denominator ~10-20x too large and near-zero VAT.
+        const rate = Number(item.product.vat_rate ?? globalTaxRate ?? 0);
+        if (rate <= 0) return 0;
         const discountedGross = item.unitPrice * item.quantity * discountRatio;
-        const lineVat = taxIncluded
+        return taxIncluded
             ? discountedGross * rate / (100 + rate)
             : discountedGross * rate / 100;
-        return sum + lineVat;
-    }, 0);
+    }, [globalTaxRate, taxIncluded, discountRatio]);
+
+    const vatAmount = items.reduce((sum, item) => sum + getItemVat(item), 0);
 
     // Free shipping threshold comes from the selected method (set by admin)
     const freeThreshold = selectedShipping?.free_shipping_threshold ?? null;
     const isFreeShipping = freeThreshold !== null && afterDiscount >= freeThreshold;
     const shippingCost = !selectedShipping ? 0 : isFreeShipping ? 0 : Number(selectedShipping.base_price);
     const amountToFreeShipping = freeThreshold ? Math.max(0, freeThreshold - afterDiscount) : 0;
-    const total = afterDiscount + shippingCost;
+    // When tax is NOT included in the listed price, VAT is added on top of the
+    // total (mirrors the backend checkout's grandTotal formula exactly).
+    const total = taxIncluded ? afterDiscount + shippingCost : afterDiscount + shippingCost + vatAmount;
     const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
     // ─── Actions ────────────────────────────────────────────────────────────
@@ -278,7 +290,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         <CartContext.Provider value={{
             items, cartCount, subtotal, promoDiscount,
             shippingCost, total, amountToFreeShipping, freeShippingThreshold: freeThreshold,
-            vatAmount,
+            vatAmount, getItemVat,
             appliedPromo, promoError, promoLoading,
             applyPromoCode, removePromoCode,
             selectedShipping, setShipping, shippingOptions, shippingLoading,

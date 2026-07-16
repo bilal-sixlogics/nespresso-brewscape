@@ -131,7 +131,7 @@ function Select({ label, value, onChange, options, className = '', required = tr
 }
 
 function OrderSummary({ compact = false }: { compact?: boolean }) {
-    const { items, subtotal, promoDiscount, shippingCost, total, vatAmount, appliedPromo, selectedShipping } = useCart();
+    const { items, subtotal, promoDiscount, shippingCost, total, vatAmount, getItemVat, appliedPromo, selectedShipping } = useCart();
     const { language } = useLanguage();
     const formatPrice = useFormatPrice();
     const { tax_label: taxLabel, tax_included_in_price: taxIncluded } = useSiteSettings();
@@ -165,6 +165,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                 {items.map(item => {
                                     const name = item.product.name;
                                     const unit = item.saleUnit.name;
+                                    const lineVat = getItemVat(item);
                                     return (
                                         <div key={`${item.product.id}-${item.saleUnit.id}`} className="flex items-center gap-3">
                                             <div className="w-12 h-12 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -176,7 +177,14 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                                 <p className="text-xs font-bold text-sb-black truncate">{name}</p>
                                                 <p className="text-[9px] text-gray-400">{unit} × {item.quantity}</p>
                                             </div>
-                                            <span className="font-bold text-sm">{formatPrice(item.unitPrice * item.quantity)}</span>
+                                            <div className="text-right flex-shrink-0">
+                                                <span className="font-bold text-sm block">{formatPrice(item.unitPrice * item.quantity)}</span>
+                                                {lineVat > 0 && (
+                                                    <span className="text-[9px] text-gray-400">
+                                                        {taxIncluded ? tx('dont', 'incl.') : '+'} {taxLabel || tx('TVA', 'VAT')} {formatPrice(lineVat)}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     );
                                 })}
