@@ -2,22 +2,26 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Coffee, CheckCircle2, Loader2, AlertCircle, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Coffee, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { TikTokIcon } from '@/components/icons/TikTokIcon';
+import { FacebookIcon, InstagramIcon, LinkedinIcon } from '@/components/icons/SocialIcons';
 import { AppConfig } from '@/lib/config';
 import { useLanguage } from '@/context/LanguageContext';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
 
-const SOCIAL_ICONS = {
-    facebook: Facebook,
-    instagram: Instagram,
-    twitter: Twitter,
-    youtube: Youtube,
-} as const;
+const SOCIALS = [
+    { name: 'Facebook', icon: FacebookIcon, key: 'social_facebook_url' as const },
+    { name: 'Instagram', icon: InstagramIcon, key: 'social_instagram_url' as const },
+    { name: 'TikTok', icon: TikTokIcon, key: 'social_tiktok_url' as const },
+    { name: 'LinkedIn', icon: LinkedinIcon, key: 'social_linkedin_url' as const },
+];
 
 export function Footer() {
     const { t } = useLanguage();
+    const siteSettings = useSiteSettings();
     const [nlEmail, setNlEmail] = useState('');
     const [nlState, setNlState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [nlError, setNlError] = useState<string | null>(null);
@@ -56,12 +60,12 @@ export function Footer() {
                             {t('brandDescription')}
                         </p> */}
                         <div className="flex space-x-3">
-                            {AppConfig.socials.map((social) => {
-                                const Icon = SOCIAL_ICONS[social.icon];
+                            {SOCIALS.filter((social) => siteSettings[social.key]?.trim()).map((social) => {
+                                const Icon = social.icon;
                                 return (
                                     <a
                                         key={social.name}
-                                        href={social.url}
+                                        href={siteSettings[social.key]}
                                         aria-label={social.name}
                                         rel="noopener noreferrer"
                                         target="_blank"

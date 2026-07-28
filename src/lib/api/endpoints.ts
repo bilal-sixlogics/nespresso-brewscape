@@ -66,6 +66,7 @@ export const Endpoints = {
     contact: `${API_BASE}/contact`,
 
     // ── Catalog public ───────────────────────────────────────────────────
+    brands: `${API_BASE}/brands`,
     featuredBrands: `${API_BASE}/brands/featured`,
     featuredReviews: `${API_BASE}/reviews/featured`,
     dailyPick: `${API_BASE}/daily-pick`,

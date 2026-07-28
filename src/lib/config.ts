@@ -5,7 +5,7 @@ export const AppConfig = {
         domain: "cafrezzo.com",
         tagline: "CAFREZZO — Votre expérience café",
         description: "Découvrez l'excellence du café avec Cafrezzo. Expert en café français depuis des années, nous vous proposons une sélection premium de grains, capsules et machines.",
-        email: "contact@cafrezzo.com",
+        email: "boutique@cafrezzo.com",
         phone: "+33 1 39 85 85 65",
         address: "30 rue de l'Escouvrier, 95200 Sarcelles, France",
         hours: "Lundi–Vendredi 9h–17h",
@@ -29,12 +29,8 @@ export const AppConfig = {
         ],
     },
 
-    socials: [
-        { name: 'Facebook', icon: 'facebook', url: '#' },
-        { name: 'Instagram', icon: 'instagram', url: '#' },
-        { name: 'Twitter', icon: 'twitter', url: '#' },
-        { name: 'Youtube', icon: 'youtube', url: '#' },
-    ] as { name: string; icon: 'facebook' | 'instagram' | 'twitter' | 'youtube'; url: string }[],
+    // Social links now live in admin-configurable site settings (see
+    // SiteSettingsContext + Footer.tsx) instead of being hardcoded here.
 
     supportLinks: [
         { label: 'Contact & Boutiques', url: '/contact' },

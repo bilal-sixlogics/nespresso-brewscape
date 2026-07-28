@@ -31,7 +31,7 @@ Complete design reference for the Cafrezzo website — a premium French coffee b
 | Tagline (FR)   | Votre expert en café français                  |
 | Tagline (EN)   | Cafrezzo – Premium Coffee Experience           |
 | Domain         | cafrezzo.com                                   |
-| Email          | contact@cafrezzo.com                           |
+| Email          | boutique@cafrezzo.com                           |
 | Phone          | +33 1 39 85 85 65                              |
 | Address        | 30 rue de l'Escouvrier, 95200 Sarcelles, France |
 | Hours          | Monday–Friday, 9h–17h                          |

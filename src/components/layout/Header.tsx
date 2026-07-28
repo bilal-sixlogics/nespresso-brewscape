@@ -202,8 +202,8 @@ const TOP_NAV: NavLink[] = [
 
 const BOTTOM_NAV: NavLink[] = [
     { href: '/accessories', labelKey: 'navAccessories' },
-    { href: '/brew-guide', labelKey: 'navBrewGuide' },
-    { href: '/blog', labelKey: 'navBlog' },
+    // { href: '/brew-guide', labelKey: 'navBrewGuide' },
+    // { href: '/blog', labelKey: 'navBlog' },
     { href: '/contact', labelKey: 'navContact' },
 ];
 

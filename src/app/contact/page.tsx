@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { Mail, Phone, MapPin, Clock, Send, ChevronDown, AlertCircle, Loader2, Globe } from 'lucide-react';
-import { AppConfig } from '@/lib/config';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
@@ -149,6 +149,13 @@ function StoreCard({ store }: { store: StoreLocation }) {
 
 export default function ContactPage() {
     const { language } = useLanguage();
+    const {
+        contact_email: contactEmail,
+        contact_response_time: responseTime,
+        store_name: storeName,
+        business_siret: businessSiret,
+        business_vat_number: businessVatNumber,
+    } = useSiteSettings();
     const [formState, setFormState] = useState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
     const [sent, setSent] = useState(false);
     const [isSending, setIsSending] = useState(false);
@@ -310,21 +317,21 @@ export default function ContactPage() {
                             <h2 className="font-display text-4xl uppercase mb-4">{t('Nous écrire', 'Write to Us')}</h2>
                             <p className="text-gray-400 text-sm leading-relaxed max-w-md">
                                 {t(
-                                    'Vous avez une question, une demande spéciale ou souhaitez nous faire part de vos impressions ? Notre équipe vous répond sous 24h.',
-                                    'Have a question, special request, or just want to share your thoughts? Our team replies within 24h.'
+                                    'Vous avez une question, une demande spéciale ou souhaitez nous faire part de vos impressions ? Notre équipe vous répond rapidement.',
+                                    'Have a question, special request, or just want to share your thoughts? Our team replies promptly.'
                                 )}
                             </p>
                         </div>
 
                         {/* Contact cards */}
                         <div className="space-y-4">
-                            <a href="mailto:contact@cafrezzo.com" className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100 hover:border-sb-green/30 hover:shadow-md transition-all group">
+                            <a href={`mailto:${contactEmail}`} className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100 hover:border-sb-green/30 hover:shadow-md transition-all group">
                                 <div className="w-11 h-11 bg-sb-green/10 rounded-xl flex items-center justify-center group-hover:bg-sb-green transition-colors">
                                     <Mail size={18} className="text-sb-green group-hover:text-white transition-colors" />
                                 </div>
                                 <div>
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Email</p>
-                                    <p className="text-sm font-bold">contact@cafrezzo.com</p>
+                                    <p className="text-sm font-bold">{contactEmail}</p>
                                 </div>
                             </a>
                             <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-100">
@@ -333,7 +340,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">{t('Délai de réponse', 'Response time')}</p>
-                                    <p className="text-sm font-bold">{t('Sous 24h ouvrées', 'Within 24 business hours')}</p>
+                                    <p className="text-sm font-bold">{responseTime}</p>
                                 </div>
                             </div>
                         </div>
@@ -342,15 +349,15 @@ export default function ContactPage() {
                         <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100 grid grid-cols-2 gap-4">
                             <div>
                                 <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">SIRET</p>
-                                <p className="text-sm font-mono font-bold">84126359500010</p>
+                                <p className="text-sm font-mono font-bold">{businessSiret}</p>
                             </div>
                             <div>
                                 <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">N° TVA</p>
-                                <p className="text-sm font-mono font-bold">FR39841263595</p>
+                                <p className="text-sm font-mono font-bold">{businessVatNumber}</p>
                             </div>
                             <div className="col-span-2">
                                 <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">{t('Marque', 'Brand')}</p>
-                                <p className="text-sm font-bold">{AppConfig.brand.name}</p>
+                                <p className="text-sm font-bold">{storeName}</p>
                             </div>
                         </div>
                     </motion.div>

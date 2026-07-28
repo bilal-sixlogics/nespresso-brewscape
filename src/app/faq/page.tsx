@@ -25,8 +25,8 @@ const faqs = [
             {
                 q: 'Puis-je modifier ou annuler ma commande ?',
                 qEn: 'Can I modify or cancel my order?',
-                a: 'Les modifications ou annulations sont possibles dans un délai de 2 heures après la passation de la commande. Contactez-nous rapidement à contact@cafrezzo.com.',
-                aEn: 'Modifications or cancellations are possible within 2 hours of placing the order. Contact us promptly at contact@cafrezzo.com.',
+                a: 'Les modifications ou annulations sont possibles dans un délai de 2 heures après la passation de la commande. Contactez-nous rapidement à boutique@cafrezzo.com.',
+                aEn: 'Modifications or cancellations are possible within 2 hours of placing the order. Contact us promptly at boutique@cafrezzo.com.',
             },
             {
                 q: 'Livrez-vous en dehors de la France ?',

@@ -330,7 +330,7 @@ export default function Home() {
                 </div> */}
 
                 <Link
-                  href="/brew-guide"
+                  href="/our-origins"
                   className="inline-flex items-center gap-3 text-sb-green border border-sb-green/40 hover:border-sb-green hover:bg-sb-green hover:text-white px-7 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300"
                 >
                   {language === 'fr' ? 'Découvrir nos origines' : 'Discover Our Origins'} <ArrowRight size={12} />
