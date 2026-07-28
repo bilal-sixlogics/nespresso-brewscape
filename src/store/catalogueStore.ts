@@ -21,7 +21,7 @@ const SEED_BRANDS: Brand[] = [
     { id: 'brand-delonghi',  name: "De'Longhi",  slug: 'delonghi',  description: 'Italian small appliance manufacturer. Leader in espresso machines.',         createdAt: NOW },
     { id: 'brand-illy',      name: 'illy',       slug: 'illy',      description: 'Single-blend arabica specialist from Trieste, Italy.',                       createdAt: NOW },
     { id: 'brand-nespresso', name: 'Nespresso',  slug: 'nespresso', description: "Nestlé's premium capsule system. Known worldwide.",                          createdAt: NOW },
-    { id: 'brand-cafemalin', name: 'Cafémalin',  slug: 'cafemalin', description: 'House brand for professional hospitality accessories.',                       createdAt: NOW },
+    { id: 'brand-house',     name: 'House Brand', slug: 'house-brand', description: 'House brand for professional hospitality accessories.',                    createdAt: NOW },
     { id: 'brand-lotus',     name: 'Lotus',      slug: 'lotus',     description: 'Belgian biscuit brand. Makers of the iconic Speculoos.',                     createdAt: NOW },
 ];
 

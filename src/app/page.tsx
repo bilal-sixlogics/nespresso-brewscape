@@ -193,15 +193,16 @@ export default function Home() {
                   initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
                   className="flex items-center space-x-2 bg-white/70 backdrop-blur-md p-3 pr-5 rounded-[30px] border border-white/80 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] transition-shadow duration-300"
                 >
-                  <div className="flex -space-x-3">
+                  {/* <div className="flex -space-x-3">
                     <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm"><img src="./assets/c1.jpg?img=1" alt="User" /></div>
                     <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white overflow-hidden shadow-sm"><img src="./assets/c2.jpg?img=2" alt="User" /></div>
                     <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white overflow-hidden shadow-sm"><img src="./assets/c3.jpg?img=3" alt="User" /></div>
-                  </div>
-                  <div className="flex flex-col pl-4">
+                  </div> */}
+                  {/* <div className="flex flex-col pl-4">
                     <span className="font-display text-2xl lg:text-3xl leading-tight">1M+</span>
                     <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">{t('satisfiedCustomers')}</span>
-                  </div>
+                  </div> */}
+                  
                 </motion.div>
 
                 <motion.p
@@ -240,12 +241,16 @@ export default function Home() {
                 >
                   <div className="flex flex-col text-right">
                     <span className="font-bold text-sm tracking-wide text-sb-black group-hover:text-sb-green transition-colors">{dailyPick.label || t('dailyPick')}</span>
-                    <span className="text-xs text-gray-500 max-w-[120px] truncate">{dailyPick.product?.name || (language === 'en' ? 'Chilled Coffee Drink' : 'Boisson au café glacé')}</span>
+                    <span className="text-xs text-gray-500 max-w-[120px] truncate">{dailyPick.product?.name || ' '}</span>
                   </div>
                   <div className="w-16 h-20 bg-[#E1CDA4] rounded-xl p-1 relative shadow-inner transform group-hover:rotate-12 transition-transform duration-500 overflow-hidden">
                     <div className="w-full h-full border border-black/5 rounded-lg"></div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={(dailyPick.product && getProductImage(dailyPick.product)) || "https://www.starbucks.com/weblx/images/rewards/reward-tiers/400.png"} alt={dailyPick.product?.name || "Daily Pick"} className="w-full h-full object-cover absolute top-0 left-0 scale-[0.8] drop-shadow-md" />
+                    {dailyPick.product && getProductImage(dailyPick.product) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={getProductImage(dailyPick.product)!} alt={dailyPick.product.name} className="w-full h-full object-cover absolute top-0 left-0 scale-[0.8] drop-shadow-md" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center absolute top-0 left-0 text-2xl">☕</div>
+                    )}
                   </div>
                 </motion.div>
 
@@ -293,25 +298,25 @@ export default function Home() {
               >
                 <div className="inline-flex items-center gap-2 bg-sb-green/20 border border-sb-green/30 text-sb-green text-[9px] font-black tracking-[0.4em] uppercase px-4 py-2 rounded-full mb-8">
                   <Leaf size={10} />
-                  {language === 'fr' ? 'Notre Savoir-Faire' : 'Our Craft'}
+                  {language === 'fr' ? "L'esprit Cafrezzo" : 'The Cafrezzo Spirit'}
                 </div>
 
                 <h2 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white uppercase leading-[0.85] tracking-tight mb-8">
                   {language === 'fr' ? (
-                    <><span className="text-sb-green">L'Art</span><br />Du Café<br />Français</>
+                    <><span className="text-sb-green">Le café</span><br />créateur de<br />moments</>
                   ) : (
-                    <><span className="text-sb-green">The Art</span><br />Of French<br />Coffee</>
+                    <><span className="text-sb-green">Coffee</span><br />the creator of<br />moments</>
                   )}
                 </h2>
 
                 <p className="text-white/60 text-base lg:text-lg leading-relaxed max-w-md mb-10">
                   {language === 'fr'
-                    ? 'Chaque tasse raconte une histoire — de la sélection rigoureuse des grains aux terres fertiles d\'Éthiopie, de Colombie et d\'Indonésie, jusqu\'à votre table.'
-                    : 'Every cup tells a story — from the careful selection of beans across the fertile lands of Ethiopia, Colombia, and Indonesia, to your table.'}
+                    ? 'Chaque détail compte. De la sélection des produits au service client, nous mettons notre passion pour le café au cœur de chaque expérience.'
+                    : 'Every detail matters. From product selection to customer support, we put our passion for coffee at the heart of every experience.'}
                 </p>
 
                 {/* Pillar stats */}
-                <div className="flex gap-8 mb-12">
+                {/* <div className="flex gap-8 mb-12">
                   {[
                     { num: '46+', label: language === 'fr' ? 'Ans d\'expertise' : 'Years of expertise' },
                     { num: '84', label: language === 'fr' ? 'Pays servis' : 'Countries served' },
@@ -322,7 +327,7 @@ export default function Home() {
                       <div className="text-[9px] text-white/40 font-bold uppercase tracking-widest mt-1">{s.label}</div>
                     </div>
                   ))}
-                </div>
+                </div> */}
 
                 <Link
                   href="/brew-guide"

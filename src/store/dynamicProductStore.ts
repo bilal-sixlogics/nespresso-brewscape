@@ -94,8 +94,8 @@ const SEED_PRODUCTS: DynamicProduct[] = [
     },
     {
         id: 'dp-004',
-        slug: 'cafemalin-cups-4oz',
-        name: 'CAFÉMALIN CUPS 4 OZ',
+        slug: 'cups-4oz',
+        name: 'CUPS 4 OZ',
         tagline: 'Professional cups for every coffee break.',
         category: 'Accessories',
         price: 4.90,

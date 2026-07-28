@@ -60,10 +60,10 @@ export const baseMetadata: Metadata = {
             'en-GB': `${BASE_URL}/en`,
         },
     },
-    verification: {
-        // Replace with your actual verification codes when deploying
-        google: 'REPLACE_WITH_GOOGLE_SEARCH_CONSOLE_TOKEN',
-    },
+    // verification: {
+    //     // Replace with your actual verification codes when deploying
+    //     google: 'REPLACE_WITH_GOOGLE_SEARCH_CONSOLE_TOKEN',
+    // },
 };
 
 /**

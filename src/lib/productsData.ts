@@ -430,10 +430,10 @@ export const enrichedProducts: any[] = [
     // ═══ ACCESSOIRES / GOBELET — Scenario: No intensity, multi-pack, eco ════════
     {
         id: "acc-001",
-        slug: "gobelets-carton-12cl-cafemalin-lot-50",
+        slug: "gobelets-carton-12cl-lot-50",
         category: "Accessoires",
-        name: "GOBELETS EN CARTON CAFÉMALIN 4 OZ (12 CL)",
-        nameEn: "CAFÉMALIN CARDBOARD CUPS 4 OZ (12 CL)",
+        name: "GOBELETS EN CARTON 4 OZ (12 CL)",
+        nameEn: "CARDBOARD CUPS 4 OZ (12 CL)",
         namePart2: "LOT DE 50",
         namePart2En: "PACK OF 50",
         tagline: "L'allié idéal pour vos pauses café professionnelles et personnelles.",
@@ -452,8 +452,8 @@ export const enrichedProducts: any[] = [
         ],
         // No intensity — UI should not render the intensity bar
         tags: ["eco-friendly", "professional"],
-        desc: "Les gobelets en carton 12 cl Cafémalin sont conçus pour s'adapter aux besoins des professionnels comme des particuliers. Parfaits pour servir des expressos, cafés allongés, thés ou autres boissons chaudes.",
-        descEn: "Cafémalin 12cl cardboard cups are designed for both professionals and individuals. Perfect for serving espressos, long coffees, teas, or other hot beverages.",
+        desc: "Ces gobelets en carton 12 cl sont conçus pour s'adapter aux besoins des professionnels comme des particuliers. Parfaits pour servir des expressos, cafés allongés, thés ou autres boissons chaudes.",
+        descEn: "These 12cl cardboard cups are designed for both professionals and individuals. Perfect for serving espressos, long coffees, teas, or other hot beverages.",
         features: [
             {
                 title: "Caractéristiques",
@@ -611,7 +611,7 @@ export const categoriesList = [
     "Thé & Boissons",
     "Accessoires",
     "Friandises",
-    "Blog CaféMalin"
+    "Blog"
 ];
 
 export const productDatabase: Record<string, any[]> = {
@@ -1712,7 +1712,7 @@ export const productDatabase: Record<string, any[]> = {
     "Accessoires": [
         {
             "id": 9000,
-            "name": "4 OZ (12CL) GOBELETS EN CARTON CAFEMALIN X50", "nameEn": "4 OZ (12CL) GOBELETS EN CARTON CAFEMALIN X50",
+            "name": "4 OZ (12CL) GOBELETS EN CARTON X50", "nameEn": "4 OZ (12CL) GOBELETS EN CARTON X50",
             "namePart2": "",
             "price": 1.5,
             "intensity": 9,
@@ -1760,7 +1760,7 @@ export const productDatabase: Record<string, any[]> = {
         },
         {
             "id": 9004,
-            "name": "6.5 OZ (20CL) GOBELET CAFEMALIN X50", "nameEn": "6.5 OZ (20CL) GOBELET CAFEMALIN X50",
+            "name": "6.5 OZ (20CL) GOBELET X50", "nameEn": "6.5 OZ (20CL) GOBELET X50",
             "namePart2": "",
             "price": 1.92,
             "intensity": 11,
@@ -1772,7 +1772,7 @@ export const productDatabase: Record<string, any[]> = {
         },
         {
             "id": 9005,
-            "name": "8 OZ (24CL) GOBELETS EN CARTON CAFEMALIN X50", "nameEn": "8 OZ (24CL) GOBELETS EN CARTON CAFEMALIN X50",
+            "name": "8 OZ (24CL) GOBELETS EN CARTON X50", "nameEn": "8 OZ (24CL) GOBELETS EN CARTON X50",
             "namePart2": "",
             "price": 2.04,
             "intensity": 10,
@@ -1857,7 +1857,7 @@ export const productDatabase: Record<string, any[]> = {
             "image": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?q=80&w=800&auto=format&fit=crop"
         }
     ],
-    "Blog CaféMalin": []
+    "Blog": []
 };
 
 export const allProducts: any[] = [
@@ -2943,7 +2943,7 @@ export const allProducts: any[] = [
     },
     {
         "id": 9000,
-        "name": "4 OZ (12CL) GOBELETS EN CARTON CAFEMALIN X50", "nameEn": "4 OZ (12CL) GOBELETS EN CARTON CAFEMALIN X50",
+        "name": "4 OZ (12CL) GOBELETS EN CARTON X50", "nameEn": "4 OZ (12CL) GOBELETS EN CARTON X50",
         "namePart2": "",
         "price": 1.5,
         "intensity": 9,
@@ -2991,7 +2991,7 @@ export const allProducts: any[] = [
     },
     {
         "id": 9004,
-        "name": "6.5 OZ (20CL) GOBELET CAFEMALIN X50", "nameEn": "6.5 OZ (20CL) GOBELET CAFEMALIN X50",
+        "name": "6.5 OZ (20CL) GOBELET X50", "nameEn": "6.5 OZ (20CL) GOBELET X50",
         "namePart2": "",
         "price": 1.92,
         "intensity": 11,
@@ -3003,7 +3003,7 @@ export const allProducts: any[] = [
     },
     {
         "id": 9005,
-        "name": "8 OZ (24CL) GOBELETS EN CARTON CAFEMALIN X50", "nameEn": "8 OZ (24CL) GOBELETS EN CARTON CAFEMALIN X50",
+        "name": "8 OZ (24CL) GOBELETS EN CARTON X50", "nameEn": "8 OZ (24CL) GOBELETS EN CARTON X50",
         "namePart2": "",
         "price": 2.04,
         "intensity": 10,

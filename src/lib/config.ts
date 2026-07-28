@@ -3,7 +3,7 @@ export const AppConfig = {
         name: "Cafrezzo",
         nameUppercase: "CAFREZZO",
         domain: "cafrezzo.com",
-        tagline: "Votre expert en café français",
+        tagline: "CAFREZZO — Votre expérience café",
         description: "Découvrez l'excellence du café avec Cafrezzo. Expert en café français depuis des années, nous vous proposons une sélection premium de grains, capsules et machines.",
         email: "contact@cafrezzo.com",
         phone: "+33 1 39 85 85 65",

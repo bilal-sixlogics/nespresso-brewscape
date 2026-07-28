@@ -52,9 +52,9 @@ export function Footer() {
                             <br />
                             <span className="text-base font-sans font-bold tracking-[0.2em] opacity-80 mt-1 block">{AppConfig.brand.tagline}</span>
                         </h1>
-                        <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+                        {/* <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
                             {t('brandDescription')}
-                        </p>
+                        </p> */}
                         <div className="flex space-x-3">
                             {AppConfig.socials.map((social) => {
                                 const Icon = SOCIAL_ICONS[social.icon];
