@@ -4,13 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/types';
 
 export default function ForgotPasswordPage() {
-    const { isDark } = useTheme();
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [sent, setSent] = useState(false);
@@ -31,14 +29,12 @@ export default function ForgotPasswordPage() {
         }
     };
 
-    const pageBg = isDark ? 'bg-[#0e0e0e]' : 'bg-gray-50';
-    const surface = isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100';
-    const inputBg = isDark
-        ? 'bg-white/5 border-white/10 text-white placeholder-white/40 focus:border-[#3B7E5A] focus:ring-[#3B7E5A]/20'
-        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#3B7E5A] focus:ring-[#3B7E5A]/20';
-    const labelColor = isDark ? 'text-white/60' : 'text-gray-500';
-    const headingColor = isDark ? 'text-white' : 'text-gray-900';
-    const iconColor = isDark ? 'text-white/30' : 'text-gray-400';
+    const pageBg = 'bg-ink grain-overlay';
+    const surface = 'bg-sand border-ink/10';
+    const inputBg = 'bg-ink/5 border-ink/10 text-ink placeholder-ink/30 focus:border-gold focus:ring-gold/20';
+    const labelColor = 'text-ink/60';
+    const headingColor = 'text-ink';
+    const iconColor = 'text-ink/30';
 
     return (
         <div className={`min-h-screen flex items-center justify-center px-4 py-16 ${pageBg}`}>
@@ -50,7 +46,7 @@ export default function ForgotPasswordPage() {
             >
                 <div className="text-center mb-8">
                     <Link href="/" className="inline-block">
-                        <span className="font-display text-2xl uppercase tracking-widest text-[#3B7E5A]">Cafrezzo</span>
+                        <span className="font-display text-2xl uppercase tracking-widest text-gold">Cafrezzo</span>
                     </Link>
                     <h1 className={`mt-4 font-display text-3xl uppercase tracking-tight ${headingColor}`}>
                         Reset Password
@@ -66,13 +62,13 @@ export default function ForgotPasswordPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         className="flex flex-col items-center gap-4 text-center py-4"
                     >
-                        <div className="w-16 h-16 rounded-full bg-[#3B7E5A]/10 flex items-center justify-center">
-                            <CheckCircle2 size={32} className="text-[#3B7E5A]" />
+                        <div className="w-16 h-16 rounded-full bg-gold/15 flex items-center justify-center">
+                            <CheckCircle2 size={32} className="text-gold" />
                         </div>
                         <p className={`text-sm ${labelColor}`}>
                             If an account exists for <strong className={headingColor}>{email}</strong>, a reset link has been sent. Check your inbox.
                         </p>
-                        <Link href="/login" className="text-[#3B7E5A] font-bold text-sm hover:underline">
+                        <Link href="/login" className="text-gold font-bold text-sm hover:underline">
                             Back to sign in
                         </Link>
                     </motion.div>
@@ -108,14 +104,14 @@ export default function ForgotPasswordPage() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-[#3B7E5A] text-white rounded-xl py-3.5 font-black uppercase tracking-widest text-[11px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full bg-gold text-ink rounded-xl py-3.5 font-black uppercase tracking-widest text-[11px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Send Reset Link'}
                             </button>
                         </form>
 
                         <div className={`mt-8 text-center text-sm ${labelColor}`}>
-                            <Link href="/login" className="text-[#3B7E5A] font-bold hover:underline">
+                            <Link href="/login" className="text-gold font-bold hover:underline">
                                 Back to sign in
                             </Link>
                         </div>

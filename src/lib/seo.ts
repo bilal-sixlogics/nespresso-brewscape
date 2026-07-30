@@ -9,7 +9,7 @@ const BASE_URL = 'https://cafrezzo.com';
 export const baseMetadata: Metadata = {
     metadataBase: new URL(BASE_URL),
     title: {
-        default: 'Cafrezzo | Premium French Coffee',
+        default: 'Cafrezzo | Your Coffee Experience',
         template: '%s | Cafrezzo',
     },
     description:
@@ -33,7 +33,7 @@ export const baseMetadata: Metadata = {
         alternateLocale: 'en_GB',
         url: BASE_URL,
         siteName: 'Cafrezzo',
-        title: 'Cafrezzo | Premium French Coffee',
+        title: 'Cafrezzo | Your Coffee Experience',
         description:
             'Discover the bold and sophisticated world of Cafrezzo premium coffee. Shop capsules, beans, machines & gourmet sweets.',
         images: [
@@ -41,13 +41,13 @@ export const baseMetadata: Metadata = {
                 url: '/og-image.png',
                 width: 1200,
                 height: 630,
-                alt: 'Cafrezzo — Premium Coffee Experience',
+                alt: 'Cafrezzo — Your Coffee Experience',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Cafrezzo | Premium French Coffee',
+        title: 'Cafrezzo | Your Coffee Experience',
         description: 'Shop premium coffee capsules, beans, machines & gourmet sweets — shipped from France.',
         images: ['/og-image.png'],
         creator: '@cafrezzo',

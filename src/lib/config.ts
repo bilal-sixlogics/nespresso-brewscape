@@ -12,7 +12,7 @@ export const AppConfig = {
         heroLine1: "CAF-",
         heroLine2: "REZZO",
         heroSubtitle: "Discover the bold and sophisticated world of Cafrezzo premium coffee.",
-        seoTitle: "Cafrezzo | Premium Coffee Experience",
+        seoTitle: "Cafrezzo | Your Coffee Experience",
         seoDescription: "Discover the art and science of premium coffee with Cafrezzo. Meticulously crafted for the modern coffee aficionado.",
         copyrightYear: new Date().getFullYear(),
     },

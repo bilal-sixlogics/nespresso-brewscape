@@ -13,6 +13,7 @@ import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
 import { useDragScroll } from '@/hooks/useDragScroll';
+import { CupSeparator } from '@/components/ui/CupSeparator';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
@@ -99,38 +100,40 @@ export default function MachinesPage() {
     ];
 
     return (
-        <div className="w-full bg-sb-white text-sb-black min-h-screen">
+        <div className="w-full bg-ink text-sand min-h-screen grain-overlay">
             {/* ── Hero ─────────────────────────────────────────── */}
-            <section className="bg-sb-black pt-16 sm:pt-20 md:pt-24 pb-20 sm:pb-28 md:pb-40 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-sb-green/20 via-transparent to-[#1a1a1a]" />
-                <div className="absolute top-10 sm:top-20 right-0 sm:right-20 w-32 h-32 sm:w-64 sm:h-64 md:w-96 md:h-96 bg-sb-green/10 rounded-full blur-3xl" />
+            <section className="bg-ink pt-16 sm:pt-20 md:pt-24 pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-transparent to-ink" />
+                <div className="absolute top-10 sm:top-20 right-0 sm:right-20 w-32 h-32 sm:w-64 sm:h-64 md:w-96 md:h-96 bg-gold/10 rounded-full blur-3xl" />
                 <div className="max-w-[1400px] mx-auto relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: 40 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.7 }}
                     >
-                        <p className="text-sb-green text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                        <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
                             {tx('Équipement Premium', 'Premium Equipment')}
                         </p>
-                        <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-white leading-[0.85] mb-6 sm:mb-8">
+                        <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
                             {tx('Machines', 'Machines')}
                             <br />
-                            <span className="text-sb-green">à Café</span>
+                            <span className="text-gold">à Café</span>
                         </h1>
-                        <p className="text-white/50 text-sm sm:text-base md:text-lg max-w-lg">
+                        <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
                             {tx(
                                 "Du barista débutant au professionnel exigeant — trouvez la machine qui correspond à votre passion.",
                                 "From beginner barista to demanding professional — find the machine that matches your passion."
                             )}
                         </p>
+                        <div className="max-w-xs mt-10">
+                            <CupSeparator tone="gold" />
+                        </div>
                     </motion.div>
                 </div>
-                <div className="torn-paper-white-down z-20" />
             </section>
 
             {/* ── Highlights ───────────────────────────────────── */}
-            <section className="bg-white py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 border-b border-gray-100">
+            <section className="bg-ink py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 border-b border-sand/10">
                 <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                     {highlights.map((h, i) => (
                         <motion.div
@@ -142,30 +145,30 @@ export default function MachinesPage() {
                             className="text-center p-6"
                         >
                             <div className="text-4xl mb-3">{h.icon}</div>
-                            <p className="font-bold text-sm text-sb-black mb-1">{h.label}</p>
-                            <p className="text-xs text-gray-400">{h.desc}</p>
+                            <p className="font-bold text-sm text-sand mb-1">{h.label}</p>
+                            <p className="text-xs text-cocoa">{h.desc}</p>
                         </motion.div>
                     ))}
                 </div>
             </section>
 
             {/* ── Products ─────────────────────────────────────── */}
-            <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-sb-white">
+            <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-ink">
                 <div className="max-w-[1400px] mx-auto">
 
                     {/* Controls bar */}
-                    <div className="flex flex-col gap-3 mb-8 border-b border-gray-100 pb-6">
+                    <div className="flex flex-col gap-3 mb-8 border-b border-sand/10 pb-6">
                         {/* Row 1: Filter + Sort + Reset (no overflow so dropdown is visible) */}
                         <div className="flex items-center gap-2 flex-shrink-0 z-50">
                             {/* Filter button */}
                             <button
                                 onClick={() => setFilterOpen(true)}
-                                className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sb-black text-white hover:bg-gray-800 transition-colors relative"
+                                className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gold text-ink hover:bg-[#b8914d] transition-colors relative"
                             >
                                 <SlidersHorizontal size={12} />
                                 <span className="hidden sm:inline">{tx('Filtres', 'Filters')}</span>
                                 {activeFilterCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-sb-green text-white text-[8px] font-black rounded-full flex items-center justify-center">
+                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-ink text-gold border border-gold/50 text-[8px] font-black rounded-full flex items-center justify-center">
                                         {activeFilterCount}
                                     </span>
                                 )}
@@ -175,7 +178,7 @@ export default function MachinesPage() {
                             <div className="relative">
                                 <button
                                     onClick={() => setSortOpen(!sortOpen)}
-                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gray-50 text-gray-600 border border-gray-100 hover:border-gray-300 transition-colors"
+                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sand/8 text-sand/70 border border-sand/10 hover:border-sand/25 transition-colors"
                                 >
                                     {sortBy === 'relevance' && tx('Pertinence', 'Relevance')}
                                     {sortBy === 'price_asc' && tx('Prix: Croissant', 'Price: Low to High')}
@@ -191,7 +194,7 @@ export default function MachinesPage() {
                                             <div className="fixed inset-0 z-[80]" onClick={() => setSortOpen(false)} />
                                             <motion.div
                                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                                                className="absolute top-full left-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 z-[90] overflow-hidden py-2"
+                                                className="absolute top-full left-0 mt-2 w-52 bg-sand rounded-2xl shadow-xl border border-ink/10 z-[90] overflow-hidden py-2"
                                             >
                                                 {[
                                                     { id: 'relevance', lbl: tx('Pertinence', 'Relevance') },
@@ -203,7 +206,7 @@ export default function MachinesPage() {
                                                     <button
                                                         key={opt.id}
                                                         onClick={() => { setSortBy(opt.id as SortOption); setSortOpen(false); }}
-                                                        className={`block w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${sortBy === opt.id ? 'bg-gray-50 text-sb-green' : 'text-gray-500 hover:bg-gray-50 hover:text-sb-black'}`}
+                                                        className={`block w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${sortBy === opt.id ? 'bg-ink/5 text-gold' : 'text-ink/60 hover:bg-ink/5 hover:text-ink'}`}
                                                     >
                                                         {opt.lbl}
                                                     </button>
@@ -222,7 +225,7 @@ export default function MachinesPage() {
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.85 }}
                                         onClick={resetAll}
-                                        className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors"
+                                        className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15 transition-colors"
                                     >
                                         <RotateCcw size={11} />
                                         {tx('Réinitialiser', 'Reset')}
@@ -243,8 +246,8 @@ export default function MachinesPage() {
                             <button
                                 onClick={() => setFilters(f => ({ ...f, categories: [] }))}
                                 className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${!activeCategory
-                                    ? 'bg-sb-green text-white shadow-xl shadow-sb-green/25'
-                                    : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-sb-green/30 hover:text-sb-black'
+                                    ? 'bg-gold text-ink shadow-xl shadow-gold/20'
+                                    : 'bg-sand/8 text-sand/50 border border-sand/10 hover:border-gold/30 hover:text-sand'
                                     }`}
                             >
                                 {tx('Toutes', 'All')}
@@ -254,8 +257,8 @@ export default function MachinesPage() {
                                     key={cat.slug}
                                     onClick={() => handleCategoryPill(cat.name)}
                                     className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${activeCategory === cat.name
-                                        ? 'bg-sb-green text-white shadow-xl shadow-sb-green/25'
-                                        : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-sb-green/30 hover:text-sb-black'
+                                        ? 'bg-gold text-ink shadow-xl shadow-gold/20'
+                                        : 'bg-sand/8 text-sand/50 border border-sand/10 hover:border-gold/30 hover:text-sand'
                                         }`}
                                 >
                                     {cat.name}
@@ -266,10 +269,10 @@ export default function MachinesPage() {
 
                     {/* Results header */}
                     <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-10">
-                        <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sb-black">
+                        <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sand">
                             {!activeCategory ? tx('Toutes les Machines', 'All Machines') : activeCategory}
                         </h3>
-                        <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">
+                        <div className="text-[10px] font-bold tracking-widest uppercase text-cocoa">
                             {displayProducts.length} {tx('résultats', 'results')}
                         </div>
                     </div>
@@ -278,10 +281,10 @@ export default function MachinesPage() {
                     {!isLoading && displayProducts.length === 0 ? (
                         <div className="text-center py-24">
                             <p className="text-6xl mb-4">☕</p>
-                            <p className="font-bold text-xl mb-2">
+                            <p className="font-bold text-xl mb-2 text-sand">
                                 {tx('Aucune machine trouvée', 'No machines found')}
                             </p>
-                            <button onClick={resetAll} className="text-sb-green font-bold text-sm underline mt-2">
+                            <button onClick={resetAll} className="text-gold font-bold text-sm underline mt-2">
                                 {tx('Effacer les filtres', 'Clear filters')}
                             </button>
                         </div>

@@ -107,16 +107,16 @@ const faqs = [
 function FaqItem({ q, a }: { q: string; a: string }) {
     const [open, setOpen] = useState(false);
     return (
-        <div className="border-b border-gray-100 last:border-0">
+        <div className="border-b border-ink/10 last:border-0">
             <button
                 onClick={() => setOpen(p => !p)}
                 className="w-full flex justify-between items-start py-5 text-left gap-4 group"
             >
-                <span className="font-semibold text-sm text-sb-black group-hover:text-sb-green transition-colors leading-relaxed">
+                <span className="font-semibold text-sm text-ink group-hover:text-gold transition-colors leading-relaxed">
                     {q}
                 </span>
                 <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="flex-shrink-0 mt-0.5">
-                    <ChevronDown size={18} className="text-gray-300" />
+                    <ChevronDown size={18} className="text-ink/30" />
                 </motion.div>
             </button>
             <AnimatePresence>
@@ -128,7 +128,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden"
                     >
-                        <p className="pb-5 text-sm text-gray-500 leading-relaxed pr-8">{a}</p>
+                        <p className="pb-5 text-sm text-ink/60 leading-relaxed pr-8">{a}</p>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -152,19 +152,19 @@ export default function FAQPage() {
         : faqs;
 
     return (
-        <div className="w-full bg-sb-white text-sb-black min-h-screen">
+        <div className="w-full bg-ink text-sand min-h-screen grain-overlay">
             {/* Hero */}
-            <section className="bg-sb-black pt-16 sm:pt-20 md:pt-24 pb-14 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.2),_transparent_60%)] pointer-events-none" />
+            <section className="bg-ink pt-16 sm:pt-20 md:pt-24 pb-14 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(201,160,90,0.15),_transparent_60%)] pointer-events-none" />
                 <div className="max-w-[900px] mx-auto relative z-10 text-center">
-                    <p className="text-sb-green text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                    <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
                         {tx('Support', 'Support')}
                     </p>
-                    <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase text-white mb-4 sm:mb-6">
+                    <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase text-sand mb-4 sm:mb-6">
                         {tx('Questions', 'Frequently')}
-                        <span className="text-sb-green block">{tx('Fréquentes', 'Asked Questions')}</span>
+                        <span className="text-gold block">{tx('Fréquentes', 'Asked Questions')}</span>
                     </h1>
-                    <p className="text-white/50 text-base max-w-lg mx-auto mb-10">
+                    <p className="text-sand/50 text-base max-w-lg mx-auto mb-10">
                         {tx(
                             'Trouvez rapidement les réponses à vos questions sur nos produits, livraisons et services.',
                             'Find quick answers about our products, deliveries, and services.'
@@ -172,13 +172,13 @@ export default function FAQPage() {
                     </p>
                     {/* Search */}
                     <div className="relative max-w-lg mx-auto">
-                        <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-cocoa" />
                         <input
                             type="text"
                             value={query}
                             onChange={e => setQuery(e.target.value)}
                             placeholder={tx('Rechercher une question…', 'Search a question…')}
-                            className="w-full pl-12 pr-5 py-4 rounded-full bg-white/10 border border-white/10 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-sb-green transition-colors"
+                            className="w-full pl-12 pr-5 py-4 rounded-full bg-sand/8 border border-sand/15 text-sand placeholder:text-sand/30 text-sm focus:outline-none focus:border-gold transition-colors"
                         />
                     </div>
                 </div>
@@ -189,8 +189,8 @@ export default function FAQPage() {
                 {filtered.length === 0 ? (
                     <div className="text-center py-16">
                         <p className="text-5xl mb-4">🔍</p>
-                        <p className="font-bold text-xl">{tx('Aucun résultat', 'No results found')}</p>
-                        <button onClick={() => setQuery('')} className="text-sb-green text-sm font-bold mt-4 underline">
+                        <p className="font-bold text-xl text-sand">{tx('Aucun résultat', 'No results found')}</p>
+                        <button onClick={() => setQuery('')} className="text-gold text-sm font-bold mt-4 underline">
                             {tx('Réinitialiser', 'Reset')}
                         </button>
                     </div>
@@ -204,11 +204,11 @@ export default function FAQPage() {
                                 viewport={{ once: true }}
                                 transition={{ delay: ci * 0.1 }}
                             >
-                                <h2 className="font-display text-2xl uppercase text-sb-black mb-4 flex items-center gap-3">
-                                    <span className="w-6 h-0.5 bg-sb-green block" />
+                                <h2 className="font-display text-2xl uppercase text-sand mb-4 flex items-center gap-3">
+                                    <span className="w-6 h-0.5 bg-gold block" />
                                     {language === 'fr' ? cat.category : cat.categoryEn}
                                 </h2>
-                                <div className="bg-white rounded-[24px] border border-gray-100 px-6 shadow-sm">
+                                <div className="bg-sand rounded-[24px] border border-ink/10 px-6 shadow-sm">
                                     {cat.items.map((item, ii) => (
                                         <FaqItem
                                             key={ii}
@@ -223,15 +223,15 @@ export default function FAQPage() {
                 )}
 
                 {/* Contact CTA */}
-                <div className="mt-12 sm:mt-16 bg-sb-green rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 lg:p-10 text-center text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-                    <p className="text-[10px] font-black tracking-[0.3em] uppercase opacity-70 mb-3">
+                <div className="mt-12 sm:mt-16 bg-sand rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 lg:p-10 text-center text-ink relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gold/15 rounded-full -mr-16 -mt-16 blur-2xl" />
+                    <p className="text-[10px] font-black tracking-[0.3em] uppercase opacity-60 mb-3">
                         {tx('Besoin d\'aide ?', 'Need help?')}
                     </p>
                     <h3 className="font-display text-3xl uppercase mb-4">
                         {tx('Contactez Notre Équipe', 'Contact Our Team')}
                     </h3>
-                    <p className="text-white/70 text-sm mb-6 max-w-sm mx-auto">
+                    <p className="text-ink/70 text-sm mb-6 max-w-sm mx-auto">
                         {tx(
                             'Notre équipe est disponible du lundi au vendredi, 9h–17h.',
                             'Our team is available Monday to Friday, 9am–5pm.'
@@ -239,7 +239,7 @@ export default function FAQPage() {
                     </p>
                     <a
                         href="/contact"
-                        className="inline-flex items-center gap-2 bg-white text-sb-green font-bold text-xs uppercase tracking-widest px-8 py-4 rounded-full hover:bg-sb-black hover:text-white transition-all duration-300"
+                        className="inline-flex items-center gap-2 bg-gold text-ink font-bold text-xs uppercase tracking-widest px-8 py-4 rounded-full hover:bg-[#b8914d] transition-all duration-300"
                     >
                         {tx('Nous contacter', 'Contact Us')}
                     </a>

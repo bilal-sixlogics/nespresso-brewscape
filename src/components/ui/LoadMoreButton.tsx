@@ -22,7 +22,7 @@ export function LoadMoreButton({
     if (!hasMore && totalCount && totalCount > 0) {
         return (
             <div className="flex justify-center mt-10 sm:mt-14 md:mt-20 mb-8 opacity-60">
-                <span className="text-xs font-bold tracking-widest uppercase text-gray-400">
+                <span className="text-xs font-bold tracking-widest uppercase text-cocoa">
                     {noMoreText}
                 </span>
             </div>
@@ -40,8 +40,8 @@ export function LoadMoreButton({
                 disabled={isLoading}
                 className={`relative px-8 sm:px-10 md:px-12 py-4 sm:py-5 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 overflow-hidden
                     ${isLoading
-                        ? 'bg-sb-green/10 text-sb-green border border-sb-green/20 cursor-wait'
-                        : 'bg-transparent border border-gray-200 text-gray-500 hover:text-sb-black hover:border-sb-black opacity-100'
+                        ? 'bg-gold/10 text-gold border border-gold/20 cursor-wait'
+                        : 'bg-transparent border border-sand/20 text-sand/60 hover:text-sand hover:border-sand opacity-100'
                     }`}
             >
                 <div className={`transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
@@ -60,7 +60,7 @@ export function LoadMoreButton({
                                 {[0, 1, 2].map((i) => (
                                     <motion.div
                                         key={i}
-                                        className="w-2 h-2 bg-sb-green rounded-full"
+                                        className="w-2 h-2 bg-gold rounded-full"
                                         animate={{ y: [0, -6, 0] }}
                                         transition={{
                                             duration: 0.6,

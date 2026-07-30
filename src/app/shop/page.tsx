@@ -6,6 +6,7 @@ import { SlidersHorizontal, Clock, ChevronDown, RotateCcw } from 'lucide-react';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
 import { FilterDrawer, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
+import { CupSeparator } from '@/components/ui/CupSeparator';
 import { Product, getProductImage, getDisplayPrice } from '@/types';
 import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
@@ -120,34 +121,36 @@ export default function ShopPage() {
     const totalCount = meta?.total ?? products.length;
 
     return (
-        <div className="w-full relative bg-sb-white text-sb-black overflow-x-hidden min-h-screen">
+        <div className="w-full relative bg-ink text-sand overflow-x-hidden min-h-screen grain-overlay">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
                 {/* Hero Banner */}
-                <section className="bg-sb-green pt-16 sm:pt-20 pb-20 sm:pb-28 md:pb-32 px-4 sm:px-6 lg:px-8 relative text-white">
+                <section className="bg-ink grain-overlay pt-16 sm:pt-20 pb-14 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 relative text-sand">
                     <div className="max-w-[1400px] mx-auto text-center">
                         <motion.h2 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight mb-6">{t('shopTitle')}</motion.h2>
-                        <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/70 max-w-2xl mx-auto text-lg">{t('shopSubtitle')}</motion.p>
+                        <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="text-sand/60 max-w-2xl mx-auto text-lg">{t('shopSubtitle')}</motion.p>
+                        <div className="max-w-xs mx-auto mt-10">
+                            <CupSeparator tone="gold" />
+                        </div>
                     </div>
-                    <div className="torn-paper-white-down z-20" />
                 </section>
 
-                <section className="bg-sb-white py-8 sm:py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
+                <section className="bg-ink py-8 sm:py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
                     <div className="max-w-[1400px] mx-auto">
 
                         {/* ── Recently Viewed ── */}
                         {recentlyViewed.length > 0 && (
-                            <div className="mb-12 pb-10 border-b border-gray-100">
+                            <div className="mb-12 pb-10 border-b border-sand/10">
                                 <div className="flex items-center justify-between mb-5">
                                     <div className="flex items-center gap-2">
-                                        <Clock size={14} className="text-gray-400" />
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                        <Clock size={14} className="text-cocoa" />
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-cocoa">
                                             {t('recentlyViewed')}
                                         </h3>
                                     </div>
                                     <button
                                         onClick={clearRecentlyViewed}
-                                        className="text-[9px] font-bold uppercase tracking-widest text-gray-300 hover:text-red-400 transition-colors"
+                                        className="text-[9px] font-bold uppercase tracking-widest text-cocoa/50 hover:text-red-400 transition-colors"
                                     >
                                         {t('clear')}
                                     </button>
@@ -160,7 +163,7 @@ export default function ShopPage() {
                                             <button
                                                 key={product.id}
                                                 onClick={() => handleProductClick(product as Product)}
-                                                className="flex-shrink-0 flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-4 py-3 hover:border-sb-green hover:shadow-md transition-all group"
+                                                className="flex-shrink-0 flex items-center gap-3 bg-sand/8 border border-sand/10 rounded-2xl px-4 py-3 hover:border-gold hover:shadow-md hover:shadow-gold/10 transition-all group"
                                             >
                                                 {img && (
                                                     <img
@@ -170,10 +173,10 @@ export default function ShopPage() {
                                                     />
                                                 )}
                                                 <div className="text-left">
-                                                    <p className="text-[10px] font-black uppercase tracking-wide text-sb-black group-hover:text-sb-green transition-colors line-clamp-1 max-w-28">
+                                                    <p className="text-[10px] font-black uppercase tracking-wide text-sand group-hover:text-gold transition-colors line-clamp-1 max-w-28">
                                                         {product.name}
                                                     </p>
-                                                    <p className="text-[10px] text-sb-green font-bold">{formatPrice(price)}</p>
+                                                    <p className="text-[10px] text-gold font-bold">{formatPrice(price)}</p>
                                                 </div>
                                             </button>
                                         );
@@ -183,18 +186,18 @@ export default function ShopPage() {
                         )}
 
                         {/* Controls & Category tabs */}
-                        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-12 border-b border-gray-100 pb-6">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-12 border-b border-sand/10 pb-6">
                             {/* Filter and Sort Group */}
                             <div className="flex items-center gap-2 flex-shrink-0 z-50">
                                 {/* Filter button */}
                                 <button
                                     onClick={() => setFilterOpen(true)}
-                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sb-black text-white hover:bg-gray-800 transition-colors relative"
+                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gold text-ink hover:bg-[#b8914d] transition-colors relative"
                                 >
                                     <SlidersHorizontal size={12} />
                                     <span className="hidden sm:inline">{t('filters')}</span>
                                     {activeFilterCount > 0 && (
-                                        <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-sb-green text-white text-[8px] font-black rounded-full flex items-center justify-center">{activeFilterCount}</span>
+                                        <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-ink text-gold border border-gold/50 text-[8px] font-black rounded-full flex items-center justify-center">{activeFilterCount}</span>
                                     )}
                                 </button>
 
@@ -202,7 +205,7 @@ export default function ShopPage() {
                                 <div className="relative">
                                     <button
                                         onClick={() => setSortOpen(!sortOpen)}
-                                        className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gray-50 text-gray-600 border border-gray-100 hover:border-gray-300 transition-colors"
+                                        className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sand/8 text-sand/70 border border-sand/10 hover:border-sand/25 transition-colors"
                                     >
                                         {sortBy === 'relevance' && t('sortRelevance')}
                                         {sortBy === 'price_asc' && t('sortPriceLow')}
@@ -217,7 +220,7 @@ export default function ShopPage() {
                                                 <div className="fixed inset-0 z-[80]" onClick={() => setSortOpen(false)} />
                                                 <motion.div
                                                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                                                    className="absolute top-full left-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-[90] overflow-hidden py-2"
+                                                    className="absolute top-full left-0 mt-2 w-48 bg-sand rounded-2xl shadow-xl border border-ink/10 z-[90] overflow-hidden py-2"
                                                 >
                                                     {[
                                                         { id: 'relevance', lbl: t('sortRelevance') },
@@ -228,7 +231,7 @@ export default function ShopPage() {
                                                         <button
                                                             key={opt.id}
                                                             onClick={() => { setSortBy(opt.id as SortOption); setSortOpen(false); }}
-                                                            className={`block w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${sortBy === opt.id ? 'bg-gray-50 text-sb-green' : 'text-gray-500 hover:bg-gray-50 hover:text-sb-black'}`}
+                                                            className={`block w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${sortBy === opt.id ? 'bg-ink/5 text-gold' : 'text-ink/60 hover:bg-ink/5 hover:text-ink'}`}
                                                         >
                                                             {opt.lbl}
                                                         </button>
@@ -248,7 +251,7 @@ export default function ShopPage() {
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.85 }}
                                         onClick={resetAll}
-                                        className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors"
+                                        className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15 transition-colors"
                                     >
                                         <RotateCcw size={11} />
                                         {t('reset')}
@@ -257,7 +260,7 @@ export default function ShopPage() {
                             </AnimatePresence>
 
                             {/* Divider */}
-                            <div className="hidden md:block w-px h-6 bg-gray-200 flex-shrink-0 mx-2" />
+                            <div className="hidden md:block w-px h-6 bg-sand/15 flex-shrink-0 mx-2" />
 
                             {/* Category pills — synced with FilterDrawer */}
                             <div
@@ -271,7 +274,7 @@ export default function ShopPage() {
                                 {/* All pill */}
                                 <button
                                     onClick={() => setFilters(f => ({ ...f, categories: [] }))}
-                                    className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${!activeCategory ? 'bg-sb-green text-white shadow-xl shadow-sb-green/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-sb-black border border-gray-100 hover:border-gray-200'}`}
+                                    className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${!activeCategory ? 'bg-gold text-ink shadow-xl shadow-gold/20' : 'bg-sand/8 text-sand/50 hover:bg-sand/14 hover:text-sand border border-sand/10 hover:border-sand/20'}`}
                                 >
                                     {t('allProducts')}
                                 </button>
@@ -279,7 +282,7 @@ export default function ShopPage() {
                                     <button
                                         key={cat.slug}
                                         onClick={() => handleCategoryPill(cat.name)}
-                                        className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${activeCategory === cat.name ? 'bg-sb-green text-white shadow-xl shadow-sb-green/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-sb-black border border-gray-100 hover:border-gray-200'}`}
+                                        className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${activeCategory === cat.name ? 'bg-gold text-ink shadow-xl shadow-gold/20' : 'bg-sand/8 text-sand/50 hover:bg-sand/14 hover:text-sand border border-sand/10 hover:border-sand/20'}`}
                                     >
                                         {cat.name}
                                     </button>
@@ -289,8 +292,8 @@ export default function ShopPage() {
 
                         {/* Results header */}
                         <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-12">
-                            <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sb-black">{categoryLabel}</h3>
-                            <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">
+                            <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sand">{categoryLabel}</h3>
+                            <div className="text-[10px] font-bold tracking-widest uppercase text-cocoa">
                                 {totalCount} {t('results')}
                             </div>
                         </div>
@@ -299,10 +302,10 @@ export default function ShopPage() {
                         {!isLoading && products.length === 0 ? (
                             <div className="text-center py-24 flex flex-col items-center gap-4">
                                 <p className="text-6xl">🔍</p>
-                                <p className="font-bold text-xl">{t('noProductsFound')}</p>
+                                <p className="font-bold text-xl text-sand">{t('noProductsFound')}</p>
                                 <button
                                     onClick={resetAll}
-                                    className="flex items-center gap-2 px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors mt-2"
+                                    className="flex items-center gap-2 px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15 transition-colors mt-2"
                                 >
                                     <RotateCcw size={11} />
                                     {t('clearFilters')}

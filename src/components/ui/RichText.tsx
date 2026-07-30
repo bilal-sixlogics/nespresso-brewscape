@@ -51,7 +51,7 @@ function parseInline(text: string): React.ReactNode[] {
     const parts = text.split(/(\*\*[^*]+\*\*)/g);
     return parts.map((part, i) => {
         if (part.startsWith('**') && part.endsWith('**')) {
-            return <strong key={i} className="font-bold text-sb-black">{part.slice(2, -2)}</strong>;
+            return <strong key={i} className="font-bold text-sand">{part.slice(2, -2)}</strong>;
         }
         return part;
     });
@@ -69,7 +69,7 @@ export function RichText({ content, size = 'page' }: RichTextProps) {
         if (text) {
             elements.push(
                 <p key={`p-${elements.length}`}
-                    className={`text-gray-500 leading-relaxed ${size === 'page' ? 'text-base' : size === 'panel' ? 'text-sm' : 'text-xs'}`}>
+                    className={`text-sand/70 leading-relaxed ${size === 'page' ? 'text-base' : size === 'panel' ? 'text-sm' : 'text-xs'}`}>
                     {parseInline(text)}
                 </p>
             );
@@ -90,7 +90,7 @@ export function RichText({ content, size = 'page' }: RichTextProps) {
         // Horizontal rule
         if (trimmed === '---') {
             flushParagraph();
-            elements.push(<hr key={`hr-${i}`} className="border-gray-100 my-3" />);
+            elements.push(<hr key={`hr-${i}`} className="border-sand/15 my-3" />);
             continue;
         }
 
@@ -100,7 +100,7 @@ export function RichText({ content, size = 'page' }: RichTextProps) {
             const text = trimmed.slice(3);
             elements.push(
                 <h3 key={`h2-${i}`}
-                    className={`font-bold uppercase tracking-widest text-sb-black mt-4 mb-2 ${size === 'page' ? 'text-sm' : 'text-[10px]'}`}>
+                    className={`font-bold uppercase tracking-widest text-sand mt-4 mb-2 ${size === 'page' ? 'text-sm' : 'text-[10px]'}`}>
                     {text}
                 </h3>
             );
@@ -113,7 +113,7 @@ export function RichText({ content, size = 'page' }: RichTextProps) {
             const text = trimmed.slice(4);
             elements.push(
                 <h4 key={`h3-${i}`}
-                    className={`font-semibold text-sb-black mt-3 mb-1 ${size === 'page' ? 'text-sm' : 'text-xs'}`}>
+                    className={`font-semibold text-sand mt-3 mb-1 ${size === 'page' ? 'text-sm' : 'text-xs'}`}>
                     {text}
                 </h4>
             );
@@ -126,10 +126,10 @@ export function RichText({ content, size = 'page' }: RichTextProps) {
             const text = trimmed.slice(6);
             elements.push(
                 <div key={`chk-${i}`} className="flex items-start gap-2.5 my-1">
-                    <span className={`shrink-0 flex items-center justify-center rounded-full bg-sb-green/10 text-sb-green font-black ${size === 'page' ? 'w-5 h-5 text-[10px] mt-0.5' : 'w-4 h-4 text-[9px] mt-0.5'}`}>
+                    <span className={`shrink-0 flex items-center justify-center rounded-full bg-gold/15 text-gold font-black ${size === 'page' ? 'w-5 h-5 text-[10px] mt-0.5' : 'w-4 h-4 text-[9px] mt-0.5'}`}>
                         ✓
                     </span>
-                    <span className={`text-gray-600 leading-snug ${size === 'page' ? 'text-sm' : 'text-xs'}`}>
+                    <span className={`text-sand/70 leading-snug ${size === 'page' ? 'text-sm' : 'text-xs'}`}>
                         {parseInline(text)}
                     </span>
                 </div>
@@ -143,8 +143,8 @@ export function RichText({ content, size = 'page' }: RichTextProps) {
             const text = trimmed.slice(2);
             elements.push(
                 <div key={`ul-${i}`} className="flex items-start gap-2.5 my-0.5">
-                    <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-sb-green mt-2" />
-                    <span className={`text-gray-500 leading-snug ${size === 'page' ? 'text-sm' : 'text-xs'}`}>
+                    <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-gold mt-2" />
+                    <span className={`text-sand/70 leading-snug ${size === 'page' ? 'text-sm' : 'text-xs'}`}>
                         {parseInline(text)}
                     </span>
                 </div>

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Thermometer, Droplets, Clock, Plus, Minus, Check, Loader2 } from 'lucide-react';
 import { Endpoints } from '@/lib/api/endpoints';
+import { CupSeparator } from '@/components/ui/CupSeparator';
 
 interface BrewStep {
     step_number: number;
@@ -51,31 +52,31 @@ export default function BrewGuidePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-sb-white">
-                <Loader2 size={32} className="animate-spin text-sb-green" />
+            <div className="min-h-screen flex items-center justify-center bg-ink">
+                <Loader2 size={32} className="animate-spin text-gold" />
             </div>
         );
     }
 
     if (guides.length === 0) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-sb-white">
-                <p className="text-gray-400 text-sm font-semibold tracking-widest uppercase">No brew guides available</p>
+            <div className="min-h-screen flex items-center justify-center bg-ink">
+                <p className="text-cocoa text-sm font-semibold tracking-widest uppercase">No brew guides available</p>
             </div>
         );
     }
 
     return (
-        <div className="w-full relative bg-sb-white text-sb-black pb-32">
+        <div className="w-full relative bg-ink text-sand pb-32 grain-overlay">
             <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}
             >
                 {/* Hero Banner */}
-                <section className="bg-sb-green pt-24 pb-40 px-8 relative text-white overflow-hidden">
+                <section className="bg-ink pt-24 pb-24 px-8 relative text-sand overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-[0.05] mix-blend-overlay"></div>
 
                     <div className="max-w-[1400px] mx-auto text-center relative z-10">
-                        <div className="text-[10px] bg-white/10 text-white font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-8 border border-white/20 backdrop-blur-sm">
+                        <div className="text-[10px] bg-sand/10 text-sand font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-8 border border-sand/15 backdrop-blur-sm">
                             Equipment & Technique
                         </div>
                         <motion.h1
@@ -86,16 +87,18 @@ export default function BrewGuidePage() {
                         </motion.h1>
                         <motion.p
                             initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
-                            className="text-white/80 max-w-2xl mx-auto text-lg leading-relaxed font-medium"
+                            className="text-sand/70 max-w-2xl mx-auto text-lg leading-relaxed font-medium"
                         >
                             Master the art of coffee making at home. Explore our definitive guide to variables, ratios, and professional brewing techniques.
                         </motion.p>
+                        <div className="max-w-xs mx-auto mt-10 relative z-10">
+                            <CupSeparator tone="gold" />
+                        </div>
                     </div>
-                    <div className="torn-paper-white-down z-20"></div>
                 </section>
 
                 {/* Sub-navigation */}
-                <div className="sticky top-[var(--header-h,112px)] z-[45] bg-white/80 backdrop-blur-xl border-b border-gray-100 shadow-sm py-4 px-4 overflow-x-auto">
+                <div className="sticky top-[var(--header-h,112px)] z-[45] bg-ink/80 backdrop-blur-xl border-b border-sand/10 shadow-sm py-4 px-4 overflow-x-auto">
                     <div className="max-w-[1200px] mx-auto flex gap-4 lg:gap-8 justify-start lg:justify-center min-w-max">
                         {guides.map(guide => (
                             <button
@@ -106,8 +109,8 @@ export default function BrewGuidePage() {
                                 }}
                                 className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 px-6 py-2.5 rounded-full ${
                                     activeSlug === guide.slug
-                                        ? 'bg-sb-black text-white shadow-lg'
-                                        : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                        ? 'bg-gold text-ink shadow-lg shadow-gold/20'
+                                        : 'bg-sand/8 text-sand/50 hover:bg-sand/14'
                                 }`}
                             >
                                 {guide.method}
@@ -117,7 +120,7 @@ export default function BrewGuidePage() {
                 </div>
 
                 {/* Guides */}
-                <section className="bg-sb-white py-20 px-4 lg:px-8">
+                <section className="bg-ink py-20 px-4 lg:px-8">
                     <div className="max-w-[1200px] mx-auto space-y-32">
                         {guides.map((guide) => {
                             const specItems = [
@@ -140,19 +143,19 @@ export default function BrewGuidePage() {
                                     {/* Header */}
                                     <div className="text-center mb-16">
                                         <div className="flex items-center justify-center gap-3 mb-6">
-                                            <span className="w-12 h-[1px] bg-sb-green/30"></span>
-                                            <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-sb-green">{guide.method}</h2>
-                                            <span className="w-12 h-[1px] bg-sb-green/30"></span>
+                                            <span className="w-12 h-[1px] bg-gold/30"></span>
+                                            <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-gold">{guide.method}</h2>
+                                            <span className="w-12 h-[1px] bg-gold/30"></span>
                                         </div>
-                                        <h3 className="font-display text-5xl lg:text-7xl uppercase tracking-tight text-sb-black mb-8 px-4">{guide.title}</h3>
+                                        <h3 className="font-display text-5xl lg:text-7xl uppercase tracking-tight text-sand mb-8 px-4">{guide.title}</h3>
                                         <div className="flex justify-center gap-4 flex-wrap px-4">
                                             {guide.time && (
-                                                <span className="bg-sb-green/10 text-sb-green text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full border border-sb-green/20">
+                                                <span className="bg-gold/15 text-gold text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full border border-gold/25">
                                                     Time: {guide.time}
                                                 </span>
                                             )}
                                             {guide.difficulty && (
-                                                <span className="bg-sb-black/5 text-sb-black text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full border border-gray-200">
+                                                <span className="bg-sand/8 text-sand text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full border border-sand/15">
                                                     Difficulty: {guide.difficulty}
                                                 </span>
                                             )}
@@ -164,15 +167,15 @@ export default function BrewGuidePage() {
 
                                         {/* Left: Image + Specs */}
                                         <div className="w-full lg:w-1/2 flex flex-col gap-8">
-                                            <div className="rounded-[40px] overflow-hidden relative shadow-[0_20px_50px_-15px_rgba(0,0,0,0.15)] h-[400px] lg:h-[500px] group cursor-pointer border border-gray-100">
+                                            <div className="rounded-[40px] overflow-hidden relative shadow-[0_20px_50px_-15px_rgba(0,0,0,0.4)] h-[400px] lg:h-[500px] group cursor-pointer border border-sand/10">
                                                 <img
                                                     src={guide.image || FALLBACK_IMAGE}
                                                     alt={guide.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                                                <div className="absolute bottom-8 left-8 right-8 text-white">
-                                                    <p className="text-sm font-medium leading-relaxed opacity-90 backdrop-blur-sm bg-black/20 p-4 rounded-2xl border border-white/10">
+                                                <div className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent"></div>
+                                                <div className="absolute bottom-8 left-8 right-8 text-sand">
+                                                    <p className="text-sm font-medium leading-relaxed opacity-90 backdrop-blur-sm bg-ink/40 p-4 rounded-2xl border border-sand/15">
                                                         {guide.description}
                                                     </p>
                                                 </div>
@@ -181,12 +184,12 @@ export default function BrewGuidePage() {
                                             {specItems.length > 0 && (
                                                 <div className={`grid gap-4 ${specItems.length <= 2 ? 'grid-cols-2' : 'grid-cols-2'}`}>
                                                     {specItems.map((spec, sIdx) => (
-                                                        <div key={sIdx} className="bg-gray-50 border border-gray-100 rounded-3xl p-6 flex flex-col items-center text-center group hover:bg-white hover:shadow-xl transition-all duration-300">
-                                                            <div className="w-10 h-10 rounded-full bg-sb-green/10 flex items-center justify-center text-sb-green mb-4 group-hover:scale-110 group-hover:bg-sb-green group-hover:text-white transition-all duration-500">
+                                                        <div key={sIdx} className="bg-sand/8 border border-sand/10 rounded-3xl p-6 flex flex-col items-center text-center group hover:bg-sand/14 hover:shadow-xl hover:shadow-gold/5 transition-all duration-300">
+                                                            <div className="w-10 h-10 rounded-full bg-gold/15 flex items-center justify-center text-gold mb-4 group-hover:scale-110 group-hover:bg-gold group-hover:text-ink transition-all duration-500">
                                                                 <spec.icon size={18} />
                                                             </div>
-                                                            <span className="text-[10px] font-bold tracking-widest uppercase text-gray-400 mb-1">{spec.label}</span>
-                                                            <span className="text-xs font-bold text-sb-black">{spec.value}</span>
+                                                            <span className="text-[10px] font-bold tracking-widest uppercase text-cocoa mb-1">{spec.label}</span>
+                                                            <span className="text-xs font-bold text-sand">{spec.value}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -195,8 +198,8 @@ export default function BrewGuidePage() {
 
                                         {/* Right: Steps */}
                                         <div className="w-full lg:w-1/2 flex flex-col justify-center">
-                                            <div className="text-xs font-bold tracking-[0.2em] uppercase text-sb-green mb-8 flex items-center gap-4">
-                                                <span className="w-8 h-[1px] bg-sb-green"></span>
+                                            <div className="text-xs font-bold tracking-[0.2em] uppercase text-gold mb-8 flex items-center gap-4">
+                                                <span className="w-8 h-[1px] bg-gold"></span>
                                                 Step by Step Procedure
                                             </div>
 
@@ -210,8 +213,8 @@ export default function BrewGuidePage() {
                                                             key={stepId}
                                                             className={`border rounded-3xl transition-all duration-300 overflow-hidden ${
                                                                 isExpanded
-                                                                    ? 'bg-sb-green border-sb-green text-white shadow-xl shadow-sb-green/20 scale-[1.02]'
-                                                                    : 'bg-white border-gray-200 text-sb-black hover:border-sb-green group'
+                                                                    ? 'bg-gold border-gold text-ink shadow-xl shadow-gold/20 scale-[1.02]'
+                                                                    : 'bg-sand border-sand/20 text-ink hover:border-gold group'
                                                             }`}
                                                         >
                                                             <button
@@ -219,17 +222,17 @@ export default function BrewGuidePage() {
                                                                 className="w-full text-left p-6 sm:p-8 flex items-center justify-between"
                                                             >
                                                                 <div className="flex items-center gap-6">
-                                                                    <div className={`font-display text-4xl leading-none ${isExpanded ? 'text-white/50' : 'text-gray-200 group-hover:text-sb-green transition-colors'}`}>
+                                                                    <div className={`font-display text-4xl leading-none ${isExpanded ? 'text-ink/40' : 'text-ink/15 group-hover:text-gold transition-colors'}`}>
                                                                         {step.step_number.toString().padStart(2, '0')}
                                                                     </div>
-                                                                    <div className={`font-bold text-sm tracking-wider uppercase pr-4 ${isExpanded ? 'text-white' : 'text-sb-black'}`}>
+                                                                    <div className="font-bold text-sm tracking-wider uppercase pr-4 text-ink">
                                                                         Step {step.step_number}
                                                                     </div>
                                                                 </div>
                                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
                                                                     isExpanded
-                                                                        ? 'bg-white/20 text-white'
-                                                                        : 'bg-gray-50 text-gray-400 group-hover:bg-sb-green group-hover:text-white'
+                                                                        ? 'bg-ink/15 text-ink'
+                                                                        : 'bg-ink/5 text-ink/40 group-hover:bg-gold group-hover:text-ink'
                                                                 }`}>
                                                                     {isExpanded ? <Minus size={16} /> : <Plus size={16} />}
                                                                 </div>
@@ -245,13 +248,13 @@ export default function BrewGuidePage() {
                                                                     >
                                                                         <div className="px-6 sm:px-8 pb-8 pt-0 flex gap-6">
                                                                             <div className="w-[45px] flex-shrink-0 flex justify-center pt-2">
-                                                                                <div className="w-1.5 h-1.5 rounded-full bg-white/50 relative">
+                                                                                <div className="w-1.5 h-1.5 rounded-full bg-ink/30 relative">
                                                                                     {step.step_number !== guide.steps.length && (
-                                                                                        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[1px] h-20 bg-white/20"></div>
+                                                                                        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[1px] h-20 bg-ink/15"></div>
                                                                                     )}
                                                                                 </div>
                                                                             </div>
-                                                                            <p className="text-white/90 text-lg leading-relaxed font-medium">
+                                                                            <p className="text-ink/80 text-lg leading-relaxed font-medium">
                                                                                 {step.instruction}
                                                                             </p>
                                                                         </div>
@@ -264,13 +267,13 @@ export default function BrewGuidePage() {
                                             </div>
 
                                             {guide.pro_tip && (
-                                                <div className="mt-12 p-8 bg-sb-offwhite rounded-[32px] border border-gray-100 flex items-start gap-6">
-                                                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-sb-green shadow-sm flex-shrink-0">
+                                                <div className="mt-12 p-8 bg-sand/8 rounded-[32px] border border-sand/10 flex items-start gap-6">
+                                                    <div className="w-12 h-12 rounded-full bg-gold/15 flex items-center justify-center text-gold shadow-sm flex-shrink-0">
                                                         <Check size={20} />
                                                     </div>
                                                     <div>
-                                                        <h4 className="font-bold text-xs tracking-widest uppercase mb-2">Pro Tip</h4>
-                                                        <p className="text-gray-500 text-sm leading-relaxed">{guide.pro_tip}</p>
+                                                        <h4 className="font-bold text-xs tracking-widest uppercase mb-2 text-sand">Pro Tip</h4>
+                                                        <p className="text-sand/60 text-sm leading-relaxed">{guide.pro_tip}</p>
                                                     </div>
                                                 </div>
                                             )}

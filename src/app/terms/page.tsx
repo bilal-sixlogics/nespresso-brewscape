@@ -62,17 +62,17 @@ export default function TermsPage() {
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
 
     return (
-        <div className="w-full bg-sb-white text-sb-black min-h-screen">
+        <div className="w-full bg-ink text-sand min-h-screen grain-overlay">
             {/* Hero */}
-            <section className="bg-sb-black pt-24 pb-16 px-8">
+            <section className="bg-ink pt-24 pb-16 px-8">
                 <div className="max-w-[900px] mx-auto">
-                    <p className="text-sb-green text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                    <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
                         {tx('Légal', 'Legal')}
                     </p>
-                    <h1 className="font-display text-5xl md:text-7xl uppercase text-white mb-4">
-                        {tx("Conditions", "Terms of")} <span className="text-sb-green">{tx("d'Utilisation", "Service")}</span>
+                    <h1 className="font-display text-5xl md:text-7xl uppercase text-sand mb-4">
+                        {tx("Conditions", "Terms of")} <span className="text-gold">{tx("d'Utilisation", "Service")}</span>
                     </h1>
-                    <p className="text-white/40 text-sm">
+                    <p className="text-sand/50 text-sm">
                         {tx('Version en vigueur au 1er janvier 2026', 'Version effective January 1, 2026')} · {AppConfig.brand.name}
                     </p>
                 </div>
@@ -88,17 +88,17 @@ export default function TermsPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.06 }}
-                            className="bg-white border border-gray-100 rounded-[20px] p-8 shadow-sm"
+                            className="bg-sand/8 border border-sand/10 rounded-[20px] p-8 shadow-sm"
                         >
                             <div className="flex items-start gap-5">
-                                <span className="font-display text-4xl text-sb-green/20 leading-none flex-shrink-0">
+                                <span className="font-display text-4xl text-gold/20 leading-none flex-shrink-0">
                                     {sec.num}
                                 </span>
                                 <div>
-                                    <h2 className="font-bold text-base text-sb-black mb-3">
+                                    <h2 className="font-bold text-base text-sand mb-3">
                                         {language === 'fr' ? sec.title : sec.titleEn}
                                     </h2>
-                                    <p className="text-sm text-gray-500 leading-relaxed">
+                                    <p className="text-sm text-sand/60 leading-relaxed">
                                         {language === 'fr' ? sec.body : sec.bodyEn}
                                     </p>
                                 </div>
@@ -108,10 +108,10 @@ export default function TermsPage() {
                 </div>
 
                 {/* Contact */}
-                <div className="mt-10 bg-gray-50 border border-gray-100 rounded-[20px] p-6 text-center">
-                    <p className="text-sm text-gray-500">
+                <div className="mt-10 bg-sand/5 border border-sand/10 rounded-[20px] p-6 text-center">
+                    <p className="text-sm text-sand/70">
                         {tx('Pour toute question : ', 'For any questions: ')}
-                        <a href={`mailto:${AppConfig.brand.email}`} className="text-sb-green font-bold hover:underline">
+                        <a href={`mailto:${AppConfig.brand.email}`} className="text-gold font-bold hover:underline">
                             {AppConfig.brand.email}
                         </a>
                         {' · '}

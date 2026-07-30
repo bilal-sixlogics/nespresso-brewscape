@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 @theme inline {
+  /* ── Legacy tokens — kept only so unmigrated pages don't break mid-rebrand.
+     Remove once every page has been moved to the ink/sand/gold/cocoa palette. ── */
   --color-sb-green: #3B7E5A;
   --color-sb-dark: #2C6345;
   --color-sb-black: #111111;
@@ -8,13 +10,19 @@
   --color-sb-offwhite: #Fafaf7;
   --color-sb-border: #E0E0E0;
 
+  /* ── Rebrand palette — black & beige artisanal theme ──────────────────── */
+  --color-ink:   #1A1614; /* Deep Black — primary background everywhere */
+  --color-sand:  #EDE3D3; /* Beige — cards, newsletter banner, accents */
+  --color-gold:  #C9A05A; /* Gold/Caramel — CTAs, prices, key accents */
+  --color-cocoa: #8B5E34; /* Roasted Brown — secondary text */
+
   --font-sans: var(--font-inter);
-  --font-display: var(--font-archivo);
+  --font-display: var(--font-playfair);
 }
 
 :root {
-  --background: var(--color-sb-white);
-  --foreground: var(--color-sb-black);
+  --background: var(--color-ink);
+  --foreground: var(--color-sand);
 }
 
 body {
@@ -23,6 +31,34 @@ body {
   font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Grain texture utility ─────────────────────────────────────────────
+   A tiled SVG feTurbulence noise, very low opacity, blended so a black
+   background reads as subtle paper/film grain rather than a flat digital
+   fill. Apply `.grain-overlay` (plus `relative`, already required for most
+   containers this goes on) to any section/wrapper that needs it — scoped
+   per-element rather than forced onto <body>, so it never fights with
+   modals/toasts/portals that render as siblings elsewhere in the tree. ── */
+.grain-overlay {
+  /* position: relative; */
+}
+
+.grain-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Negative z-index on a positioned parent's pseudo-element paints behind
+     that parent's normal-flow children automatically (CSS stacking order),
+     so real content stays on top without needing to touch every child's
+     position/z-index — safe alongside sticky/fixed descendants like the
+     site header. */
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
 .torn-paper-white-up {
@@ -125,6 +161,56 @@ body {
   width: 100%;
   height: 30px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='30'%3E%3Cpath d='M0,30 L0,20 L15,12 L30,22 L45,8 L55,20 L70,5 L85,18 L100,2 L110,15 L125,5 L140,22 L155,10 L165,18 L180,5 L195,25 L210,8 L225,20 L240,2 L255,15 L270,8 L285,22 L300,12 L300,30 Z' fill='%23111111'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 300px 30px;
+  z-index: 10;
+}
+
+/* ── Rebrand palette torn-paper variants (sand/ink) — new section-transition
+   colors to replace the white/green/offwhite/cream set page by page. ── */
+.torn-paper-sand-up {
+  position: absolute;
+  top: -29px;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='30'%3E%3Cpath d='M0,30 L0,20 L15,12 L30,22 L45,8 L55,20 L70,5 L85,18 L100,2 L110,15 L125,5 L140,22 L155,10 L165,18 L180,5 L195,25 L210,8 L225,20 L240,2 L255,15 L270,8 L285,22 L300,12 L300,30 Z' fill='%23EDE3D3'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 300px 30px;
+  z-index: 10;
+}
+
+.torn-paper-sand-down {
+  position: absolute;
+  bottom: -29px;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='30'%3E%3Cpath d='M0,0 L0,10 L15,18 L30,8 L45,22 L55,10 L70,25 L85,12 L100,28 L110,15 L125,25 L140,8 L155,20 L165,12 L180,25 L195,5 L210,22 L225,10 L240,28 L255,15 L270,22 L285,8 L300,18 L300,0 Z' fill='%23EDE3D3'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 300px 30px;
+  z-index: 10;
+}
+
+.torn-paper-ink-up {
+  position: absolute;
+  top: -29px;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='30'%3E%3Cpath d='M0,30 L0,20 L15,12 L30,22 L45,8 L55,20 L70,5 L85,18 L100,2 L110,15 L125,5 L140,22 L155,10 L165,18 L180,5 L195,25 L210,8 L225,20 L240,2 L255,15 L270,8 L285,22 L300,12 L300,30 Z' fill='%231A1614'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 300px 30px;
+  z-index: 10;
+}
+
+.torn-paper-ink-down {
+  position: absolute;
+  bottom: -29px;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='30'%3E%3Cpath d='M0,0 L0,10 L15,18 L30,8 L45,22 L55,10 L70,25 L85,12 L100,28 L110,15 L125,25 L140,8 L155,20 L165,12 L180,25 L195,5 L210,22 L225,10 L240,28 L255,15 L270,22 L285,8 L300,18 L300,0 Z' fill='%231A1614'/%3E%3C/svg%3E");
   background-repeat: repeat-x;
   background-size: 300px 30px;
   z-index: 10;

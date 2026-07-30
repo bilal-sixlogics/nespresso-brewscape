@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Archivo_Black } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { AppConfig } from "@/lib/config";
 
@@ -8,9 +8,8 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const archivo = Archivo_Black({
-  variable: "--font-archivo",
-  weight: "400",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
 });
 
@@ -36,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${archivo.variable} antialiased`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${playfair.variable} antialiased`} suppressHydrationWarning>
         <ThemeProvider>
           <SiteSettingsProvider>
           <AuthProvider>

@@ -79,16 +79,16 @@ interface Order {
 // hardcoded here, mirroring the backend's OrderStatus::label().
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-    draft:            { label: 'Draft',           color: 'text-gray-500',   bg: 'bg-gray-50 border-gray-200',   icon: <Clock size={14} /> },
-    pending_payment:  { label: 'Pending Payment',  color: 'text-amber-600',  bg: 'bg-amber-50 border-amber-200', icon: <Clock size={14} /> },
-    payment_failed:   { label: 'Payment Failed',   color: 'text-red-600',    bg: 'bg-red-50 border-red-200',     icon: <XCircle size={14} /> },
-    paid:             { label: 'Order Confirmed',  color: 'text-sb-green',   bg: 'bg-sb-green/10 border-sb-green/20', icon: <CheckCircle2 size={14} /> },
-    processing:       { label: 'Processing',       color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200',   icon: <RefreshCw size={14} /> },
-    shipped:          { label: 'Shipped',          color: 'text-violet-600', bg: 'bg-violet-50 border-violet-200', icon: <Truck size={14} /> },
-    ready_for_pickup: { label: 'Ready for Pickup', color: 'text-teal-600',   bg: 'bg-teal-50 border-teal-200',   icon: <Store size={14} /> },
-    delivered:        { label: 'Delivered',        color: 'text-sb-green',   bg: 'bg-sb-green/10 border-sb-green/20', icon: <CheckCircle2 size={14} /> },
-    cancelled:        { label: 'Cancelled',        color: 'text-red-600',    bg: 'bg-red-50 border-red-200',     icon: <XCircle size={14} /> },
-    refunded:         { label: 'Refunded',         color: 'text-gray-600',   bg: 'bg-gray-50 border-gray-200',   icon: <RefreshCw size={14} /> },
+    draft:            { label: 'Draft',           color: 'text-sand/50',    bg: 'bg-sand/10 border-sand/15',   icon: <Clock size={14} /> },
+    pending_payment:  { label: 'Pending Payment',  color: 'text-amber-300',  bg: 'bg-amber-500/10 border-amber-500/20', icon: <Clock size={14} /> },
+    payment_failed:   { label: 'Payment Failed',   color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/20',     icon: <XCircle size={14} /> },
+    paid:             { label: 'Order Confirmed',  color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20', icon: <CheckCircle2 size={14} /> },
+    processing:       { label: 'Processing',       color: 'text-amber-300',  bg: 'bg-amber-500/10 border-amber-500/20', icon: <RefreshCw size={14} /> },
+    shipped:          { label: 'Shipped',          color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/20', icon: <Truck size={14} /> },
+    ready_for_pickup: { label: 'Ready for Pickup', color: 'text-teal-400',   bg: 'bg-teal-500/10 border-teal-500/20',   icon: <Store size={14} /> },
+    delivered:        { label: 'Delivered',        color: 'text-emerald-400',bg: 'bg-emerald-500/15 border-emerald-500/20', icon: <CheckCircle2 size={14} /> },
+    cancelled:        { label: 'Cancelled',        color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/20',     icon: <XCircle size={14} /> },
+    refunded:         { label: 'Refunded',         color: 'text-sand/50',    bg: 'bg-sand/5 border-sand/15',   icon: <RefreshCw size={14} /> },
 };
 
 // Pickup orders never ship — they go straight from Processing to Ready for
@@ -100,12 +100,12 @@ function getTimelineSteps(isPickup: boolean): string[] {
 }
 
 function StatusBadge({ status, isPickup = false, muted = false }: { status: string; isPickup?: boolean; muted?: boolean }) {
-    const cfg = STATUS_CONFIG[status] ?? { label: status, color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200', icon: <Clock size={14} /> };
+    const cfg = STATUS_CONFIG[status] ?? { label: status, color: 'text-sand/50', bg: 'bg-sand/10 border-sand/15', icon: <Clock size={14} /> };
     const label = status === 'delivered' && isPickup ? 'Picked Up' : cfg.label;
     // Muted variant — used for older status-history entries so they read as
     // history rather than looking like another "current" status.
     const classes = muted
-        ? 'bg-gray-50 border-gray-200 text-gray-400'
+        ? 'bg-ink/5 border-ink/10 text-ink/40'
         : `${cfg.bg} ${cfg.color}`;
     return (
         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${classes}`}>
@@ -156,43 +156,43 @@ function GuestLookup({ orderId, onFound }: { orderId: string; onFound: (order: O
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 size={32} className="animate-spin text-sb-green" />
+            <div className="min-h-screen flex items-center justify-center bg-ink">
+                <Loader2 size={32} className="animate-spin text-gold" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-sb-green/5 to-white pt-24 pb-32 px-4">
+        <div className="min-h-screen bg-ink text-sand grain-overlay pt-24 pb-32 px-4">
             <div className="max-w-md mx-auto">
                 <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex justify-center mb-8">
-                        <div className="w-20 h-20 rounded-full bg-sb-green/10 flex items-center justify-center">
-                            <Package size={36} className="text-sb-green" />
+                        <div className="w-20 h-20 rounded-full bg-gold/15 flex items-center justify-center">
+                            <Package size={36} className="text-gold" />
                         </div>
                     </div>
                     <div className="text-center mb-8">
-                        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-sb-green mb-2">Order Tracking</p>
-                        <h1 className="font-display text-3xl uppercase tracking-tight text-sb-black mb-2">Track Your Order</h1>
-                        <p className="text-gray-500 text-sm">Enter your order number to see the latest status.</p>
+                        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-gold mb-2">Order Tracking</p>
+                        <h1 className="font-display text-3xl uppercase tracking-tight text-sand mb-2">Track Your Order</h1>
+                        <p className="text-cocoa text-sm">Enter your order number to see the latest status.</p>
                     </div>
-                    <form onSubmit={handleSubmit} className="bg-white rounded-[28px] border border-gray-100 shadow-xl p-6 space-y-4">
+                    <form onSubmit={handleSubmit} className="bg-sand rounded-[28px] border border-ink/10 shadow-xl p-6 space-y-4">
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Order Number</label>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-ink/50 mb-2">Order Number</label>
                             <div className="relative">
-                                <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/40" />
                                 <input
                                     type="number"
                                     value={orderInput}
                                     onChange={e => setOrderInput(e.target.value)}
                                     placeholder="e.g. 1042"
                                     required
-                                    className="w-full pl-10 pr-4 py-3.5 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-sb-green transition-colors"
+                                    className="w-full pl-10 pr-4 py-3.5 border border-ink/15 rounded-full text-sm text-ink focus:outline-none focus:border-gold transition-colors"
                                 />
                             </div>
                         </div>
                         {error && (
-                            <div className="flex items-center gap-2 text-red-600 bg-red-50 rounded-2xl px-4 py-3 text-xs">
+                            <div className="flex items-center gap-2 text-red-600 bg-red-500/10 rounded-2xl px-4 py-3 text-xs">
                                 <AlertCircle size={14} className="shrink-0" />
                                 {error}
                             </div>
@@ -200,7 +200,7 @@ function GuestLookup({ orderId, onFound }: { orderId: string; onFound: (order: O
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                            className="w-full py-4 bg-gold text-ink rounded-full font-black uppercase tracking-widest hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
                         >
                             {loading ? <Loader2 size={16} className="animate-spin" /> : <Package size={16} />}
                             {loading ? 'Looking up...' : 'Track Order'}
@@ -224,61 +224,61 @@ function OrderDetail({ order }: { order: Order }) {
     const isTerminal = ['cancelled', 'refunded', 'payment_failed'].includes(order.status);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-sb-green/5 to-white pt-20 pb-32 px-4">
+        <div className="min-h-screen bg-ink text-sand grain-overlay pt-20 pb-32 px-4">
             <div className="max-w-3xl mx-auto">
 
                 {/* Back */}
                 <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} className="mb-6">
-                    <Link href="/shop" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-sb-green transition-colors">
+                    <Link href="/shop" className="inline-flex items-center gap-2 text-sm text-sand/60 hover:text-gold transition-colors">
                         <ArrowLeft size={14} /> Continue Shopping
                     </Link>
                 </motion.div>
 
                 {/* Hero card */}
-                <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-[32px] border border-gray-100 shadow-xl overflow-hidden mb-6">
+                <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="bg-sand rounded-[32px] border border-ink/10 shadow-xl overflow-hidden mb-6">
                     {/* Header strip */}
-                    <div className="bg-sb-green px-6 py-5 flex flex-wrap items-center justify-between gap-4">
+                    <div className="bg-gold px-6 py-5 flex flex-wrap items-center justify-between gap-4">
                         <div>
-                            <p className="text-white/70 text-[10px] uppercase tracking-widest font-bold mb-0.5">Order Number</p>
-                            <p className="text-white font-black text-2xl tracking-widest font-mono">#{order.id}</p>
+                            <p className="text-ink/60 text-[10px] uppercase tracking-widest font-bold mb-0.5">Order Number</p>
+                            <p className="text-ink font-black text-2xl tracking-widest font-mono">#{order.id}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-white/70 text-[10px] uppercase tracking-widest font-bold mb-0.5">Grand Total</p>
-                            <p className="text-white font-display text-2xl">{formatPrice(parseFloat(String(order.grand_total)))}</p>
+                            <p className="text-ink/60 text-[10px] uppercase tracking-widest font-bold mb-0.5">Grand Total</p>
+                            <p className="text-ink font-display text-2xl">{formatPrice(parseFloat(String(order.grand_total)))}</p>
                         </div>
                     </div>
 
                     {/* Meta grid */}
-                    <div className="p-6 grid grid-cols-2 sm:grid-cols-4 gap-4 border-b border-gray-100">
+                    <div className="p-6 grid grid-cols-2 sm:grid-cols-4 gap-4 border-b border-ink/10">
                         <div className="flex items-start gap-2">
-                            <Calendar size={15} className="text-gray-400 mt-0.5 shrink-0" />
+                            <Calendar size={15} className="text-ink/40 mt-0.5 shrink-0" />
                             <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Placed</p>
-                                <p className="text-xs font-semibold text-sb-black mt-0.5">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-ink/50">Placed</p>
+                                <p className="text-xs font-semibold text-ink mt-0.5">
                                     {new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </p>
                             </div>
                         </div>
                         <div className="flex items-start gap-2">
-                            <Hash size={15} className="text-gray-400 mt-0.5 shrink-0" />
+                            <Hash size={15} className="text-ink/40 mt-0.5 shrink-0" />
                             <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Status</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-ink/50">Status</p>
                                 <div className="mt-0.5"><StatusBadge status={order.status} isPickup={isPickupOrder} /></div>
                             </div>
                         </div>
                         <div className="flex items-start gap-2">
-                            <Mail size={15} className="text-gray-400 mt-0.5 shrink-0" />
+                            <Mail size={15} className="text-ink/40 mt-0.5 shrink-0" />
                             <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Email</p>
-                                <p className="text-xs font-semibold text-sb-black mt-0.5 break-all">{order.user_email}</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-ink/50">Email</p>
+                                <p className="text-xs font-semibold text-ink mt-0.5 break-all">{order.user_email}</p>
                             </div>
                         </div>
                         {order.user_phone && (
                             <div className="flex items-start gap-2">
-                                <Phone size={15} className="text-gray-400 mt-0.5 shrink-0" />
+                                <Phone size={15} className="text-ink/40 mt-0.5 shrink-0" />
                                 <div>
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Phone</p>
-                                    <p className="text-xs font-semibold text-sb-black mt-0.5">{order.user_phone}</p>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-ink/50">Phone</p>
+                                    <p className="text-xs font-semibold text-ink mt-0.5">{order.user_phone}</p>
                                 </div>
                             </div>
                         )}
@@ -286,14 +286,14 @@ function OrderDetail({ order }: { order: Order }) {
 
                     {/* Tracking number */}
                     {shipment && (
-                        <div className="px-6 py-4 border-b border-gray-100 bg-violet-50/50 flex flex-wrap items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+                        <div className="px-6 py-4 border-b border-ink/10 bg-violet-500/10 flex flex-wrap items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
                                 <Truck size={18} className="text-violet-600" />
                             </div>
                             <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Tracking Number</p>
-                                <p className="text-sm font-black text-sb-black font-mono mt-0.5">{shipment.tracking_number}</p>
-                                <p className="text-xs text-gray-500">via {shipment.carrier}</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-ink/50">Tracking Number</p>
+                                <p className="text-sm font-black text-ink font-mono mt-0.5">{shipment.tracking_number}</p>
+                                <p className="text-xs text-ink/50">via {shipment.carrier}</p>
                             </div>
                         </div>
                     )}
@@ -302,8 +302,8 @@ function OrderDetail({ order }: { order: Order }) {
                 {/* Status timeline */}
                 {!isTerminal && (
                     <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                        className="bg-white rounded-[28px] border border-gray-100 shadow-md p-6 mb-6">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-5">Order Progress</p>
+                        className="bg-sand rounded-[28px] border border-ink/10 shadow-md p-6 mb-6">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-ink/50 mb-5">Order Progress</p>
                         <div className="flex items-center gap-0">
                             {timelineSteps.map((step, i) => {
                                 const reached  = statusIdx >= i;
@@ -314,16 +314,16 @@ function OrderDetail({ order }: { order: Order }) {
                                     <React.Fragment key={step}>
                                         <div className="flex flex-col items-center flex-1 min-w-0">
                                             <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all ${
-                                                reached ? 'bg-sb-green border-sb-green text-white' : 'bg-gray-50 border-gray-200 text-gray-300'
-                                            } ${current ? 'ring-4 ring-sb-green/20' : ''}`}>
+                                                reached ? 'bg-gold border-gold text-ink' : 'bg-ink/5 border-ink/10 text-ink/30'
+                                            } ${current ? 'ring-4 ring-gold/20' : ''}`}>
                                                 {reached ? <CheckCircle2 size={16} /> : cfg.icon}
                                             </div>
-                                            <p className={`text-[9px] font-black uppercase tracking-wide mt-2 text-center leading-tight ${reached ? 'text-sb-green' : 'text-gray-400'}`}>
+                                            <p className={`text-[9px] font-black uppercase tracking-wide mt-2 text-center leading-tight ${reached ? 'text-gold' : 'text-ink/50'}`}>
                                                 {label}
                                             </p>
                                         </div>
                                         {i < timelineSteps.length - 1 && (
-                                            <div className={`flex-1 h-0.5 mb-5 ${i < statusIdx ? 'bg-sb-green' : 'bg-gray-100'}`} />
+                                            <div className={`flex-1 h-0.5 mb-5 ${i < statusIdx ? 'bg-gold' : 'bg-ink/10'}`} />
                                         )}
                                     </React.Fragment>
                                 );
@@ -335,25 +335,25 @@ function OrderDetail({ order }: { order: Order }) {
                 {/* Status history */}
                 {order.status_logs && order.status_logs.length > 0 && (
                     <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-                        className="bg-white rounded-[28px] border border-gray-100 shadow-md p-6 mb-6">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Status History</p>
+                        className="bg-sand rounded-[28px] border border-ink/10 shadow-md p-6 mb-6">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-ink/50 mb-4">Status History</p>
                         <div className="space-y-3">
                             {[...order.status_logs].reverse().map((log, i) => (
                                 <div key={i} className="flex items-start gap-3">
-                                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${i === 0 ? 'bg-sb-green' : 'bg-gray-300'}`} />
+                                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${i === 0 ? 'bg-gold' : 'bg-ink/20'}`} />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <StatusBadge status={log.status} isPickup={isPickupOrder} muted={i !== 0} />
                                             {i === 0 && (
-                                                <span className="text-[9px] font-black uppercase tracking-wider text-sb-green bg-sb-green/10 px-1.5 py-0.5 rounded-full">
+                                                <span className="text-[9px] font-black uppercase tracking-wider text-gold bg-gold/15 px-1.5 py-0.5 rounded-full">
                                                     Current
                                                 </span>
                                             )}
-                                            <span className="text-[10px] text-gray-400">
+                                            <span className="text-[10px] text-ink/40">
                                                 {new Date(log.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
-                                        {log.note && <p className="text-xs text-gray-500 mt-1">{log.note}</p>}
+                                        {log.note && <p className="text-xs text-ink/50 mt-1">{log.note}</p>}
                                     </div>
                                 </div>
                             ))}
@@ -363,51 +363,51 @@ function OrderDetail({ order }: { order: Order }) {
 
                 {/* Order items */}
                 <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                    className="bg-white rounded-[28px] border border-gray-100 shadow-md overflow-hidden mb-6">
-                    <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-                        <ShoppingBag size={16} className="text-sb-green" />
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Order Items</p>
+                    className="bg-sand rounded-[28px] border border-ink/10 shadow-md overflow-hidden mb-6">
+                    <div className="px-6 py-4 border-b border-ink/10 flex items-center gap-2">
+                        <ShoppingBag size={16} className="text-gold" />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-ink/50">Order Items</p>
                     </div>
-                    <div className="divide-y divide-gray-50">
+                    <div className="divide-y divide-ink/5">
                         {order.items.map(item => (
                             <div key={item.id} className="px-6 py-4 flex items-center justify-between gap-4">
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <div className="w-10 h-10 rounded-xl bg-sb-green/10 flex items-center justify-center shrink-0">
-                                        <Package size={16} className="text-sb-green" />
+                                    <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
+                                        <Package size={16} className="text-gold" />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold text-sb-black truncate">{item.product_name_snapshot}</p>
-                                        <p className="text-xs text-gray-500">{item.unit_name_snapshot} × {item.quantity}</p>
+                                        <p className="text-sm font-bold text-ink truncate">{item.product_name_snapshot}</p>
+                                        <p className="text-xs text-ink/50">{item.unit_name_snapshot} × {item.quantity}</p>
                                     </div>
                                 </div>
-                                <p className="text-sm font-black text-sb-black whitespace-nowrap">
+                                <p className="text-sm font-black text-ink whitespace-nowrap">
                                     {formatPrice(parseFloat(String(item.line_total)))}
                                 </p>
                             </div>
                         ))}
                     </div>
                     {/* Totals */}
-                    <div className="border-t border-gray-100 px-6 py-4 space-y-2 bg-gray-50/50">
-                        <div className="flex justify-between text-sm text-gray-500">
+                    <div className="border-t border-ink/10 px-6 py-4 space-y-2 bg-ink/5">
+                        <div className="flex justify-between text-sm text-ink/60">
                             <span>Subtotal</span>
                             <span>{formatPrice(parseFloat(String(order.subtotal)))}</span>
                         </div>
                         {parseFloat(String(order.discount_total)) > 0 && (
-                            <div className="flex justify-between text-sm text-sb-green">
+                            <div className="flex justify-between text-sm text-gold">
                                 <span>Discount</span>
                                 <span>− {formatPrice(parseFloat(String(order.discount_total)))}</span>
                             </div>
                         )}
-                        <div className="flex justify-between text-sm text-gray-500">
+                        <div className="flex justify-between text-sm text-ink/60">
                             <span>Shipping</span>
                             <span>{parseFloat(String(order.shipping_total)) === 0 ? 'Free' : formatPrice(parseFloat(String(order.shipping_total)))}</span>
                         </div>
-                        <div className="flex justify-between font-black text-sb-black pt-2 border-t border-gray-200">
+                        <div className="flex justify-between font-black text-ink pt-2 border-t border-ink/10">
                             <span>Total</span>
                             <span>{formatPrice(parseFloat(String(order.grand_total)))}</span>
                         </div>
                         {parseFloat(String(order.tax_total)) > 0 && (
-                            <div className="flex justify-between text-[11px] text-gray-400">
+                            <div className="flex justify-between text-[11px] text-ink/40">
                                 <span>incl. VAT</span>
                                 <span>{formatPrice(parseFloat(String(order.tax_total)))}</span>
                             </div>
@@ -418,26 +418,26 @@ function OrderDetail({ order }: { order: Order }) {
                 {/* Shipping address */}
                 {shippingAddress && (
                     <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-                        className="bg-white rounded-[28px] border border-gray-100 shadow-md p-6 mb-6">
+                        className="bg-sand rounded-[28px] border border-ink/10 shadow-md p-6 mb-6">
                         <div className="flex items-center gap-2 mb-4">
-                            <MapPin size={16} className="text-sb-green" />
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Delivery Address</p>
+                            <MapPin size={16} className="text-gold" />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-ink/50">Delivery Address</p>
                         </div>
-                        <p className="font-bold text-sm text-sb-black">{shippingAddress.first_name} {shippingAddress.last_name}</p>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="font-bold text-sm text-ink">{shippingAddress.first_name} {shippingAddress.last_name}</p>
+                        <p className="text-sm text-ink/60 mt-1">
                             {shippingAddress.line_1}{shippingAddress.line_2 ? `, ${shippingAddress.line_2}` : ''}<br />
                             {shippingAddress.city}{shippingAddress.state ? `, ${shippingAddress.state}` : ''} {shippingAddress.zip}<br />
                             {shippingAddress.country}
                         </p>
-                        {shippingAddress.phone && <p className="text-sm text-gray-500 mt-1">{shippingAddress.phone}</p>}
+                        {shippingAddress.phone && <p className="text-sm text-ink/60 mt-1">{shippingAddress.phone}</p>}
                     </motion.div>
                 )}
 
                 {/* Help */}
                 <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                    className="text-center text-sm text-gray-400">
+                    className="text-center text-sm text-cocoa">
                     Questions about your order?{' '}
-                    <Link href="/contact" className="text-sb-green font-bold hover:underline">Contact Support</Link>
+                    <Link href="/contact" className="text-gold font-bold hover:underline">Contact Support</Link>
                 </motion.div>
             </div>
         </div>
@@ -497,8 +497,8 @@ function OrderPageContent() {
 
     if (loading || isHydrating) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 size={32} className="animate-spin text-sb-green" />
+            <div className="min-h-screen flex items-center justify-center bg-ink">
+                <Loader2 size={32} className="animate-spin text-gold" />
             </div>
         );
     }
@@ -518,8 +518,8 @@ function OrderPageContent() {
 export default function OrderPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 size={32} className="animate-spin text-sb-green" />
+            <div className="min-h-screen flex items-center justify-center bg-ink">
+                <Loader2 size={32} className="animate-spin text-gold" />
             </div>
         }>
             <OrderPageContent />

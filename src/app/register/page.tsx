@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User as UserIcon, Loader2, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
 import { ProtectedRoute } from '@/components/ui/ProtectedRoute';
 import { ApiError } from '@/lib/api/types';
 
@@ -19,7 +18,6 @@ const PASSWORD_RULES = [
 
 export default function RegisterPage() {
     const { register } = useAuth();
-    const { isDark } = useTheme();
     const router = useRouter();
 
     const [name, setName] = useState('');
@@ -49,14 +47,12 @@ export default function RegisterPage() {
         }
     };
 
-    const pageBg = isDark ? 'bg-[#0e0e0e]' : 'bg-gray-50';
-    const surface = isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100';
-    const inputBg = isDark
-        ? 'bg-white/5 border-white/10 text-white placeholder-white/40 focus:border-[#3B7E5A] focus:ring-[#3B7E5A]/20'
-        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#3B7E5A] focus:ring-[#3B7E5A]/20';
-    const labelColor = isDark ? 'text-white/60' : 'text-gray-500';
-    const headingColor = isDark ? 'text-white' : 'text-gray-900';
-    const iconColor = isDark ? 'text-white/30' : 'text-gray-400';
+    const pageBg = 'bg-ink grain-overlay';
+    const surface = 'bg-sand border-ink/10';
+    const inputBg = 'bg-ink/5 border-ink/10 text-ink placeholder-ink/30 focus:border-gold focus:ring-gold/20';
+    const labelColor = 'text-ink/60';
+    const headingColor = 'text-ink';
+    const iconColor = 'text-ink/30';
 
     const firstFieldError = (key: string) => fieldErrors[key]?.[0];
 
@@ -72,7 +68,7 @@ export default function RegisterPage() {
                     {/* Brand */}
                     <div className="text-center mb-8">
                         <Link href="/" className="inline-block">
-                            <span className="font-display text-2xl uppercase tracking-widest text-[#3B7E5A]">Cafrezzo</span>
+                            <span className="font-display text-2xl uppercase tracking-widest text-gold">Cafrezzo</span>
                         </Link>
                         <h1 className={`mt-4 font-display text-3xl uppercase tracking-tight ${headingColor}`}>
                             Create Account
@@ -151,7 +147,7 @@ export default function RegisterPage() {
                                     type="button"
                                     tabIndex={-1}
                                     onClick={() => setShowPassword(v => !v)}
-                                    className={`absolute inset-y-0 right-0 pr-4 flex items-center ${iconColor} hover:text-[#3B7E5A] transition-colors`}
+                                    className={`absolute inset-y-0 right-0 pr-4 flex items-center ${iconColor} hover:text-gold transition-colors`}
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -164,7 +160,7 @@ export default function RegisterPage() {
                                     {PASSWORD_RULES.map(rule => {
                                         const ok = rule.test(password);
                                         return (
-                                            <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-[#3B7E5A]' : labelColor}`}>
+                                            <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-emerald-600' : labelColor}`}>
                                                 <CheckCircle2 size={12} className={ok ? 'opacity-100' : 'opacity-30'} />
                                                 {rule.label}
                                             </li>
@@ -193,7 +189,7 @@ export default function RegisterPage() {
                                     type="button"
                                     tabIndex={-1}
                                     onClick={() => setShowConfirm(v => !v)}
-                                    className={`absolute inset-y-0 right-0 pr-4 flex items-center ${iconColor} hover:text-[#3B7E5A] transition-colors`}
+                                    className={`absolute inset-y-0 right-0 pr-4 flex items-center ${iconColor} hover:text-gold transition-colors`}
                                 >
                                     {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -206,7 +202,7 @@ export default function RegisterPage() {
                         <button
                             type="submit"
                             disabled={isLoading || (confirm.length > 0 && confirm !== password)}
-                            className="w-full bg-[#3B7E5A] text-white rounded-xl py-3.5 font-black uppercase tracking-widest text-[11px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="w-full bg-gold text-ink rounded-xl py-3.5 font-black uppercase tracking-widest text-[11px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Create Account'}
                         </button>
@@ -214,7 +210,7 @@ export default function RegisterPage() {
 
                     <div className={`mt-8 text-center text-sm ${labelColor}`}>
                         Already have an account?{' '}
-                        <Link href="/login" className="text-[#3B7E5A] font-bold hover:underline">
+                        <Link href="/login" className="text-gold font-bold hover:underline">
                             Sign in
                         </Link>
                     </div>

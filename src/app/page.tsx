@@ -39,23 +39,23 @@ function BrandsMarqueeSection() {
 
 
   return (
-    <section className="bg-sb-green py-12 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(ellipse_at_50%_50%,_white,_transparent_70%)] pointer-events-none" />
+    <section className="bg-ink py-12 relative overflow-hidden grain-overlay">
+      <div className="absolute inset-0 opacity-[0.08] bg-[radial-gradient(ellipse_at_50%_50%,_#C9A05A,_transparent_70%)] pointer-events-none" />
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mb-6 sm:mb-10">
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-5 h-px bg-white/40" />
-              <span className="text-[9px] font-black tracking-[0.4em] uppercase text-white/50">
+              <div className="w-5 h-px bg-gold/40" />
+              <span className="text-[9px] font-black tracking-[0.4em] uppercase text-sand/50">
                 {language === 'fr' ? 'Nos Partenaires' : 'Our Partners'}
               </span>
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-white uppercase leading-tight">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-sand uppercase leading-tight">
               {language === 'fr' ? 'Marques de Confiance' : 'Trusted Brands'}
             </h2>
           </div>
-          <p className="text-white/50 text-xs max-w-xs leading-relaxed">
+          <p className="text-sand/60 text-xs max-w-xs leading-relaxed">
             {language === 'fr'
               ? 'Les grandes marques du café, toutes réunies sur notre plateforme.'
               : 'World-renowned coffee brands, all available on our platform.'}
@@ -74,8 +74,8 @@ function BrandsMarqueeSection() {
 
         return (
         <div className="relative overflow-hidden">
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-sb-green to-transparent" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-sb-green to-transparent" />
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-ink to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-ink to-transparent" />
 
           {/* Two identical tracks: each track is 50% of total width. Animation moves -50% for seamless loop. */}
           <div className="flex marquee-track">
@@ -84,7 +84,7 @@ function BrandsMarqueeSection() {
                 {filledBrands.map((brand, i) => (
                   <div
                     key={`${trackIdx}-${i}`}
-                    className="shrink-0 w-48 h-24 rounded-2xl bg-white shadow-[0_2px_20px_rgba(0,0,0,0.08)] flex items-center justify-center group hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-500 cursor-pointer overflow-hidden relative border border-white/80"
+                    className="shrink-0 w-48 h-24 rounded-2xl bg-sand shadow-[0_2px_20px_rgba(0,0,0,0.25)] flex items-center justify-center group hover:shadow-[0_8px_30px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 transition-all duration-500 cursor-pointer overflow-hidden relative border border-sand/60"
                   >
                     {brand.logo ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
@@ -105,7 +105,7 @@ function BrandsMarqueeSection() {
                       style={{ display: brand.logo ? 'none' : 'flex' }}
                     >
                       <span
-                        className="text-[13px] font-black uppercase tracking-[0.25em] text-gray-800 text-center leading-snug group-hover:text-sb-green transition-colors duration-500"
+                        className="text-[13px] font-black uppercase tracking-[0.25em] text-ink text-center leading-snug group-hover:text-gold transition-colors duration-500"
                         style={{ fontVariant: 'small-caps', letterSpacing: brand.name.length > 10 ? '0.15em' : '0.25em' }}
                       >
                         {brand.name}
@@ -152,16 +152,16 @@ export default function Home() {
   }, [selectedProduct]);
 
   return (
-    <div className="w-full relative bg-sb-white text-sb-black overflow-x-hidden">
+    <div className="w-full relative bg-ink text-sand overflow-x-hidden grain-overlay">
       <motion.div
         key="home"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}
       >
 
         {/* ── HERO ─────────────────────────────────────────────────────── */}
-        <section className="relative w-full pt-16 pb-12 sm:pb-20 lg:pb-32 bg-sb-white z-10 overflow-visible min-h-[500px] sm:min-h-[600px] lg:min-h-[800px] flex flex-col justify-center">
+        <section className="relative w-full pt-16 pb-12 sm:pb-20 lg:pb-32 z-10 overflow-visible min-h-[500px] sm:min-h-[600px] lg:min-h-[800px] flex flex-col justify-center">
           {/* Coffee Beans Decoration */}
-        
+
           <div
             className="absolute left-0 top-0 bottom-0 w-[300px] lg:w-[500px] pointer-events-none z-0"
             style={{
@@ -169,7 +169,7 @@ export default function Home() {
               maskImage: 'radial-gradient(ellipse at left center, black 20%, transparent 70%)'
             }}
           >
-            <img src="/coffee-beans.png" alt="" className="w-full h-full object-cover opacity-50" />
+            <img src="/coffee-beans.png" alt="" className="w-full h-full object-cover opacity-30" />
           </div>
 
           <div className="max-w-[1700px] mx-auto px-4 sm:px-8 relative mb-6 sm:mb-12">
@@ -189,47 +189,37 @@ export default function Home() {
             <div className="flex flex-col lg:flex-row justify-between items-center lg:items-end -mt-10 sm:-mt-16 lg:-mt-40 xl:-mt-52 relative z-10 w-full px-4 lg:px-12">
 
               <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-start mb-6 lg:mb-0 space-y-4 sm:space-y-6">
-                <motion.div
-                  initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
-                  className="flex items-center space-x-2 bg-white/70 backdrop-blur-md p-3 pr-5 rounded-[30px] border border-white/80 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] transition-shadow duration-300"
-                >
-                  {/* <div className="flex -space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm"><img src="./assets/c1.jpg?img=1" alt="User" /></div>
-                    <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white overflow-hidden shadow-sm"><img src="./assets/c2.jpg?img=2" alt="User" /></div>
-                    <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white overflow-hidden shadow-sm"><img src="./assets/c3.jpg?img=3" alt="User" /></div>
-                  </div> */}
-                  {/* <div className="flex flex-col pl-4">
-                    <span className="font-display text-2xl lg:text-3xl leading-tight">1M+</span>
-                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">{t('satisfiedCustomers')}</span>
-                  </div> */}
-                  
-                </motion.div>
+             
 
                 <motion.p
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                  className="text-gray-500 max-w-[280px] text-sm leading-relaxed z-10 relative"
+                  className="text-sand/60 max-w-[280px] text-sm leading-relaxed z-10 relative"
                 >
                   {t('heroSubtitle')}
                 </motion.p>
               </div>
 
-              {/* HERO CUP AND CIRCLE - Cup sits ON the circle, bottom in, top out */}
+              {/* HERO CUP AND GLOW - Cup floats over a soft gold glow instead of a flat color circle */}
               <div className="w-full lg:w-1/3 flex justify-center items-center relative z-[40] mt-2 sm:mt-4 lg:mt-0 h-[260px] sm:h-[350px] md:h-[400px] lg:h-[500px]">
-                {/* The Green Circle - BEHIND the cup (z-1) */}
+                {/* Gold ambient glow — BEHIND the cup (z-1) */}
                 <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
-                  className="absolute left-1/2 transform -translate-x-1/2 bg-[#439665] rounded-full z-[1] w-[200px] h-[200px] sm:w-[280px] sm:h-[280px] md:h-[350px] md:w-[350px] lg:w-[420px] lg:h-[420px]"
-                  style={{ top: '50%', marginTop: '-60px' }}
+                  className="absolute left-1/2 transform -translate-x-1/2 rounded-full z-[1] w-[220px] h-[220px] sm:w-[300px] sm:h-[300px] md:h-[380px] md:w-[380px] lg:w-[460px] lg:h-[460px] blur-2xl"
+                  style={{
+                    top: '50%',
+                    marginTop: '-60px',
+                    background: 'radial-gradient(circle, rgba(201,160,90,0.45) 0%, rgba(201,160,90,0.15) 55%, transparent 75%)',
+                  }}
                 />
-                {/* The Cup - ABOVE the circle (z-2), transparent PNG floating */}
+                {/* The Cup - ABOVE the glow (z-2), transparent PNG floating */}
                 <motion.img
                   animate={{ y: [0, -12, 0] }}
                   transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                  src="/hero-cup.png"
+                  src="/cup5.png"
                   alt="Iced Coffee Cup"
-                  className="absolute left-1/2 transform -translate-x-1/2 z-[2] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.35)] w-[150px] sm:w-[210px] md:w-[250px] lg:w-[300px] h-auto top-[30px] sm:top-[40px] lg:top-[60px]"
+                  className="absolute left-1/2 transform -translate-x-1/2 z-[2] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)] w-[150px] sm:w-[210px] md:w-[250px] lg:w-[460px] h-auto top-[50px] sm:top-[40px] lg:top-[80px]"
                 />
               </div>
 
@@ -237,14 +227,14 @@ export default function Home() {
                 <motion.div
                   initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
                   onClick={() => setSelectedProduct(dailyPick.product || featuredProducts[0] || null)}
-                  className="flex items-center space-x-6 mr-4 bg-white/70 backdrop-blur-md p-4 rounded-3xl border border-white/80 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)] group cursor-pointer hover:bg-white/90 hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] transition-all duration-300"
+                  className="flex items-center space-x-6 mr-4 bg-sand/8 backdrop-blur-md p-4 rounded-3xl border border-sand/15 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] group cursor-pointer hover:bg-sand/14 hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.4)] transition-all duration-300"
                 >
                   <div className="flex flex-col text-right">
-                    <span className="font-bold text-sm tracking-wide text-sb-black group-hover:text-sb-green transition-colors">{dailyPick.label || t('dailyPick')}</span>
-                    <span className="text-xs text-gray-500 max-w-[120px] truncate">{dailyPick.product?.name || ' '}</span>
+                    <span className="font-bold text-sm tracking-wide text-sand group-hover:text-gold transition-colors">{dailyPick.label || t('dailyPick')}</span>
+                    <span className="text-xs text-sand/50 max-w-[120px] truncate">{dailyPick.product?.name || ' '}</span>
                   </div>
                   <div className="w-16 h-20 bg-[#E1CDA4] rounded-xl p-1 relative shadow-inner transform group-hover:rotate-12 transition-transform duration-500 overflow-hidden">
-                    <div className="w-full h-full border border-black/5 rounded-lg"></div>
+                    <div className="w-full h-full border border-ink/10 rounded-lg"></div>
                     {dailyPick.product && getProductImage(dailyPick.product) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={getProductImage(dailyPick.product)!} alt={dailyPick.product.name} className="w-full h-full object-cover absolute top-0 left-0 scale-[0.8] drop-shadow-md" />
@@ -257,17 +247,17 @@ export default function Home() {
                 <Link href="/shop" className="inline-block">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6 }}
-                    whileHover={{ scale: 1.05, backgroundColor: "#2D5F41" }}
+                    whileHover={{ scale: 1.05, backgroundColor: "#b8914d" }}
                     whileTap={{ scale: 0.95 }}
-                    className="bg-[#3C7A58] text-white px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase shadow-xl hover:shadow-[#3C7A58]/50 transition-all duration-300 flex items-center cursor-pointer"
+                    className="bg-gold text-ink px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase shadow-xl hover:shadow-gold/50 transition-all duration-300 flex items-center cursor-pointer"
                   >
                     {t('shopNow')}
-                    <div className="w-1.5 h-1.5 ml-3 bg-white rounded-full"></div>
+                    <div className="w-1.5 h-1.5 ml-3 bg-ink rounded-full"></div>
                   </motion.div>
                 </Link>
                 <Link
                   href="/orders/track"
-                  className="text-[10px] font-bold tracking-[0.15em] uppercase text-sb-black/60 hover:text-sb-green transition-colors underline underline-offset-4"
+                  className="text-[10px] font-bold tracking-[0.15em] uppercase text-sand/60 hover:text-gold transition-colors underline underline-offset-4"
                 >
                   {t('footerTrackOrder')}
                 </Link>
@@ -277,7 +267,7 @@ export default function Home() {
         </section>
 
         {/* ── STORY / CRAFT SECTION ─────────────────────────────────────── */}
-        <section className="relative bg-[#0D1F14] overflow-hidden">
+        <section className="relative bg-ink overflow-hidden grain-overlay">
           {/* Full-bleed background image with dark overlay */}
           <div className="absolute inset-0 z-0">
             <img
@@ -285,7 +275,7 @@ export default function Home() {
               alt=""
               className="w-full h-full object-cover opacity-30"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0D1F14]/95 via-[#0D1F14]/70 to-[#0D1F14]/40" />
+            <div className="absolute inset-0 bg-gradient-to-r from-ink/95 via-ink/70 to-ink/40" />
           </div>
 
           <div className="relative z-10 max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 py-20 sm:py-28 lg:py-36">
@@ -296,20 +286,20 @@ export default function Home() {
                 initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.9 }}
                 className="w-full lg:w-1/2"
               >
-                <div className="inline-flex items-center gap-2 bg-sb-green/20 border border-sb-green/30 text-sb-green text-[9px] font-black tracking-[0.4em] uppercase px-4 py-2 rounded-full mb-8">
+                <div className="inline-flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold text-[9px] font-black tracking-[0.4em] uppercase px-4 py-2 rounded-full mb-8">
                   <Leaf size={10} />
                   {language === 'fr' ? "L'esprit Cafrezzo" : 'The Cafrezzo Spirit'}
                 </div>
 
-                <h2 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white uppercase leading-[0.85] tracking-tight mb-8">
+                <h2 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-sand uppercase leading-[0.85] tracking-tight mb-8">
                   {language === 'fr' ? (
-                    <><span className="text-sb-green">Le café</span><br />créateur de<br />moments</>
+                    <><span className="text-gold">Le café</span><br />créateur de<br />moments</>
                   ) : (
-                    <><span className="text-sb-green">Coffee</span><br />the creator of<br />moments</>
+                    <><span className="text-gold">Coffee</span><br />the creator of<br />moments</>
                   )}
                 </h2>
 
-                <p className="text-white/60 text-base lg:text-lg leading-relaxed max-w-md mb-10">
+                <p className="text-sand/60 text-base lg:text-lg leading-relaxed max-w-md mb-10">
                   {language === 'fr'
                     ? 'Chaque détail compte. De la sélection des produits au service client, nous mettons notre passion pour le café au cœur de chaque expérience.'
                     : 'Every detail matters. From product selection to customer support, we put our passion for coffee at the heart of every experience.'}
@@ -331,7 +321,7 @@ export default function Home() {
 
                 <Link
                   href="/our-origins"
-                  className="inline-flex items-center gap-3 text-sb-green border border-sb-green/40 hover:border-sb-green hover:bg-sb-green hover:text-white px-7 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300"
+                  className="inline-flex items-center gap-3 text-gold border border-gold/40 hover:border-gold hover:bg-gold hover:text-ink px-7 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300"
                 >
                   {language === 'fr' ? 'Découvrir nos origines' : 'Discover Our Origins'} <ArrowRight size={12} />
                 </Link>
@@ -366,10 +356,10 @@ export default function Home() {
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-[2s]"
                   />
                   {/* Floating badge */}
-                  <div className="absolute bottom-4 left-4 right-4 bg-black/50 backdrop-blur-md rounded-2xl px-4 py-3 border border-white/10">
+                  <div className="absolute bottom-4 left-4 right-4 bg-ink/60 backdrop-blur-md rounded-2xl px-4 py-3 border border-sand/10">
                     <div className="flex items-center gap-2">
-                      <Award size={14} className="text-sb-green flex-shrink-0" />
-                      <span className="text-white text-[10px] font-bold uppercase tracking-wider">
+                      <Award size={14} className="text-gold flex-shrink-0" />
+                      <span className="text-sand text-[10px] font-bold uppercase tracking-wider">
                         {language === 'fr' ? 'Certifié 100% Arabica' : '100% Arabica Certified'}
                       </span>
                     </div>
@@ -381,29 +371,29 @@ export default function Home() {
           </div>
 
           {/* Bottom accent line */}
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-sb-green/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
         </section>
 
         {/* ── FEATURED COLLECTION ───────────────────────────────────────── */}
-        <section className="bg-white py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay">
           {/* Subtle background texture */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(59,126,90,0.04),_transparent_60%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(201,160,90,0.06),_transparent_60%)] pointer-events-none" />
 
           <div className="max-w-[1400px] mx-auto relative z-10">
             <div className="flex flex-col md:flex-row items-end justify-between mb-12 md:mb-16 px-2 gap-6">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-px bg-sb-green" />
-                  <span className="text-[9px] font-black tracking-[0.35em] uppercase text-sb-green">{t('premiumSelection')}</span>
+                  <div className="w-8 h-px bg-gold" />
+                  <span className="text-[9px] font-black tracking-[0.35em] uppercase text-gold">{t('premiumSelection')}</span>
                 </div>
-                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-sb-black uppercase tracking-tight leading-[0.88]">
+                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-sand uppercase tracking-tight leading-[0.88]">
                   {language === 'fr' ? 'Sélection' : 'Featured'}<br />
-                  <span className="text-sb-green">{language === 'fr' ? 'Vedette' : 'Collection'}</span>
+                  <span className="text-gold">{language === 'fr' ? 'Vedette' : 'Collection'}</span>
                 </h2>
               </div>
               <Link
                 href="/shop"
-                className="hidden md:inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-sb-green border border-sb-green hover:bg-sb-green hover:text-white px-7 py-3.5 rounded-full transition-all duration-300"
+                className="hidden md:inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold hover:bg-gold hover:text-ink px-7 py-3.5 rounded-full transition-all duration-300"
               >
                 {language === 'fr' ? 'Voir tout' : 'View All'} <ArrowRight size={11} />
               </Link>
@@ -427,7 +417,7 @@ export default function Home() {
             )}
 
             <div className="flex md:hidden justify-center mt-10">
-              <Link href="/shop" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-sb-green border border-sb-green px-7 py-3.5 rounded-full">
+              <Link href="/shop" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold px-7 py-3.5 rounded-full">
                 {language === 'fr' ? 'Voir toute la collection' : 'View Entire Collection'} <ArrowRight size={11} />
               </Link>
             </div>

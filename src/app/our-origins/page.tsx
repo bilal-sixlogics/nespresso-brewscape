@@ -111,7 +111,7 @@ function BrandLogo({ logo, name, size = "large" }: { logo?: string | null; name:
     ) : (
         <div className="w-full h-full flex items-center justify-center px-4">
             <span
-                className="text-center font-black uppercase text-gray-700"
+                className="text-center font-black uppercase text-ink"
                 style={{ fontVariant: "small-caps", letterSpacing: "0.2em", fontSize: size === "large" ? "1.1rem" : "0.7rem" }}
             >
                 {name}
@@ -138,18 +138,18 @@ export default function OurOriginsPage() {
     }, []);
 
     return (
-        <div className="w-full bg-sb-white text-sb-black min-h-screen">
+        <div className="w-full bg-ink text-sand min-h-screen grain-overlay">
             {/* Hero */}
-            <section className="bg-sb-black pt-16 sm:pt-20 md:pt-24 pb-14 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.2),_transparent_60%)] pointer-events-none" />
+            <section className="bg-ink pt-16 sm:pt-20 md:pt-24 pb-14 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(201,160,90,0.15),_transparent_60%)] pointer-events-none" />
                 <div className="max-w-[900px] mx-auto relative z-10 text-center">
-                    <p className="text-sb-green text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                    <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
                         Our Heritage
                     </p>
-                    <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase text-white mb-6">
-                        Discover Our<span className="text-sb-green block">Origins</span>
+                    <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase text-sand mb-6">
+                        Discover Our<span className="text-gold block">Origins</span>
                     </h1>
-                    <p className="text-white/50 text-base max-w-2xl mx-auto">
+                    <p className="text-sand/60 text-base max-w-2xl mx-auto">
                         At Cafrezzo, we have chosen coffee brands recognised for their expertise, history and
                         commitment to quality. Each brand has a unique identity, inspired by European coffee
                         traditions and the world&apos;s major coffee-producing regions.
@@ -174,18 +174,18 @@ export default function OurOriginsPage() {
                         >
                             <div className={`flex flex-col ${reversed ? "md:flex-row-reverse" : "md:flex-row"} items-center gap-8 md:gap-14`}>
                                 <div className="w-full md:w-[280px] flex-shrink-0">
-                                    <div className="aspect-[4/3] rounded-[24px] bg-white border border-gray-100 shadow-[0_2px_24px_rgba(0,0,0,0.06)] flex items-center justify-center overflow-hidden">
+                                    <div className="aspect-[4/3] rounded-[24px] bg-sand border border-ink/10 shadow-[0_2px_24px_rgba(0,0,0,0.2)] flex items-center justify-center overflow-hidden">
                                         <BrandLogo logo={logo} name={brand.name} />
                                     </div>
                                 </div>
                                 <div className="flex-1 text-center md:text-left">
-                                    <span className="inline-block text-[9px] font-black tracking-[0.3em] uppercase text-sb-green mb-3">
+                                    <span className="inline-block text-[9px] font-black tracking-[0.3em] uppercase text-gold mb-3">
                                         {brand.country}
                                     </span>
-                                    <h2 className="font-display text-3xl sm:text-4xl uppercase mb-4 tracking-tight">
+                                    <h2 className="font-display text-3xl sm:text-4xl uppercase mb-4 tracking-tight text-sand">
                                         {brand.name}
                                     </h2>
-                                    <p className="text-gray-500 leading-relaxed max-w-xl mx-auto md:mx-0">
+                                    <p className="text-sand/60 leading-relaxed max-w-xl mx-auto md:mx-0">
                                         {brand.history}
                                     </p>
                                 </div>
@@ -195,19 +195,19 @@ export default function OurOriginsPage() {
                             {isLavazza && (
                                 <div className="mt-10 sm:mt-12 pl-0 md:pl-[0px]">
                                     <div className="flex items-center gap-3 mb-6">
-                                        <Coffee size={14} className="text-sb-green" />
-                                        <p className="text-[10px] font-black tracking-[0.25em] uppercase text-gray-400">
+                                        <Coffee size={14} className="text-gold" />
+                                        <p className="text-[10px] font-black tracking-[0.25em] uppercase text-cocoa">
                                             Lavazza Machine Systems
                                         </p>
                                     </div>
                                     <div className="grid sm:grid-cols-3 gap-6">
                                         {LAVAZZA_MACHINE_SYSTEMS.map((system) => (
-                                            <div key={system.name} className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
-                                                <div className="w-full aspect-square rounded-xl bg-white border border-gray-100 flex items-center justify-center mb-4 overflow-hidden">
+                                            <div key={system.name} className="bg-sand/8 rounded-2xl p-5 border border-sand/10">
+                                                <div className="w-full aspect-square rounded-xl bg-sand border border-ink/10 flex items-center justify-center mb-4 overflow-hidden">
                                                     <BrandLogo logo={logos[system.slug!]} name={system.name} size="small" />
                                                 </div>
-                                                <h3 className="font-display text-lg uppercase mb-2">{system.name}</h3>
-                                                <p className="text-xs text-gray-500 leading-relaxed">{system.history}</p>
+                                                <h3 className="font-display text-lg uppercase mb-2 text-sand">{system.name}</h3>
+                                                <p className="text-xs text-sand/60 leading-relaxed">{system.history}</p>
                                             </div>
                                         ))}
                                     </div>
