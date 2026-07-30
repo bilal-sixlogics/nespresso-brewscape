@@ -210,7 +210,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                             <div className="absolute top-6 left-6 z-10 bg-red-500 text-white text-sm font-black rounded-full px-4 py-2 shadow-lg">-{discountPct}%</div>
                         )}
                         {productIsNew && !hasDiscount && (
-                            <div className="absolute top-6 left-6 z-10 bg-gold text-ink text-sm font-black rounded-full px-4 py-2">{ t('new') }</div>
+                            <div className="absolute top-6 left-6 z-10 bg-gold text-ink text-sm font-black rounded-full px-4 py-2">{ t('new','New') }</div>
                         )}
                         <button onClick={e => { e.stopPropagation(); setWishlist(w => !w); }}
                             className="absolute top-6 right-6 z-10 w-12 h-12 bg-ink/10 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-105 transition-transform">
