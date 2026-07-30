@@ -12,7 +12,8 @@ import { TrustIndicators } from '@/components/ui/TrustIndicators';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
-
+import { TestimonialsSection } from '@/components/ui/TestimonialsSection';
+import { CupSeparator } from '@/components/ui/CupSeparator';
 const SOCIALS = [
     { name: 'Facebook', icon: FacebookIcon, key: 'social_facebook_url' as const },
     { name: 'Instagram', icon: InstagramIcon, key: 'social_instagram_url' as const },
@@ -45,6 +46,9 @@ export function Footer() {
 
     return (
         <footer className="bg-ink text-sand relative z-20 pt-40 px-4 pb-10 grain-overlay">
+            <CupSeparator tone="gold" />
+            <TestimonialsSection />
+            <CupSeparator tone="gold" />
             <div className="max-w-[1400px] mx-auto relative z-10">
 
                 {/* Main Footer Content */}
@@ -88,6 +92,7 @@ export function Footer() {
                             <li><Link href="/brew-guide" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navBrewGuide')}</Link></li>
                             <li><Link href="/shop" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navShop')}</Link></li>
                             <li><Link href="/sweets" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navSweets')}</Link></li>
+                            <li><Link href="/our-origins" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navOrigins')}</Link></li>
                             <li><Link href="/blog" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navBlog')}</Link></li>
                         </ul>
                     </div>

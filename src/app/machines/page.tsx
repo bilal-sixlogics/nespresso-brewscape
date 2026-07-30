@@ -106,51 +106,56 @@ export default function MachinesPage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-transparent to-ink" />
                 <div className="absolute top-10 sm:top-20 right-0 sm:right-20 w-32 h-32 sm:w-64 sm:h-64 md:w-96 md:h-96 bg-gold/10 rounded-full blur-3xl" />
                 <div className="max-w-[1400px] mx-auto relative z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 40 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.7 }}
-                    >
-                        <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                            {tx('Équipement Premium', 'Premium Equipment')}
-                        </p>
-                        <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
-                            {tx('Machines', 'Machines')}
-                            <br />
-                            <span className="text-gold">à Café</span>
-                        </h1>
-                        <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
-                            {tx(
-                                "Du barista débutant au professionnel exigeant — trouvez la machine qui correspond à votre passion.",
-                                "From beginner barista to demanding professional — find the machine that matches your passion."
-                            )}
-                        </p>
-                        <div className="max-w-xs mt-10">
-                            <CupSeparator tone="gold" />
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
+                        <motion.div
+                            initial={{ opacity: 0, y: 40 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7 }}
+                            className="w-full lg:w-1/2"
+                        >
+                            <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                                {tx('Équipement Premium', 'Premium Equipment')}
+                            </p>
+                            <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
+                                {tx('Machines', 'Machines')}
+                                <br />
+                                <span className="text-gold">à Café</span>
+                            </h1>
+                            <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
+                                {tx(
+                                    "Du barista débutant au professionnel exigeant — trouvez la machine qui correspond à votre passion.",
+                                    "From beginner barista to demanding professional — find the machine that matches your passion."
+                                )}
+                            </p>
+                            <div className="max-w-xs mt-10">
+                                <CupSeparator tone="gold" />
+                            </div>
+                        </motion.div>
+
+                        {/* ── Hero Image ── */}
+                        <div className="w-full lg:w-1/2 flex justify-center items-center relative h-[260px] sm:h-[340px] lg:h-[440px]">
+                            <div
+                                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl w-[240px] h-[240px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px]"
+                                style={{ background: 'radial-gradient(circle, rgba(201,160,90,0.35) 0%, rgba(201,160,90,0.1) 55%, transparent 75%)' }}
+                            />
+                            <motion.img
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1, y: [0, -14, 0] }}
+                                transition={{
+                                    opacity: { duration: 0.8, delay: 0.2 },
+                                    scale: { duration: 0.8, delay: 0.2 },
+                                    y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 },
+                                }}
+                                src="/machine.png"
+                                alt={tx('Machine à café premium', 'Premium Coffee Machine')}
+                                className="relative z-10 w-[220px] sm:w-[300px] lg:w-[380px] h-auto object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.5)]"
+                            />
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 
-            {/* ── Highlights ───────────────────────────────────── */}
-            <section className="bg-ink py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 border-b border-sand/10">
-                <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                    {highlights.map((h, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
-                            className="text-center p-6"
-                        >
-                            <div className="text-4xl mb-3">{h.icon}</div>
-                            <p className="font-bold text-sm text-sand mb-1">{h.label}</p>
-                            <p className="text-xs text-cocoa">{h.desc}</p>
-                        </motion.div>
-                    ))}
-                </div>
-            </section>
+         
 
             {/* ── Products ─────────────────────────────────────── */}
             <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-ink">

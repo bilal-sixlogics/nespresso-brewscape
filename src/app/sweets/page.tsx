@@ -107,25 +107,47 @@ export default function SweetsPage() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(201,160,90,0.15),_transparent_60%)]" />
                 <div className="absolute top-0 right-0 w-24 h-24 sm:w-48 sm:h-48 md:w-80 md:h-80 bg-gold/10 rounded-full blur-3xl" />
                 <div className="max-w-[1400px] mx-auto relative z-10">
-                    <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-                        <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                            {tx('Pour les fins Gourmets', 'For the Discerning Palate')}
-                        </p>
-                        <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
-                            {tx('Gourman', 'Sweet')}
-                            <br />
-                            <span className="text-gold">{tx('dises', 'Treats')}</span>
-                        </h1>
-                        <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
-                            {tx(
-                                "Biscuits, spéculoos, chocolats fins — les parfaits compagnons de votre moment café.",
-                                "Biscuits, speculoos, fine chocolates — the perfect companions to your coffee moment."
-                            )}
-                        </p>
-                        <div className="max-w-xs mt-10">
-                            <CupSeparator tone="gold" />
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
+                        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="w-full lg:w-1/2">
+                            <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                                {tx('Pour les fins Gourmets', 'For the Discerning Palate')}
+                            </p>
+                            <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
+                                {tx('Gourman', 'Sweet')}
+                                <br />
+                                <span className="text-gold">{tx('dises', 'Treats')}</span>
+                            </h1>
+                            <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
+                                {tx(
+                                    "Biscuits, spéculoos, chocolats fins — les parfaits compagnons de votre moment café.",
+                                    "Biscuits, speculoos, fine chocolates — the perfect companions to your coffee moment."
+                                )}
+                            </p>
+                            <div className="max-w-xs mt-10">
+                                <CupSeparator tone="gold" />
+                            </div>
+                        </motion.div>
+
+                        {/* ── Hero Image ── */}
+                        <div className="w-full lg:w-1/2 flex justify-center items-center relative h-[260px] sm:h-[340px] lg:h-[440px]">
+                            <div
+                                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl w-[240px] h-[240px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px]"
+                                style={{ background: 'radial-gradient(circle, rgba(201,160,90,0.35) 0%, rgba(201,160,90,0.1) 55%, transparent 75%)' }}
+                            />
+                            <motion.img
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1, y: [0, -14, 0] }}
+                                transition={{
+                                    opacity: { duration: 0.8, delay: 0.2 },
+                                    scale: { duration: 0.8, delay: 0.2 },
+                                    y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 },
+                                }}
+                                src="/sweets.png"
+                                alt={tx('Gourmandises fines', 'Fine Sweet Treats')}
+                                className="relative z-10 w-[220px] sm:w-[300px] lg:w-[380px] h-auto object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.5)]"
+                            />
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 

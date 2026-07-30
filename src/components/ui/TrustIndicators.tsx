@@ -1,5 +1,4 @@
 import { LucideIcon, Truck, Coffee, ShieldCheck } from 'lucide-react';
-
 export interface TrustIndicatorItem {
     icon: LucideIcon;
     title: string;
@@ -14,7 +13,7 @@ interface TrustIndicatorsProps {
 }
 
 const DEFAULT_ITEMS: TrustIndicatorItem[] = [
-    { icon: Truck, title: 'Free Delivery', description: 'On orders over €150' },
+    { icon: Truck, title: 'freeShipping', description: 'freeShippingDesc' },
     { icon: Coffee, title: 'Freshly Roasted', description: 'Roasted to order, shipped within 48h' },
     { icon: ShieldCheck, title: 'Secure Checkout', description: '100% secure payment' },
 ];

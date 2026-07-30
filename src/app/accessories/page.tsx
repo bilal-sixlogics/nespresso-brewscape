@@ -105,45 +105,45 @@ export default function AccessoriesPage() {
             <section className="bg-ink pt-16 sm:pt-20 md:pt-24 pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(201,160,90,0.15),_transparent_60%)]" />
                 <div className="max-w-[1400px] mx-auto relative z-10">
-                    <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-                        <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                            {tx('Complétez votre Setup', 'Complete Your Setup')}
-                        </p>
-                        <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
-                            {tx('Accessoires', 'Accessories')}
-                        </h1>
-                        <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
-                            {tx(
-                                "Gobelets, filtres, rangement — tout ce qu'il faut pour sublimer votre rituel café.",
-                                "Cups, filters, storage — everything to elevate your coffee ritual."
-                            )}
-                        </p>
-                        <div className="max-w-xs mt-10">
-                            <CupSeparator tone="gold" />
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
-
-            {/* ── Perks ────────────────────────────────────────── */}
-            <section className="bg-ink py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8 border-b border-sand/10">
-                <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {perks.map((p, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
-                            className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6"
-                        >
-                            <span className="text-3xl">{p.icon}</span>
-                            <div>
-                                <p className="font-bold text-sm text-sand mb-1">{p.title}</p>
-                                <p className="text-xs text-cocoa leading-relaxed">{p.desc}</p>
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
+                        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="w-full lg:w-1/2">
+                            <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                                {tx('Complétez votre Setup', 'Complete Your Setup')}
+                            </p>
+                            <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
+                                {tx('Accessoires', 'Accessories')}
+                            </h1>
+                            <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
+                                {tx(
+                                    "Gobelets, filtres, rangement — tout ce qu'il faut pour sublimer votre rituel café.",
+                                    "Cups, filters, storage — everything to elevate your coffee ritual."
+                                )}
+                            </p>
+                            <div className="max-w-xs mt-10">
+                                <CupSeparator tone="gold" />
                             </div>
                         </motion.div>
-                    ))}
+
+                        {/* ── Hero Image ── */}
+                        <div className="w-full lg:w-1/2 flex justify-center items-center relative h-[260px] sm:h-[340px] lg:h-[440px]">
+                            <div
+                                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl w-[240px] h-[240px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px]"
+                                style={{ background: 'radial-gradient(circle, rgba(201,160,90,0.35) 0%, rgba(201,160,90,0.1) 55%, transparent 75%)' }}
+                            />
+                            <motion.img
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1, y: [0, -14, 0] }}
+                                transition={{
+                                    opacity: { duration: 0.8, delay: 0.2 },
+                                    scale: { duration: 0.8, delay: 0.2 },
+                                    y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 },
+                                }}
+                                src="/accessories.png"
+                                alt={tx('Accessoires café', 'Coffee Accessories')}
+                                className="relative z-10 w-[220px] sm:w-[300px] lg:w-[380px] h-auto object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.5)]"
+                            />
+                        </div>
+                    </div>
                 </div>
             </section>
 

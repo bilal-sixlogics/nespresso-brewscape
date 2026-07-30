@@ -221,9 +221,9 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                 {isBestSeller && (
                                     <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 bg-sand text-ink rounded-full">{t('bestSeller')}</span>
                                 )}
-                                <span className={`text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full flex items-center gap-1 ${inStock ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-500 border border-red-200'
+                                <span className={`text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full flex items-center gap-1 ${inStock ? 'bg-gold text-white border border-gold' : 'bg-red-50 text-red-500 border border-red-200'
                                     }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${inStock ? 'bg-emerald-500 animate-pulse' : 'bg-red-400'}`} />
+                                    <span className={`w-1.5 h-1.5 rounded-full ${inStock ? 'bg-gold text-white animate-pulse' : 'bg-red-400'}`} />
                                     {inStock ? (t('inStock') || 'In Stock') : (t('outOfStock') || 'Out of Stock')}
                                 </span>
                             </div>
@@ -243,7 +243,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                         </h2>
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-display text-3xl sm:text-4xl text-gold leading-none">{formatPrice(unitPrice)}</div>
+                                        <div className="font-bold text-3xl sm:text-4xl text-gold leading-none">{formatPrice(unitPrice)}</div>
                                     </div>
                                 </div>
 
@@ -394,7 +394,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                             animate={{ y: 0, opacity: 1 }}
                                             exit={{ y: -10, opacity: 0 }}
                                             transition={{ duration: 0.2 }}
-                                            className="font-display text-2xl leading-none"
+                                            className="font-bold font-black text-black text-2xl leading-none"
                                         >
                                             {!inStock ? '✕' : isAdded ? '✓' : formatPrice(unitPrice * quantity)}
                                         </motion.span>

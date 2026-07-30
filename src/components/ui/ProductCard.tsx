@@ -119,7 +119,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                                 </span>
                             ) : productIsNew ? (
                                 <span className="inline-block bg-gold text-ink text-[10px] font-black tracking-[0.15em] rounded-full px-2.5 py-1">
-                                    NEW
+                                    {t('new')}
                                 </span>
                             ) : null}
                         </div>
@@ -134,9 +134,9 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
 
                     {/* ── Stock indicator ── */}
                     <div className="absolute bottom-3 left-3 z-10">
-                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wide rounded-full px-2.5 py-1 backdrop-blur-sm shadow-sm ${inStock ? 'bg-emerald-600/90 text-white' : 'bg-red-600/85 text-white'}`}>
+                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wide rounded-full px-2.5 py-1 backdrop-blur-sm shadow-sm ${inStock ? 'bg-gold text-white' : 'bg-red-600/85 text-white'}`}>
                             <span className={`w-1.5 h-1.5 rounded-full bg-white ${inStock ? 'animate-pulse' : ''}`} />
-                            {inStock ? 'In Stock' : 'Out of Stock'}
+                            {inStock ? t('inStock') : t('outOfStock')}
                         </span>
                     </div>
 
@@ -163,7 +163,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                             className="bg-sand/95 backdrop-blur-md text-ink text-[11px] font-black tracking-[0.15em] uppercase px-5 py-2.5 rounded-full shadow-lg pointer-events-auto min-h-[44px] flex items-center"
                             onClick={(e) => { e.stopPropagation(); onClick(product); }}
                         >
-                            View Details
+                            {t('viewDetails')}
                         </motion.div>
                     </motion.div>
                 </div>
@@ -210,11 +210,11 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                     {/* Price row + CTA */}
                     <div className="flex items-center justify-between gap-2 pt-1 border-t border-cocoa/15">
                         <div className="flex items-baseline gap-1.5">
-                            <span className="font-display text-[1.15rem] sm:text-[1.25rem] font-bold text-gold tracking-tight">
+                            <span className="font-bold font-black text-black text-[1.15rem] sm:text-[1.25rem]  tracking-tight">
                                 {formatPrice(displayPrice)}
                             </span>
                             {hasDiscount && originalPrice && (
-                                <span className="text-xs text-cocoa/60 line-through">
+                                <span className="font-bold font-black text-black text-xs  line-through">
                                     {formatPrice(originalPrice)}
                                 </span>
                             )}
@@ -225,7 +225,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                             aria-label={`Quick look at ${product.name}`}
                             className="min-h-[38px] min-w-[38px] flex items-center justify-center bg-gold text-ink rounded-full hover:bg-[#b8914d] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 px-4 text-[11px] font-black tracking-wide"
                         >
-                            <span className="hidden sm:inline">Select</span>
+                            <span className="hidden sm:inline">{t('select')}</span>
                             <span className="sm:hidden">→</span>
                         </motion.button>
                     </div>

@@ -210,7 +210,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                             <div className="absolute top-6 left-6 z-10 bg-red-500 text-white text-sm font-black rounded-full px-4 py-2 shadow-lg">-{discountPct}%</div>
                         )}
                         {productIsNew && !hasDiscount && (
-                            <div className="absolute top-6 left-6 z-10 bg-gold text-ink text-sm font-black rounded-full px-4 py-2">NEW</div>
+                            <div className="absolute top-6 left-6 z-10 bg-gold text-ink text-sm font-black rounded-full px-4 py-2">{ t('new') }</div>
                         )}
                         <button onClick={e => { e.stopPropagation(); setWishlist(w => !w); }}
                             className="absolute top-6 right-6 z-10 w-12 h-12 bg-ink/10 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-105 transition-transform">
@@ -282,7 +282,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
 
                     {/* Price */}
                     <div className="flex items-baseline gap-4">
-                        <span className="font-display text-6xl text-gold">{formatPrice(unitPrice)}</span>
+                        <span className="font-bold text-6xl text-gold">{formatPrice(unitPrice)}</span>
                     </div>
 
                     {/* Intensity */}
@@ -352,7 +352,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                         >
                             <div>
                                 <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{isAdded ? t('Ajouté !', 'Added!') : t('Total', 'Total')}</p>
-                                <p className="font-display text-2xl leading-none">
+                                <p className="font-bold font-black text-black text-2xl leading-none">
                                     {isAdded ? '✓' : formatPrice(unitPrice * quantity)}
                                 </p>
                             </div>
@@ -380,7 +380,7 @@ export default function ProductDetailPageClient({ slug }: { slug: string }) {
                     </p>
 
                     {/* Trust indicators — delivery & roasting */}
-                    <TrustIndicators />
+                    {/* <TrustIndicators /> */}
                 </div>
             </div>
 

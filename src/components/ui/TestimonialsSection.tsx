@@ -123,7 +123,7 @@ export const TestimonialsSection = () => {
 
     return (
         <section
-            className="relative overflow-hidden py-20 sm:py-28 lg:py-32 bg-ink grain-overlay"
+            className="relative overflow-hidden py-5 sm:py-3 lg:py-5 bg-ink grain-overlay"
             onMouseEnter={pause}
             onMouseLeave={resume}
         >

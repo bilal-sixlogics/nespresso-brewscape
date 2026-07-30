@@ -186,7 +186,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                                 </div>
 
                                                 {/* Price */}
-                                                <span className="font-black text-gold text-base">{formatPrice(lineTotal)}</span>
+                                                <span className="font-bold font-black text-black">{formatPrice(lineTotal)}</span>
                                             </div>
                                         </div>
 
@@ -268,7 +268,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         <div className="space-y-1.5">
                             <div className="flex justify-between text-sm text-ink/60">
                                 <span>{tx('Sous-total', 'Subtotal')}</span>
-                                <span className="font-bold">{formatPrice(subtotal)}</span>
+                                <span className="font-bold font-black text-black">{formatPrice(subtotal)}</span>
                             </div>
                             {promoDiscount > 0 && (
                                 <div className="flex justify-between text-sm text-gold">
@@ -282,7 +282,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             </div>
                             <div className="flex justify-between text-base text-ink border-t border-ink/10 pt-2 mt-2">
                                 <span className="font-black uppercase tracking-wider">{tx('Sous-total', 'Subtotal')}</span>
-                                <span className="font-display text-2xl text-gold">{formatPrice(subtotal - promoDiscount)}</span>
+                                <span className="font-bold font-black text-black text-2xl">{formatPrice(subtotal - promoDiscount)}</span>
                             </div>
                         </div>
 
@@ -294,7 +294,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         >
                             <div className="min-w-0">
                                 <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{tx('Sous-total', 'Subtotal')} · {cartCount} article(s)</p>
-                                <p className="font-display text-xl leading-none truncate">{formatPrice(subtotal - promoDiscount)}</p>
+                                <p className="font-bold font-black text-black text-xl leading-none truncate">{formatPrice(subtotal - promoDiscount)}</p>
                             </div>
                             <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
                                 {tx('Commander', 'Checkout')} <ArrowRight size={16} />

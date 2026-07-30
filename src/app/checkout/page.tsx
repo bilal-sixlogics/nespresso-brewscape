@@ -151,7 +151,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                     <span className="text-xs text-sand/60 whitespace-nowrap">({items.length} {tx('articles', 'items')})</span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                    <span className="font-display text-1xl text-gold whitespace-nowrap">{formatPrice(displayTotal)}</span>
+                    <span className="text-sand font-bold text-1xl  whitespace-nowrap">{formatPrice(displayTotal)}</span>
                     {compact && <ChevronRight size={16} className={`text-sand/40 transition-transform flex-shrink-0 ${expanded ? 'rotate-90' : ''}`} />}
                 </div>
             </button>
@@ -180,7 +180,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                             <div className="text-right flex-shrink-0">
                                                 <span className="font-bold text-sm block text-sand">{formatPrice(item.unitPrice * item.quantity)}</span>
                                                 {lineVat > 0 && (
-                                                    <span className="text-[9px] text-sand/50">
+                                                    <span className="text-[9px] text-sand font-bold">
                                                         {taxIncluded ? tx('dont', 'incl.') : '+'} {taxLabel || tx('TVA', 'VAT')} {formatPrice(lineVat)}
                                                     </span>
                                                 )}
@@ -206,7 +206,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                 )}
                                 <div className="flex justify-between items-center gap-3 text-sand font-black pt-2 border-t border-sand/10 text-base">
                                     <span className="flex-shrink-0">Total</span>
-                                    <span className="font-display text-1xl text-gold whitespace-nowrap">{formatPrice(displayTotal)}</span>
+                                    <span className="text-sand font-bold text-1xl  whitespace-nowrap">{formatPrice(displayTotal)}</span>
                                 </div>
                                 {taxIncluded && vatAmount > 0 && (
                                     <div className="flex justify-between text-[11px] text-sand/50">

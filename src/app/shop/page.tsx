@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, Clock, ChevronDown, RotateCcw } from 'lucide-react';
 import { ProductCard } from '@/components/ui/ProductCard';
@@ -19,10 +20,11 @@ import { ProductQueryParams } from '@/lib/api/types';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
-export default function ShopPage() {
+function ShopPageContent() {
     const { t } = useLanguage();
     const formatPrice = useFormatPrice();
     const { recentlyViewed, addRecentlyViewed, clearRecentlyViewed } = useRecentlyViewed();
+    const searchParams = useSearchParams();
 
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [filterOpen, setFilterOpen] = useState(false);
@@ -41,6 +43,28 @@ export default function ShopPage() {
         () => allCategories.filter(c => c.storefront_page === '/shop' && c.status === 'active'),
         [allCategories]
     );
+
+    // Pre-select category/brand from ?category=<slug> / ?brand=<slug> in the URL
+    // (e.g. homepage category tiles, brand marquee) — applied once, as soon as the
+    // matching slug shows up in the fetched lists.
+    const appliedFromUrl = useRef(false);
+    useEffect(() => {
+        if (appliedFromUrl.current) return;
+        const categorySlug = searchParams.get('category');
+        const brandSlug = searchParams.get('brand');
+        if (!categorySlug && !brandSlug) { appliedFromUrl.current = true; return; }
+
+        const catMatch = categorySlug ? categories.find(c => c.slug === categorySlug) : null;
+        const brandMatch = brandSlug ? brands.find(b => b.slug === brandSlug) : null;
+        if ((categorySlug && !catMatch) || (brandSlug && !brandMatch)) return; // wait for data to load
+
+        setFilters(f => ({
+            ...f,
+            categories: catMatch ? [catMatch.name] : f.categories,
+            brands: brandMatch ? [brandMatch.name] : f.brands,
+        }));
+        appliedFromUrl.current = true;
+    }, [searchParams, categories, brands]);
 
     // Single source of truth: active category name ('' = all)
     // Category pill and FilterDrawer both read/write this via `filters.categories`
@@ -357,5 +381,13 @@ export default function ShopPage() {
                 onClose={() => setSelectedProduct(null)}
             />
         </div>
+    );
+}
+
+export default function ShopPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-ink" />}>
+            <ShopPageContent />
+        </Suspense>
     );
 }

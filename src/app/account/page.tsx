@@ -84,13 +84,13 @@ function mapApiOrder(o: ApiOrder): Order {
 function useStatusConfig() {
     const { t } = useLanguage();
     return {
-        pending:    { label: t('accountStatusOrderPlaced'), color: 'text-sand/70',     bg: 'bg-sand/10 border-sand/20' },
-        processing: { label: t('accountStatusConfirmed'),   color: 'text-amber-300',   bg: 'bg-amber-500/10 border-amber-500/20' },
-        shipped:    { label: t('accountStatusShipped'),     color: 'text-blue-400',    bg: 'bg-blue-500/10 border-blue-500/20' },
-        ready_for_pickup: { label: t('accountStatusReadyForPickup'), color: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/20' },
-        delivered:  { label: t('accountStatusDelivered'),   color: 'text-emerald-400', bg: 'bg-emerald-500/15 border-emerald-500/20' },
-        cancelled:  { label: t('accountStatusCancelled'),   color: 'text-red-400',     bg: 'bg-red-500/10 border-red-500/20' },
-        paid:       { label: t('accountStatusPaid'),        color: 'text-violet-400',  bg: 'bg-violet-500/10 border-violet-500/20' },
+        pending:    { label: t('accountStatusOrderPlaced'), color: 'text-sand/500',     bg: 'bg-sand/10 border-sand/20' },
+        processing: { label: t('accountStatusConfirmed'),   color: 'text-amber-500',   bg: 'bg-amber-500/10 border-amber-500/20' },
+        shipped:    { label: t('accountStatusShipped'),     color: 'text-blue-500',    bg: 'bg-blue-500/10 border-blue-500/20' },
+        ready_for_pickup: { label: t('accountStatusReadyForPickup'), color: 'text-teal-500', bg: 'bg-teal-500/10 border-teal-500/20' },
+        delivered:  { label: t('accountStatusDelivered'),   color: 'text-emerald-500', bg: 'bg-emerald-500/15 border-emerald-500/20' },
+        cancelled:  { label: t('accountStatusCancelled'),   color: 'text-red-500',     bg: 'bg-red-500/10 border-red-500/20' },
+        paid:       { label: t('accountStatusPaid'),        color: 'text-violet-500',  bg: 'bg-violet-500/10 border-violet-500/20' },
     } as Record<string, { label: string; color: string; bg: string }>;
 }
 
@@ -744,7 +744,7 @@ export default function AccountPage() {
                                                             </div>
                                                             <div className="flex items-center gap-3 flex-shrink-0">
                                                                 <div className="text-right">
-                                                                    <p className="font-display text-xl text-gold">{formatPrice(order.total)}</p>
+                                                                    <p className="font-bold font-black text-black text-xl ">{formatPrice(order.total)} </p>
                                                                     {order.paymentMethod && <p className="text-[10px] text-ink/50 uppercase tracking-wider">{PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}</p>}
                                                                 </div>
                                                                 <Link href={`/orders/${order.id}`} onClick={e => e.stopPropagation()}
@@ -822,10 +822,10 @@ export default function AccountPage() {
 
                                                                         {/* Order Totals */}
                                                                         <div className="border-t border-ink/10 pt-4 space-y-1.5">
-                                                                            <div className="flex justify-between text-sm text-ink/60"><span>{t('accountSubtotal')}</span><span>{formatPrice(order.subtotal)}</span></div>
-                                                                            {order.discount > 0 && <div className="flex justify-between text-sm text-gold"><span>{t('accountDiscount')}</span><span>-{formatPrice(order.discount)}</span></div>}
+                                                                            <div className="flex justify-between text-sm font-bold font-black text-black"><span>{t('accountSubtotal')}</span><span>{formatPrice(order.subtotal)}</span></div>
+                                                                            {order.discount > 0 && <div className="flex justify-between text-sm font-bold font-black text-black"><span>{t('accountDiscount')}</span><span>-{formatPrice(order.discount)}</span></div>}
                                                                             <div className="flex justify-between text-sm text-ink/60"><span>{t('accountShipping')}</span><span>{order.shipping === 0 ? t('accountFree') : formatPrice(order.shipping)}</span></div>
-                                                                            <div className="flex justify-between font-black text-base text-ink border-t border-ink/10 pt-2 mt-2"><span>{t('accountTotal')}</span><span className="text-gold">{formatPrice(order.total)}</span></div>
+                                                                            <div className="flex justify-between font-bold font-black text-black border-t border-ink/10 pt-2 mt-2"><span>{t('accountTotal')}</span><span className="font-bold font-black text-black">{formatPrice(order.total)}</span></div>
                                                                         </div>
                                                                     </div>
                                                                 </motion.div>
