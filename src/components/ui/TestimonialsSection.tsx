@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { Star, Quote, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { Endpoints } from '@/lib/api/endpoints';
-
+import { useLanguage } from "@/context/LanguageContext";
 interface FeaturedReview {
     id: number;
     rating: number;
@@ -42,6 +42,7 @@ function Avatar({ name, src }: { name: string; src: string | null }) {
     const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     const color = COLORS[name.charCodeAt(0) % COLORS.length];
 
+
     if (src) {
         return (
             /* eslint-disable-next-line @next/next/no-img-element */
@@ -61,6 +62,7 @@ export const TestimonialsSection = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [direction, setDirection] = useState(1);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const { t } = useLanguage();
 
     useEffect(() => {
         fetch(Endpoints.featuredReviews)
@@ -144,8 +146,8 @@ export const TestimonialsSection = () => {
                             <span className="text-[9px] font-black tracking-[0.4em] uppercase text-gold">Customer Stories</span>
                         </div>
                         <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-sand uppercase leading-[0.88] tracking-tight">
-                            What They<br />
-                            <span className="text-gold">Say</span>
+                            {t('testimonialFirst')}<br />
+                            <span className="text-gold">{t('testimonialSecond')}</span>
                         </h2>
                     </div>
 
