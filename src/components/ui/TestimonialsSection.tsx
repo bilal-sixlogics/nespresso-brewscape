@@ -143,7 +143,7 @@ export const TestimonialsSection = () => {
                     <div>
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-8 h-px bg-gold" />
-                            <span className="text-[9px] font-black tracking-[0.4em] uppercase text-gold">Customer Stories</span>
+                            <span className="text-[9px] font-black tracking-[0.4em] uppercase text-gold">{t('customerStories')}</span>
                         </div>
                         <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-sand uppercase leading-[0.88] tracking-tight">
                             {t('testimonialFirst')}<br />

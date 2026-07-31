@@ -3,6 +3,7 @@ export const translations = {
         // ... (previous keys remain the same, adding/updating testimonials)
         testimonialFirst:"Ils parlent de Nous",
         testimonialSecond: "de Nous",
+        customerStories: "Témoignages clients",
         loading: "Chargement...",
         loadMore: "Charger plus",
         noMoreItems: "Vous avez tout vu !",
@@ -407,6 +408,7 @@ export const translations = {
     en: {
         testimonialFirst:"They're talking about us",
         testimonialSecond: "about us",
+        customerStories: "Customer Stories",
         loading: "Loading...",
         loadMore: "Load More",
         noMoreItems: "You've seen everything!",
