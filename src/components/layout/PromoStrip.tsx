@@ -7,7 +7,7 @@ import { AppConfig } from '@/lib/config';
 import { useLanguage } from '@/context/LanguageContext';
 
 export function PromoStrip() {
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
     const [visible, setVisible] = useState(true);
     const [currentIdx, setCurrentIdx] = useState(0);
 
@@ -50,7 +50,7 @@ export function PromoStrip() {
                                 key={i}
                                 onClick={() => setCurrentIdx(i)}
                                 className={`w-1 h-1 rounded-full transition-all duration-300 ${i === currentIdx ? 'bg-gold w-3' : 'bg-sand/30'}`}
-                                aria-label={`Message ${i + 1}`}
+                                aria-label={`${t('ariaMessage')} ${i + 1}`}
                             />
                         ))}
                     </div>
@@ -59,7 +59,7 @@ export function PromoStrip() {
                 <button
                     onClick={() => setVisible(false)}
                     className="ml-2 text-sand/50 hover:text-sand transition-colors flex-shrink-0"
-                    aria-label="Dismiss"
+                    aria-label={t('ariaDismiss')}
                 >
                     <X size={12} />
                 </button>

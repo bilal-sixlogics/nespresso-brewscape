@@ -1,4 +1,7 @@
 import { LucideIcon, Truck, Coffee, ShieldCheck } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import type { TranslationKey } from '@/lib/translations';
+
 export interface TrustIndicatorItem {
     icon: LucideIcon;
     title: string;
@@ -14,16 +17,26 @@ interface TrustIndicatorsProps {
 
 const DEFAULT_ITEMS: TrustIndicatorItem[] = [
     { icon: Truck, title: 'freeShipping', description: 'freeShippingDesc' },
-    { icon: Coffee, title: 'Freshly Roasted', description: 'Roasted to order, shipped within 48h' },
-    { icon: ShieldCheck, title: 'Secure Checkout', description: '100% secure payment' },
+    { icon: Coffee, title: 'freshlyRoastedTitle', description: 'freshlyRoastedDesc' },
+    { icon: ShieldCheck, title: 'secureCheckoutTitle', description: 'secureCheckoutDesc' },
 ];
 
 /**
  * Shared trust-indicator component — icon + title + description tiles for
  * delivery/roasting/payment reassurance. Used on the product detail page's
  * bottom section and adapted for the footer's single "Free Shipping" card.
+ *
+ * `items` are expected to hold translation KEY NAMES (not literal text) —
+ * the render logic below resolves them via `t()`.
  */
 export function TrustIndicators({ items = DEFAULT_ITEMS, variant = 'row', className = '' }: TrustIndicatorsProps) {
+    const { t } = useLanguage();
+    // `title`/`description` are normally translation key names, but some call sites
+    // (e.g. the footer) pre-resolve them to literal text — `t()` falls back to
+    // returning its input unchanged when it isn't a recognized key, so this is safe
+    // either way.
+    const resolve = (value: string) => t(value as TranslationKey);
+
     if (variant === 'compact') {
         const item = items[0];
         const Icon = item.icon;
@@ -33,8 +46,8 @@ export function TrustIndicators({ items = DEFAULT_ITEMS, variant = 'row', classN
                     <Icon className="w-5 h-5 text-gold" />
                 </div>
                 <div>
-                    <div className="text-sm font-bold text-sand">{item.title}</div>
-                    <div className="text-xs text-cocoa">{item.description}</div>
+                    <div className="text-sm font-bold text-sand">{resolve(item.title)}</div>
+                    <div className="text-xs text-cocoa">{resolve(item.description)}</div>
                 </div>
             </div>
         );
@@ -50,8 +63,8 @@ export function TrustIndicators({ items = DEFAULT_ITEMS, variant = 'row', classN
                             <Icon className="w-5 h-5 text-gold" />
                         </div>
                         <div className="min-w-0">
-                            <div className="text-sm font-bold text-sand">{item.title}</div>
-                            <div className="text-xs text-cocoa truncate">{item.description}</div>
+                            <div className="text-sm font-bold text-sand">{resolve(item.title)}</div>
+                            <div className="text-xs text-cocoa truncate">{resolve(item.description)}</div>
                         </div>
                     </div>
                 );

@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/types';
 
 export default function ForgotPasswordPage() {
+    const { t } = useLanguage();
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [sent, setSent] = useState(false);
@@ -23,7 +25,7 @@ export default function ForgotPasswordPage() {
             setSent(true);
         } catch (err) {
             const apiErr = err as ApiError;
-            setError(apiErr.message ?? 'Something went wrong. Please try again.');
+            setError(apiErr.message ?? t('authGenericError'));
         } finally {
             setIsLoading(false);
         }
@@ -96,7 +98,7 @@ export default function ForgotPasswordPage() {
                                     autoComplete="email"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    placeholder="Email address"
+                                    placeholder={t('authEmailAddress')}
                                     className={`w-full pl-11 pr-4 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg}`}
                                 />
                             </div>

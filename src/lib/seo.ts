@@ -9,11 +9,11 @@ const BASE_URL = 'https://cafrezzo.com';
 export const baseMetadata: Metadata = {
     metadataBase: new URL(BASE_URL),
     title: {
-        default: 'Cafrezzo | Your Coffee Experience',
+        default: 'Cafrezzo | Intensément Café',
         template: '%s | Cafrezzo',
     },
     description:
-        'Discover the bold and sophisticated world of Cafrezzo premium coffee. Shop capsules, beans, machines & gourmet sweets — shipped from France.',
+        'Bienvenue dans l’univers Cafrezzo, où chaque tasse raconte une histoire de passion et de qualité. Découvrez notre sélection exclusive',
     keywords: [
         'premium coffee', 'café français', 'nespresso compatible', 'coffee capsules',
         'coffee machines', 'café en grain', 'cafrezzo', 'café en ligne', 'livraison france',
@@ -33,9 +33,9 @@ export const baseMetadata: Metadata = {
         alternateLocale: 'en_GB',
         url: BASE_URL,
         siteName: 'Cafrezzo',
-        title: 'Cafrezzo | Your Coffee Experience',
+        title: 'Cafrezzo | Intensément Café',
         description:
-            'Discover the bold and sophisticated world of Cafrezzo premium coffee. Shop capsules, beans, machines & gourmet sweets.',
+            'Bienvenue dans l’univers Cafrezzo, où chaque tasse raconte une histoire de passion et de qualité. Découvrez notre sélection exclusive',
         images: [
             {
                 url: '/og-image.png',

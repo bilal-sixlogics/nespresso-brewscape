@@ -178,7 +178,7 @@ function ProfileTab({ orders }: { orders: Order[] }) {
                 });
                 if (!res.ok) {
                     const err = await res.json().catch(() => ({}));
-                    throw new Error((err as { message?: string }).message ?? 'Upload failed');
+                    throw new Error((err as { message?: string }).message ?? t('uploadFailedMsg'));
                 }
                 const data = await res.json() as { avatar?: string };
                 updatedAvatar = data.avatar;
@@ -193,7 +193,7 @@ function ProfileTab({ orders }: { orders: Order[] }) {
             setTimeout(() => setShowSaved(false), 2500);
         } catch (err) {
             const apiErr = err as ApiError;
-            setSaveError(apiErr.message ?? 'Failed to save changes.');
+            setSaveError(apiErr.message ?? t('saveChangesFailedMsg'));
         } finally {
             setIsSaving(false);
         }
@@ -382,7 +382,7 @@ function AddressFormModal({ address, onSave, onClose, isLoading = false }: {
                     {/* Country — France only */}
                     <div>
                         <label className="block text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1.5">{t('accountCountry')}</label>
-                        <div className="w-full border-2 border-ink/10 rounded-2xl px-4 py-3 text-sm font-medium bg-ink/5 text-ink/60">France</div>
+                        <div className="w-full border-2 border-ink/10 rounded-2xl px-4 py-3 text-sm font-medium bg-ink/5 text-ink/60">{t('countryFrance')}</div>
                     </div>
 
                     <Field label={t('accountPhone')} value={form.phone || ''} onChange={set('phone')} type="tel" placeholder="+33 6 00 00 00 00" />
@@ -517,7 +517,7 @@ export default function AccountPage() {
             setOrders((res.data ?? []).map(mapApiOrder));
         } catch (err) {
             const apiErr = err as ApiError;
-            setOrdersError(apiErr.message ?? 'Failed to load orders.');
+            setOrdersError(apiErr.message ?? t('loadOrdersFailedMsg'));
         } finally {
             setOrdersLoading(false);
         }
@@ -541,7 +541,7 @@ export default function AccountPage() {
             setEditingAddress(null);
         } catch (err) {
             const apiErr = err as ApiError;
-            setAddressError(apiErr.message ?? 'Failed to save address.');
+            setAddressError(apiErr.message ?? t('saveAddressFailedMsg'));
         } finally {
             setAddressLoading(false);
         }
@@ -550,13 +550,13 @@ export default function AccountPage() {
     const handleDeleteAddress = async (id: string) => {
         setAddressError(null);
         try { await apiClient.delete(Endpoints.address(id)); await refreshAddresses(); }
-        catch (err) { setAddressError((err as ApiError).message ?? 'Failed to delete address.'); }
+        catch (err) { setAddressError((err as ApiError).message ?? t('deleteAddressFailedMsg')); }
     };
 
     const handleSetDefault = async (id: string) => {
         setAddressError(null);
         try { await apiClient.patch(Endpoints.addressDefault(id)); await refreshAddresses(); }
-        catch (err) { setAddressError((err as ApiError).message ?? 'Failed to update default address.'); }
+        catch (err) { setAddressError((err as ApiError).message ?? t('updateDefaultAddressFailedMsg')); }
     };
 
     const addresses = user?.addresses ?? [];
@@ -605,7 +605,7 @@ export default function AccountPage() {
                         <div>
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold mb-1">{t('accountYourAccount')}</p>
                             <h1 className="font-display text-4xl lg:text-5xl uppercase tracking-tight text-sand">
-                                {t('accountWelcomeBack')} {user?.name?.split(' ')[0] || 'User'}
+                                {t('accountWelcomeBack')} {user?.name?.split(' ')[0] || t('defaultUserFallback')}
                             </h1>
                             <p className="text-cocoa text-sm mt-1">{user?.email}</p>
                         </div>
@@ -896,7 +896,7 @@ export default function AccountPage() {
                                                     </div>
                                                     <p className="text-sm text-ink font-semibold">{addr.firstName} {addr.lastName}</p>
                                                     <p className="text-sm text-ink/60 mt-1">{addr.address}</p>
-                                                    <p className="text-sm text-ink/60">{addr.postalCode} {addr.city}, France</p>
+                                                    <p className="text-sm text-ink/60">{addr.postalCode} {addr.city}, {t('countryFrance')}</p>
                                                     {addr.phone && <p className="text-sm text-ink/50 mt-1">{addr.phone}</p>}
                                                     {!addr.isDefault && (
                                                         <button onClick={() => handleSetDefault(addr.id)} className="mt-4 text-[10px] font-bold uppercase tracking-widest text-gold hover:underline">

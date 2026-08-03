@@ -112,8 +112,7 @@ interface FilterDrawerProps {
 }
 
 export function FilterDrawer({ open, onClose, filters, onChange, resultCount, availableCategories = [], availableBrands = [], availableTags = [] }: FilterDrawerProps) {
-    const { language } = useLanguage();
-    const t = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const { t, language } = useLanguage();
     const { currency_symbol } = useSiteSettings();
 
     // Detect mobile for bottom-sheet vs left-drawer
@@ -179,7 +178,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                 <div className="flex items-center justify-between px-5 sm:px-6 py-3 sm:py-5 border-b border-sand/10 flex-shrink-0">
                     <div className="flex items-center gap-3">
                         <SlidersHorizontal size={16} className="text-gold" />
-                        <span className="font-black text-sm uppercase tracking-widest text-sand">{t('Filtres', 'Filters')}</span>
+                        <span className="font-black text-sm uppercase tracking-widest text-sand">{t('filters')}</span>
                         {activeCount > 0 && (
                             <span className="w-5 h-5 bg-gold text-ink text-[9px] font-black rounded-full flex items-center justify-center">{activeCount}</span>
                         )}
@@ -187,7 +186,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                     <button
                         onClick={onClose}
                         className="w-11 h-11 bg-sand/10 rounded-full flex items-center justify-center text-sand hover:bg-sand/20 transition-colors"
-                        aria-label="Close filters"
+                        aria-label={t('ariaCloseFilters')}
                     >
                         <X size={15} />
                     </button>
@@ -197,12 +196,12 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                 <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-1">
                     {/* In stock toggle */}
                     <div className="flex items-center justify-between py-3 sm:py-4 border-b border-sand/10 min-h-[52px]">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sand">{t('En stock uniquement', 'In Stock Only')}</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sand">{t('inStock')}</span>
                         <button
                             onClick={() => onChange({ ...filters, inStockOnly: !filters.inStockOnly })}
                             role="switch"
                             aria-checked={filters.inStockOnly}
-                            aria-label="In stock only"
+                            aria-label={t('inStock')}
                             className={`w-12 h-6 rounded-full transition-colors duration-200 relative focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${filters.inStockOnly ? 'bg-gold' : 'bg-sand/15'}`}
                         >
                             <motion.div
@@ -214,7 +213,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                     </div>
 
                     {/* Categories */}
-                    <Section title={t('Catégorie', 'Category')}>
+                    <Section title={t('category')}>
                         <div className="flex flex-wrap gap-2 pb-2">
                             {availableCategories.map(cat => {
                                 const active = filters.categories.includes(cat);
@@ -234,7 +233,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
 
                     {/* Brands */}
                     {availableBrands.length > 0 && (
-                        <Section title={t('Marque', 'Brand')}>
+                        <Section title={t('brandLabel')}>
                             <div className="flex flex-wrap gap-2 pb-2">
                                 {availableBrands.map(brand => {
                                     const active = filters.brands.includes(brand);
@@ -254,7 +253,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                     )}
 
                     {/* Intensity */}
-                    <Section title={t('Intensité', 'Intensity')}>
+                    <Section title={t('intensity')}>
                         <div className="pb-3">
                             <RangeSlider
                                 label="" value={filters.intensityRange} min={1} max={13}
@@ -269,7 +268,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                     </Section>
 
                     {/* Price */}
-                    <Section title={t(`Prix (${currency_symbol})`, `Price (${currency_symbol})`)}>
+                    <Section title={`${t('priceTitle')} (${currency_symbol})`}>
                         <div className="pb-3">
                             <RangeSlider
                                 label="" value={filters.priceRange} min={0} max={500} unit={currency_symbol}
@@ -280,7 +279,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
 
                     {/* Tags */}
                     {availableTags.length > 0 && (
-                        <Section title="Tags">
+                        <Section title={t('tags')}>
                             <div className="flex flex-wrap gap-2 pb-2">
                                 {availableTags.map(tag => {
                                     const active = filters.tags.includes(tag);
@@ -309,13 +308,13 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                         onClick={() => onChange(DEFAULT_FILTERS)}
                         className="flex-1 py-3.5 rounded-full border-2 border-sand/20 text-[10px] font-black uppercase tracking-widest text-sand/70 hover:border-sand/40 transition-colors min-h-[48px]"
                     >
-                        {t('Réinitialiser', 'Reset')}
+                        {t('reset')}
                     </button>
                     <button
                         onClick={onClose}
                         className="flex-1 py-3.5 rounded-full bg-gold text-ink text-[10px] font-black uppercase tracking-widest shadow-lg shadow-gold/20 hover:bg-[#b8914d] transition-colors min-h-[48px]"
                     >
-                        {t(`Voir ${resultCount} résultats`, `Show ${resultCount} results`)}
+                        {language === 'fr' ? `Voir ${resultCount} résultats` : `Show ${resultCount} results`}
                     </button>
                 </div>
             </motion.aside>

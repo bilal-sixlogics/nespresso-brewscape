@@ -9,65 +9,38 @@ import { AppConfig } from '@/lib/config';
 const sections = [
     {
         icon: Eye,
-        title: 'Données collectées',
-        titleEn: 'Data We Collect',
-        content: `Nous collectons les informations que vous nous fournissez directement lors de la création d'un compte, d'une commande ou d'une demande de contact : nom, prénom, adresse e-mail, adresse postale, numéro de téléphone et informations de paiement (traitées de manière sécurisée via nos prestataires certifiés PCI-DSS).
-
-Nous collectons également automatiquement des données techniques : adresse IP, type de navigateur, pages visitées, durée de session. Ces données sont utilisées exclusivement à des fins d'amélioration du service.`,
-        contentEn: `We collect information you provide directly when creating an account, placing an order, or submitting a contact request: name, email address, postal address, phone number, and payment information (processed securely via our PCI-DSS certified providers).
-
-We also automatically collect technical data: IP address, browser type, pages visited, session duration. This data is used exclusively to improve the service.`,
+        slug: undefined,
+        titleKey: 'legalPrivacySection1Title',
+        contentKey: 'legalPrivacySection1Content',
     },
     {
         icon: Lock,
-        title: 'Utilisation des données',
-        titleEn: 'Use of Data',
-        content: `Vos données personnelles sont utilisées pour : traiter et livrer vos commandes, vous envoyer des confirmations de commande et mises à jour de livraison, répondre à vos demandes de support, vous envoyer nos newsletters si vous y avez consenti, et améliorer nos services.
-
-Nous ne vendons, louons ou partageons jamais vos données personnelles avec des tiers à des fins commerciales.`,
-        contentEn: `Your personal data is used to: process and deliver your orders, send you order confirmations and delivery updates, respond to your support requests, send our newsletters if you have consented, and improve our services.
-
-We never sell, rent, or share your personal data with third parties for commercial purposes.`,
+        slug: undefined,
+        titleKey: 'legalPrivacySection2Title',
+        contentKey: 'legalPrivacySection2Content',
     },
     {
         icon: Shield,
-        title: 'Sécurité des données',
-        titleEn: 'Data Security',
-        content: `Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles appropriées pour protéger vos données contre la perte, l'accès non autorisé, la divulgation, l'altération ou la destruction.
-
-Toutes les données de paiement sont chiffrées via le protocole TLS/SSL et ne sont jamais stockées sur nos serveurs. Nos prestataires de paiement sont certifiés PCI-DSS Niveau 1.`,
-        contentEn: `We implement appropriate technical and organisational security measures to protect your data against loss, unauthorised access, disclosure, alteration, or destruction.
-
-All payment data is encrypted via TLS/SSL protocol and is never stored on our servers. Our payment providers are PCI-DSS Level 1 certified.`,
+        slug: undefined,
+        titleKey: 'legalPrivacySection3Title',
+        contentKey: 'legalPrivacySection3Content',
     },
     {
         icon: Trash2,
-        title: 'Vos droits',
-        titleEn: 'Your Rights',
-        content: `Conformément au RGPD, vous disposez des droits suivants : droit d'accès à vos données, droit de rectification, droit à l'effacement ("droit à l'oubli"), droit à la limitation du traitement, droit à la portabilité des données, et droit d'opposition.
-
-Pour exercer ces droits, contactez notre Délégué à la Protection des Données à l'adresse : dpo@cafrezzo.com. Nous répondons à toute demande dans un délai de 30 jours.`,
-        contentEn: `In accordance with GDPR, you have the following rights: right of access to your data, right to rectification, right to erasure ("right to be forgotten"), right to restriction of processing, right to data portability, and right to object.
-
-To exercise these rights, contact our Data Protection Officer at: dpo@cafrezzo.com. We respond to all requests within 30 days.`,
+        slug: undefined,
+        titleKey: 'legalPrivacySection4Title',
+        contentKey: 'legalPrivacySection4Content',
     },
     {
-        slug: 'cookies',
         icon: Mail,
-        title: 'Cookies',
-        titleEn: 'Cookies',
-        content: `Nous utilisons des cookies essentiels au fonctionnement du site (panier, session), des cookies analytiques (mesure d'audience anonymisée via des outils conformes RGPD), et des cookies de préférences (langue, devise).
-
-Vous pouvez paramétrer vos préférences de cookies à tout moment via les paramètres de votre navigateur. Le refus des cookies essentiels peut affecter le fonctionnement du site.`,
-        contentEn: `We use cookies essential to site functionality (cart, session), analytical cookies (anonymised audience measurement via GDPR-compliant tools), and preference cookies (language, currency).
-
-You can manage your cookie preferences at any time via your browser settings. Refusing essential cookies may affect site functionality.`,
+        slug: 'cookies',
+        titleKey: 'legalPrivacySection5Title',
+        contentKey: 'legalPrivacySection5Content',
     },
-];
+] as const;
 
 export default function PrivacyPage() {
-    const { language } = useLanguage();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const { t } = useLanguage();
     const [active, setActive] = useState<number | null>(null);
 
     // Deep-link support — e.g. Footer's "Cookie Policy" links to /privacy#cookies
@@ -86,13 +59,13 @@ export default function PrivacyPage() {
             <section className="bg-ink pt-24 pb-16 px-8">
                 <div className="max-w-[900px] mx-auto">
                     <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                        {tx('Légal', 'Legal')}
+                        {t('legalPrivacyEyebrow')}
                     </p>
                     <h1 className="font-display text-6xl md:text-7xl uppercase text-sand mb-4">
-                        {tx('Politique de', 'Privacy')} <span className="text-gold">{tx('Confidentialité', 'Policy')}</span>
+                        {t('legalPrivacyHeadingLine1')} <span className="text-gold">{t('legalPrivacyHeadingLine2')}</span>
                     </h1>
                     <p className="text-sand/50 text-sm">
-                        {tx('Dernière mise à jour : 1er janvier 2026', 'Last updated: January 1, 2026')} · {AppConfig.brand.name}
+                        {t('legalPrivacyLastUpdated')} · {AppConfig.brand.name}
                     </p>
                 </div>
             </section>
@@ -100,10 +73,7 @@ export default function PrivacyPage() {
             {/* Content */}
             <section className="max-w-[900px] mx-auto px-8 py-16">
                 <p className="text-sand/70 text-base leading-relaxed mb-12 bg-sand/8 border border-sand/10 rounded-[20px] p-6">
-                    {tx(
-                        `${AppConfig.brand.name} (« nous », « notre ») s'engage à protéger la vie privée de ses utilisateurs. La présente politique décrit comment nous collectons, utilisons et protégeons vos données personnelles conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés.`,
-                        `${AppConfig.brand.name} ("we", "our") is committed to protecting the privacy of its users. This policy describes how we collect, use, and protect your personal data in accordance with the General Data Protection Regulation (GDPR).`
-                    )}
+                    {t('legalPrivacyIntro').replace(/\{\{brand\}\}/g, AppConfig.brand.name)}
                 </p>
 
                 <div className="space-y-4">
@@ -128,14 +98,14 @@ export default function PrivacyPage() {
                                         <Icon size={18} className="text-gold" />
                                     </div>
                                     <span className="font-bold text-sm flex-1 text-sand">
-                                        {language === 'fr' ? sec.title : sec.titleEn}
+                                        {t(sec.titleKey)}
                                     </span>
                                     <span className="text-cocoa/50 text-lg">{open ? '−' : '+'}</span>
                                 </button>
                                 {open && (
                                     <div className="px-6 pb-6 border-t border-sand/10 pt-4">
                                         <p className="text-sm text-sand/60 leading-relaxed whitespace-pre-line">
-                                            {language === 'fr' ? sec.content : sec.contentEn}
+                                            {t(sec.contentKey)}
                                         </p>
                                     </div>
                                 )}
@@ -146,12 +116,9 @@ export default function PrivacyPage() {
 
                 {/* Contact */}
                 <div className="mt-12 bg-gold/10 border border-gold/25 rounded-[20px] p-6">
-                    <p className="font-bold text-sm mb-2 text-sand">{tx('Contact DPO', 'DPO Contact')}</p>
+                    <p className="font-bold text-sm mb-2 text-sand">{t('legalPrivacyContactHeading')}</p>
                     <p className="text-sm text-sand/70">
-                        {tx(
-                            'Pour toute question relative à vos données personnelles, contactez notre DPO : ',
-                            'For any questions about your personal data, contact our DPO: '
-                        )}
+                        {t('legalPrivacyContactText')}
                         <a href="mailto:dpo@cafrezzo.com" className="text-gold font-bold hover:underline">
                             dpo@cafrezzo.com
                         </a>

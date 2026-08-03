@@ -102,7 +102,7 @@ export function LoginModal() {
         } catch (err) {
             const apiErr = err as ApiError;
             if (apiErr.errors) setFieldErrors(apiErr.errors);
-            else setError(apiErr.message ?? 'Something went wrong. Please try again.');
+            else setError(apiErr.message ?? t('authGenericError'));
         } finally {
             setIsLoading(false);
         }

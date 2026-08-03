@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface LoadMoreButtonProps {
     isLoading: boolean;
@@ -15,15 +16,18 @@ export function LoadMoreButton({
     hasMore,
     onLoadMore,
     totalCount,
-    text = "Load More",
-    noMoreText = "No more items to display"
+    text,
+    noMoreText
 }: LoadMoreButtonProps) {
+    const { t } = useLanguage();
+    const resolvedText = text ?? t('loadMore');
+    const resolvedNoMoreText = noMoreText ?? t('noMoreItems');
 
     if (!hasMore && totalCount && totalCount > 0) {
         return (
             <div className="flex justify-center mt-10 sm:mt-14 md:mt-20 mb-8 opacity-60">
                 <span className="text-xs font-bold tracking-widest uppercase text-cocoa">
-                    {noMoreText}
+                    {resolvedNoMoreText}
                 </span>
             </div>
         );
@@ -45,7 +49,7 @@ export function LoadMoreButton({
                     }`}
             >
                 <div className={`transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-                    {text}
+                    {resolvedText}
                 </div>
 
                 <AnimatePresence>

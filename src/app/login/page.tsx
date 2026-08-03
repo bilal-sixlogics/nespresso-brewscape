@@ -6,11 +6,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { ProtectedRoute } from '@/components/ui/ProtectedRoute';
 import { ApiError } from '@/lib/api/types';
 
 function LoginForm() {
     const { login } = useAuth();
+    const { t } = useLanguage();
     const router = useRouter();
     const searchParams = useSearchParams();
     const redirect = searchParams.get('redirect') ?? '/account';
@@ -30,7 +32,7 @@ function LoginForm() {
             router.replace(redirect);
         } catch (err) {
             const apiErr = err as ApiError;
-            setError(apiErr.message ?? 'Invalid credentials. Please try again.');
+            setError(apiErr.message ?? t('authGenericError'));
         } finally {
             setIsLoading(false);
         }
@@ -55,10 +57,10 @@ function LoginForm() {
                     <span className="font-display text-2xl uppercase tracking-widest text-gold">Cafrezzo</span>
                 </Link>
                 <h1 className={`mt-4 font-display text-3xl uppercase tracking-tight ${headingColor}`}>
-                    Welcome Back
+                    {t('authWelcomeBack')}
                 </h1>
                 <p className={`mt-2 text-sm ${labelColor}`}>
-                    Sign in to manage your orders and account.
+                    {t('authLoginSubtitle')}
                 </p>
             </div>
 
@@ -85,7 +87,7 @@ function LoginForm() {
                         autoComplete="email"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
-                        placeholder="Email address"
+                        placeholder={t('authEmailAddress')}
                         className={`w-full pl-11 pr-4 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg}`}
                     />
                 </div>
@@ -101,7 +103,7 @@ function LoginForm() {
                         autoComplete="current-password"
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        placeholder="Password"
+                        placeholder={t('authPassword')}
                         className={`w-full pl-11 pr-11 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg}`}
                     />
                     <button
@@ -120,7 +122,7 @@ function LoginForm() {
                         href="/forgot-password"
                         className="text-xs text-gold hover:underline font-semibold"
                     >
-                        Forgot your password?
+                        {t('authForgotPassword')}
                     </Link>
                 </div>
 
@@ -129,14 +131,14 @@ function LoginForm() {
                     disabled={isLoading}
                     className="w-full bg-gold text-ink rounded-xl py-3.5 font-black uppercase tracking-widest text-[11px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                    {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Sign In'}
+                    {isLoading ? <Loader2 size={16} className="animate-spin" /> : t('authSignIn')}
                 </button>
             </form>
 
             <div className={`mt-8 text-center text-sm ${labelColor}`}>
-                Don&apos;t have an account?{' '}
+                {t('authNoAccount')}{' '}
                 <Link href="/register" className="text-gold font-bold hover:underline">
-                    Create one
+                    {t('authSignUp')}
                 </Link>
             </div>
         </motion.div>

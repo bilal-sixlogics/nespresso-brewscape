@@ -132,10 +132,9 @@ function Select({ label, value, onChange, options, className = '', required = tr
 
 function OrderSummary({ compact = false }: { compact?: boolean }) {
     const { items, subtotal, promoDiscount, shippingCost, total, vatAmount, getItemVat, appliedPromo, selectedShipping } = useCart();
-    const { language } = useLanguage();
+    const { t } = useLanguage();
     const formatPrice = useFormatPrice();
     const { tax_label: taxLabel, tax_included_in_price: taxIncluded } = useSiteSettings();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [expanded, setExpanded] = useState(!compact);
     const displayTotal = total;
 
@@ -147,8 +146,8 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
             >
                 <div className="flex items-center gap-3 min-w-0 flex-shrink">
                     <ShoppingBag size={18} className="text-gold flex-shrink-0" />
-                    <span className="font-black text-sm uppercase tracking-widest whitespace-nowrap">{tx('Récapitulatif', 'Order Summary')}</span>
-                    <span className="text-xs text-sand/60 whitespace-nowrap">({items.length} {tx('articles', 'items')})</span>
+                    <span className="font-black text-sm uppercase tracking-widest whitespace-nowrap">{t('orderSummary')}</span>
+                    <span className="text-xs text-sand/60 whitespace-nowrap">({items.length} {t('itemsWord')})</span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 ml-3">
                     <span className="text-sand font-bold text-1xl  whitespace-nowrap">{formatPrice(displayTotal)}</span>
@@ -181,7 +180,7 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                                                 <span className="font-bold text-sm block text-sand">{formatPrice(item.unitPrice * item.quantity)}</span>
                                                 {lineVat > 0 && (
                                                     <span className="text-[9px] text-sand font-bold">
-                                                        {taxIncluded ? tx('dont', 'incl.') : '+'} {taxLabel || tx('TVA', 'VAT')} {formatPrice(lineVat)}
+                                                        {taxIncluded ? t('inclVat') : `+ ${taxLabel || t('vatWord')}`} {formatPrice(lineVat)}
                                                     </span>
                                                 )}
                                             </div>
@@ -192,25 +191,25 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
 
                             {/* Pricing breakdown */}
                             <div className="space-y-2 text-sm">
-                                <div className="flex justify-between text-sand/60"><span>{tx('Sous-total', 'Subtotal')}</span><span className="font-bold text-sand">{formatPrice(subtotal)}</span></div>
+                                <div className="flex justify-between text-sand/60"><span>{t('subtotal')}</span><span className="font-bold text-sand">{formatPrice(subtotal)}</span></div>
                                 {promoDiscount > 0 && <div className="flex justify-between text-gold"><span>{appliedPromo?.code}</span><span className="font-bold">-{formatPrice(promoDiscount)}</span></div>}
                                 <div className="flex justify-between text-sand/60">
-                                    <span>{tx('Livraison', 'Shipping')}{selectedShipping ? ` — ${selectedShipping.name}` : ''}</span>
-                                    <span className={`font-bold ${shippingCost === 0 ? 'text-gold' : 'text-sand'}`}>{shippingCost === 0 ? tx('Gratuite', 'Free') : formatPrice(shippingCost)}</span>
+                                    <span>{t('shipping')}{selectedShipping ? ` — ${selectedShipping.name}` : ''}</span>
+                                    <span className={`font-bold ${shippingCost === 0 ? 'text-gold' : 'text-sand'}`}>{shippingCost === 0 ? t('freeLabel') : formatPrice(shippingCost)}</span>
                                 </div>
                                 {!taxIncluded && vatAmount > 0 && (
                                     <div className="flex justify-between text-sand/60">
-                                        <span>{taxLabel || tx('TVA', 'VAT')}</span>
+                                        <span>{taxLabel || t('vatWord')}</span>
                                         <span className="font-bold text-sand">{formatPrice(vatAmount)}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between items-center gap-3 text-sand font-black pt-2 border-t border-sand/10 text-base">
-                                    <span className="flex-shrink-0">Total</span>
+                                    <span className="flex-shrink-0">{t('total')}</span>
                                     <span className="text-sand font-bold text-1xl  whitespace-nowrap">{formatPrice(displayTotal)}</span>
                                 </div>
                                 {taxIncluded && vatAmount > 0 && (
                                     <div className="flex justify-between text-[11px] text-sand/50">
-                                        <span>{tx('dont', 'incl.')} {taxLabel || tx('TVA', 'VAT')}</span>
+                                        <span>{t('inclVat')}</span>
                                         <span>{formatPrice(vatAmount)}</span>
                                     </div>
                                 )}
@@ -219,9 +218,9 @@ function OrderSummary({ compact = false }: { compact?: boolean }) {
                             {/* Guarantees */}
                             <div className="border-t border-sand/10 pt-4 space-y-2">
                                 {[
-                                    { icon: Lock, text: tx('Paiement 100% sécurisé', '100% Secure Payment') },
-                                    { icon: Package, text: tx('Retour gratuit sous 14 jours', 'Free Returns within 14 days') },
-                                    { icon: MapPin, text: tx('Livré depuis la France', 'Shipped from France') },
+                                    { icon: Lock, text: t('securePayment') },
+                                    { icon: Package, text: t('moneyBackDesc') },
+                                    { icon: MapPin, text: t('shippedFromFrance') },
                                 ].map(({ icon: Icon, text }, i) => (
                                     <div key={i} className="flex items-center gap-2 text-[10px] text-sand/50">
                                         <Icon size={12} className="text-gold flex-shrink-0" />
@@ -245,7 +244,7 @@ function StripePaymentForm({ onSuccess, onBack, language }: {
 }) {
     const stripe = useStripe();
     const elements = useElements();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const { t } = useLanguage();
     const [isConfirming, setIsConfirming] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -258,7 +257,7 @@ function StripePaymentForm({ onSuccess, onBack, language }: {
             redirect: 'if_required',
         });
         if (confirmError) {
-            setError(confirmError.message ?? tx('Paiement échoué.', 'Payment failed.'));
+            setError(confirmError.message ?? t('paymentFailedEyebrow'));
             setIsConfirming(false);
         } else {
             onSuccess();
@@ -269,7 +268,7 @@ function StripePaymentForm({ onSuccess, onBack, language }: {
         return (
             <div className="text-center py-8">
                 <Loader2 size={24} className="animate-spin text-gold mx-auto mb-3" />
-                <p className="text-sm text-ink/60">{tx('Chargement du paiement sécurisé...', 'Loading secure payment...')}</p>
+                <p className="text-sm text-ink/60">{t('loadingSecurePayment')}</p>
             </div>
         );
     }
@@ -282,7 +281,7 @@ function StripePaymentForm({ onSuccess, onBack, language }: {
             <div className="flex items-center gap-2 mb-4 p-4 bg-ink/5 rounded-2xl border border-ink/10">
                 <Lock size={16} className="text-gold flex-shrink-0" />
                 <p className="text-[10px] text-ink/60 opacity-70">
-                    {tx('Paiement crypté SSL 256-bit via Stripe. Aucun numéro de carte stocké.', 'SSL 256-bit encrypted via Stripe. No card data stored.')}
+                    {t('sslStripeBlurb')}
                 </p>
             </div>
             {error && (
@@ -298,7 +297,7 @@ function StripePaymentForm({ onSuccess, onBack, language }: {
                     className="flex items-center gap-2 px-6 py-4 rounded-full border-2 border-ink/10 text-sm font-black uppercase tracking-widest text-ink/40 hover:border-ink/20 transition-colors disabled:opacity-40"
                 >
                     <ArrowLeft size={16} />
-                    {tx('Retour', 'Back')}
+                    {t('back')}
                 </button>
                 <button
                     onClick={handleConfirm}
@@ -306,9 +305,9 @@ function StripePaymentForm({ onSuccess, onBack, language }: {
                     className="flex-1 flex justify-between items-center px-8 py-4 bg-gold text-ink rounded-full font-black uppercase tracking-widest shadow-lg shadow-gold/25 hover:bg-[#b8914d] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
                 >
                     {isConfirming ? (
-                        <><Loader2 size={18} className="animate-spin" /><span>{tx('Traitement...', 'Processing...')}</span></>
+                        <><Loader2 size={18} className="animate-spin" /><span>{t('loading')}</span></>
                     ) : (
-                        <><span>{tx('Payer maintenant', 'Pay Now')}</span><ArrowRight size={18} /></>
+                        <><span>{t('paySecurely')}</span><ArrowRight size={18} /></>
                     )}
                 </button>
             </div>
@@ -328,9 +327,8 @@ function SectionCard({ children, className = '' }: { children: React.ReactNode; 
 // ─── Main Checkout Page ───────────────────────────────────────────────────────
 export default function CheckoutPage() {
     const { items, subtotal, promoDiscount, total, appliedPromo, clearCart, setShipping } = useCart();
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
     const formatPrice = useFormatPrice();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const router = useRouter();
     const { user, isAuthenticated, register } = useAuth();
 
@@ -416,21 +414,21 @@ export default function CheckoutPage() {
     // ── Compute validation errors ──
     const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const validationErrors: Record<string, string | undefined> = {};
-    if (touched['firstName'] && !shippingForm.firstName) validationErrors['firstName'] = 'Required';
-    if (touched['lastName'] && !shippingForm.lastName) validationErrors['lastName'] = 'Required';
+    if (touched['firstName'] && !shippingForm.firstName) validationErrors['firstName'] = t('requiredField');
+    if (touched['lastName'] && !shippingForm.lastName) validationErrors['lastName'] = t('requiredField');
     if (touched['email']) {
-        if (!shippingForm.email) validationErrors['email'] = 'Required';
-        else if (!EMAIL_REGEX.test(shippingForm.email)) validationErrors['email'] = 'Invalid email';
+        if (!shippingForm.email) validationErrors['email'] = t('requiredField');
+        else if (!EMAIL_REGEX.test(shippingForm.email)) validationErrors['email'] = t('invalidEmailMsg');
     }
-    if (touched['address'] && !shippingForm.address) validationErrors['address'] = 'Required';
-    if (touched['postalCode'] && !shippingForm.postalCode) validationErrors['postalCode'] = 'Required';
-    if (touched['city'] && !shippingForm.city) validationErrors['city'] = 'Required';
+    if (touched['address'] && !shippingForm.address) validationErrors['address'] = t('requiredField');
+    if (touched['postalCode'] && !shippingForm.postalCode) validationErrors['postalCode'] = t('requiredField');
+    if (touched['city'] && !shippingForm.city) validationErrors['city'] = t('requiredField');
 
     // ── Password strength indicators ──
     const PASSWORD_CHECKS = [
-        { label: 'Has uppercase', test: (p: string) => /[A-Z]/.test(p) },
-        { label: 'Has a number', test: (p: string) => /[0-9]/.test(p) },
-        { label: 'Min 8 characters', test: (p: string) => p.length >= 8 },
+        { label: t('authPwUpper'), test: (p: string) => /[A-Z]/.test(p) },
+        { label: t('authPwNumber'), test: (p: string) => /[0-9]/.test(p) },
+        { label: t('authPwMin'), test: (p: string) => p.length >= 8 },
     ];
 
     // ── Saved addresses (logged-in users) — pick one to fill the form ──
@@ -568,17 +566,17 @@ export default function CheckoutPage() {
         const methods: { id: 'stripe' | 'cod' | 'store'; label: string; icon: typeof CreditCard }[] = [];
         // Stripe if enabled
         if (enabledMethods?.stripe) {
-            methods.push({ id: 'stripe', label: tx('Carte / Apple Pay / Google Pay', 'Card / Apple Pay / Google Pay'), icon: CreditCard });
+            methods.push({ id: 'stripe', label: t('digitalWallet'), icon: CreditCard });
         }
         if (isPickup) {
             // Pickup: offer "Pay in Store" unless admin requires online payment
             if (!pickupPaymentRequired) {
-                methods.push({ id: 'store', label: tx('Payer en magasin', 'Pay in Store'), icon: Store });
+                methods.push({ id: 'store', label: t('accountPaymentStore'), icon: Store });
             }
         } else {
             // Delivery: offer COD if enabled
             if (enabledMethods?.cod) {
-                methods.push({ id: 'cod', label: tx('Paiement à la livraison', 'Cash on Delivery'), icon: Truck });
+                methods.push({ id: 'cod', label: t('cashOnDelivery'), icon: Truck });
             }
         }
         return methods;
@@ -649,9 +647,9 @@ export default function CheckoutPage() {
         } catch (err) {
             const apiErr = err as ApiError;
             if (apiErr.status === 422 && (apiErr as ApiError & { email_exists?: boolean }).email_exists) {
-                setAccountError(tx('Cet email est déjà enregistré. Veuillez vous connecter.', 'This email is already registered. Please log in instead.'));
+                setAccountError(t('authEmailRegistered'));
             } else {
-                setAccountError(apiErr.message ?? tx('Impossible d\'envoyer le code.', 'Failed to send verification code.'));
+                setAccountError(apiErr.message ?? t('authSendError'));
             }
         } finally {
             setAccountSendingOtp(false);
@@ -707,7 +705,7 @@ export default function CheckoutPage() {
             await register(fullName, shippingForm.email, accountPassword, accountPasswordConfirm, shippingForm.phone || undefined, res.verification_token);
         } catch (err) {
             const apiErr = err as ApiError;
-            setAccountOtpError(apiErr.message ?? tx('Code invalide. Réessayez.', 'Invalid verification code. Please try again.'));
+            setAccountOtpError(apiErr.message ?? t('authOtpError'));
         } finally {
             setAccountVerifyingOtp(false);
         }
@@ -727,7 +725,7 @@ export default function CheckoutPage() {
             accountOtpRefs.current[0]?.focus();
         } catch (err) {
             const apiErr = err as ApiError;
-            setAccountOtpError(apiErr.message ?? tx('Impossible de renvoyer le code.', 'Failed to resend code.'));
+            setAccountOtpError(apiErr.message ?? t('authResendError'));
         } finally {
             setAccountResendingOtp(false);
         }
@@ -748,7 +746,7 @@ export default function CheckoutPage() {
             setClientSecret(res.client_secret);
             setPendingOrderId(res.order_id);
         } catch (err) {
-            setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
+            setError((err as ApiError).message ?? t('authGenericError'));
         } finally {
             setIsProcessing(false);
         }
@@ -767,7 +765,7 @@ export default function CheckoutPage() {
             clearCart();
             router.push(`/order-success?order=${res.order_id}&payment=${paymentForm.method}&total=${total.toFixed(2)}&email=${encodeURIComponent(shippingForm.email)}`);
         } catch (err) {
-            setError((err as ApiError).message ?? tx('Erreur serveur. Réessayez.', 'Server error. Please try again.'));
+            setError((err as ApiError).message ?? t('authGenericError'));
         } finally {
             setIsProcessing(false);
         }
@@ -778,10 +776,10 @@ export default function CheckoutPage() {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-ink text-sand grain-overlay gap-6 px-4 sm:px-6">
                 <ShoppingBag size={48} className="text-cocoa" />
-                <h1 className="font-display text-4xl uppercase text-sand">{tx('Panier vide', 'Empty Cart')}</h1>
-                <p className="text-cocoa">{tx('Ajoutez des produits avant de passer commande.', 'Add some products before checking out.')}</p>
+                <h1 className="font-display text-4xl uppercase text-sand">{t('cartEmpty')}</h1>
+                <p className="text-cocoa">{t('cartEmptyDesc')}</p>
                 <Link href="/shop" className="bg-gold text-ink px-8 py-4 rounded-full font-black uppercase tracking-widest shadow-lg hover:bg-[#b8914d] transition-colors">
-                    {tx('Aller à la boutique', 'Go to Shop')}
+                    {t('continueShopping')}
                 </Link>
             </div>
         );
@@ -793,12 +791,12 @@ export default function CheckoutPage() {
             <div className="bg-ink border-b border-sand/10 px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex items-center justify-between relative z-10">
                 <button onClick={() => router.back()} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cocoa hover:text-gold transition-colors">
                     <ArrowLeft size={14} />
-                    {tx('Retour', 'Back')}
+                    {t('back')}
                 </button>
                 <span className="font-display text-xl uppercase text-sand">{AppConfig.brand.name}</span>
                 <div className="flex items-center gap-1.5 text-[10px] text-cocoa font-bold">
                     <Lock size={11} className="text-gold" />
-                    {tx('Paiement sécurisé', 'Secure Checkout')}
+                    {t('secureCheckoutTitle')}
                 </div>
             </div>
 
@@ -810,13 +808,14 @@ export default function CheckoutPage() {
 
                         {/* ── Section 1: Shipping Address ── */}
                         <SectionCard>
-                            <h2 className="font-display text-xl uppercase mb-4">{tx('Adresse de livraison', 'Shipping Address')}</h2>
+                            {/* No exact "Shipping Address" key exists — closest is checkoutStepShipping ("Shipping"/"Livraison"). */}
+                            <h2 className="font-display text-xl uppercase mb-4">{t('checkoutStepShipping')}</h2>
 
                             {/* Saved addresses — pick one to autofill (logged-in users) */}
                             {isAuthenticated && savedAddresses.length > 0 && (
                                 <div className="mb-5">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-ink/50 mb-2.5">
-                                        {tx('Vos adresses enregistrées', 'Your saved addresses')}
+                                        {t('savedAddressesLabel')}
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {savedAddresses.map(addr => {
@@ -832,7 +831,7 @@ export default function CheckoutPage() {
                                                         <span className="text-[10px] font-black uppercase tracking-wider text-ink">{addr.label}</span>
                                                         {addr.isDefault && (
                                                             <span className="text-[8px] font-bold uppercase tracking-wider text-gold bg-gold/15 px-1.5 py-0.5 rounded-full">
-                                                                {tx('Par défaut', 'Default')}
+                                                                {t('accountDefault')}
                                                             </span>
                                                         )}
                                                         {active && <Check size={13} className="text-gold ml-auto" />}
@@ -844,26 +843,26 @@ export default function CheckoutPage() {
                                             );
                                         })}
                                     </div>
-                                    <p className="text-[10px] text-ink/50 mt-2.5">{tx('Ou saisissez une nouvelle adresse ci-dessous.', 'Or enter a new address below.')}</p>
+                                    <p className="text-[10px] text-ink/50 mt-2.5">{t('enterNewAddressBelow')}</p>
                                 </div>
                             )}
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                                <Input label={tx('Prénom', 'First Name')} value={shippingForm.firstName} onChange={setShippingField('firstName')} required onBlur={() => markTouched('firstName')} error={validationErrors['firstName']} autoComplete="given-name" />
-                                <Input label={tx('Nom', 'Last Name')} value={shippingForm.lastName} onChange={setShippingField('lastName')} required onBlur={() => markTouched('lastName')} error={validationErrors['lastName']} autoComplete="family-name" />
+                                <Input label={t('firstName')} value={shippingForm.firstName} onChange={setShippingField('firstName')} required onBlur={() => markTouched('firstName')} error={validationErrors['firstName']} autoComplete="given-name" />
+                                <Input label={t('lastName')} value={shippingForm.lastName} onChange={setShippingField('lastName')} required onBlur={() => markTouched('lastName')} error={validationErrors['lastName']} autoComplete="family-name" />
                             </div>
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                                <Input label="Email" value={shippingForm.email} onChange={setShippingField('email')} type="email" required onBlur={() => markTouched('email')} error={validationErrors['email']} autoComplete="email" />
-                                <Input label={tx('Téléphone', 'Phone')} value={shippingForm.phone} onChange={setShippingField('phone')} type="tel" placeholder="+33 6 00 00 00 00" autoComplete="tel" />
+                                <Input label={t('email')} value={shippingForm.email} onChange={setShippingField('email')} type="email" required onBlur={() => markTouched('email')} error={validationErrors['email']} autoComplete="email" />
+                                <Input label={t('phone')} value={shippingForm.phone} onChange={setShippingField('phone')} type="tel" placeholder="+33 6 00 00 00 00" autoComplete="tel" />
                             </div>
-                            <Input label={tx('Adresse', 'Address')} value={shippingForm.address} onChange={setShippingField('address')} placeholder="16 Boulevard du Général de Gaulle" required className="mb-4" onBlur={() => markTouched('address')} error={validationErrors['address']} autoComplete="street-address" />
+                            <Input label={t('address')} value={shippingForm.address} onChange={setShippingField('address')} placeholder="16 Boulevard du Général de Gaulle" required className="mb-4" onBlur={() => markTouched('address')} error={validationErrors['address']} autoComplete="street-address" />
                             <div className="grid grid-cols-3 gap-4 mb-4">
-                                <Input label={tx('Code postal', 'Postal Code')} value={shippingForm.postalCode} onChange={setShippingField('postalCode')} placeholder="75001" required onBlur={() => markTouched('postalCode')} error={validationErrors['postalCode']} autoComplete="postal-code" />
-                                <Input label={tx('Ville', 'City')} value={shippingForm.city} onChange={setShippingField('city')} placeholder="Paris" required className="col-span-2" onBlur={() => markTouched('city')} error={validationErrors['city']} autoComplete="address-level2" />
+                                <Input label={t('postalCode')} value={shippingForm.postalCode} onChange={setShippingField('postalCode')} placeholder="75001" required onBlur={() => markTouched('postalCode')} error={validationErrors['postalCode']} autoComplete="postal-code" />
+                                <Input label={t('city')} value={shippingForm.city} onChange={setShippingField('city')} placeholder="Paris" required className="col-span-2" onBlur={() => markTouched('city')} error={validationErrors['city']} autoComplete="address-level2" />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-ink/60 mb-1.5">{tx('Pays', 'Country')}</label>
-                                <div className="px-4 py-3 bg-ink/5 rounded-xl text-sm text-ink font-medium">France</div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-ink/60 mb-1.5">{t('country')}</label>
+                                <div className="px-4 py-3 bg-ink/5 rounded-xl text-sm text-ink font-medium">{t('countryFrance')}</div>
                             </div>
                         </SectionCard>
 
@@ -879,7 +878,8 @@ export default function CheckoutPage() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <UserPlus size={14} className={createAccount ? 'text-gold' : 'text-ink/40'} />
-                                        <span className="text-sm font-bold text-ink/70">{tx('Créer un compte pour vos prochaines commandes', 'Create an account for faster checkout next time')}</span>
+                                        {/* No exact match — closest existing key is authCreateAccount ("Create Account"). */}
+                                        <span className="text-sm font-bold text-ink/70">{t('authCreateAccount')}</span>
                                     </div>
                                 </label>
 
@@ -899,8 +899,8 @@ export default function CheckoutPage() {
                                                         <CheckCircle2 size={20} className="text-gold" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-sm text-gold">{tx('Email vérifié', 'Email Verified')}</p>
-                                                        <p className="text-[10px] text-ink/60">{tx('Votre compte a été créé avec succès.', 'Your account has been created successfully.')}</p>
+                                                        <p className="font-bold text-sm text-gold">{t('emailVerifiedBadge')}</p>
+                                                        <p className="text-[10px] text-ink/60">{t('accountCreatedSuccess')}</p>
                                                     </div>
                                                 </div>
                                             ) : accountStep === 'otp' ? (
@@ -911,9 +911,10 @@ export default function CheckoutPage() {
                                                             <Mail size={18} className="text-gold" />
                                                         </div>
                                                         <div>
-                                                            <p className="font-bold text-sm text-ink">{tx('Vérifiez votre email', 'Verify Your Email')}</p>
+                                                            {/* Closest existing keys used (not exact wording): authVerifyEmail, authOtpSubtitle. */}
+                                                            <p className="font-bold text-sm text-ink">{t('authVerifyEmail')}</p>
                                                             <p className="text-[10px] text-ink/50">
-                                                                {tx('Code envoyé à', 'Code sent to')} <span className="font-bold text-ink/70">{shippingForm.email}</span>
+                                                                {t('authOtpSubtitle')} <span className="font-bold text-ink/70">{shippingForm.email}</span>
                                                             </p>
                                                         </div>
                                                     </div>
@@ -932,7 +933,7 @@ export default function CheckoutPage() {
                                                         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
                                                             className="flex items-start gap-3 p-3 rounded-xl bg-gold/10 border border-gold/20 text-gold text-xs">
                                                             <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
-                                                            <span>{tx('Un nouveau code a été envoyé.', 'A new code has been sent to your email.')}</span>
+                                                            <span>{t('authCodeSent')}</span>
                                                         </motion.div>
                                                     )}
 
@@ -962,15 +963,15 @@ export default function CheckoutPage() {
                                                         disabled={!accountOtpComplete || accountVerifyingOtp}
                                                         className="w-full bg-gold text-ink rounded-2xl py-3.5 font-black uppercase tracking-widest text-[10px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                                     >
-                                                        {accountVerifyingOtp ? <Loader2 size={16} className="animate-spin" /> : tx('Vérifier et créer le compte', 'Verify & Create Account')}
+                                                        {accountVerifyingOtp ? <Loader2 size={16} className="animate-spin" /> : t('authVerifyCreate')}
                                                     </button>
 
                                                     {/* Resend / timer */}
                                                     <div className="text-center">
-                                                        <p className="text-xs text-ink/60 mb-1">{tx('Code non reçu ?', "Didn't receive the code?")}</p>
+                                                        <p className="text-xs text-ink/60 mb-1">{t('authDidntReceive')}</p>
                                                         {accountResendTimer > 0 ? (
                                                             <p className="text-xs text-ink/50">
-                                                                {tx('Renvoyer dans', 'Resend in')} <span className="font-bold text-ink/70">{accountResendTimer}s</span>
+                                                                {t('authResendIn')} <span className="font-bold text-ink/70">{accountResendTimer}s</span>
                                                             </p>
                                                         ) : (
                                                             <button
@@ -978,7 +979,7 @@ export default function CheckoutPage() {
                                                                 disabled={accountResendingOtp}
                                                                 className="text-xs font-bold text-gold hover:underline disabled:opacity-60"
                                                             >
-                                                                {accountResendingOtp ? tx('Envoi...', 'Sending...') : tx('Renvoyer le code', 'Resend Code')}
+                                                                {accountResendingOtp ? t('authSending') : t('authResendCode')}
                                                             </button>
                                                         )}
                                                     </div>
@@ -988,7 +989,7 @@ export default function CheckoutPage() {
                                                         onClick={() => { setAccountStep('form'); setAccountOtpError(null); setAccountResendSuccess(false); setAccountOtpDigits(Array(OTP_LENGTH).fill('')); }}
                                                         className="w-full text-center text-[10px] text-ink/50 hover:text-ink/70 transition-colors"
                                                     >
-                                                        {tx('Retour au formulaire', 'Back to form')}
+                                                        {t('authBackToForm')}
                                                     </button>
                                                 </div>
                                             ) : (
@@ -1004,14 +1005,14 @@ export default function CheckoutPage() {
                                                     )}
 
                                                     <div>
-                                                        <label className="block text-[9px] font-bold uppercase tracking-widest text-ink/60 mb-1.5">{tx('Mot de passe', 'Password')} *</label>
+                                                        <label className="block text-[9px] font-bold uppercase tracking-widest text-ink/60 mb-1.5">{t('authPassword')} *</label>
                                                         <div className="relative">
                                                             <input
                                                                 type={showAccountPassword ? 'text' : 'password'}
                                                                 value={accountPassword}
                                                                 onChange={e => setAccountPassword(e.target.value)}
                                                                 autoComplete="new-password"
-                                                                placeholder={tx('Min. 8 caractères', 'Min. 8 characters')}
+                                                                placeholder={t('authPwMin')}
                                                                 className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none transition-colors bg-ink/5 text-ink placeholder:text-ink/30 border-ink/10 focus:border-gold`}
                                                             />
                                                             <button type="button" tabIndex={-1} onClick={() => setShowAccountPassword(v => !v)}
@@ -1033,14 +1034,14 @@ export default function CheckoutPage() {
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <label className="block text-[9px] font-bold uppercase tracking-widest text-ink/60 mb-1.5">{tx('Confirmer le mot de passe', 'Confirm Password')} *</label>
+                                                        <label className="block text-[9px] font-bold uppercase tracking-widest text-ink/60 mb-1.5">{t('authConfirmPassword')} *</label>
                                                         <div className="relative">
                                                             <input
                                                                 type={showAccountPasswordConfirm ? 'text' : 'password'}
                                                                 value={accountPasswordConfirm}
                                                                 onChange={e => setAccountPasswordConfirm(e.target.value)}
                                                                 autoComplete="new-password"
-                                                                placeholder={tx('Répéter le mot de passe', 'Repeat password')}
+                                                                placeholder={t('repeatPasswordPlaceholder')}
                                                                 className={`w-full border-2 rounded-2xl px-4 py-3.5 pr-11 text-sm font-medium focus:outline-none transition-colors bg-ink/5 text-ink placeholder:text-ink/30 ${accountPasswordConfirm && accountPasswordConfirm !== accountPassword ? 'border-red-400' : 'border-ink/10 focus:border-gold'}`}
                                                             />
                                                             <button type="button" tabIndex={-1} onClick={() => setShowAccountPasswordConfirm(v => !v)}
@@ -1049,7 +1050,7 @@ export default function CheckoutPage() {
                                                             </button>
                                                         </div>
                                                         {accountPasswordConfirm && accountPasswordConfirm !== accountPassword && (
-                                                            <p className="mt-1 text-xs text-red-500">{tx('Les mots de passe ne correspondent pas.', 'Passwords do not match.')}</p>
+                                                            <p className="mt-1 text-xs text-red-500">{t('authPasswordsMismatch')}</p>
                                                         )}
                                                     </div>
 
@@ -1059,11 +1060,11 @@ export default function CheckoutPage() {
                                                         disabled={!canSendAccountOtp || accountSendingOtp || !shippingForm.email || !shippingForm.firstName}
                                                         className="w-full bg-gold text-ink rounded-2xl py-3.5 font-black uppercase tracking-widest text-[10px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                                     >
-                                                        {accountSendingOtp ? <Loader2 size={16} className="animate-spin" /> : tx('Envoyer le code de vérification', 'Send Verification Code')}
+                                                        {accountSendingOtp ? <Loader2 size={16} className="animate-spin" /> : t('authSendCode')}
                                                     </button>
 
                                                     {!shippingForm.email && (
-                                                        <p className="text-[10px] text-ink/50 text-center">{tx('Remplissez votre email dans le formulaire ci-dessus.', 'Fill in your email in the shipping form above.')}</p>
+                                                        <p className="text-[10px] text-ink/50 text-center">{t('fillEmailAboveMsg')}</p>
                                                     )}
                                                 </div>
                                             )}
@@ -1075,7 +1076,7 @@ export default function CheckoutPage() {
 
                         {/* ── Section 2: Delivery Method ── */}
                         <SectionCard>
-                            <h2 className="font-display text-xl uppercase mb-4">{tx('Mode de livraison', 'Delivery Method')}</h2>
+                            <h2 className="font-display text-xl uppercase mb-4">{t('shippingMethod')}</h2>
                             {methodsLoading ? (
                                 <div className="space-y-3">
                                     <div className="h-16 rounded-2xl bg-ink/5 animate-pulse" />
@@ -1083,7 +1084,7 @@ export default function CheckoutPage() {
                                 </div>
                             ) : apiMethods.length === 0 ? (
                                 <div className="flex items-center gap-2 text-red-500 text-sm p-4 bg-red-500/10 rounded-2xl border border-red-500/20">
-                                    <AlertCircle size={15} /> {tx('Aucune méthode de livraison disponible.', 'No delivery methods available.')}
+                                    <AlertCircle size={15} /> {t('noDeliveryMethodsMsg')}
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -1111,15 +1112,15 @@ export default function CheckoutPage() {
                                                     <div>
                                                         <p className="font-bold text-sm text-ink">{method.name}</p>
                                                         {isPickupMethod
-                                                            ? <p className="text-[10px] text-gold font-bold uppercase tracking-wider">{tx('Click & Collect', 'Click & Collect')}</p>
-                                                            : <p className="text-[10px] text-ink/50">{method.estimated_days_min}–{method.estimated_days_max} {tx('jours ouvrés', 'business days')}</p>
+                                                            ? <p className="text-[10px] text-gold font-bold uppercase tracking-wider">{t('clickAndCollectLabel')}</p>
+                                                            : <p className="text-[10px] text-ink/50">{method.estimated_days_min}–{method.estimated_days_max} {t('businessDaysWord')}</p>
                                                         }
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <span className={`font-black text-base ${isSelected ? 'text-gold' : 'text-ink'}`}>
                                                         {isMethodFree
-                                                            ? tx('Gratuit', 'Free')
+                                                            ? t('freeLabel')
                                                             : formatPrice(Number(method.base_price))}
                                                     </span>
                                                     <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-gold' : 'border-ink/30'}`}>
@@ -1146,7 +1147,7 @@ export default function CheckoutPage() {
                                             <div className="flex items-center gap-2 mb-4">
                                                 <Store size={16} className="text-gold" />
                                                 <p className="text-[10px] font-black uppercase tracking-widest text-gold">
-                                                    {tx('Choisissez votre point de retrait', 'Choose Pickup Store')}
+                                                    {t('choosePickupStoreHeading')}
                                                 </p>
                                             </div>
                                             <div className="space-y-2">
@@ -1187,7 +1188,8 @@ export default function CheckoutPage() {
 
                         {/* ── Section 3: Billing Address ── */}
                         <SectionCard>
-                            <h2 className="font-display text-xl uppercase mb-4">{tx('Adresse de facturation', 'Billing Address')}</h2>
+                            {/* No exact "Billing Address" key exists — closest is checkoutStepBilling ("Billing"/"Facturation"). */}
+                            <h2 className="font-display text-xl uppercase mb-4">{t('checkoutStepBilling')}</h2>
 
                             {/* Same as shipping checkbox */}
                             <label className="flex items-center gap-3 cursor-pointer group">
@@ -1197,7 +1199,7 @@ export default function CheckoutPage() {
                                 >
                                     {billingForm.sameAsShipping && <Check size={12} className="text-ink" />}
                                 </div>
-                                <span className="text-sm font-bold text-ink/70">{tx('Identique à l\'adresse de livraison', 'Same as shipping address')}</span>
+                                <span className="text-sm font-bold text-ink/70">{t('sameAsShipping')}</span>
                             </label>
 
                             {/* Billing form fields — only shown when sameAsShipping is false */}
@@ -1213,20 +1215,20 @@ export default function CheckoutPage() {
                                         <div className="pt-6 space-y-4">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <Input
-                                                    label={tx('Prénom', 'First Name')}
+                                                    label={t('firstName')}
                                                     value={billingForm.firstName}
                                                     onChange={v => setBillingForm(b => ({ ...b, firstName: v }))}
                                                     required
                                                 />
                                                 <Input
-                                                    label={tx('Nom', 'Last Name')}
+                                                    label={t('lastName')}
                                                     value={billingForm.lastName}
                                                     onChange={v => setBillingForm(b => ({ ...b, lastName: v }))}
                                                     required
                                                 />
                                             </div>
                                             <Input
-                                                label={tx('Adresse', 'Address')}
+                                                label={t('address')}
                                                 value={billingForm.address}
                                                 onChange={v => setBillingForm(b => ({ ...b, address: v }))}
                                                 placeholder="16 Boulevard du Général de Gaulle"
@@ -1234,14 +1236,14 @@ export default function CheckoutPage() {
                                             />
                                             <div className="grid grid-cols-3 gap-4">
                                                 <Input
-                                                    label={tx('Code postal', 'Postal Code')}
+                                                    label={t('postalCode')}
                                                     value={billingForm.postalCode}
                                                     onChange={v => setBillingForm(b => ({ ...b, postalCode: v }))}
                                                     placeholder="75001"
                                                     required
                                                 />
                                                 <Input
-                                                    label={tx('Ville', 'City')}
+                                                    label={t('city')}
                                                     value={billingForm.city}
                                                     onChange={v => setBillingForm(b => ({ ...b, city: v }))}
                                                     placeholder="Paris"
@@ -1250,11 +1252,11 @@ export default function CheckoutPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-black uppercase tracking-widest text-ink/60 mb-1.5">{tx('Pays', 'Country')}</label>
-                                                <div className="px-4 py-3 bg-ink/5 rounded-xl text-sm text-ink font-medium">France</div>
+                                                <label className="block text-[10px] font-black uppercase tracking-widest text-ink/60 mb-1.5">{t('country')}</label>
+                                                <div className="px-4 py-3 bg-ink/5 rounded-xl text-sm text-ink font-medium">{t('countryFrance')}</div>
                                             </div>
                                             <Input
-                                                label={tx('Téléphone', 'Phone')}
+                                                label={t('phone')}
                                                 value={billingForm.phone}
                                                 onChange={v => setBillingForm(b => ({ ...b, phone: v }))}
                                                 type="tel"
@@ -1272,16 +1274,16 @@ export default function CheckoutPage() {
                             {isProcessing && (
                                 <div className="absolute inset-0 z-50 bg-sand/90 backdrop-blur-sm flex flex-col items-center justify-center rounded-[28px]">
                                     <Loader2 size={32} className="animate-spin text-gold mb-4" />
-                                    <p className="font-display text-xl uppercase tracking-widest text-ink">{tx('Préparation...', 'Preparing...')}</p>
+                                    <p className="font-display text-xl uppercase tracking-widest text-ink">{t('preparingMsg')}</p>
                                 </div>
                             )}
 
                             {/* Stripe Elements phase */}
                             {clientSecret && pendingOrderId ? (
                                 <div>
-                                    <h2 className="font-display text-xl uppercase mb-2">{tx('Paiement sécurisé', 'Secure Payment')}</h2>
+                                    <h2 className="font-display text-xl uppercase mb-2">{t('securePayment')}</h2>
                                     <p className="text-[10px] text-ink/50 uppercase tracking-widest mb-6">
-                                        {tx('Commande', 'Order')} #{pendingOrderId}
+                                        {t('orderWord')} #{pendingOrderId}
                                     </p>
                                     <Elements
                                         stripe={stripePromise}
@@ -1310,13 +1312,13 @@ export default function CheckoutPage() {
                                 </div>
                             ) : (
                                 <div>
-                                    <h2 className="font-display text-xl uppercase mb-4">{tx('Mode de paiement', 'Payment Method')}</h2>
+                                    <h2 className="font-display text-xl uppercase mb-4">{t('paymentMethod')}</h2>
 
                                     {/* No payment methods warning */}
                                     {paymentMethods.length === 0 && (
                                         <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-2xl p-5 mb-6">
                                             <AlertCircle size={20} className="text-red-500 flex-shrink-0" />
-                                            <p className="text-sm text-red-600">{tx('Aucun moyen de paiement n\'est actuellement disponible. Veuillez réessayer plus tard.', 'No payment methods are currently available. Please try again later.')}</p>
+                                            <p className="text-sm text-red-600">{t('noPaymentMethodsMsg')}</p>
                                         </div>
                                     )}
 
@@ -1344,11 +1346,11 @@ export default function CheckoutPage() {
                                                             <CreditCard size={20} className="text-gold" />
                                                         </div>
                                                         <div>
-                                                            <p className="font-bold text-sm text-ink">{tx('Paiement par Stripe', 'Pay with Stripe')}</p>
-                                                            <p className="text-[10px] text-ink/50">{tx('Carte, Apple Pay, Google Pay, Link', 'Card, Apple Pay, Google Pay, Link')}</p>
+                                                            <p className="font-bold text-sm text-ink">{t('payWithStripeTitle')}</p>
+                                                            <p className="text-[10px] text-ink/50">{t('stripeMethodsDesc')}</p>
                                                         </div>
                                                     </div>
-                                                    <p className="text-xs text-ink/60">{tx('Vos données de carte sont traitées directement par Stripe — jamais stockées sur nos serveurs.', 'Your card data is handled directly by Stripe — never stored on our servers.')}</p>
+                                                    <p className="text-xs text-ink/60">{t('stripeCardDataDesc')}</p>
                                                 </div>
                                             </motion.div>
                                         )}
@@ -1361,10 +1363,10 @@ export default function CheckoutPage() {
                                                             <Store size={24} />
                                                         </div>
                                                         <div>
-                                                            <h3 className="font-display text-lg uppercase mb-1 text-ink">{tx('Payer en magasin', 'Pay in Store')}</h3>
-                                                            <p className="text-sm text-ink/60 mb-3">{tx('Votre commande sera mise de côté. Payez directement à votre point de retrait lors de la collecte.', 'Your order will be reserved. Pay directly at the store when you collect.')}</p>
+                                                            <h3 className="font-display text-lg uppercase mb-1 text-ink">{t('accountPaymentStore')}</h3>
+                                                            <p className="text-sm text-ink/60 mb-3">{t('payInStoreDesc')}</p>
                                                             <div className="flex items-center gap-2 text-[10px] font-bold text-gold/80 uppercase">
-                                                                <Check size={12} /> {tx('Carte & espèces acceptées en magasin', 'Card & cash accepted in store')}
+                                                                <Check size={12} /> {t('cardCashAcceptedMsg')}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1380,10 +1382,10 @@ export default function CheckoutPage() {
                                                             <Truck size={24} />
                                                         </div>
                                                         <div>
-                                                            <h3 className="font-display text-lg uppercase mb-1 text-ink">{tx('Paiement à la livraison', 'Cash on Delivery')}</h3>
-                                                            <p className="text-sm text-ink/60 mb-3">{tx('Préparez le montant exact pour faciliter la réception. Notre livreur vous contactera avant son arrivée.', 'Please prepare the exact amount for easier delivery. Our courier will contact you before arrival.')}</p>
+                                                            <h3 className="font-display text-lg uppercase mb-1 text-ink">{t('cashOnDelivery')}</h3>
+                                                            <p className="text-sm text-ink/60 mb-3">{t('codInstructions')}</p>
                                                             <div className="flex items-center gap-2 text-[10px] font-bold text-orange-700/70 uppercase">
-                                                                <Check size={12} /> {tx('Échange sans contact disponible', 'Contactless exchange available')}
+                                                                <Check size={12} /> {t('contactlessExchangeMsg')}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1401,10 +1403,10 @@ export default function CheckoutPage() {
                                             {paymentForm.acceptedTerms && <Check size={12} className="text-ink" />}
                                         </div>
                                         <span className="text-xs text-ink/60 leading-relaxed">
-                                            {tx('J\'accepte les ', 'I accept the ')}
-                                            <Link href="/terms" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="underline hover:text-gold">{tx('Conditions Générales', 'Terms & Conditions')}</Link>
-                                            {tx(' et la ', ' and ')}
-                                            <Link href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="underline hover:text-gold">{tx('Politique de Confidentialité', 'Privacy Policy')}</Link>.
+                                            {t('acceptTermsPrefix')}
+                                            <Link href="/terms" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="underline hover:text-gold">{t('termsConditionsLink')}</Link>
+                                            {t('acceptTermsAnd')}
+                                            <Link href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="underline hover:text-gold">{t('footerPrivacy')}</Link>.
                                         </span>
                                     </label>
 
@@ -1424,8 +1426,8 @@ export default function CheckoutPage() {
                                     >
                                         <span>
                                             {(paymentForm.method === 'cod' || paymentForm.method === 'store')
-                                                ? tx('Confirmer la commande', 'Place Order')
-                                                : tx('Continuer vers le paiement sécurisé', 'Continue to Secure Payment')
+                                                ? t('placeOrder')
+                                                : t('continueToSecurePayment')
                                             }
                                         </span>
                                         <ArrowRight size={18} />

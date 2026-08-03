@@ -18,7 +18,7 @@ import { CupSeparator } from '@/components/ui/CupSeparator';
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
 export default function AccessoriesPage() {
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [filterOpen, setFilterOpen] = useState(false);
@@ -108,16 +108,13 @@ export default function AccessoriesPage() {
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
                         <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="w-full lg:w-1/2">
                             <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                                {tx('Complétez votre Setup', 'Complete Your Setup')}
+                                {t('accessoriesHeroEyebrow')}
                             </p>
                             <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
-                                {tx('Accessoires', 'Accessories')}
+                                {t('accessoriesHeroTitle')}
                             </h1>
                             <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
-                                {tx(
-                                    "Gobelets, filtres, rangement — tout ce qu'il faut pour sublimer votre rituel café.",
-                                    "Cups, filters, storage — everything to elevate your coffee ritual."
-                                )}
+                                {t('accessoriesHeroDesc')}
                             </p>
                             <div className="max-w-xs mt-10">
                                 <CupSeparator tone="gold" />
@@ -139,7 +136,7 @@ export default function AccessoriesPage() {
                                     y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 },
                                 }}
                                 src="/accessories.png"
-                                alt={tx('Accessoires café', 'Coffee Accessories')}
+                                alt={t('accessoriesImageAlt')}
                                 className="relative z-10 w-[220px] sm:w-[300px] lg:w-[380px] h-auto object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.5)]"
                             />
                         </div>
@@ -161,7 +158,7 @@ export default function AccessoriesPage() {
                                 className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gold text-ink hover:bg-[#b8914d] transition-colors relative"
                             >
                                 <SlidersHorizontal size={12} />
-                                <span className="hidden sm:inline">{tx('Filtres', 'Filters')}</span>
+                                <span className="hidden sm:inline">{t('filters')}</span>
                                 {activeFilterCount > 0 && (
                                     <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-ink text-gold border border-gold/50 text-[8px] font-black rounded-full flex items-center justify-center">
                                         {activeFilterCount}
@@ -175,11 +172,11 @@ export default function AccessoriesPage() {
                                     onClick={() => setSortOpen(!sortOpen)}
                                     className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sand/8 text-sand/70 border border-sand/10 hover:border-sand/25 transition-colors"
                                 >
-                                    {sortBy === 'relevance' && tx('Pertinence', 'Relevance')}
-                                    {sortBy === 'price_asc' && tx('Prix: Croissant', 'Price: Low to High')}
-                                    {sortBy === 'price_desc' && tx('Prix: Décroissant', 'Price: High to Low')}
-                                    {sortBy === 'newest' && tx('Nouveautés', 'Newest')}
-                                    {sortBy === 'popularity' && tx('Popularité', 'Popularity')}
+                                    {sortBy === 'relevance' && t('sortRelevance')}
+                                    {sortBy === 'price_asc' && t('sortPriceLow')}
+                                    {sortBy === 'price_desc' && t('sortPriceHigh')}
+                                    {sortBy === 'newest' && t('sortNewest')}
+                                    {sortBy === 'popularity' && t('popularitySort')}
                                     <ChevronDown size={12} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
                                 </button>
 
@@ -192,11 +189,11 @@ export default function AccessoriesPage() {
                                                 className="absolute top-full left-0 mt-2 w-52 bg-sand rounded-2xl shadow-xl border border-ink/10 z-[90] overflow-hidden py-2"
                                             >
                                                 {[
-                                                    { id: 'relevance', lbl: tx('Pertinence', 'Relevance') },
-                                                    { id: 'price_asc', lbl: tx('Prix: Croissant', 'Price: Low to High') },
-                                                    { id: 'price_desc', lbl: tx('Prix: Décroissant', 'Price: High to Low') },
-                                                    { id: 'newest', lbl: tx('Nouveautés', 'Newest') },
-                                                    { id: 'popularity', lbl: tx('Popularité', 'Popularity') },
+                                                    { id: 'relevance', lbl: t('sortRelevance') },
+                                                    { id: 'price_asc', lbl: t('sortPriceLow') },
+                                                    { id: 'price_desc', lbl: t('sortPriceHigh') },
+                                                    { id: 'newest', lbl: t('sortNewest') },
+                                                    { id: 'popularity', lbl: t('popularitySort') },
                                                 ].map(opt => (
                                                     <button
                                                         key={opt.id}
@@ -223,7 +220,7 @@ export default function AccessoriesPage() {
                                         className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15 transition-colors"
                                     >
                                         <RotateCcw size={11} />
-                                        {tx('Réinitialiser', 'Reset')}
+                                        {t('reset')}
                                     </motion.button>
                                 )}
                             </AnimatePresence>
@@ -245,7 +242,7 @@ export default function AccessoriesPage() {
                                     : 'bg-sand/8 text-sand/50 border border-sand/10 hover:border-gold/30 hover:text-sand'
                                     }`}
                             >
-                                {tx('Tout', 'All')}
+                                {t('all')}
                             </button>
                             {accessoryCategories.map(cat => (
                                 <button
@@ -265,10 +262,10 @@ export default function AccessoriesPage() {
                     {/* Results header */}
                     <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-10">
                         <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sand">
-                            {!activeCategory ? tx('Tous les Accessoires', 'All Accessories') : activeCategory}
+                            {!activeCategory ? t('allAccessories') : activeCategory}
                         </h3>
                         <div className="text-[10px] font-bold tracking-widest uppercase text-cocoa">
-                            {displayProducts.length} {tx('résultats', 'results')}
+                            {displayProducts.length} {t('results')}
                         </div>
                     </div>
 
@@ -277,10 +274,10 @@ export default function AccessoriesPage() {
                         <div className="text-center py-24">
                             <p className="text-6xl mb-4">🧰</p>
                             <p className="font-bold text-xl mb-2 text-sand">
-                                {tx('Aucun accessoire trouvé', 'No accessories found')}
+                                {t('noAccessoriesFound')}
                             </p>
                             <button onClick={resetAll} className="text-gold font-bold text-sm underline mt-2">
-                                {tx('Effacer les filtres', 'Clear filters')}
+                                {t('clearFilters')}
                             </button>
                         </div>
                     ) : (

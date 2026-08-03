@@ -6,60 +6,18 @@ import { useLanguage } from '@/context/LanguageContext';
 import { AppConfig } from '@/lib/config';
 
 const termsContent = [
-    {
-        num: '01',
-        title: 'Objet',
-        titleEn: 'Purpose',
-        body: `Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre ${AppConfig.brand.name} et tout acheteur effectuant une commande en ligne sur le site cafrezzo.com. Toute commande implique l'acceptation sans réserve des présentes CGV.`,
-        bodyEn: `These General Terms and Conditions of Sale govern the contractual relationship between ${AppConfig.brand.name} and any buyer placing an online order on cafrezzo.com. Any order implies unconditional acceptance of these Terms.`,
-    },
-    {
-        num: '02',
-        title: 'Commandes',
-        titleEn: 'Orders',
-        body: `Les commandes sont passées en ligne via le site. La confirmation de commande est envoyée par e-mail après validation du paiement. ${AppConfig.brand.name} se réserve le droit d'annuler toute commande en cas de rupture de stock, d'erreur de prix manifeste, ou de suspicion de fraude.`,
-        bodyEn: `Orders are placed online via the website. An order confirmation is sent by email after payment validation. ${AppConfig.brand.name} reserves the right to cancel any order in case of stock shortage, obvious pricing error, or suspected fraud.`,
-    },
-    {
-        num: '03',
-        title: 'Prix & Paiement',
-        titleEn: 'Prices & Payment',
-        body: `Les prix sont indiqués en euros TTC. Ils peuvent être modifiés à tout moment, mais les commandes sont facturées au prix en vigueur lors de la validation. Les paiements sont acceptés par carte bancaire (Visa, Mastercard, American Express), PayPal et virement bancaire pour les commandes professionnelles.`,
-        bodyEn: `Prices are in euros including VAT. They may be changed at any time, but orders are invoiced at the price applicable at the time of validation. Payments are accepted by credit card (Visa, Mastercard, American Express), PayPal, and bank transfer for professional orders.`,
-    },
-    {
-        num: '04',
-        title: 'Livraison',
-        titleEn: 'Delivery',
-        body: `Les délais de livraison sont indiqués lors de la commande (3–5 jours ouvrés en standard, 1–2 jours en express). En cas de retard imputable au transporteur, ${AppConfig.brand.name} ne pourra être tenu responsable. Tout colis endommagé à la réception doit être signalé dans les 48 heures.`,
-        bodyEn: `Delivery times are indicated at the time of ordering (3–5 working days standard, 1–2 days express). In case of delay attributable to the carrier, ${AppConfig.brand.name} cannot be held liable. Any parcel damaged upon receipt must be reported within 48 hours.`,
-    },
-    {
-        num: '05',
-        title: 'Droit de rétractation',
-        titleEn: 'Right of Withdrawal',
-        body: `Conformément à la directive européenne, vous disposez d'un délai de 14 jours à compter de la réception pour exercer votre droit de rétractation sans justification. Les produits doivent être retournés dans leur emballage d'origine non ouvert. Les denrées périssables et produits alimentaires ouverts ne peuvent être retournés.`,
-        bodyEn: `In accordance with European directive, you have 14 days from receipt to exercise your right of withdrawal without justification. Products must be returned in their original unopened packaging. Perishable goods and opened food products cannot be returned.`,
-    },
-    {
-        num: '06',
-        title: 'Responsabilité',
-        titleEn: 'Liability',
-        body: `${AppConfig.brand.name} ne saurait être tenu responsable des dommages indirects résultant de l'utilisation des produits. Sa responsabilité est limitée au montant de la commande concernée. Les informations figurant sur le site sont données à titre indicatif et peuvent être modifiées.`,
-        bodyEn: `${AppConfig.brand.name} cannot be held liable for indirect damages resulting from the use of products. Its liability is limited to the amount of the order concerned. Information on the website is provided for guidance only and may be subject to change.`,
-    },
-    {
-        num: '07',
-        title: 'Loi applicable & Juridiction',
-        titleEn: 'Applicable Law & Jurisdiction',
-        body: `Les présentes CGV sont soumises au droit français. En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux compétents de Paris seront seuls compétents. Pour tout litige de consommation, vous pouvez également recourir à la médiation via la plateforme européenne de règlement en ligne des litiges (RLL).`,
-        bodyEn: `These Terms are governed by French law. In the event of a dispute, an amicable resolution will be sought first. Failing that, the competent courts of Paris shall have sole jurisdiction. For consumer disputes, you may also use mediation via the European online dispute resolution (ODR) platform.`,
-    },
-];
+    { num: '01', titleKey: 'legalTermsSection1Title', bodyKey: 'legalTermsSection1Body' },
+    { num: '02', titleKey: 'legalTermsSection2Title', bodyKey: 'legalTermsSection2Body' },
+    { num: '03', titleKey: 'legalTermsSection3Title', bodyKey: 'legalTermsSection3Body' },
+    { num: '04', titleKey: 'legalTermsSection4Title', bodyKey: 'legalTermsSection4Body' },
+    { num: '05', titleKey: 'legalTermsSection5Title', bodyKey: 'legalTermsSection5Body' },
+    { num: '06', titleKey: 'legalTermsSection6Title', bodyKey: 'legalTermsSection6Body' },
+    { num: '07', titleKey: 'legalTermsSection7Title', bodyKey: 'legalTermsSection7Body' },
+] as const;
 
 export default function TermsPage() {
-    const { language } = useLanguage();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const { t } = useLanguage();
+    const brandName = AppConfig.brand.name;
 
     return (
         <div className="w-full bg-ink text-sand min-h-screen grain-overlay">
@@ -67,13 +25,13 @@ export default function TermsPage() {
             <section className="bg-ink pt-24 pb-16 px-8">
                 <div className="max-w-[900px] mx-auto">
                     <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                        {tx('Légal', 'Legal')}
+                        {t('legalTermsEyebrow')}
                     </p>
                     <h1 className="font-display text-5xl md:text-7xl uppercase text-sand mb-4">
-                        {tx("Conditions", "Terms of")} <span className="text-gold">{tx("d'Utilisation", "Service")}</span>
+                        {t('legalTermsHeadingLine1')} <span className="text-gold">{t('legalTermsHeadingLine2')}</span>
                     </h1>
                     <p className="text-sand/50 text-sm">
-                        {tx('Version en vigueur au 1er janvier 2026', 'Version effective January 1, 2026')} · {AppConfig.brand.name}
+                        {t('legalTermsEffectiveDate')} · {AppConfig.brand.name}
                     </p>
                 </div>
             </section>
@@ -96,10 +54,10 @@ export default function TermsPage() {
                                 </span>
                                 <div>
                                     <h2 className="font-bold text-base text-sand mb-3">
-                                        {language === 'fr' ? sec.title : sec.titleEn}
+                                        {t(sec.titleKey)}
                                     </h2>
                                     <p className="text-sm text-sand/60 leading-relaxed">
-                                        {language === 'fr' ? sec.body : sec.bodyEn}
+                                        {t(sec.bodyKey).replace(/\{\{brand\}\}/g, brandName)}
                                     </p>
                                 </div>
                             </div>
@@ -110,7 +68,7 @@ export default function TermsPage() {
                 {/* Contact */}
                 <div className="mt-10 bg-sand/5 border border-sand/10 rounded-[20px] p-6 text-center">
                     <p className="text-sm text-sand/70">
-                        {tx('Pour toute question : ', 'For any questions: ')}
+                        {t('legalTermsContactLabel')}
                         <a href={`mailto:${AppConfig.brand.email}`} className="text-gold font-bold hover:underline">
                             {AppConfig.brand.email}
                         </a>

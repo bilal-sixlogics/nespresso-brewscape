@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Lock, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/types';
 
 function ResetPasswordContent() {
+    const { t } = useLanguage();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -27,7 +29,7 @@ function ResetPasswordContent() {
         setError(null);
 
         if (password !== passwordConfirmation) {
-            setError('Passwords do not match.');
+            setError(t('authPasswordsMismatch'));
             return;
         }
 
@@ -128,7 +130,7 @@ function ResetPasswordContent() {
                                     autoComplete="new-password"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
-                                    placeholder="New password"
+                                    placeholder={t('authPassword')}
                                     className={`w-full pl-11 pr-4 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg}`}
                                 />
                             </div>
@@ -143,7 +145,7 @@ function ResetPasswordContent() {
                                     autoComplete="new-password"
                                     value={passwordConfirmation}
                                     onChange={e => setPasswordConfirmation(e.target.value)}
-                                    placeholder="Confirm new password"
+                                    placeholder={t('authConfirmPassword')}
                                     className={`w-full pl-11 pr-4 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg}`}
                                 />
                             </div>

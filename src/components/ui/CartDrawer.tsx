@@ -17,9 +17,8 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
         appliedPromo, promoError, promoLoading, applyPromoCode, removePromoCode,
         removeFromCart, updateQuantity, clearCart,
     } = useCart();
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
     const formatPrice = useFormatPrice();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
 
     const [promoInput, setPromoInput] = useState('');
     const [promoExpanded, setPromoExpanded] = useState(false);
@@ -68,8 +67,8 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             <ShoppingBag size={18} className="text-gold" />
                         </div>
                         <div>
-                            <p className="font-black text-sm uppercase tracking-widest text-ink">{tx('Mon Panier', 'My Cart')}</p>
-                            <p className="text-xs text-ink/50 font-bold">{cartCount} {tx('article(s)', 'item(s)')}</p>
+                            <p className="font-black text-sm uppercase tracking-widest text-ink">{t('cart')}</p>
+                            <p className="text-xs text-ink/50 font-bold">{cartCount} {t('itemsWord')}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -78,12 +77,12 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                 onClick={clearCart}
                                 className="text-[9px] font-bold uppercase tracking-wider text-ink/40 hover:text-red-400 transition-colors"
                             >
-                                {tx('Vider', 'Clear')}
+                                {t('clear')}
                             </button>
                         )}
                         <button
                             onClick={onClose}
-                            aria-label="Close cart"
+                            aria-label={t('ariaCloseCart')}
                             className="w-10 h-10 bg-ink/5 rounded-full flex items-center justify-center hover:bg-ink/10 transition-colors focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
                         >
                             <X size={16} className="text-ink" />
@@ -98,7 +97,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             <div className="flex justify-between items-center mb-2">
                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-ink/60">
                                     <Truck size={11} />
-                                    {tx('Plus que', 'Only')} <span className="text-ink font-black">{formatPrice(amountToFreeShipping)}</span> {tx('pour la livraison gratuite !', 'away from free shipping!')}
+                                    {t('freeShippingProgress').split('{{amount}}')[0]}<span className="text-ink font-black">{formatPrice(amountToFreeShipping)}</span>{t('freeShippingProgress').split('{{amount}}')[1]}
                                 </div>
                                 <span className="text-[9px] font-bold text-ink/50">{Math.round(freeShippingProgress)}%</span>
                             </div>
@@ -114,7 +113,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                     ) : (
                         <div className="flex items-center gap-2 text-gold">
                             <Check size={14} />
-                            <span className="text-[10px] font-black uppercase tracking-wider">{tx('Livraison gratuite offerte ! 🎉', 'Free shipping unlocked! 🎉')}</span>
+                            <span className="text-[10px] font-black uppercase tracking-wider">{t('freeShippingUnlocked')}</span>
                         </div>
                     )}
                 </div>
@@ -128,12 +127,12 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                 className="flex flex-col items-center justify-center h-64 text-center"
                             >
                                 <ShoppingBag size={40} className="text-ink/15 mb-4" />
-                                <p className="font-bold text-ink/50 text-sm">{tx('Votre panier est vide', 'Your cart is empty')}</p>
+                                <p className="font-bold text-ink/50 text-sm">{t('cartEmpty')}</p>
                                 <button
                                     onClick={onClose}
                                     className="mt-4 text-gold text-sm font-bold underline"
                                 >
-                                    {tx('Continuer mes achats', 'Continue Shopping')}
+                                    {t('continueBrowsing')}
                                 </button>
                             </motion.div>
                         ) : (
@@ -170,7 +169,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                                 <div className="flex items-center bg-sand border border-ink/10 rounded-full px-1 py-0.5 gap-1">
                                                     <button
                                                         onClick={() => updateQuantity(item.product.id, item.saleUnit.id, item.quantity - 1)}
-                                                        aria-label="Decrease quantity"
+                                                        aria-label={t('ariaDecrease')}
                                                         className="w-9 h-9 rounded-full flex items-center justify-center text-ink hover:bg-ink/5 transition-colors focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-1"
                                                     >
                                                         <Minus size={11} />
@@ -178,7 +177,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                                     <span className="text-sm font-black w-6 text-center text-ink">{item.quantity}</span>
                                                     <button
                                                         onClick={() => updateQuantity(item.product.id, item.saleUnit.id, item.quantity + 1)}
-                                                        aria-label="Increase quantity"
+                                                        aria-label={t('ariaIncrease')}
                                                         className="w-9 h-9 rounded-full flex items-center justify-center text-ink hover:bg-ink/5 transition-colors focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-1"
                                                     >
                                                         <Plus size={11} />
@@ -193,7 +192,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                                         {/* Remove */}
                                         <button
                                             onClick={() => removeFromCart(item.product.id, item.saleUnit.id)}
-                                            aria-label={`Remove ${displayName} from cart`}
+                                            aria-label={`${t('ariaRemoveFromCart')} ${displayName}`}
                                             className="w-9 h-9 flex items-center justify-center text-ink/40 hover:text-red-400 transition-colors flex-shrink-0 mt-0.5 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-1 rounded-full"
                                         >
                                             <Trash2 size={14} />
@@ -217,7 +216,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                 <Tag size={11} />
                                 {appliedPromo
                                     ? <span className="text-gold">{appliedPromo.code}{promoDiscount > 0 && ` (-${formatPrice(promoDiscount)})`}</span>
-                                    : tx('Ajouter un code promo', 'Add Promo Code')
+                                    : t('addPromoCode')
                                 }
                             </button>
 
@@ -228,21 +227,21 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                         className="overflow-hidden"
                                     >
                                         <div className="flex gap-2 mt-3">
-                                            <label htmlFor="cart-promo-code" className="sr-only">{tx('Code promo', 'Promo code')}</label>
+                                            <label htmlFor="cart-promo-code" className="sr-only">{t('promoCode')}</label>
                                             <input
                                                 id="cart-promo-code"
                                                 type="text"
                                                 value={promoInput}
                                                 onChange={e => setPromoInput(e.target.value.toUpperCase())}
                                                 onKeyDown={e => e.key === 'Enter' && handleApplyPromo()}
-                                                placeholder={tx('Code promo', 'Promo code')}
+                                                placeholder={t('promoCode')}
                                                 className="flex-1 border-2 border-ink/10 rounded-full px-4 py-2.5 text-sm font-bold text-ink placeholder-ink/30 focus:border-gold focus:outline-none transition-colors bg-ink/5"
                                             />
                                             <button
                                                 onClick={handleApplyPromo}
                                                 className="px-5 py-2.5 bg-gold text-ink rounded-full text-[10px] font-black uppercase tracking-wider hover:bg-[#b8914d] transition-colors"
                                             >
-                                                {tx('Appliquer', 'Apply')}
+                                                {t('applyPromo')}
                                             </button>
                                         </div>
                                         {promoError && (
@@ -257,7 +256,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                     >
                                         <span className="text-[10px] text-ink/50">{appliedPromo.promotion_name} ({appliedPromo.code})</span>
                                         <button onClick={removePromoCode} className="text-[9px] text-red-400 font-bold hover:underline">
-                                            {tx('Supprimer', 'Remove')}
+                                            {t('removePromo')}
                                         </button>
                                     </motion.div>
                                 )}
@@ -267,7 +266,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         {/* Order summary */}
                         <div className="space-y-1.5">
                             <div className="flex justify-between text-sm text-ink/60">
-                                <span>{tx('Sous-total', 'Subtotal')}</span>
+                                <span>{t('subtotal')}</span>
                                 <span className="font-bold font-black text-black">{formatPrice(subtotal)}</span>
                             </div>
                             {promoDiscount > 0 && (
@@ -277,11 +276,11 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                                 </div>
                             )}
                             <div className="flex justify-between text-sm text-ink/50">
-                                <span>{tx('Livraison', 'Shipping')}</span>
-                                <span className="italic text-[11px]">{tx('Calculée au paiement', 'Calculated at checkout')}</span>
+                                <span>{t('shipping')}</span>
+                                <span className="italic text-[11px]">{t('calculatedAtCheckout')}</span>
                             </div>
                             <div className="flex justify-between text-base text-ink border-t border-ink/10 pt-2 mt-2">
-                                <span className="font-black uppercase tracking-wider">{tx('Sous-total', 'Subtotal')}</span>
+                                <span className="font-black uppercase tracking-wider">{t('subtotal')}</span>
                                 <span className="font-bold font-black text-black text-2xl">{formatPrice(subtotal - promoDiscount)}</span>
                             </div>
                         </div>
@@ -293,11 +292,11 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             className="flex justify-between items-center w-full bg-gold text-ink px-7 py-4 rounded-full shadow-lg shadow-gold/25 hover:bg-[#b8914d] transition-colors focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
                         >
                             <div className="min-w-0">
-                                <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{tx('Sous-total', 'Subtotal')} · {cartCount} article(s)</p>
+                                <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{t('subtotal')} · {cartCount} {t('itemsWord')}</p>
                                 <p className="font-bold font-black text-black text-xl leading-none truncate">{formatPrice(subtotal - promoDiscount)}</p>
                             </div>
                             <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
-                                {tx('Commander', 'Checkout')} <ArrowRight size={16} />
+                                {t('checkout')} <ArrowRight size={16} />
                             </div>
                         </Link>
                     </div>

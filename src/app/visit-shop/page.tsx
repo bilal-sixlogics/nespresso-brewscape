@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, Clock, Loader2, ExternalLink } from 'lucide-react';
-import { AppConfig } from '@/lib/config';
 import { Endpoints } from '@/lib/api/endpoints';
 import { CupSeparator } from '@/components/ui/CupSeparator';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface StoreLocation {
     id: number; name: string; address: string; city: string; country: string;
@@ -14,6 +14,7 @@ interface StoreLocation {
 }
 
 export default function VisitShopPage() {
+    const { t } = useLanguage();
     const [stores, setStores] = useState<StoreLocation[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -34,11 +35,11 @@ export default function VisitShopPage() {
                     <div className="max-w-[1400px] mx-auto text-center">
                         <motion.h2 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                             className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight mb-6">
-                            Our Stores
+                            {t('visitShopTitle')}
                         </motion.h2>
                         <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
                             className="text-sand/60 max-w-2xl mx-auto text-lg">
-                            Visit {AppConfig.brand.name} and discover our exceptional selection in person.
+                            {t('visitShopSubtitle')}
                         </motion.p>
                         <div className="max-w-xs mx-auto mt-10">
                             <CupSeparator tone="gold" />
@@ -56,7 +57,7 @@ export default function VisitShopPage() {
                         ) : stores.length === 0 ? (
                             <div className="text-center py-20">
                                 <MapPin size={48} className="mx-auto text-cocoa/30 mb-4" />
-                                <p className="text-cocoa font-bold">No store locations available yet.</p>
+                                <p className="text-cocoa font-bold">{t('noStoresAvailable')}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -103,7 +104,7 @@ export default function VisitShopPage() {
                                                 <a href={`https://www.google.com/maps?q=${store.latitude},${store.longitude}`}
                                                     target="_blank" rel="noopener noreferrer"
                                                     className="w-full mt-3 bg-ink/5 hover:bg-gold hover:text-ink text-ink py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2">
-                                                    <ExternalLink size={14} /> Get Directions
+                                                    <ExternalLink size={14} /> {t('getDirections')}
                                                 </a>
                                             )}
                                         </div>
@@ -120,8 +121,8 @@ export default function VisitShopPage() {
                     return (
                         <section className="bg-ink py-24 px-8 relative border-t border-sand/10">
                             <div className="max-w-[1400px] mx-auto text-center">
-                                <h3 className="font-display text-4xl md:text-5xl uppercase mb-6 text-sand">Find Us</h3>
-                                <p className="text-sand/60 max-w-lg mx-auto mb-12">Every cup tells a story. Come write yours at our store.</p>
+                                <h3 className="font-display text-4xl md:text-5xl uppercase mb-6 text-sand">{t('visitUsToday')}</h3>
+                                <p className="text-sand/60 max-w-lg mx-auto mb-12">{t('visitUsDesc')}</p>
                                 <div className="rounded-3xl overflow-hidden border border-sand/15 shadow-lg">
                                     <iframe
                                         src={`https://www.openstreetmap.org/export/embed.html?bbox=${Number(first.longitude) - 0.01},${Number(first.latitude) - 0.01},${Number(first.longitude) + 0.01},${Number(first.latitude) + 0.01}&layer=mapnik&marker=${first.latitude},${first.longitude}`}

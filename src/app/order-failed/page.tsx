@@ -5,28 +5,30 @@ import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { XCircle, RefreshCw, MessageCircle, ArrowLeft, AlertTriangle, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 function OrderFailedContent() {
     const searchParams = useSearchParams();
+    const { t } = useLanguage();
     const reason = searchParams.get('reason') || 'payment_declined';
     const orderId = searchParams.get('order') || '';
 
     const REASONS: Record<string, { title: string; message: string }> = {
         payment_declined: {
-            title: 'Payment Declined',
-            message: 'Your payment was declined by the payment provider. This could be due to insufficient funds, card restrictions, or a temporary issue. No charge was made to your account.',
+            title: t('reasonPaymentDeclinedTitle'),
+            message: t('reasonPaymentDeclinedMsg'),
         },
         gateway_error: {
-            title: 'Gateway Error',
-            message: 'We encountered a technical issue with the payment gateway. This is not related to your payment method. Please try again in a few moments.',
+            title: t('reasonGatewayErrorTitle'),
+            message: t('reasonGatewayErrorMsg'),
         },
         timeout: {
-            title: 'Payment Timed Out',
-            message: 'The payment session expired before it could be completed. Your cart has been saved — please try again.',
+            title: t('reasonTimeoutTitle'),
+            message: t('reasonTimeoutMsg'),
         },
         cancelled: {
-            title: 'Payment Cancelled',
-            message: 'You cancelled the payment process. Your cart is still intact and you can try again whenever you\'re ready.',
+            title: t('reasonCancelledTitle'),
+            message: t('reasonCancelledMsg'),
         },
     };
 
@@ -55,7 +57,7 @@ function OrderFailedContent() {
                     transition={{ delay: 0.3 }}
                     className="text-center mb-10"
                 >
-                    <p className="text-[11px] font-black uppercase tracking-[0.3em] text-red-400 mb-2">Payment Failed</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.3em] text-red-400 mb-2">{t('paymentFailedEyebrow')}</p>
                     <h1 className="font-display text-4xl lg:text-5xl uppercase tracking-tight text-sand mb-3">{title}</h1>
                     <p className="text-sand/60 max-w-md mx-auto leading-relaxed">{message}</p>
                 </motion.div>
@@ -69,7 +71,7 @@ function OrderFailedContent() {
                 >
                     {orderId && (
                         <div className="bg-ink/5 px-6 py-4 border-b border-ink/10">
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50">Reference</p>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50">{t('referenceLabel')}</p>
                             <p className="font-mono font-bold text-ink">{orderId}</p>
                         </div>
                     )}
@@ -78,7 +80,7 @@ function OrderFailedContent() {
                         <div className="flex items-start gap-4 p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
                             <AlertTriangle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="font-bold text-sm text-amber-700 mb-1">Your cart is saved</p>
+                                <p className="font-bold text-sm text-amber-700 mb-1">{t('cartSavedTitle')}</p>
                                 <p className="text-xs text-amber-700/80">All items in your cart have been preserved. You can go back and try a different payment method.</p>
                             </div>
                         </div>
@@ -86,19 +88,19 @@ function OrderFailedContent() {
                         <div className="flex items-start gap-4 p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
                             <Lock size={18} className="text-emerald-600 flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="font-bold text-sm text-emerald-700 mb-1">No charge was made</p>
+                                <p className="font-bold text-sm text-emerald-700 mb-1">{t('noChargeTitle')}</p>
                                 <p className="text-xs text-emerald-700/80">You have not been charged. No payment details were stored on our servers.</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="border-t border-ink/10 px-6 py-5 bg-ink/5">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-3">Suggested actions</p>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-3">{t('suggestedActions')}</p>
                         <div className="space-y-2">
                             {[
-                                'Try a different payment method (Stripe, Wise, or Cash on Delivery)',
-                                'Check your internet connection and try again',
-                                'Contact your bank if the issue persists',
+                                t('suggestedActionPaymentMethod'),
+                                t('suggestedActionConnection'),
+                                t('suggestedActionBank'),
                             ].map((s, i) => (
                                 <div key={i} className="flex items-center gap-3">
                                     <div className="w-5 h-5 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0">
@@ -122,19 +124,19 @@ function OrderFailedContent() {
                         href="/checkout"
                         className="flex-1 flex items-center justify-center gap-2 py-4 bg-gold text-ink rounded-full font-black uppercase tracking-widest hover:bg-[#b8914d] transition-colors shadow-lg"
                     >
-                        <RefreshCw size={16} /> Try Again
+                        <RefreshCw size={16} /> {t('tryAgainBtn')}
                     </Link>
                     <Link
                         href="/contact"
                         className="flex-1 flex items-center justify-center gap-2 py-4 bg-sand/5 text-sand border-2 border-sand/15 rounded-full font-black uppercase tracking-widest hover:border-sand/40 transition-colors"
                     >
-                        <MessageCircle size={16} /> Contact Support
+                        <MessageCircle size={16} /> {t('contactSupportBtn')}
                     </Link>
                 </motion.div>
 
                 <div className="flex justify-center mt-6">
                     <Link href="/shop" className="flex items-center gap-2 text-sm text-cocoa hover:text-sand transition-colors">
-                        <ArrowLeft size={14} /> Continue Shopping
+                        <ArrowLeft size={14} /> {t('continueBrowsing')}
                     </Link>
                 </div>
             </div>

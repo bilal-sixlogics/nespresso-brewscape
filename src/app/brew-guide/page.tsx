@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Thermometer, Droplets, Clock, Plus, Minus, Check, Loader2 } from 'lucide-react';
 import { Endpoints } from '@/lib/api/endpoints';
 import { CupSeparator } from '@/components/ui/CupSeparator';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface BrewStep {
     step_number: number;
@@ -33,6 +34,7 @@ interface BrewGuide {
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=1200&auto=format&fit=crop';
 
 export default function BrewGuidePage() {
+    const { t } = useLanguage();
     const [guides, setGuides] = useState<BrewGuide[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedStep, setExpandedStep] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export default function BrewGuidePage() {
     if (guides.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-ink">
-                <p className="text-cocoa text-sm font-semibold tracking-widest uppercase">No brew guides available</p>
+                <p className="text-cocoa text-sm font-semibold tracking-widest uppercase">{t('noBrewGuides')}</p>
             </div>
         );
     }
@@ -77,19 +79,19 @@ export default function BrewGuidePage() {
 
                     <div className="max-w-[1400px] mx-auto text-center relative z-10">
                         <div className="text-[10px] bg-sand/10 text-sand font-bold tracking-[0.3em] uppercase px-4 py-2 rounded-full inline-flex mb-8 border border-sand/15 backdrop-blur-sm">
-                            Equipment & Technique
+                            {t('equipmentTechnique')}
                         </div>
                         <motion.h1
                             initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                             className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight mb-8 drop-shadow-xl"
                         >
-                            The Science of<br />Extraction
+                            {t('scienceOfExtraction')}<br />{t('extractionWord')}
                         </motion.h1>
                         <motion.p
                             initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
                             className="text-sand/70 max-w-2xl mx-auto text-lg leading-relaxed font-medium"
                         >
-                            Master the art of coffee making at home. Explore our definitive guide to variables, ratios, and professional brewing techniques.
+                            {t('brewGuideHeroDesc')}
                         </motion.p>
                         <div className="max-w-xs mx-auto mt-10 relative z-10">
                             <CupSeparator tone="gold" />
@@ -124,10 +126,10 @@ export default function BrewGuidePage() {
                     <div className="max-w-[1200px] mx-auto space-y-32">
                         {guides.map((guide) => {
                             const specItems = [
-                                { icon: Settings, label: 'Grind Size', value: guide.specs.grind },
-                                { icon: Droplets, label: 'Ratio', value: guide.specs.ratio },
-                                { icon: Thermometer, label: 'Temperature', value: guide.specs.temperature },
-                                { icon: Clock, label: 'Dose', value: guide.specs.dose },
+                                { icon: Settings, label: t('grindSizeLabel'), value: guide.specs.grind },
+                                { icon: Droplets, label: t('ratio'), value: guide.specs.ratio },
+                                { icon: Thermometer, label: t('temperatureLabel'), value: guide.specs.temperature },
+                                { icon: Clock, label: t('doseLabel'), value: guide.specs.dose },
                             ].filter(s => s.value);
 
                             return (
@@ -151,12 +153,12 @@ export default function BrewGuidePage() {
                                         <div className="flex justify-center gap-4 flex-wrap px-4">
                                             {guide.time && (
                                                 <span className="bg-gold/15 text-gold text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full border border-gold/25">
-                                                    Time: {guide.time}
+                                                    {t('timePrefix')} {guide.time}
                                                 </span>
                                             )}
                                             {guide.difficulty && (
                                                 <span className="bg-sand/8 text-sand text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full border border-sand/15">
-                                                    Difficulty: {guide.difficulty}
+                                                    {t('difficultyPrefix')} {guide.difficulty}
                                                 </span>
                                             )}
                                         </div>
@@ -200,7 +202,7 @@ export default function BrewGuidePage() {
                                         <div className="w-full lg:w-1/2 flex flex-col justify-center">
                                             <div className="text-xs font-bold tracking-[0.2em] uppercase text-gold mb-8 flex items-center gap-4">
                                                 <span className="w-8 h-[1px] bg-gold"></span>
-                                                Step by Step Procedure
+                                                {t('stepByStepProcedure')}
                                             </div>
 
                                             <div className="space-y-4">
@@ -226,7 +228,7 @@ export default function BrewGuidePage() {
                                                                         {step.step_number.toString().padStart(2, '0')}
                                                                     </div>
                                                                     <div className="font-bold text-sm tracking-wider uppercase pr-4 text-ink">
-                                                                        Step {step.step_number}
+                                                                        {t('stepPrefix')} {step.step_number}
                                                                     </div>
                                                                 </div>
                                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -272,7 +274,7 @@ export default function BrewGuidePage() {
                                                         <Check size={20} />
                                                     </div>
                                                     <div>
-                                                        <h4 className="font-bold text-xs tracking-widest uppercase mb-2 text-sand">Pro Tip</h4>
+                                                        <h4 className="font-bold text-xs tracking-widest uppercase mb-2 text-sand">{t('proTip')}</h4>
                                                         <p className="text-sand/60 text-sm leading-relaxed">{guide.pro_tip}</p>
                                                     </div>
                                                 </div>

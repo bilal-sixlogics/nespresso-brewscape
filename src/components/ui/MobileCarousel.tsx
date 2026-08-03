@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLanguage } from '@/context/LanguageContext';
 
 interface MobileCarouselProps {
     children: React.ReactNode[];
@@ -10,6 +11,7 @@ interface MobileCarouselProps {
 }
 
 export function MobileCarousel({ children, peek = true }: MobileCarouselProps) {
+    const { t } = useLanguage();
     const scrollRef = useRef<HTMLDivElement>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const count = React.Children.count(children);
@@ -56,7 +58,7 @@ export function MobileCarousel({ children, peek = true }: MobileCarouselProps) {
             <button
                 onClick={() => scrollTo(Math.max(0, currentIndex - 1))}
                 disabled={currentIndex === 0}
-                aria-label="Previous"
+                aria-label={t('previous')}
                 className="hidden sm:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-sand border border-cocoa/15 shadow-md items-center justify-center text-ink disabled:opacity-0 hover:shadow-lg hover:border-cocoa/30 transition-all duration-200"
             >
                 <ChevronLeft size={18} />
@@ -66,7 +68,7 @@ export function MobileCarousel({ children, peek = true }: MobileCarouselProps) {
             <button
                 onClick={() => scrollTo(Math.min(count - 1, currentIndex + 1))}
                 disabled={currentIndex >= count - 1}
-                aria-label="Next"
+                aria-label={t('next')}
                 className="hidden sm:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-sand border border-cocoa/15 shadow-md items-center justify-center text-ink disabled:opacity-0 hover:shadow-lg hover:border-cocoa/30 transition-all duration-200"
             >
                 <ChevronRight size={18} />
@@ -101,7 +103,7 @@ export function MobileCarousel({ children, peek = true }: MobileCarouselProps) {
                     <button
                         key={idx}
                         onClick={() => scrollTo(idx)}
-                        aria-label={`Go to slide ${idx + 1}`}
+                        aria-label={t('goToSlide').replace('{{n}}', String(idx + 1))}
                         className={`rounded-full transition-all duration-300 ${currentIndex === idx ? 'w-6 h-2 bg-gold' : 'w-2 h-2 bg-sand/20 hover:bg-sand/40'}`}
                     />
                 ))}

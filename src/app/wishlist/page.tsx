@@ -14,14 +14,13 @@ import { CupSeparator } from '@/components/ui/CupSeparator';
 export default function WishlistPage() {
     const { wishlist, removeFromWishlist } = useWishlist();
     const { addToCart } = useCart();
-    const { language } = useLanguage();
+    const { t } = useLanguage();
     const formatPrice = useFormatPrice();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
 
     const handleAddToCart = (product: any) => {
         const unit = getDefaultUnit(product) ?? {
             id: 0,
-            name: 'Unit',
+            name: t('defaultUnit'),
             unit_type: 'pc',
             selling_price: product.selling_price,
             pricing_method: 'direct' as const,
@@ -43,15 +42,15 @@ export default function WishlistPage() {
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
                         <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4 flex items-center gap-2">
                             <Heart size={12} className="fill-gold" />
-                            {tx('Mes Favoris', 'My Wishlist')}
+                            {t('wishlistPageTitle')}
                         </p>
                         <h1 className="font-display text-5xl sm:text-6xl md:text-8xl uppercase text-sand leading-[0.85] mb-4">
-                            {tx('Liste de Souhaits', 'Wishlist')}
+                            {t('wishlistPageSubtitle')}
                         </h1>
                         <p className="text-sand/50 text-lg">
                             {wishlist.length === 0
-                                ? tx('Aucun produit sauvegardé.', 'No saved products yet.')
-                                : tx(`${wishlist.length} produit${wishlist.length > 1 ? 's' : ''} sauvegardé${wishlist.length > 1 ? 's' : ''}`, `${wishlist.length} saved product${wishlist.length > 1 ? 's' : ''}`)
+                                ? t('noSavedProducts')
+                                : t('savedProductCount').replace('{{count}}', String(wishlist.length))
                             }
                         </p>
                         <div className="max-w-xs mt-10">
@@ -73,16 +72,16 @@ export default function WishlistPage() {
                                 <Heart size={36} className="text-cocoa/50" />
                             </div>
                             <h2 className="font-display text-4xl uppercase text-sand mb-3">
-                                {tx('Votre liste est vide', 'Your wishlist is empty')}
+                                {t('emptyWishlistTitle')}
                             </h2>
                             <p className="text-cocoa mb-8 max-w-sm">
-                                {tx('Sauvegardez vos produits préférés en cliquant sur le cœur.', 'Save your favourite products by clicking the heart icon.')}
+                                {t('emptyWishlistDesc')}
                             </p>
                             <Link
                                 href="/shop"
                                 className="flex items-center gap-3 px-8 py-4 bg-gold text-ink rounded-full font-black uppercase tracking-widest text-sm shadow-lg shadow-gold/25 hover:bg-[#b8914d] transition-colors"
                             >
-                                {tx('Explorer la boutique', 'Explore the Shop')} <ArrowRight size={16} />
+                                {t('exploreShop')} <ArrowRight size={16} />
                             </Link>
                         </motion.div>
                     ) : (
@@ -129,7 +128,7 @@ export default function WishlistPage() {
                                                     className="flex items-center gap-1.5 px-4 py-2 bg-ink text-sand rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-gold hover:text-ink transition-colors"
                                                 >
                                                     <ShoppingBag size={12} />
-                                                    {tx('Ajouter', 'Add')}
+                                                    {t('wishlistAdd')}
                                                 </button>
                                             </div>
                                         </div>
@@ -151,7 +150,7 @@ export default function WishlistPage() {
                             className="flex items-center gap-2 text-sm text-cocoa hover:text-red-400 transition-colors"
                         >
                             <Trash2 size={14} />
-                            {tx('Vider la liste', 'Clear wishlist')}
+                            {t('clearWishlist')}
                         </button>
                     </motion.div>
                 )}

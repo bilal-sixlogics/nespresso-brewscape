@@ -115,7 +115,7 @@ export const TestimonialsSection = () => {
 
     const authorName = current.user?.name ?? current.user_name;
     const productImage = current.product?.featured_image ?? null;
-    const productName = current.product?.name ?? 'Cafrezzo Selection';
+    const productName = current.product?.name ?? t('testimonialFallbackProduct');
 
     const variants = {
         enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 60 : -60, filter: 'blur(6px)' }),
@@ -125,7 +125,7 @@ export const TestimonialsSection = () => {
 
     return (
         <section
-            className="relative overflow-hidden py-5 sm:py-3 lg:py-5 bg-ink grain-overlay"
+            className="relative overflow-hidden pb-20 sm:pb-22 md:pb-24 bg-ink grain-overlay"
             onMouseEnter={pause}
             onMouseLeave={resume}
         >
@@ -161,12 +161,12 @@ export const TestimonialsSection = () => {
                     >
                         <div className="text-center">
                             <div className="font-display text-3xl text-sand leading-none">{avgRating.toFixed(1)}</div>
-                            <div className="text-[9px] text-cocoa uppercase tracking-widest mt-1">Rating</div>
+                            <div className="text-[9px] text-cocoa uppercase tracking-widest mt-1">{t('ratingLabel')}</div>
                         </div>
                         <div className="w-px h-10 bg-sand/15" />
                         <div>
                             <StarRow rating={Math.round(avgRating)} size={14} />
-                            <div className="text-[9px] text-cocoa mt-1.5">{count} reviews</div>
+                            <div className="text-[9px] text-cocoa mt-1.5">{`${count} ${t('reviewsWord')}`}</div>
                         </div>
                     </motion.div>
                 </motion.div>
@@ -210,7 +210,7 @@ export const TestimonialsSection = () => {
                                     {current.is_verified_purchase && (
                                         <div className="flex items-center gap-1.5 mb-2">
                                             <CheckCircle2 size={10} className="text-gold" />
-                                            <span className="text-[9px] font-black text-gold uppercase tracking-widest">Verified Purchase</span>
+                                            <span className="text-[9px] font-black text-gold uppercase tracking-widest">{t('verifiedPurchase')}</span>
                                         </div>
                                     )}
                                     <p className="text-sand font-semibold text-sm leading-snug line-clamp-2">{productName}</p>
@@ -269,7 +269,7 @@ export const TestimonialsSection = () => {
                                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
                                     className="flex-1 text-sand/80 text-xl sm:text-2xl lg:text-[1.6rem] font-light leading-relaxed"
                                 >
-                                    &ldquo;{current.comment ?? `Exceptional quality — rated ${current.rating} out of 5 stars.`}&rdquo;
+                                    &ldquo;{current.comment ?? t('testimonialFallbackQuote').replace('{{rating}}', String(current.rating))}&rdquo;
                                 </motion.blockquote>
                             </AnimatePresence>
 
@@ -296,7 +296,7 @@ export const TestimonialsSection = () => {
                                         </div>
                                         <div>
                                             <div className="text-sand font-bold text-sm">{authorName}</div>
-                                            <div className="text-cocoa text-[10px] uppercase tracking-widest mt-0.5">Cafrezzo Customer</div>
+                                            <div className="text-cocoa text-[10px] uppercase tracking-widest mt-0.5">{t('cafrezzoCustomer')}</div>
                                         </div>
                                     </motion.div>
                                 </AnimatePresence>

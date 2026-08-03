@@ -37,7 +37,7 @@ export default function BlogPage() {
         id: p.id, title: p.title, slug: p.slug, category: p.category,
         excerpt: p.excerpt || '', image: p.featured_image || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop',
         date: p.published_at ? new Date(p.published_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '',
-        featured: i === 0, readTime: '5 min read', author_name: p.author_name,
+        featured: i === 0, readTime: t('readTimeMinutes').replace('{{min}}', '5'), author_name: p.author_name,
     }));
     const featuredPost = postsWithFeatured.find(p => p.featured) || postsWithFeatured[0];
     const standardPosts = postsWithFeatured.filter(p => !p.featured);
@@ -61,7 +61,7 @@ export default function BlogPage() {
     if (!featuredPost) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-ink">
-                <p className="text-cocoa text-sm font-semibold tracking-widest uppercase">No articles yet</p>
+                <p className="text-cocoa text-sm font-semibold tracking-widest uppercase">{t('noArticlesYet')}</p>
             </div>
         );
     }

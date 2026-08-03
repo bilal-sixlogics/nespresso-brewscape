@@ -281,7 +281,7 @@ export function Header() {
                     <button
                         onClick={() => setMobileMenuOpen(true)}
                         className="xl:hidden p-4 lg:p-5 flex items-center justify-center border-r border-sand/15 hover:bg-sand/10 transition-colors flex-shrink-0"
-                        aria-label="Open menu"
+                        aria-label={t('ariaOpenMenu')}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
                     </button>
@@ -291,7 +291,7 @@ export function Header() {
                         <Link href="/" className="flex flex-col items-center xl:items-start gap-1.5">
                             <img src="/assets/logo.svg" alt={AppConfig.brand.name} className="h-6 lg:h-7  brightness-200" />
                             <span className="text-[8px] lg:text-[9px] font-sans font-medium tracking-[0.25em] uppercase text-sand/60">
-                                {t('brandTagline')}
+                                {t('brandTagline')} 
                             </span>
                         </Link>
                     </div>
@@ -326,7 +326,7 @@ export function Header() {
                         <button
                             onClick={() => setSearchOpen(true)}
                             className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-sand/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold transition-colors text-sand"
-                            aria-label="Search"
+                            aria-label={t('ariaSearch')}
                         >
                             <Search size={16} />
                         </button>
@@ -334,12 +334,12 @@ export function Header() {
                         <button
                             onClick={() => isAuthenticated ? router.push('/account') : openLoginModal()}
                             className="min-h-[44px] min-w-[44px] flex items-center justify-center gap-2 px-2 rounded-full hover:bg-sand/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold transition-colors text-sand"
-                            aria-label="Account"
+                            aria-label={t('ariaAccount')}
                         >
                             <User size={16} />
                             {isAuthenticated && (
                                 <span className="text-[11px] font-bold tracking-wide hidden sm:block max-w-[80px] truncate">
-                                    Hi, {user?.name?.split(' ')[0] || 'User'}
+                                    {t('hiGreeting')}, {user?.name?.split(' ')[0] || t('defaultUserNameHeader')}
                                 </span>
                             )}
                         </button>
@@ -347,7 +347,7 @@ export function Header() {
                         <button
                             onClick={() => setCartOpen(true)}
                             className="min-h-[44px] min-w-[44px] bg-gold rounded-full flex items-center justify-center relative shadow-sm hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold transition-shadow"
-                            aria-label="Open cart"
+                            aria-label={t('ariaOpenCart')}
                         >
                             <ShoppingBag size={14} className="text-ink" />
                             <AnimatePresence>
@@ -377,14 +377,14 @@ export function Header() {
                             exit={{ opacity: 0 }}
                             role="dialog"
                             aria-modal="true"
-                            aria-label="Navigation menu"
+                            aria-label={t('ariaNavigationMenu')}
                             className="fixed inset-0 z-[100000] bg-ink flex flex-col xl:hidden grain-overlay"
                         >
                             <div className="flex items-center justify-between p-4 border-b border-sand/15">
-                                <h1 className="font-display text-xl uppercase tracking-tight text-sand">Menu</h1>
+                                <h1 className="font-display text-xl uppercase tracking-tight text-sand">{t('menuHeading')}</h1>
                                 <button
                                     onClick={() => setMobileMenuOpen(false)}
-                                    aria-label="Close menu"
+                                    aria-label={t('ariaCloseMenu')}
                                     className="w-11 h-11 flex items-center justify-center text-sand bg-sand/10 rounded-full hover:bg-sand/20 transition-colors focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
                                 >
                                     <X size={20} />
@@ -393,7 +393,7 @@ export function Header() {
 
                             <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-8">
                                 <div className="flex flex-col gap-5">
-                                    <p className="text-[9px] uppercase tracking-[0.25em] text-cocoa font-medium">Discover</p>
+                                    <p className="text-[9px] uppercase tracking-[0.25em] text-cocoa font-medium">{t('discoverLabel')}</p>
                                     {topRow.map((link) => (
                                         <Link
                                             key={link.href}
@@ -406,7 +406,7 @@ export function Header() {
                                 </div>
 
                                 <div className="flex flex-col gap-5">
-                                    <p className="text-[9px] uppercase tracking-[0.25em] text-cocoa font-medium">Shop</p>
+                                    <p className="text-[9px] uppercase tracking-[0.25em] text-cocoa font-medium">{t('shopLabel')}</p>
                                     {bottomRow.map((link) => (
                                         <Link
                                             key={link.href}
@@ -421,7 +421,7 @@ export function Header() {
 
                             <div className="p-6 border-t border-sand/15 flex flex-col gap-4">
                                 <div className="flex justify-between items-center relative z-[200]">
-                                    <span className="text-[10px] uppercase tracking-widest text-sand/50 font-bold">Language</span>
+                                    <span className="text-[10px] uppercase tracking-widest text-sand/50 font-bold">{t('languageLabel')}</span>
                                     <LanguageToggle direction="up" />
                                 </div>
 
@@ -430,7 +430,7 @@ export function Header() {
                                         onClick={() => { setMobileMenuOpen(false); openLoginModal(); }}
                                         className="w-full py-4 bg-gold text-ink rounded-full font-bold uppercase tracking-widest text-xs"
                                     >
-                                        Login / Register
+                                        {t('loginRegisterBtn')}
                                     </button>
                                 ) : (
                                     <Link
@@ -438,7 +438,7 @@ export function Header() {
                                         onClick={() => setMobileMenuOpen(false)}
                                         className="w-full py-4 border border-sand/30 text-sand rounded-full font-bold uppercase tracking-widest text-xs text-center"
                                     >
-                                        My Account
+                                        {t('myAccountLink')}
                                     </Link>
                                 )}
                             </div>

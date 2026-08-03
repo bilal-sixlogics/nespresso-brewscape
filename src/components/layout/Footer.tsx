@@ -39,16 +39,16 @@ export function Footer() {
             setTimeout(() => setNlState('idle'), 4000);
         } catch (err) {
             const apiErr = err as ApiError;
-            setNlError(apiErr.message ?? 'Subscription failed. Please try again.');
+            setNlError(apiErr.message ?? t('subscriptionFailedMsg'));
             setNlState('error');
         }
     };
 
     return (
         <footer className="bg-ink text-sand relative z-20 pt-40 px-4 pb-10 grain-overlay">
-            <CupSeparator tone="gold" />
+            
             <TestimonialsSection />
-            <CupSeparator tone="gold" />
+            
             <div className="max-w-[1400px] mx-auto relative z-10">
 
                 {/* Main Footer Content */}
@@ -59,7 +59,7 @@ export function Footer() {
                         <h1 className="font-display text-2xl lg:text-3xl tracking-tight uppercase leading-none">
                             {AppConfig.brand.name}
                             <br />
-                            <span className="text-base font-sans font-bold tracking-[0.2em] opacity-80 mt-1 block">{AppConfig.brand.tagline}</span>
+                            <span className="text-base font-sans font-bold tracking-[0.2em] opacity-80 mt-1 block">{t('brandTagline')}</span>
                         </h1>
                         {/* <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
                             {t('brandDescription')}

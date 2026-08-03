@@ -8,16 +8,15 @@ import { useNotifications, Notification } from '@/context/NotificationsContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 
-const TYPE_META: Record<string, { icon: any; color: string; bg: string; label: string }> = {
-    order: { icon: Package, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Order Update' },
-    promo: { icon: Tag, color: 'text-amber-400', bg: 'bg-amber-500/10', label: 'Promotion' },
-    system: { icon: Settings, color: 'text-cocoa', bg: 'bg-sand/10', label: 'System' },
-};
-
 export default function NotificationsPage() {
     const { notifications, unreadCount, markAllRead, markRead } = useNotifications();
-    const { language } = useLanguage();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const { t } = useLanguage();
+
+    const TYPE_META: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+        order: { icon: Package, color: 'text-blue-400', bg: 'bg-blue-500/10', label: t('notificationTypeOrderUpdate') },
+        promo: { icon: Tag, color: 'text-amber-400', bg: 'bg-amber-500/10', label: t('notificationTypePromotion') },
+        system: { icon: Settings, color: 'text-cocoa', bg: 'bg-sand/10', label: t('notificationTypeSystem') },
+    };
 
     return (
         <div className="min-h-screen bg-ink text-sand pt-20 grain-overlay">
@@ -28,15 +27,15 @@ export default function NotificationsPage() {
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
                         <div className="flex items-center gap-2 mb-4">
                             <Bell size={12} className="text-gold" />
-                            <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase">{tx('Centre de Notifications', 'Notification Center')}</p>
+                            <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase">{t('notifCenter')}</p>
                         </div>
                         <h1 className="font-display text-5xl sm:text-6xl md:text-8xl uppercase text-sand leading-[0.85] mb-4">
-                            {tx('Notifications', 'Notifications')}
+                            {t('notifPageTitle')}
                         </h1>
                         <p className="text-sand/50 text-lg">
                             {unreadCount > 0
-                                ? tx(`${unreadCount} non lue${unreadCount > 1 ? 's' : ''}`, `${unreadCount} unread`)
-                                : tx('Tout est à jour.', 'All caught up.')}
+                                ? t('unreadCount').replace('{{count}}', String(unreadCount))
+                                : t('allCaughtUp')}
                         </p>
                         <div className="max-w-xs mt-10">
                             <CupSeparator tone="gold" />
@@ -54,7 +53,7 @@ export default function NotificationsPage() {
                             className="flex items-center gap-2 text-sm font-bold text-gold hover:underline"
                         >
                             <CheckCheck size={14} />
-                            {tx('Tout marquer comme lu', 'Mark all as read')}
+                            {t('markAllRead')}
                         </button>
                     </div>
                 )}
@@ -65,8 +64,8 @@ export default function NotificationsPage() {
                         <div className="w-20 h-20 bg-sand/10 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Bell size={32} className="text-cocoa/50" />
                         </div>
-                        <h2 className="font-display text-3xl uppercase mb-3 text-sand">{tx('Rien pour le moment', 'Nothing here yet')}</h2>
-                        <p className="text-cocoa text-sm">{tx('Vos notifications apparaîtront ici.', 'Your notifications will appear here.')}</p>
+                        <h2 className="font-display text-3xl uppercase mb-3 text-sand">{t('nothingHere')}</h2>
+                        <p className="text-cocoa text-sm">{t('notifEmptyDesc')}</p>
                     </motion.div>
                 ) : (
                     <div className="space-y-3">
@@ -105,7 +104,7 @@ export default function NotificationsPage() {
                                             onClick={e => e.stopPropagation()}
                                             className="text-[9px] font-bold text-gold uppercase tracking-widest hover:underline flex-shrink-0 mt-1"
                                         >
-                                            View →
+                                            {t('viewLink')} →
                                         </Link>
                                     )}
                                 </motion.div>

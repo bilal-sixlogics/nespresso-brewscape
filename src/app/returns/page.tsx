@@ -8,22 +8,22 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 
-const RETURN_REASONS = [
-    'Defective or damaged product',
-    'Wrong item received',
-    'Changed my mind',
-    'Better price found elsewhere',
-    'Not as described on website',
-    'Arrived too late',
-    'Other',
-];
-
 type Step = 'select' | 'details' | 'review' | 'confirmed';
 
 export default function ReturnsPage() {
     const { isAuthenticated, user } = useAuth();
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+
+    const RETURN_REASONS = [
+        t('returnReasonDefective'),
+        t('returnReasonWrongItem'),
+        t('returnReasonChangedMind'),
+        t('returnReasonBetterPrice'),
+        t('returnReasonNotAsDescribed'),
+        t('returnReasonLate'),
+        t('returnReasonOther'),
+    ];
 
     const [step, setStep] = useState<Step>('select');
     const [orderId, setOrderId] = useState('');
@@ -44,7 +44,7 @@ export default function ReturnsPage() {
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
                         <div className="flex items-center gap-2 mb-4">
                             <RotateCcw size={12} className="text-gold" />
-                            <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase">{tx('Service Client', 'Customer Service')}</p>
+                            <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase">{t('customerService')}</p>
                         </div>
                         <h1 className="font-display text-6xl md:text-8xl uppercase text-sand leading-[0.85] mb-4">
                             {tx('Retours', 'Returns')}<br />
@@ -69,17 +69,25 @@ export default function ReturnsPage() {
                 >
                     <AlertTriangle size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-amber-200/90">
-                        <strong>Preview Mode</strong> — Online returns submission is coming soon. For now, contact us at <a href="mailto:returns@cafrezzo.com" className="underline font-bold">returns@cafrezzo.com</a> for assistance.
+                        <strong>{t('returnsPreviewBadge')}</strong>{' '}
+                        {t('returnsPreviewDesc').split('returns@cafrezzo.com').map((part, i, arr) => (
+                            <React.Fragment key={i}>
+                                {part}
+                                {i < arr.length - 1 && (
+                                    <a href="mailto:returns@cafrezzo.com" className="underline font-bold">returns@cafrezzo.com</a>
+                                )}
+                            </React.Fragment>
+                        ))}
                     </p>
                 </motion.div>
 
                 {/* Step Indicator */}
                 <div className="flex items-center justify-center gap-3 mb-12">
                     {[
-                        { id: 'select', label: 'Select Order' },
-                        { id: 'details', label: 'Details' },
-                        { id: 'review', label: 'Review' },
-                        { id: 'confirmed', label: 'Confirmed' },
+                        { id: 'select', label: t('stepSelectOrder') },
+                        { id: 'details', label: t('stepDetails') },
+                        { id: 'review', label: t('stepReview') },
+                        { id: 'confirmed', label: t('stepConfirmed') },
                     ].map((s, i) => {
                         const steps: Step[] = ['select', 'details', 'review', 'confirmed'];
                         const currentIdx = steps.indexOf(step);
@@ -103,9 +111,9 @@ export default function ReturnsPage() {
                     <AnimatePresence mode="wait">
                         {step === 'select' && (
                             <motion.div key="select" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                                <h2 className="font-display text-2xl uppercase mb-6">{tx('Sélectionner la commande', 'Select Order')}</h2>
+                                <h2 className="font-display text-2xl uppercase mb-6">{t('stepSelectOrder')}</h2>
                                 <div className="mb-6">
-                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-ink/50 mb-2">Order Number</label>
+                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-ink/50 mb-2">{t('orderNumber')}</label>
                                     <input
                                         value={orderId}
                                         onChange={e => setOrderId(e.target.value)}
@@ -114,14 +122,14 @@ export default function ReturnsPage() {
                                     />
                                 </div>
                                 <div className="mb-8">
-                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-ink/50 mb-2">Reason for Return</label>
+                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-ink/50 mb-2">{t('reasonForReturn')}</label>
                                     <div className="relative">
                                         <select
                                             value={reason}
                                             onChange={e => setReason(e.target.value)}
                                             className="w-full border-2 border-ink/15 rounded-xl px-4 py-3 text-sm text-ink focus:border-gold outline-none transition-colors appearance-none bg-ink/5"
                                         >
-                                            <option value="">Select a reason</option>
+                                            <option value="">{t('selectAReason')}</option>
                                             {RETURN_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
                                         </select>
                                         <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-ink/40 pointer-events-none" />
@@ -132,7 +140,7 @@ export default function ReturnsPage() {
                                     disabled={!orderId || !reason}
                                     className="w-full flex justify-between items-center px-6 py-4 bg-gold text-ink rounded-full font-black uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#b8914d] transition-colors"
                                 >
-                                    <span>Continue</span>
+                                    <span>{t('continueBtn')}</span>
                                     <ArrowRight size={16} />
                                 </button>
                             </motion.div>
@@ -140,23 +148,23 @@ export default function ReturnsPage() {
 
                         {step === 'details' && (
                             <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                                <h2 className="font-display text-2xl uppercase mb-6">Additional Details</h2>
+                                <h2 className="font-display text-2xl uppercase mb-6">{t('additionalDetails')}</h2>
                                 <div className="mb-6">
-                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-ink/50 mb-2">Description (optional)</label>
+                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-ink/50 mb-2">{t('descriptionOptional')}</label>
                                     <textarea
                                         value={details}
                                         onChange={e => setDetails(e.target.value)}
-                                        placeholder="Tell us more about your return..."
+                                        placeholder={t('tellUsMoreReturn')}
                                         rows={4}
                                         className="w-full border-2 border-ink/15 bg-ink/5 rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink/30 focus:border-gold outline-none transition-colors resize-none"
                                     />
                                 </div>
                                 <div className="mb-8">
-                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-ink/50 mb-3">Refund Method</label>
+                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-ink/50 mb-3">{t('refundMethodLabel')}</label>
                                     <div className="grid grid-cols-2 gap-3">
                                         {[
-                                            { id: 'original' as const, label: 'Original Payment Method', desc: '5–10 business days' },
-                                            { id: 'store_credit' as const, label: 'Store Credit', desc: 'Instant + 10% bonus' },
+                                            { id: 'original' as const, label: t('originalPaymentMethod'), desc: t('businessDays510') },
+                                            { id: 'store_credit' as const, label: t('storeCredit'), desc: t('instantPlus10') },
                                         ].map(m => (
                                             <button
                                                 key={m.id}
@@ -171,13 +179,13 @@ export default function ReturnsPage() {
                                 </div>
                                 <div className="flex gap-3">
                                     <button onClick={() => setStep('select')} className="flex items-center gap-2 px-6 py-4 rounded-full border-2 border-ink/15 text-sm font-black uppercase tracking-widest text-ink/50 hover:border-ink/30 transition-colors">
-                                        <ArrowLeft size={16} /> Back
+                                        <ArrowLeft size={16} /> {t('back')}
                                     </button>
                                     <button
                                         onClick={() => setStep('review')}
                                         className="flex-1 flex justify-between items-center px-6 py-4 bg-gold text-ink rounded-full font-black uppercase tracking-widest hover:bg-[#b8914d] transition-colors"
                                     >
-                                        <span>Review Request</span>
+                                        <span>{t('reviewRequestBtn')}</span>
                                         <ArrowRight size={16} />
                                     </button>
                                 </div>
@@ -186,13 +194,13 @@ export default function ReturnsPage() {
 
                         {step === 'review' && (
                             <motion.div key="review" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                                <h2 className="font-display text-2xl uppercase mb-6">Review Your Request</h2>
+                                <h2 className="font-display text-2xl uppercase mb-6">{t('reviewYourRequest')}</h2>
                                 <div className="bg-ink/5 rounded-2xl p-6 space-y-4 mb-8">
                                     {[
-                                        { label: 'Order', value: orderId },
-                                        { label: 'Reason', value: reason },
-                                        { label: 'Details', value: details || '(none provided)' },
-                                        { label: 'Refund', value: refundMethod === 'original' ? 'Original Payment Method' : 'Store Credit (+10% bonus)' },
+                                        { label: t('orderLabel'), value: orderId },
+                                        { label: t('reasonLabel'), value: reason },
+                                        { label: t('detailsLabel'), value: details || t('noneProvided') },
+                                        { label: t('refundLabel'), value: refundMethod === 'original' ? t('originalPaymentMethod') : t('storeCreditBonus') },
                                     ].map(item => (
                                         <div key={item.label}>
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">{item.label}</p>
@@ -202,13 +210,13 @@ export default function ReturnsPage() {
                                 </div>
                                 <div className="flex gap-3">
                                     <button onClick={() => setStep('details')} className="flex items-center gap-2 px-6 py-4 rounded-full border-2 border-ink/15 text-sm font-black uppercase tracking-widest text-ink/50 hover:border-ink/30 transition-colors">
-                                        <ArrowLeft size={16} /> Back
+                                        <ArrowLeft size={16} /> {t('back')}
                                     </button>
                                     <button
                                         onClick={handleSubmit}
                                         className="flex-1 flex justify-between items-center px-6 py-4 bg-ink text-sand rounded-full font-black uppercase tracking-widest hover:opacity-90 transition-colors"
                                     >
-                                        <span>Submit Return</span>
+                                        <span>{t('submitReturnBtn')}</span>
                                         <RotateCcw size={16} />
                                     </button>
                                 </div>
@@ -220,17 +228,17 @@ export default function ReturnsPage() {
                                 <div className="w-20 h-20 bg-gold rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-gold/30">
                                     <CheckCircle2 size={36} className="text-ink" />
                                 </div>
-                                <h2 className="font-display text-4xl uppercase text-ink mb-3">Return Submitted</h2>
-                                <p className="text-ink/60 mb-2">Reference: <span className="font-mono font-bold">RET-{Date.now().toString(36).toUpperCase().slice(-6)}</span></p>
+                                <h2 className="font-display text-4xl uppercase text-ink mb-3">{t('returnSubmittedHeading')}</h2>
+                                <p className="text-ink/60 mb-2">{t('returnReferenceLabel')} <span className="font-mono font-bold">RET-{Date.now().toString(36).toUpperCase().slice(-6)}</span></p>
                                 <p className="text-ink/50 text-sm max-w-md mx-auto mb-8">
-                                    We'll review your request within 24 hours and send you the return shipping label via email. Please don't ship the item until you receive the label.
+                                    {t('returnConfirmedDesc')}
                                 </p>
                                 <div className="flex flex-col sm:flex-row justify-center gap-3">
                                     <Link href="/account" className="flex items-center justify-center gap-2 px-8 py-4 bg-gold text-ink rounded-full font-black uppercase tracking-widest hover:bg-[#b8914d] transition-colors">
-                                        <Package size={16} /> My Orders
+                                        <Package size={16} /> {t('myOrdersLink')}
                                     </Link>
                                     <Link href="/contact" className="flex items-center justify-center gap-2 px-8 py-4 border-2 border-ink/15 text-ink rounded-full font-black uppercase tracking-widest hover:border-ink/40 transition-colors">
-                                        <MessageCircle size={16} /> Contact Support
+                                        <MessageCircle size={16} /> {t('contactSupportBtn')}
                                     </Link>
                                 </div>
                             </motion.div>
@@ -240,13 +248,13 @@ export default function ReturnsPage() {
 
                 {/* Policy */}
                 <div className="mt-12 p-6 bg-sand/8 rounded-2xl border border-sand/10">
-                    <h3 className="font-bold text-sm mb-3 text-sand">Return Policy</h3>
+                    <h3 className="font-bold text-sm mb-3 text-sand">{t('returnPolicyHeading')}</h3>
                     <ul className="space-y-2 text-xs text-sand/60 leading-relaxed">
-                        <li>• Returns are accepted within 14 days of delivery for unopened products.</li>
-                        <li>• Defective items may be returned within 30 days regardless of packaging condition.</li>
-                        <li>• Perishable products (coffee, sweets) cannot be returned once opened unless defective.</li>
-                        <li>• Store Credit refunds include a 10% bonus and are applied instantly.</li>
-                        <li>• Original payment method refunds take 5–10 business days to process.</li>
+                        <li>• {t('returnPolicyBullet1')}</li>
+                        <li>• {t('returnPolicyBullet2')}</li>
+                        <li>• {t('returnPolicyBullet3')}</li>
+                        <li>• {t('returnPolicyBullet4')}</li>
+                        <li>• {t('returnPolicyBullet5')}</li>
                     </ul>
                 </div>
             </section>

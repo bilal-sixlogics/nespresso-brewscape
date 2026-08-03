@@ -8,6 +8,7 @@ import { OrderItem, getProductImage } from '@/types';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ReviewModalProps {
     isOpen: boolean;
@@ -16,6 +17,7 @@ interface ReviewModalProps {
 }
 
 export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
+    const { t } = useLanguage();
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [reviewText, setReviewText] = useState('');
@@ -58,12 +60,12 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
             const apiErr = err as ApiError;
             if (apiErr?.status) {
                 if (apiErr.status === 422 && apiErr.message?.toLowerCase().includes('already')) {
-                    setError("You've already reviewed this product. Thank you for your feedback!");
+                    setError(t('reviewAlreadySubmitted'));
                 } else {
-                    setError(apiErr.message ?? 'Something went wrong. Please try again.');
+                    setError(apiErr.message ?? t('reviewGenericError'));
                 }
             } else {
-                setError('Something went wrong. Please try again.');
+                setError(t('reviewGenericError'));
             }
         } finally {
             setIsSubmitting(false);
@@ -103,14 +105,14 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
                                 <div className="w-16 h-16 bg-gold/15 rounded-full flex items-center justify-center mx-auto mb-4 text-gold">
                                     <CheckCircle2 size={32} />
                                 </div>
-                                <h3 className="font-display text-2xl uppercase mb-2 text-ink">Review Submitted</h3>
-                                <p className="text-ink/60 text-sm">Thank you for sharing your experience. It has been published.</p>
+                                <h3 className="font-display text-2xl uppercase mb-2 text-ink">{t('reviewSubmittedHeading')}</h3>
+                                <p className="text-ink/60 text-sm">{t('reviewSubmittedDesc')}</p>
                             </motion.div>
                         ) : (
                             <>
                                 <div className="text-center mb-8">
                                     <h2 className="font-display text-2xl uppercase tracking-tight text-ink mb-2">
-                                        Rate Your Experience
+                                        {t('reviewRateExperience')}
                                     </h2>
                                     <p className="text-xs text-ink/50 uppercase tracking-widest font-bold">
                                         {item.product.name}
@@ -143,12 +145,12 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
                                         ))}
                                     </div>
                                     <p className="text-center text-[10px] text-ink/50 uppercase tracking-widest font-bold mb-8 h-4">
-                                        {rating === 1 && "Poor"}
-                                        {rating === 2 && "Fair"}
-                                        {rating === 3 && "Good"}
-                                        {rating === 4 && "Very Good"}
-                                        {rating === 5 && "Excellent"}
-                                        {rating === 0 && "Select a Rating"}
+                                        {rating === 1 && t('reviewRatingPoor')}
+                                        {rating === 2 && t('reviewRatingFair')}
+                                        {rating === 3 && t('reviewRatingGood')}
+                                        {rating === 4 && t('reviewRatingVeryGood')}
+                                        {rating === 5 && t('reviewRatingExcellent')}
+                                        {rating === 0 && t('reviewSelectRating')}
                                     </p>
 
                                     {/* Text Review */}
@@ -156,7 +158,7 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
                                         <textarea
                                             value={reviewText}
                                             onChange={(e) => setReviewText(e.target.value)}
-                                            placeholder="Tell us what you loved about it..."
+                                            placeholder={t('reviewPlaceholder')}
                                             className="w-full bg-ink/5 border border-ink/10 rounded-2xl p-4 text-sm text-ink resize-none h-32 focus:bg-sand focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all placeholder:text-ink/40"
                                         />
                                     </div>
@@ -174,7 +176,7 @@ export function ReviewModal({ isOpen, onClose, item }: ReviewModalProps) {
                                         disabled={rating === 0 || isSubmitting}
                                         className="w-full bg-gold text-ink rounded-xl py-4 font-black uppercase tracking-widest text-[10px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                                     >
-                                        {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : 'Submit Review'}
+                                        {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : t('reviewSubmit')}
                                     </button>
                                 </form>
                             </>

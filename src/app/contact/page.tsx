@@ -28,27 +28,6 @@ interface StoreLocation {
     sort_order: number;
 }
 
-// ─── Static data ──────────────────────────────────────────────────────────────
-
-const FAQS = [
-    {
-        q: { fr: 'Quels sont vos horaires d\'ouverture ?', en: 'What are your opening hours?' },
-        a: { fr: 'Les horaires varient selon la boutique. Consultez la page de chaque boutique pour les horaires locaux.', en: 'Hours vary by location. Check each store\'s page for local opening times.' },
-    },
-    {
-        q: { fr: 'Proposez-vous la livraison à domicile ?', en: 'Do you offer home delivery?' },
-        a: { fr: 'Oui, nous livrons dans le monde entier. Livraison standard offerte dès 150€.', en: 'Yes, we ship worldwide. Free standard shipping from €150.' },
-    },
-    {
-        q: { fr: 'Puis-je retourner un produit ?', en: 'Can I return a product?' },
-        a: { fr: 'Tout produit non ouvert peut être retourné sous 14 jours. Contactez-nous pour initier un retour.', en: 'Any unopened product can be returned within 14 days. Contact us to initiate a return.' },
-    },
-    {
-        q: { fr: 'Avez-vous un programme de fidélité ?', en: 'Do you have a loyalty program?' },
-        a: { fr: 'Nous lançons bientôt Cafrezzo+. Inscrivez-vous à notre newsletter pour être le premier informé.', en: 'We are launching Cafrezzo+ soon. Sign up to our newsletter to be the first to know.' },
-    },
-];
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function FAQItem({ q, a }: { q: string; a: string }) {
@@ -82,6 +61,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 function StoreCard({ store }: { store: StoreLocation }) {
+    const { t } = useLanguage();
     const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(store.address)}`;
     return (
         <motion.div
@@ -139,7 +119,7 @@ function StoreCard({ store }: { store: StoreLocation }) {
                     rel="noreferrer"
                     className="block w-full mt-2 py-2.5 rounded-full border-2 border-gold/30 text-gold text-[10px] font-black uppercase tracking-widest text-center hover:bg-gold hover:text-ink transition-all duration-200"
                 >
-                    Get Directions
+                    {t('getDirections')}
                 </a>
             </div>
         </motion.div>
@@ -149,7 +129,7 @@ function StoreCard({ store }: { store: StoreLocation }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function ContactPage() {
-    const { language } = useLanguage();
+    const { t } = useLanguage();
     const {
         contact_email: contactEmail,
         contact_response_time: responseTime,
@@ -167,7 +147,12 @@ export default function ContactPage() {
     const [locationsLoading, setLocationsLoading] = useState(true);
     const [selectedCountry, setSelectedCountry] = useState<string>('All');
 
-    const t = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const FAQS = [
+        { q: t('contactFaqQ1'), a: t('contactFaqA1') },
+        { q: t('contactFaqQ2'), a: t('contactFaqA2') },
+        { q: t('contactFaqQ3'), a: t('contactFaqA3') },
+        { q: t('contactFaqQ4'), a: t('contactFaqA4') },
+    ];
 
     // Fetch store locations from API
     useEffect(() => {
@@ -191,7 +176,7 @@ export default function ContactPage() {
     const handleSend = async () => {
         setSendError(null);
         if (!formState.firstName || !formState.email || !formState.message) {
-            setSendError(t('Veuillez remplir tous les champs obligatoires.', 'Please fill in all required fields.'));
+            setSendError(t('contactRequiredFieldsError'));
             return;
         }
         setIsSending(true);
@@ -207,9 +192,9 @@ export default function ContactPage() {
         } catch (err) {
             const apiErr = err as ApiError;
             if (apiErr.status === 429) {
-                setSendError(t('Trop de tentatives. Réessayez dans quelques minutes.', 'Too many attempts. Please try again in a few minutes.'));
+                setSendError(t('rateLimitError'));
             } else {
-                setSendError(apiErr.message ?? t('Erreur lors de l\'envoi. Réessayez.', 'Failed to send. Please try again.'));
+                setSendError(apiErr.message ?? t('sendFailedError'));
             }
         } finally {
             setIsSending(false);
@@ -224,14 +209,14 @@ export default function ContactPage() {
                 <div className="max-w-[1400px] mx-auto relative z-10">
                     <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
                         <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                            {t('Nous contacter', 'Get in Touch')}
+                            {t('contactHeroEyebrow')}
                         </p>
                         <h1 className="font-display text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-8">
-                            {t('Contact', 'Contact')}<br />
-                            <span className="text-sand/40">{t('& Boutiques', '& Boutiques')}</span>
+                            {t('contactHeroTitle1')}<br />
+                            <span className="text-sand/40">{t('contactHeroTitle2')}</span>
                         </h1>
                         <p className="text-sand/60 text-lg max-w-lg">
-                            {t('Notre équipe est à votre écoute. Visitez-nous ou envoyez-nous un message — nous répondons sous 24h.', 'Our team is here for you. Visit us or send a message — we reply within 24h.')}
+                            {t('contactHeroDesc')}
                         </p>
                         <div className="max-w-xs mt-10">
                             <CupSeparator tone="gold" />
@@ -248,10 +233,10 @@ export default function ContactPage() {
                         <div>
                             <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-cocoa mb-2 flex items-center gap-1.5">
                                 <Globe size={10} />
-                                {t('Nos boutiques', 'Our Stores')}
+                                {t('ourLocations')}
                             </p>
                             <h2 className="font-display text-4xl uppercase text-sand">
-                                {t('Trouvez-nous', 'Find a Store')}
+                                {t('findAStore')}
                             </h2>
                         </div>
 
@@ -268,7 +253,7 @@ export default function ContactPage() {
                                                 : 'bg-sand/8 text-sand/50 border border-sand/10 hover:border-gold/30 hover:text-gold'
                                         }`}
                                     >
-                                        {country === 'All' ? t('Tous', 'All') : country}
+                                        {country === 'All' ? t('all') : country}
                                     </button>
                                 ))}
                             </div>
@@ -285,7 +270,7 @@ export default function ContactPage() {
                     ) : filteredLocations.length === 0 ? (
                         <div className="text-center py-20 text-cocoa">
                             <MapPin size={40} className="mx-auto mb-4 opacity-30" />
-                            <p className="font-bold">{t('Aucune boutique trouvée', 'No stores found')}</p>
+                            <p className="font-bold">{t('noStoresFoundMsg')}</p>
                         </div>
                     ) : (
                         <AnimatePresence mode="wait">
@@ -317,12 +302,9 @@ export default function ContactPage() {
                         className="flex flex-col gap-8"
                     >
                         <div>
-                            <h2 className="font-display text-4xl uppercase mb-4 text-sand">{t('Nous écrire', 'Write to Us')}</h2>
+                            <h2 className="font-display text-4xl uppercase mb-4 text-sand">{t('writeToUsHeading')}</h2>
                             <p className="text-cocoa text-sm leading-relaxed max-w-md">
-                                {t(
-                                    'Vous avez une question, une demande spéciale ou souhaitez nous faire part de vos impressions ? Notre équipe vous répond rapidement.',
-                                    'Have a question, special request, or just want to share your thoughts? Our team replies promptly.'
-                                )}
+                                {t('writeToUsDesc')}
                             </p>
                         </div>
 
@@ -333,7 +315,7 @@ export default function ContactPage() {
                                     <Mail size={18} className="text-gold group-hover:text-ink transition-colors" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-cocoa mb-0.5">Email</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-cocoa mb-0.5">{t('email')}</p>
                                     <p className="text-sm font-bold text-sand">{contactEmail}</p>
                                 </div>
                             </a>
@@ -342,27 +324,27 @@ export default function ContactPage() {
                                     <Clock size={18} className="text-gold" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-cocoa mb-0.5">{t('Délai de réponse', 'Response time')}</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-cocoa mb-0.5">{t('responseTimeLabel')}</p>
                                     <p className="text-sm font-bold text-sand">{responseTime}</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Business info */}
-                        <div className="bg-sand/8 rounded-3xl p-6 border border-sand/10 grid grid-cols-2 gap-4">
+                        {/* <div className="bg-sand/8 rounded-3xl p-6 border border-sand/10 grid grid-cols-2 gap-4">
                             <div>
                                 <p className="text-[9px] text-cocoa font-bold uppercase tracking-widest mb-1">SIRET</p>
                                 <p className="text-sm font-mono font-bold text-sand">{businessSiret}</p>
                             </div>
                             <div>
-                                <p className="text-[9px] text-cocoa font-bold uppercase tracking-widest mb-1">N° TVA</p>
+                                <p className="text-[9px] text-cocoa font-bold uppercase tracking-widest mb-1">{t('vatNumberLabel')}</p>
                                 <p className="text-sm font-mono font-bold text-sand">{businessVatNumber}</p>
                             </div>
                             <div className="col-span-2">
-                                <p className="text-[9px] text-cocoa font-bold uppercase tracking-widest mb-1">{t('Marque', 'Brand')}</p>
+                                <p className="text-[9px] text-cocoa font-bold uppercase tracking-widest mb-1">{t('brandLabel')}</p>
                                 <p className="text-sm font-bold text-sand">{storeName}</p>
                             </div>
-                        </div>
+                        </div> */}
                     </motion.div>
 
                     {/* Right: form */}
@@ -371,63 +353,63 @@ export default function ContactPage() {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                     >
-                        <h2 className="font-display text-4xl uppercase mb-8 text-sand">{t('Envoyer un message', 'Send a Message')}</h2>
+                        <h2 className="font-display text-4xl uppercase mb-8 text-sand">{t('sendMessage')}</h2>
                         <div className="space-y-6">
                             <div className="grid grid-cols-2 gap-5">
                                 <div>
-                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('Prénom', 'First Name')}</label>
+                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('firstName')}</label>
                                     <input
                                         type="text"
                                         value={formState.firstName}
                                         onChange={e => setFormState(s => ({ ...s, firstName: e.target.value }))}
                                         className="w-full border-b-2 border-sand/15 py-3 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand placeholder:text-sand/30"
-                                        placeholder="Marie"
+                                        placeholder={t('placeholderFirstName')}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('Nom', 'Last Name')}</label>
+                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('lastName')}</label>
                                     <input
                                         type="text"
                                         value={formState.lastName}
                                         onChange={e => setFormState(s => ({ ...s, lastName: e.target.value }))}
                                         className="w-full border-b-2 border-sand/15 py-3 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand placeholder:text-sand/30"
-                                        placeholder="Dupont"
+                                        placeholder={t('placeholderLastName')}
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">Email</label>
+                                <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('email')}</label>
                                 <input
                                     type="email"
                                     value={formState.email}
                                     onChange={e => setFormState(s => ({ ...s, email: e.target.value }))}
                                     className="w-full border-b-2 border-sand/15 py-3 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand placeholder:text-sand/30"
-                                    placeholder="marie@exemple.fr"
+                                    placeholder={t('placeholderEmail')}
                                 />
                             </div>
                             <div>
-                                <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('Sujet', 'Subject')}</label>
+                                <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('subjectLabel')}</label>
                                 <select
                                     value={formState.subject}
                                     onChange={e => setFormState(s => ({ ...s, subject: e.target.value }))}
                                     className="w-full border-b-2 border-sand/15 py-3 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand/70"
                                 >
-                                    <option value="">{t('Choisir un sujet', 'Select a subject')}</option>
-                                    <option value="order">{t('Suivi de commande', 'Order tracking')}</option>
-                                    <option value="product">{t('Question produit', 'Product question')}</option>
-                                    <option value="return">{t('Retour / remboursement', 'Return / refund')}</option>
-                                    <option value="wholesale">{t('Commande professionnelle', 'Professional order')}</option>
-                                    <option value="other">{t('Autre', 'Other')}</option>
+                                    <option value="">{t('selectSubjectPlaceholder')}</option>
+                                    <option value="order">{t('subjectOrderTracking')}</option>
+                                    <option value="product">{t('subjectProductQuestion')}</option>
+                                    <option value="return">{t('subjectReturnRefund')}</option>
+                                    <option value="wholesale">{t('subjectWholesaleOrder')}</option>
+                                    <option value="other">{t('subjectOther')}</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('Message', 'Message')}</label>
+                                <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('message')}</label>
                                 <textarea
                                     rows={5}
                                     value={formState.message}
                                     onChange={e => setFormState(s => ({ ...s, message: e.target.value }))}
                                     className="w-full border-b-2 border-sand/15 py-3 focus:border-gold focus:outline-none transition-colors bg-transparent resize-none text-sm font-medium text-sand placeholder:text-sand/30"
-                                    placeholder={t('Votre message...', 'Your message...')}
+                                    placeholder={t('contactMessagePlaceholder')}
                                 />
                             </div>
                             {sendError && (
@@ -443,7 +425,7 @@ export default function ContactPage() {
                                 disabled={isSending || sent}
                                 className={`w-full flex justify-between items-center px-8 py-5 rounded-full font-bold tracking-widest uppercase text-sm shadow-lg transition-all duration-300 disabled:cursor-not-allowed ${sent ? 'bg-sand text-ink' : 'bg-gold text-ink hover:bg-[#b8914d] shadow-gold/25 disabled:opacity-60'}`}
                             >
-                                <span>{sent ? t('Message envoyé ✓', 'Message Sent ✓') : t('Envoyer le message', 'Send Message')}</span>
+                                <span>{sent ? t('messageSentConfirm') : t('sendMessage')}</span>
                                 {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                             </motion.button>
                         </div>
@@ -454,13 +436,13 @@ export default function ContactPage() {
             {/* ── FAQ ──────────────────────────────────────────── */}
             <section className="bg-ink grain-overlay py-20 px-8 border-t border-sand/10">
                 <div className="max-w-[800px] mx-auto">
-                    <h2 className="font-display text-4xl uppercase text-center mb-12 text-sand">{t('Questions fréquentes', 'Frequently Asked Questions')}</h2>
+                    <h2 className="font-display text-4xl uppercase text-center mb-12 text-sand">{t('faqSectionHeading')}</h2>
                     <div className="bg-sand/8 rounded-3xl border border-sand/10 px-8 py-2">
                         {FAQS.map((faq, i) => (
                             <FAQItem
                                 key={i}
-                                q={language === 'fr' ? faq.q.fr : faq.q.en}
-                                a={language === 'fr' ? faq.a.fr : faq.a.en}
+                                q={faq.q}
+                                a={faq.a}
                             />
                         ))}
                     </div>

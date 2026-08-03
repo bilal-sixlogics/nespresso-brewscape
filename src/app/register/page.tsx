@@ -6,18 +6,24 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User as UserIcon, Loader2, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { ProtectedRoute } from '@/components/ui/ProtectedRoute';
 import { ApiError } from '@/lib/api/types';
+import { TranslationKey } from '@/lib/translations';
 
-const PASSWORD_RULES = [
-    { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
-    { label: 'Uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
-    { label: 'Lowercase letter', test: (p: string) => /[a-z]/.test(p) },
-    { label: 'Number', test: (p: string) => /[0-9]/.test(p) },
-];
+function usePasswordRules(t: (key: TranslationKey) => string) {
+    return [
+        { label: t('authPwMin'), test: (p: string) => p.length >= 8 },
+        { label: t('authPwUpper'), test: (p: string) => /[A-Z]/.test(p) },
+        { label: t('authPwLower'), test: (p: string) => /[a-z]/.test(p) },
+        { label: t('authPwNumber'), test: (p: string) => /[0-9]/.test(p) },
+    ];
+}
 
 export default function RegisterPage() {
     const { register } = useAuth();
+    const { t } = useLanguage();
+    const PASSWORD_RULES = usePasswordRules(t);
     const router = useRouter();
 
     const [name, setName] = useState('');
@@ -41,7 +47,7 @@ export default function RegisterPage() {
         } catch (err) {
             const apiErr = err as ApiError;
             if (apiErr.errors) setFieldErrors(apiErr.errors);
-            else setError(apiErr.message ?? 'Registration failed. Please try again.');
+            else setError(apiErr.message ?? t('authGenericError'));
         } finally {
             setIsLoading(false);
         }
@@ -71,10 +77,10 @@ export default function RegisterPage() {
                             <span className="font-display text-2xl uppercase tracking-widest text-gold">Cafrezzo</span>
                         </Link>
                         <h1 className={`mt-4 font-display text-3xl uppercase tracking-tight ${headingColor}`}>
-                            Create Account
+                            {t('authCreateAccount')}
                         </h1>
                         <p className={`mt-2 text-sm ${labelColor}`}>
-                            Join Cafrezzo for exclusive offers and order tracking.
+                            {t('authRegisterSubtitle')}
                         </p>
                     </div>
 
@@ -102,7 +108,7 @@ export default function RegisterPage() {
                                     autoComplete="name"
                                     value={name}
                                     onChange={e => setName(e.target.value)}
-                                    placeholder="Full name"
+                                    placeholder={t('authFullName')}
                                     className={`w-full pl-11 pr-4 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg} ${firstFieldError('name') ? 'border-red-500' : ''}`}
                                 />
                             </div>
@@ -121,7 +127,7 @@ export default function RegisterPage() {
                                     autoComplete="email"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    placeholder="Email address"
+                                    placeholder={t('authEmailAddress')}
                                     className={`w-full pl-11 pr-4 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg} ${firstFieldError('email') ? 'border-red-500' : ''}`}
                                 />
                             </div>
@@ -140,7 +146,7 @@ export default function RegisterPage() {
                                     autoComplete="new-password"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
-                                    placeholder="Password"
+                                    placeholder={t('authPassword')}
                                     className={`w-full pl-11 pr-11 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg} ${firstFieldError('password') ? 'border-red-500' : ''}`}
                                 />
                                 <button
@@ -182,7 +188,7 @@ export default function RegisterPage() {
                                     autoComplete="new-password"
                                     value={confirm}
                                     onChange={e => setConfirm(e.target.value)}
-                                    placeholder="Confirm password"
+                                    placeholder={t('authConfirmPassword')}
                                     className={`w-full pl-11 pr-11 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg} ${confirm && confirm !== password ? 'border-red-500' : ''}`}
                                 />
                                 <button
@@ -195,7 +201,7 @@ export default function RegisterPage() {
                                 </button>
                             </div>
                             {confirm && confirm !== password && (
-                                <p className="mt-1 text-xs text-red-500 pl-1">Passwords do not match.</p>
+                                <p className="mt-1 text-xs text-red-500 pl-1">{t('authPasswordsMismatch')}</p>
                             )}
                         </div>
 
@@ -204,14 +210,14 @@ export default function RegisterPage() {
                             disabled={isLoading || (confirm.length > 0 && confirm !== password)}
                             className="w-full bg-gold text-ink rounded-xl py-3.5 font-black uppercase tracking-widest text-[11px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Create Account'}
+                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : t('authCreateAccount')}
                         </button>
                     </form>
 
                     <div className={`mt-8 text-center text-sm ${labelColor}`}>
-                        Already have an account?{' '}
+                        {t('authHaveAccount')}{' '}
                         <Link href="/login" className="text-gold font-bold hover:underline">
-                            Sign in
+                            {t('authLogIn')}
                         </Link>
                     </div>
                 </motion.div>

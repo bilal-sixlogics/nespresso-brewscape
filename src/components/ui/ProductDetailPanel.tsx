@@ -63,6 +63,7 @@ function PanelImageCarousel({ product }: { product: Product }) {
 
 // ─── Accordion ─────────────────────────────────────────────────────────────
 function Accordion({ title, children }: { title: string; children: React.ReactNode }) {
+    const { t } = useLanguage();
     const [open, setOpen] = useState(false);
     return (
         <div className={`rounded-2xl border-2 transition-colors duration-200 bg-sand ${open ? 'border-gold/40' : 'border-cocoa/15 hover:border-gold/30'}`}>
@@ -77,7 +78,7 @@ function Accordion({ title, children }: { title: string; children: React.ReactNo
                     <span className={`text-xs font-black uppercase tracking-widest transition-colors duration-200 ${open ? 'text-ink' : 'text-ink/70 group-hover:text-ink'}`}>{title}</span>
                 </div>
                 <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-200 ${open ? 'text-gold' : 'text-cocoa/60 group-hover:text-gold/60'}`}>
-                    {open ? 'Close' : 'Read'}
+                    {open ? t('close') : t('readMore')}
                 </span>
             </button>
             <AnimatePresence>
@@ -150,7 +151,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
     const defaultUnit = getDefaultUnit(product);
     const effectiveUnit: SaleUnit = selectedUnit ?? defaultUnit ?? {
         id: 0,
-        name: 'Unit',
+        name: t('defaultUnit'),
         unit_type: 'pc',
         quantity: 1,
         selling_price: product.selling_price,
@@ -204,7 +205,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                         <div className="sticky top-0 bg-ink/90 backdrop-blur-xl border-b border-sand/10 z-20 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center flex-shrink-0">
                             <button
                                 onClick={onClose}
-                                aria-label="Close product panel"
+                                aria-label={t('ariaCloseProductPanel')}
                                 className="flex items-center gap-2 text-sand opacity-60 hover:opacity-100 transition-opacity group focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 rounded-full"
                             >
                                 <div className="w-10 h-10 rounded-full bg-sand text-ink flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform border border-sand/20">
@@ -326,7 +327,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                                     {isRedirecting ? t('loading') : t('fullExperience')}
                                                 </p>
                                                 <p className="text-xs font-bold text-sand/70 group-hover:opacity-100 transition-opacity">
-                                                    {isRedirecting ? 'Optimisation en cours...' : t('fullExperienceDesc')}
+                                                    {isRedirecting ? t('optimizingRedirect') : t('fullExperienceDesc')}
                                                 </p>
                                             </div>
                                         </div>
@@ -355,7 +356,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                     className="w-8 h-8 rounded-full bg-sand/10 hover:bg-sand/20 shadow-sm flex items-center justify-center text-sand/60 hover:text-sand transition-colors"
-                                    aria-label="Decrease"
+                                    aria-label={t('ariaDecrease')}
                                 >
                                     <span className="w-3 h-0.5 bg-current rounded-full block" />
                                 </button>
@@ -363,7 +364,7 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
                                 <button
                                     onClick={() => setQuantity(quantity + 1)}
                                     className="w-8 h-8 rounded-full bg-sand/10 hover:bg-sand/20 shadow-sm flex items-center justify-center text-sand/60 hover:text-sand transition-colors"
-                                    aria-label="Increase"
+                                    aria-label={t('ariaIncrease')}
                                 >
                                     <div className="relative w-3 h-3">
                                         <span className="absolute top-1/2 left-0 w-3 h-0.5 -mt-px bg-current rounded-full block" />

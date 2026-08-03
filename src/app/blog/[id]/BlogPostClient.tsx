@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Share2, Bookmark, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
 import { Endpoints } from '@/lib/api/endpoints';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface BlogPost {
     id: number; title: string; slug: string; category: string; excerpt: string | null;
@@ -14,6 +15,7 @@ interface BlogPost {
 }
 
 export default function BlogPostClient({ id }: { id: string }) {
+    const { t } = useLanguage();
     const [post, setPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
@@ -47,8 +49,8 @@ export default function BlogPostClient({ id }: { id: string }) {
     if (notFound || !post) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-ink">
-                <h2 className="font-display text-3xl uppercase text-sand">Post Not Found</h2>
-                <Link href="/blog" className="text-gold font-bold hover:underline text-sm">Back to Journal</Link>
+                <h2 className="font-display text-3xl uppercase text-sand">{t('postNotFound')}</h2>
+                <Link href="/blog" className="text-gold font-bold hover:underline text-sm">{t('backToJournal')}</Link>
             </div>
         );
     }
@@ -63,7 +65,7 @@ export default function BlogPostClient({ id }: { id: string }) {
                 <div className="pt-20 lg:pt-32 px-4 lg:px-8 max-w-[1000px] mx-auto">
                     <Link href="/blog" className="inline-flex items-center text-xs font-bold tracking-widest uppercase text-cocoa hover:text-gold transition-colors mb-12 group">
                         <ArrowLeft size={16} className="mr-3 transform group-hover:-translate-x-2 transition-transform" />
-                        Back to Journal
+                        {t('backToJournal')}
                     </Link>
 
                     <div className="flex items-center gap-4 text-xs font-semibold text-cocoa mb-8 uppercase tracking-widest flex-wrap">
@@ -116,7 +118,7 @@ export default function BlogPostClient({ id }: { id: string }) {
                                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }}
                                 />
                             ) : (
-                                <p className="text-cocoa italic">This post has no content yet.</p>
+                                <p className="text-cocoa italic">{t('noContentYet')}</p>
                             )}
                         </div>
                     </div>
@@ -124,11 +126,11 @@ export default function BlogPostClient({ id }: { id: string }) {
                     <div className="mt-24 pt-12 border-t border-sand/15">
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                             <div className="flex items-center gap-4 text-xs font-bold tracking-widest uppercase text-sand">
-                                <span>Share Article</span>
+                                <span>{t('shareArticle')}</span>
                                 <button onClick={handleShare} className="w-10 h-10 rounded-full bg-sand/10 flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"><Share2 size={16} /></button>
                             </div>
                             <Link href="/blog" className="bg-gold text-ink px-8 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-[#b8914d] transition-colors">
-                                More Articles
+                                {t('moreArticles')}
                             </Link>
                         </div>
                     </div>

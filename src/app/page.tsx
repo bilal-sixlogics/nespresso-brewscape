@@ -23,6 +23,9 @@ interface ApiBrand {
   logo: string | null;
 }
 
+// Locale used for blog post dates, keyed by app language (all 5 supported languages).
+const BLOG_DATE_LOCALE: Record<string, string> = { fr: 'fr-FR', en: 'en-GB', de: 'de-DE', ru: 'ru-RU', nl: 'nl-NL' };
+
 function CategoriesSection() {
   const { language } = useLanguage();
   const { categories } = useCategories();
@@ -284,7 +287,7 @@ function BlogSection() {
             <div className="flex items-center gap-3 mb-4">
               <BookOpen size={14} className="text-gold" />
               <span className="text-[9px] font-black tracking-[0.35em] uppercase text-gold">
-                {language === 'fr' ? 'Le Journal' : 'The Journal'}
+                {t('blogTitle')}
               </span>
             </div>
             <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-sand uppercase tracking-tight leading-[0.9]">
@@ -332,7 +335,7 @@ function BlogSection() {
                 {post.published_at && (
                   <div className="flex items-center gap-1.5 text-[10px] font-semibold text-cocoa mb-2 uppercase tracking-widest">
                     <Calendar size={11} />
-                    {new Date(post.published_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {new Date(post.published_at).toLocaleDateString(BLOG_DATE_LOCALE[language] ?? 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </div>
                 )}
 
@@ -460,7 +463,7 @@ export default function Home() {
                   animate={{ y: [0, -12, 0] }}
                   transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
                   src="/cup5.png"
-                  alt="Iced Coffee Cup"
+                  alt={t('icedCoffeeAlt')}
                   className="absolute left-1/2 transform -translate-x-1/2 z-[2] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)] w-[210px] sm:w-[290px] md:w-[350px] lg:w-[600px] h-auto top-[75px] sm:top-[70px] lg:top-[120px]"
                 />
               </div>

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { marked } from 'marked';
 import { useMemo } from 'react';
 import { ProductSection } from '@/types/dynamic-product';
+import { useLanguage } from '@/context/LanguageContext';
 
 // ── Markdown → safe HTML ──────────────────────────────────────────────────────
 function useMarkdownHtml(md: string): string {
@@ -45,12 +46,13 @@ function RichTextBody({ html }: { html: string }) {
 
 // ── Main renderer — one switch per section type ───────────────────────────────
 export function SectionRenderer({ section }: { section: ProductSection }) {
+    const { t } = useLanguage();
     switch (section.type) {
 
         case 'intensity':
             return (
                 <div className="bg-sand/8 rounded-3xl p-6 border border-sand/10">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-cocoa mb-3">Intensity</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-cocoa mb-3">{t('intensity')}</p>
                     <div className="flex items-center gap-4">
                         <div className="flex-1 h-3 bg-sand/10 rounded-full overflow-hidden">
                             <motion.div
@@ -70,13 +72,13 @@ export function SectionRenderer({ section }: { section: ProductSection }) {
         case 'taste_profile':
             return (
                 <div className="bg-sand/8 rounded-3xl p-8 border border-sand/10">
-                    <h3 className="font-display text-2xl uppercase mb-6 text-sand">Taste Profile</h3>
+                    <h3 className="font-display text-2xl uppercase mb-6 text-sand">{t('tasteProfile')}</h3>
                     <div className="space-y-4">
-                        {section.bitterness != null && <TasteBar label="Bitterness" value={section.bitterness} />}
-                        {section.acidity != null && <TasteBar label="Acidity" value={section.acidity} />}
-                        {section.roastiness != null && <TasteBar label="Roastiness" value={section.roastiness} />}
-                        {section.body != null && <TasteBar label="Body" value={section.body} />}
-                        {section.sweetness != null && <TasteBar label="Sweetness" value={section.sweetness} />}
+                        {section.bitterness != null && <TasteBar label={t('bitterness')} value={section.bitterness} />}
+                        {section.acidity != null && <TasteBar label={t('acidity')} value={section.acidity} />}
+                        {section.roastiness != null && <TasteBar label={t('roastiness')} value={section.roastiness} />}
+                        {section.body != null && <TasteBar label={t('body')} value={section.body} />}
+                        {section.sweetness != null && <TasteBar label={t('sweetness')} value={section.sweetness} />}
                     </div>
                 </div>
             );
@@ -84,7 +86,7 @@ export function SectionRenderer({ section }: { section: ProductSection }) {
         case 'aromatic_notes':
             return (
                 <div className="bg-sand rounded-3xl p-6 text-ink">
-                    <p className="text-[10px] font-bold tracking-widest uppercase opacity-60 mb-4">Aromatic Notes</p>
+                    <p className="text-[10px] font-bold tracking-widest uppercase opacity-60 mb-4">{t('aromaticProfile')}</p>
                     <div className="flex flex-wrap gap-2">
                         {section.notes.map((note) => (
                             <span key={note} className="bg-ink/10 text-ink text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-full border border-ink/10">
@@ -142,7 +144,7 @@ export function SectionRenderer({ section }: { section: ProductSection }) {
         case 'allergens':
             return (
                 <div className="bg-amber-500/10 rounded-3xl p-6 border border-amber-500/20">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-300 mb-3">⚠ Contains Allergens</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-300 mb-3">{t('containsAllergens')}</p>
                     <div className="flex flex-wrap gap-2">
                         {section.items.map((item, i) => (
                             <span key={i} className="bg-amber-500/15 px-3 py-1.5 rounded-full text-xs font-bold text-amber-300 border border-amber-500/25">
@@ -193,7 +195,7 @@ export function SectionRenderer({ section }: { section: ProductSection }) {
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-cocoa">{field.label}</span>
                                 <span className="text-sm font-bold text-sand">
                                     {field.fieldType === 'boolean'
-                                        ? (field.value ? '✓ Yes' : '✕ No')
+                                        ? (field.value ? t('yesValue') : t('noValue'))
                                         : field.fieldType === 'list'
                                             ? (field.value as string[]).join(', ')
                                             : String(field.value)}

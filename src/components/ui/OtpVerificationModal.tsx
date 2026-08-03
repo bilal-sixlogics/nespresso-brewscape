@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, AlertCircle, Mail, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 import { ApiError } from '@/lib/api/types';
 
 interface OtpVerificationModalProps {
@@ -19,6 +20,7 @@ const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
 
 export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, onResend, email }: OtpVerificationModalProps) {
+    const { t } = useLanguage();
     const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
     const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
@@ -113,7 +115,7 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
             onVerified();
         } catch (err) {
             const apiErr = err as ApiError;
-            setError(apiErr.message ?? 'Invalid verification code. Please try again.');
+            setError(apiErr.message ?? t('authOtpError'));
         } finally {
             setIsVerifying(false);
         }
@@ -139,7 +141,7 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
             }, 1000);
         } catch (err) {
             const apiErr = err as ApiError;
-            setError(apiErr.message ?? 'Failed to resend code. Please try again.');
+            setError(apiErr.message ?? t('authResendError'));
         } finally {
             setIsResending(false);
         }
@@ -181,12 +183,12 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
                         {/* Heading */}
                         <div className="text-center mb-8">
                             <h2 className="font-display text-3xl uppercase tracking-tight text-ink mb-2">
-                                Verify Email
+                                {t('authVerifyEmail')}
                             </h2>
                             <p className="text-sm text-ink/60">
-                                We sent a 6-digit code to{' '}
+                                {t('authOtpSubtitle')}{' '}
                                 <span className="font-bold text-ink/80">{email}</span>.
-                                Enter it below to verify your account.
+                                {' '}{t('authOtpInstructions')}
                             </p>
                         </div>
 
@@ -210,7 +212,7 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
                                 className="mb-6 flex items-start gap-3 p-4 rounded-xl bg-gold/10 border border-gold/20 text-gold text-sm"
                             >
                                 <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-                                <span>A new code has been sent to your email.</span>
+                                <span>{t('authCodeSent')}</span>
                             </motion.div>
                         )}
 
@@ -240,15 +242,15 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
                             disabled={!isComplete || isVerifying}
                             className="w-full bg-gold text-ink rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mb-6"
                         >
-                            {isVerifying ? <Loader2 size={16} className="animate-spin" /> : 'Verify'}
+                            {isVerifying ? <Loader2 size={16} className="animate-spin" /> : t('authVerifyButton')}
                         </button>
 
                         {/* Resend */}
                         <div className="text-center">
-                            <p className="text-sm text-ink/60 mb-1">Didn&apos;t receive the code?</p>
+                            <p className="text-sm text-ink/60 mb-1">{t('authDidntReceive')}</p>
                             {resendTimer > 0 ? (
                                 <p className="text-sm text-ink/50">
-                                    Resend in <span className="font-bold text-ink/70">{resendTimer}s</span>
+                                    {t('authResendIn')} <span className="font-bold text-ink/70">{resendTimer}s</span>
                                 </p>
                             ) : (
                                 <button
@@ -256,7 +258,7 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
                                     disabled={isResending}
                                     className="text-sm font-bold text-gold hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    {isResending ? 'Sending...' : 'Resend Code'}
+                                    {isResending ? t('authSending') : t('authResendCode')}
                                 </button>
                             )}
                         </div>

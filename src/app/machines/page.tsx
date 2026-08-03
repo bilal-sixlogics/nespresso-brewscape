@@ -18,7 +18,7 @@ import { CupSeparator } from '@/components/ui/CupSeparator';
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
 export default function MachinesPage() {
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [filterOpen, setFilterOpen] = useState(false);
@@ -114,18 +114,13 @@ export default function MachinesPage() {
                             className="w-full lg:w-1/2"
                         >
                             <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                                {tx('Équipement Premium', 'Premium Equipment')}
+                                {t('machinesHeroEyebrow')}
                             </p>
                             <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
-                                {tx('Machines', 'Machines')}
-                                <br />
-                                <span className="text-gold">à Café</span>
+                                {t('machinesHeroTitle')}
                             </h1>
                             <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
-                                {tx(
-                                    "Du barista débutant au professionnel exigeant — trouvez la machine qui correspond à votre passion.",
-                                    "From beginner barista to demanding professional — find the machine that matches your passion."
-                                )}
+                                {t('machinesHeroDesc')}
                             </p>
                             <div className="max-w-xs mt-10">
                                 <CupSeparator tone="gold" />
@@ -147,7 +142,7 @@ export default function MachinesPage() {
                                     y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 },
                                 }}
                                 src="/machine.png"
-                                alt={tx('Machine à café premium', 'Premium Coffee Machine')}
+                                alt={t('machinesImageAlt')}
                                 className="relative z-10 w-[220px] sm:w-[300px] lg:w-[380px] h-auto object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.5)]"
                             />
                         </div>
@@ -171,7 +166,7 @@ export default function MachinesPage() {
                                 className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gold text-ink hover:bg-[#b8914d] transition-colors relative"
                             >
                                 <SlidersHorizontal size={12} />
-                                <span className="hidden sm:inline">{tx('Filtres', 'Filters')}</span>
+                                <span className="hidden sm:inline">{t('filters')}</span>
                                 {activeFilterCount > 0 && (
                                     <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-ink text-gold border border-gold/50 text-[8px] font-black rounded-full flex items-center justify-center">
                                         {activeFilterCount}
@@ -185,10 +180,10 @@ export default function MachinesPage() {
                                     onClick={() => setSortOpen(!sortOpen)}
                                     className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sand/8 text-sand/70 border border-sand/10 hover:border-sand/25 transition-colors"
                                 >
-                                    {sortBy === 'relevance' && tx('Pertinence', 'Relevance')}
-                                    {sortBy === 'price_asc' && tx('Prix: Croissant', 'Price: Low to High')}
-                                    {sortBy === 'price_desc' && tx('Prix: Décroissant', 'Price: High to Low')}
-                                    {sortBy === 'newest' && tx('Nouveautés', 'Newest')}
+                                    {sortBy === 'relevance' && t('sortRelevance')}
+                                    {sortBy === 'price_asc' && t('sortPriceLow')}
+                                    {sortBy === 'price_desc' && t('sortPriceHigh')}
+                                    {sortBy === 'newest' && t('sortNewest')}
                                     {sortBy === 'popularity' && tx('Popularité', 'Popularity')}
                                     <ChevronDown size={12} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
                                 </button>
@@ -202,10 +197,10 @@ export default function MachinesPage() {
                                                 className="absolute top-full left-0 mt-2 w-52 bg-sand rounded-2xl shadow-xl border border-ink/10 z-[90] overflow-hidden py-2"
                                             >
                                                 {[
-                                                    { id: 'relevance', lbl: tx('Pertinence', 'Relevance') },
-                                                    { id: 'price_asc', lbl: tx('Prix: Croissant', 'Price: Low to High') },
-                                                    { id: 'price_desc', lbl: tx('Prix: Décroissant', 'Price: High to Low') },
-                                                    { id: 'newest', lbl: tx('Nouveautés', 'Newest') },
+                                                    { id: 'relevance', lbl: t('sortRelevance') },
+                                                    { id: 'price_asc', lbl: t('sortPriceLow') },
+                                                    { id: 'price_desc', lbl: t('sortPriceHigh') },
+                                                    { id: 'newest', lbl: t('sortNewest') },
                                                     { id: 'popularity', lbl: tx('Popularité', 'Popularity') },
                                                 ].map(opt => (
                                                     <button
@@ -233,7 +228,7 @@ export default function MachinesPage() {
                                         className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15 transition-colors"
                                     >
                                         <RotateCcw size={11} />
-                                        {tx('Réinitialiser', 'Reset')}
+                                        {t('reset')}
                                     </motion.button>
                                 )}
                             </AnimatePresence>
@@ -255,7 +250,7 @@ export default function MachinesPage() {
                                     : 'bg-sand/8 text-sand/50 border border-sand/10 hover:border-gold/30 hover:text-sand'
                                     }`}
                             >
-                                {tx('Toutes', 'All')}
+                                {t('all')}
                             </button>
                             {machineCategories.map(cat => (
                                 <button
@@ -278,7 +273,7 @@ export default function MachinesPage() {
                             {!activeCategory ? tx('Toutes les Machines', 'All Machines') : activeCategory}
                         </h3>
                         <div className="text-[10px] font-bold tracking-widest uppercase text-cocoa">
-                            {displayProducts.length} {tx('résultats', 'results')}
+                            {displayProducts.length} {t('results')}
                         </div>
                     </div>
 
@@ -287,10 +282,10 @@ export default function MachinesPage() {
                         <div className="text-center py-24">
                             <p className="text-6xl mb-4">☕</p>
                             <p className="font-bold text-xl mb-2 text-sand">
-                                {tx('Aucune machine trouvée', 'No machines found')}
+                                {t('noProductsFound')}
                             </p>
                             <button onClick={resetAll} className="text-gold font-bold text-sm underline mt-2">
-                                {tx('Effacer les filtres', 'Clear filters')}
+                                {t('clearFilters')}
                             </button>
                         </div>
                     ) : (

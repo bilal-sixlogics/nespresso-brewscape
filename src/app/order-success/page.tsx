@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface OrderShippingMethod {
     id: number;
@@ -68,6 +69,7 @@ function OrderSuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const formatPrice = useFormatPrice();
+    const { t } = useLanguage();
     const [showConfetti, setShowConfetti] = useState(true);
 
     const orderId = searchParams.get('order') || '';
@@ -93,7 +95,7 @@ function OrderSuccessContent() {
     }, [orderId, email]);
 
     const PAYMENT_LABELS: Record<string, string> = {
-        cod: 'Cash on Delivery', stripe: 'Stripe', wise: 'Wise Transfer', card: 'Credit / Debit Card',
+        cod: t('accountPaymentCod'), stripe: t('accountPaymentStripe'), wise: t('accountPaymentWise'), card: t('accountPaymentCard'),
     };
 
     const shippingMethod = order?.shipping_method ?? null;
@@ -134,15 +136,15 @@ function OrderSuccessContent() {
                         className="text-center mb-10"
                     >
                         <p className="text-[11px] font-black uppercase tracking-[0.3em] text-gold mb-2">
-                            {paymentMethod === 'cod' ? 'Order Confirmed' : 'Payment Confirmed'}
+                            {paymentMethod === 'cod' ? t('orderConfirmedEyebrow') : t('paymentConfirmedEyebrow')}
                         </p>
                         <h1 className="font-display text-4xl lg:text-5xl uppercase tracking-tight text-sand mb-3">
-                            Order Placed!
+                            {t('orderPlacedHeading')}
                         </h1>
                         <p className="text-sand/60">
                             {paymentMethod === 'cod'
-                                ? 'Thank you! Please prepare the exact amount. Payment will be collected on delivery.'
-                                : 'Thank you for your purchase. Your coffee is on its way!'}
+                                ? t('orderThankYouCod')
+                                : t('orderThankYouPaid')}
                         </p>
                     </motion.div>
 
@@ -156,12 +158,12 @@ function OrderSuccessContent() {
                         {/* Gold header strip */}
                         <div className="bg-gold px-6 py-4 flex items-center justify-between">
                             <div>
-                                <p className="text-ink/60 text-[10px] uppercase tracking-widest font-bold">Order Number</p>
+                                <p className="text-ink/60 text-[10px] uppercase tracking-widest font-bold">{t('orderNumber')}</p>
                                 <p className="text-ink font-black text-xl tracking-widest font-mono">{orderId}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-ink/60 text-[10px] uppercase tracking-widest font-bold">
-                                    {paymentMethod === 'cod' ? 'Total Due' : 'Total Paid'}
+                                    {paymentMethod === 'cod' ? t('totalDue') : t('totalPaid')}
                                 </p>
                                 <p className="text-ink font-display text-2xl">{formatPrice(parseFloat(total))}</p>
                             </div>
@@ -174,7 +176,7 @@ function OrderSuccessContent() {
                                     <Calendar size={18} className="text-gold" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">Order Date</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">{t('orderDateLabel')}</p>
                                     <p className="font-semibold text-sm text-ink">{orderCreatedAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                 </div>
                             </div>
@@ -185,7 +187,7 @@ function OrderSuccessContent() {
                                 </div>
                                 <div>
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">
-                                        {isPickup ? 'Ready for Pickup' : 'Est. Delivery'}
+                                        {isPickup ? t('readyForPickupLabel') : t('estDeliveryLabel')}
                                     </p>
                                     <p className="font-semibold text-sm text-ink">{estimatedDate}</p>
                                 </div>
@@ -196,10 +198,10 @@ function OrderSuccessContent() {
                                     {isPickup ? <Store size={18} className="text-gold" /> : <Truck size={18} className="text-gold" />}
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">Delivery Method</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">{t('deliveryMethodLabel')}</p>
                                     <p className="font-semibold text-sm text-ink">{shippingMethod?.name ?? '—'}</p>
                                     <p className="text-[10px] text-gold mt-0.5 font-bold">
-                                        {shippingCost === null ? '' : isFreeShipping ? 'Free' : formatPrice(shippingCost)}
+                                        {shippingCost === null ? '' : isFreeShipping ? t('freeLabel') : formatPrice(shippingCost)}
                                     </p>
                                 </div>
                             </div>
@@ -209,10 +211,10 @@ function OrderSuccessContent() {
                                     <CreditCard size={18} className="text-amber-500" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">Payment Method</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">{t('paymentMethodLabel')}</p>
                                     <p className="font-semibold text-sm text-ink">{PAYMENT_LABELS[paymentMethod] || paymentMethod}</p>
                                     <p className="text-[10px] text-gold mt-0.5 font-bold">
-                                        {paymentMethod === 'cod' ? 'Pay on delivery' : 'No card details stored'}
+                                        {paymentMethod === 'cod' ? t('payOnDelivery') : t('noCardStored')}
                                     </p>
                                 </div>
                             </div>
@@ -222,16 +224,16 @@ function OrderSuccessContent() {
                                     <Package size={18} className="text-emerald-500" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">Status</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">{t('statusLabel')}</p>
                                     {paymentMethod === 'cod' ? (
                                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-500/10 border border-orange-500/25 text-orange-500">
                                             <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                                            Awaiting Delivery
+                                            {t('awaitingDelivery')}
                                         </span>
                                     ) : (
                                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 border border-amber-500/25 text-amber-500">
                                             <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                                            Processing
+                                            {t('orderStatusProcessing')}
                                         </span>
                                     )}
                                 </div>
@@ -240,16 +242,16 @@ function OrderSuccessContent() {
 
                         {/* What next */}
                         <div className="border-t border-ink/10 px-6 py-5 bg-ink/5">
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-3">What's next?</p>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-3">{t('whatsNext')}</p>
                             <div className="space-y-2">
                                 {(paymentMethod === 'cod' ? [
-                                    'You\'ll receive a confirmation email shortly',
-                                    'Our courier will contact you before delivery',
-                                    'Please have ' + formatPrice(parseFloat(total)) + ' ready for the courier',
+                                    t('nextStepConfirmEmail'),
+                                    t('nextStepCourierContact'),
+                                    t('nextStepHaveCash').replace('{{total}}', formatPrice(parseFloat(total))),
                                 ] : [
-                                    'You\'ll receive a confirmation email shortly',
-                                    'We\'ll notify you when your order ships',
-                                    'Track real-time status in your dashboard',
+                                    t('nextStepConfirmEmail'),
+                                    t('nextStepShipNotify'),
+                                    t('nextStepTrackStatus'),
                                 ]).map((step, i) => (
                                     <div key={i} className="flex items-center gap-3">
                                         <div className="w-5 h-5 rounded-full bg-gold/15 flex items-center justify-center flex-shrink-0">
@@ -273,13 +275,13 @@ function OrderSuccessContent() {
                             href={`/orders/${orderId}${email ? `?email=${encodeURIComponent(email)}` : ''}`}
                             className="flex-1 flex items-center justify-center gap-2 py-4 bg-gold text-ink rounded-full font-black uppercase tracking-widest hover:bg-[#b8914d] transition-colors shadow-lg shadow-gold/25"
                         >
-                                <Package size={16} /> Track Order
+                                <Package size={16} /> {t('trackOrderBtn')}
                         </Link>
                         <Link
                             href="/shop"
                             className="flex-1 flex items-center justify-center gap-2 py-4 bg-sand/5 text-sand border-2 border-sand/15 rounded-full font-black uppercase tracking-widest hover:border-gold transition-colors"
                         >
-                            <ShoppingBag size={16} /> Continue Shopping
+                            <ShoppingBag size={16} /> {t('continueBrowsing')}
                         </Link>
                     </motion.div>
                 </div>

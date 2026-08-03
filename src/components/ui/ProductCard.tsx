@@ -60,7 +60,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
             style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
             role="button"
             tabIndex={0}
-            aria-label={`View ${product.name}`}
+            aria-label={`${t('ariaView')} ${product.name}`}
             onKeyDown={(e) => e.key === 'Enter' && onClick(product)}
         >
             {/* ── Card Shell — beige, sitting on the black page background ── */}
@@ -127,7 +127,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                         {/* Right: best seller */}
                         {isBestSeller && (
                             <span className="inline-flex items-center gap-1 bg-gold text-ink text-[10px] font-black tracking-wide rounded-full px-2 py-1 shadow">
-                                <Star size={8} fill="currentColor" /> BEST
+                                <Star size={8} fill="currentColor" /> {t('bestSellerBadge')}
                             </span>
                         )}
                     </div>
@@ -222,7 +222,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                         <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={(e) => { e.stopPropagation(); onClick(product); }}
-                            aria-label={`Quick look at ${product.name}`}
+                            aria-label={`${t('ariaQuickLook')} ${product.name}`}
                             className="min-h-[38px] min-w-[38px] flex items-center justify-center bg-gold text-ink rounded-full hover:bg-[#b8914d] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 px-4 text-[11px] font-black tracking-wide"
                         >
                             <span className="hidden sm:inline">{t('select')}</span>
