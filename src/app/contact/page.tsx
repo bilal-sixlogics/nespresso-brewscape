@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
+type TFunc = ReturnType<typeof useLanguage>['t'];
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { Mail, Phone, MapPin, Clock, Send, ChevronDown, AlertCircle, Loader2, Globe, ArrowUpRight, Navigation } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
@@ -69,7 +70,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     );
 }
 
-function MapPanel({ store, t }: { store: StoreLocation; t: (k: string) => string }) {
+function MapPanel({ store, t }: { store: StoreLocation; t: TFunc }) {
     const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(store.address)}`;
     return (
         <a
@@ -96,7 +97,7 @@ function MapPanel({ store, t }: { store: StoreLocation; t: (k: string) => string
     );
 }
 
-function StoreCard({ store, index, t }: { store: StoreLocation; index: number; t: (k: string) => string }) {
+function StoreCard({ store, index, t }: { store: StoreLocation; index: number; t: TFunc }) {
     const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(store.address)}`;
     const locationLabel = store.country ? `${store.city} - ${store.country}` : store.city;
 
