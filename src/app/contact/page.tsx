@@ -1,16 +1,26 @@
+// ContactPage.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
-import { Mail, Phone, MapPin, Clock, Send, ChevronDown, AlertCircle, Loader2, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, ChevronDown, AlertCircle, Loader2, Globe, ArrowUpRight, Navigation } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
 import { CupSeparator } from '@/components/ui/CupSeparator';
+import { StoreGallery } from './StoreGallery';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+interface StoreImage {
+    id: number;
+    path: string;
+    is_primary: boolean;
+    sort_order: number;
+    created_at: string;
+    updated_at: string;
+    store_location_id: number;
+}
 
 interface StoreLocation {
     id: number;
@@ -26,9 +36,8 @@ interface StoreLocation {
     image: string;
     is_active: boolean;
     sort_order: number;
+    images?: StoreImage[];
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function FAQItem({ q, a }: { q: string; a: string }) {
     const [open, setOpen] = useState(false);
@@ -52,7 +61,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden"
                     >
-                        <p className="text-sm text-sand/60 leading-relaxed pb-5">{a}</p>
+                        <p className="text-sm text-sand/60 leading-relaxed pb-5 pr-8">{a}</p>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -60,89 +69,120 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     );
 }
 
-function StoreCard({ store }: { store: StoreLocation }) {
-    const { t } = useLanguage();
+function MapPanel({ store, t }: { store: StoreLocation; t: (k: string) => string }) {
     const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(store.address)}`;
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-sand rounded-3xl border border-ink/10 overflow-hidden hover:shadow-xl hover:border-gold/40 transition-all duration-300 group"
+        <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="relative h-full min-h-[160px] rounded-2xl overflow-hidden border border-ink/10 flex flex-col items-center justify-center gap-3 group"
+            style={{
+                backgroundColor: '#e9e4da',
+                backgroundImage:
+                    'radial-gradient(rgba(26,22,20,0.08) 1px, transparent 1px), radial-gradient(rgba(26,22,20,0.08) 1px, transparent 1px)',
+                backgroundSize: '22px 22px',
+                backgroundPosition: '0 0, 11px 11px',
+            }}
         >
-            {/* Image */}
-            <div className="h-44 overflow-hidden bg-ink/5 relative">
-                <img
-                    src={store.image}
-                    alt={store.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent" />
-                <div className="absolute bottom-3 left-4">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-sand/90 bg-ink/40 backdrop-blur-sm px-2.5 py-1 rounded-full border border-sand/20">
-                        {store.city}
-                    </span>
-                </div>
+            <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/5 transition-colors" />
+            <div className="w-11 h-11 rounded-full bg-gold flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <MapPin size={20} className="text-ink" />
+            </div>
+            <span className="relative z-10 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-ink bg-sand/90 px-3 py-1.5 rounded-full">
+                {t('getDirections')} <Navigation size={11} />
+            </span>
+        </a>
+    );
+}
+
+function StoreCard({ store, index, t }: { store: StoreLocation; index: number; t: (k: string) => string }) {
+    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(store.address)}`;
+    const locationLabel = store.country ? `${store.city} - ${store.country}` : store.city;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ duration: 0.45, delay: Math.min(index, 4) * 0.06, ease: [0.16, 1, 0.3, 1] }}
+            className="bg-sand rounded-3xl border border-ink/10 overflow-hidden hover:shadow-2xl hover:shadow-gold/10 hover:border-gold/30 transition-all duration-300"
+        >
+            <div className="p-4 pb-0">
+                <StoreGallery images={store.images || []} />
             </div>
 
-            {/* Content */}
-            <div className="p-5 space-y-3 text-ink">
-                <h3 className="font-bold text-sm text-ink leading-tight">{store.name}</h3>
+            <div className="p-6 pt-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 flex flex-col gap-5">
+                    <div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-gold/90 mb-1.5 block">
+                            {locationLabel}
+                        </span>
+                        <h3 className="font-display text-2xl md:text-3xl uppercase text-ink leading-tight">
+                            {store.name}
+                        </h3>
+                    </div>
 
-                <div className="space-y-2">
+                    <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
+                        <a
+                            href={mapsUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-start gap-2.5 text-ink/55 hover:text-gold transition-colors"
+                        >
+                            <MapPin size={14} className="mt-0.5 flex-shrink-0" />
+                            <span className="text-[12px] leading-snug">{store.address}</span>
+                        </a>
+                        <div className="flex items-start gap-2.5 text-ink/55">
+                            <Clock size={14} className="mt-0.5 flex-shrink-0" />
+                            <span className="text-[12px] leading-snug">{store.hours}</span>
+                        </div>
+                        <a
+                            href={`tel:${store.phone.replace(/\s/g, '')}`}
+                            className="flex items-center gap-2.5 text-ink/55 hover:text-gold transition-colors"
+                        >
+                        
+                            <Phone size={14} className="flex-shrink-0" />
+                            <span className="text-[12px]">{store.phone}</span>
+                        </a>
+                        <a
+                            href={`mailto:${store.email}`}
+                            className="flex items-center gap-2.5 text-ink/55 hover:text-gold transition-colors"
+                        >
+                            <Mail size={14} className="flex-shrink-0" />
+                            <span className="text-[12px]">{store.email}</span>
+                        </a>
+                    </div>
+
                     <a
                         href={mapsUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-start gap-2 text-ink/50 hover:text-gold transition-colors group/link"
+                        className="inline-flex w-fit items-center justify-center gap-2 px-6 py-3 rounded-full bg-ink text-sand text-[10px] font-black uppercase tracking-widest hover:bg-gold hover:text-ink transition-all duration-200"
                     >
-                        <MapPin size={13} className="mt-0.5 flex-shrink-0 group-hover/link:text-gold" />
-                        <span className="text-[11px] leading-snug">{store.address}</span>
+                        {t('getDirections')} <ArrowUpRight size={12} />
                     </a>
-                    <a href={`tel:${store.phone.replace(/\s/g, '')}`} className="flex items-center gap-2 text-ink/50 hover:text-gold transition-colors">
-                        <Phone size={13} className="flex-shrink-0" />
-                        <span className="text-[11px]">{store.phone}</span>
-                    </a>
-                    <a href={`mailto:${store.email}`} className="flex items-center gap-2 text-ink/50 hover:text-gold transition-colors">
-                        <Mail size={13} className="flex-shrink-0" />
-                        <span className="text-[11px]">{store.email}</span>
-                    </a>
-                    <div className="flex items-start gap-2 text-ink/50">
-                        <Clock size={13} className="mt-0.5 flex-shrink-0" />
-                        <span className="text-[11px] leading-snug">{store.hours}</span>
-                    </div>
                 </div>
 
-                <a
-                    href={mapsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block w-full mt-2 py-2.5 rounded-full border-2 border-gold/30 text-gold text-[10px] font-black uppercase tracking-widest text-center hover:bg-gold hover:text-ink transition-all duration-200"
-                >
-                    {t('getDirections')}
-                </a>
+                {/* <div className="lg:col-span-1">
+                    <MapPanel store={store} t={t} />
+                </div> */}
             </div>
         </motion.div>
     );
 }
-
-// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function ContactPage() {
     const { t } = useLanguage();
     const {
         contact_email: contactEmail,
         contact_response_time: responseTime,
-        store_name: storeName,
-        business_siret: businessSiret,
-        business_vat_number: businessVatNumber,
     } = useSiteSettings();
     const [formState, setFormState] = useState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
     const [sent, setSent] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [sendError, setSendError] = useState<string | null>(null);
 
-    // Store locations state
     const [locations, setLocations] = useState<StoreLocation[]>([]);
     const [locationsLoading, setLocationsLoading] = useState(true);
     const [selectedCountry, setSelectedCountry] = useState<string>('All');
@@ -154,7 +194,6 @@ export default function ContactPage() {
         { q: t('contactFaqQ4'), a: t('contactFaqA4') },
     ];
 
-    // Fetch store locations from API
     useEffect(() => {
         apiClient.get<{ data: StoreLocation[] }>(Endpoints.storeLocations)
             .then(res => {
@@ -166,7 +205,6 @@ export default function ContactPage() {
             .finally(() => setLocationsLoading(false));
     }, []);
 
-    // Derive countries list
     const countries = ['All', ...Array.from(new Set(locations.map(l => l.country)))];
 
     const filteredLocations = selectedCountry === 'All'
@@ -203,7 +241,6 @@ export default function ContactPage() {
 
     return (
         <div className="w-full bg-ink text-sand grain-overlay">
-            {/* ── Hero ─────────────────────────────────────────── */}
             <section className="bg-ink pt-24 pb-24 px-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(201,160,90,0.12),_transparent_60%)]" />
                 <div className="max-w-[1400px] mx-auto relative z-10">
@@ -215,7 +252,7 @@ export default function ContactPage() {
                             {t('contactHeroTitle1')}<br />
                             <span className="text-sand/40">{t('contactHeroTitle2')}</span>
                         </h1>
-                        <p className="text-sand/60 text-lg max-w-lg">
+                        <p className="text-sand/60 text-lg max-w-lg leading-relaxed">
                             {t('contactHeroDesc')}
                         </p>
                         <div className="max-w-xs mt-10">
@@ -225,11 +262,9 @@ export default function ContactPage() {
                 </div>
             </section>
 
-            {/* ── Store Locations ──────────────────────────────── */}
-            <section className="py-20 px-8 bg-sand/5">
+            <section className="py-20 px-8 bg-sand/5 border-y border-sand/10">
                 <div className="max-w-[1400px] mx-auto">
-                    {/* Section header */}
-                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
                         <div>
                             <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-cocoa mb-2 flex items-center gap-1.5">
                                 <Globe size={10} />
@@ -240,7 +275,6 @@ export default function ContactPage() {
                             </h2>
                         </div>
 
-                        {/* Country filter tabs */}
                         {!locationsLoading && countries.length > 2 && (
                             <div className="flex flex-wrap gap-2">
                                 {countries.map(country => (
@@ -260,11 +294,21 @@ export default function ContactPage() {
                         )}
                     </div>
 
-                    {/* Grid */}
                     {locationsLoading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {[...Array(8)].map((_, i) => (
-                                <div key={i} className="bg-sand/8 rounded-3xl border border-sand/10 h-72 animate-pulse" />
+                        <div className="flex flex-col gap-10">
+                            {[...Array(2)].map((_, i) => (
+                                <div key={i} className="bg-sand/8 rounded-3xl border border-sand/10 overflow-hidden animate-pulse">
+                                    <div className="h-[280px] m-4 rounded-2xl bg-sand/10" />
+                                    <div className="p-6 pt-2 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                        <div className="lg:col-span-2 space-y-3">
+                                            <div className="h-3 w-24 bg-sand/10 rounded-full" />
+                                            <div className="h-6 w-56 bg-sand/10 rounded-full" />
+                                            <div className="h-3 w-full bg-sand/10 rounded-full" />
+                                            <div className="h-3 w-2/3 bg-sand/10 rounded-full" />
+                                        </div>
+                                        <div className="h-32 bg-sand/10 rounded-2xl" />
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     ) : filteredLocations.length === 0 ? (
@@ -273,28 +317,17 @@ export default function ContactPage() {
                             <p className="font-bold">{t('noStoresFoundMsg')}</p>
                         </div>
                     ) : (
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={selectedCountry}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                            >
-                                {filteredLocations.map(store => (
-                                    <StoreCard key={store.id} store={store} />
-                                ))}
-                            </motion.div>
-                        </AnimatePresence>
+                        <div className="flex flex-col gap-10">
+                            {filteredLocations.map((store, i) => (
+                                <StoreCard key={store.id} store={store} index={i} t={t} />
+                            ))}
+                        </div>
                     )}
                 </div>
             </section>
 
-            {/* ── Contact Form ─────────────────────────────────── */}
-            <section className="py-20 px-8 border-t border-sand/10">
-                <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
-                    {/* Left: info */}
+            <section className="py-20 px-8">
+                <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 xl:gap-24">
                     <motion.div
                         initial={{ opacity: 0, x: -30 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -302,16 +335,18 @@ export default function ContactPage() {
                         className="flex flex-col gap-8"
                     >
                         <div>
+                            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-cocoa mb-2">
+                                {t('contactHeroEyebrow')}
+                            </p>
                             <h2 className="font-display text-4xl uppercase mb-4 text-sand">{t('writeToUsHeading')}</h2>
                             <p className="text-cocoa text-sm leading-relaxed max-w-md">
                                 {t('writeToUsDesc')}
                             </p>
                         </div>
 
-                        {/* Contact cards */}
                         <div className="space-y-4">
                             <a href={`mailto:${contactEmail}`} className="flex items-center gap-4 p-5 bg-sand/8 rounded-2xl border border-sand/10 hover:border-gold/30 hover:shadow-md transition-all group">
-                                <div className="w-11 h-11 bg-gold/15 rounded-xl flex items-center justify-center group-hover:bg-gold transition-colors">
+                                <div className="w-11 h-11 bg-gold/15 rounded-xl flex items-center justify-center group-hover:bg-gold transition-colors flex-shrink-0">
                                     <Mail size={18} className="text-gold group-hover:text-ink transition-colors" />
                                 </div>
                                 <div>
@@ -320,7 +355,7 @@ export default function ContactPage() {
                                 </div>
                             </a>
                             <div className="flex items-center gap-4 p-5 bg-sand/8 rounded-2xl border border-sand/10">
-                                <div className="w-11 h-11 bg-gold/15 rounded-xl flex items-center justify-center">
+                                <div className="w-11 h-11 bg-gold/15 rounded-xl flex items-center justify-center flex-shrink-0">
                                     <Clock size={18} className="text-gold" />
                                 </div>
                                 <div>
@@ -329,29 +364,13 @@ export default function ContactPage() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Business info */}
-                        {/* <div className="bg-sand/8 rounded-3xl p-6 border border-sand/10 grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-[9px] text-cocoa font-bold uppercase tracking-widest mb-1">SIRET</p>
-                                <p className="text-sm font-mono font-bold text-sand">{businessSiret}</p>
-                            </div>
-                            <div>
-                                <p className="text-[9px] text-cocoa font-bold uppercase tracking-widest mb-1">{t('vatNumberLabel')}</p>
-                                <p className="text-sm font-mono font-bold text-sand">{businessVatNumber}</p>
-                            </div>
-                            <div className="col-span-2">
-                                <p className="text-[9px] text-cocoa font-bold uppercase tracking-widest mb-1">{t('brandLabel')}</p>
-                                <p className="text-sm font-bold text-sand">{storeName}</p>
-                            </div>
-                        </div> */}
                     </motion.div>
 
-                    {/* Right: form */}
                     <motion.div
                         initial={{ opacity: 0, x: 30 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
+                        className="bg-sand/8 border border-sand/10 rounded-3xl p-8 md:p-10"
                     >
                         <h2 className="font-display text-4xl uppercase mb-8 text-sand">{t('sendMessage')}</h2>
                         <div className="space-y-6">
@@ -389,18 +408,21 @@ export default function ContactPage() {
                             </div>
                             <div>
                                 <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('subjectLabel')}</label>
-                                <select
-                                    value={formState.subject}
-                                    onChange={e => setFormState(s => ({ ...s, subject: e.target.value }))}
-                                    className="w-full border-b-2 border-sand/15 py-3 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand/70"
-                                >
-                                    <option value="">{t('selectSubjectPlaceholder')}</option>
-                                    <option value="order">{t('subjectOrderTracking')}</option>
-                                    <option value="product">{t('subjectProductQuestion')}</option>
-                                    <option value="return">{t('subjectReturnRefund')}</option>
-                                    <option value="wholesale">{t('subjectWholesaleOrder')}</option>
-                                    <option value="other">{t('subjectOther')}</option>
-                                </select>
+                                <div className="relative">
+                                    <select
+                                        value={formState.subject}
+                                        onChange={e => setFormState(s => ({ ...s, subject: e.target.value }))}
+                                        className="w-full appearance-none border-b-2 border-sand/15 py-3 pr-8 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand/70"
+                                    >
+                                        <option value="" className="bg-ink">{t('selectSubjectPlaceholder')}</option>
+                                        <option value="order" className="bg-ink">{t('subjectOrderTracking')}</option>
+                                        <option value="product" className="bg-ink">{t('subjectProductQuestion')}</option>
+                                        <option value="return" className="bg-ink">{t('subjectReturnRefund')}</option>
+                                        <option value="wholesale" className="bg-ink">{t('subjectWholesaleOrder')}</option>
+                                        <option value="other" className="bg-ink">{t('subjectOther')}</option>
+                                    </select>
+                                    <ChevronDown size={14} className="absolute right-1 top-1/2 -translate-y-1/2 text-cocoa pointer-events-none" />
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('message')}</label>
@@ -433,8 +455,7 @@ export default function ContactPage() {
                 </div>
             </section>
 
-            {/* ── FAQ ──────────────────────────────────────────── */}
-            <section className="bg-ink grain-overlay py-20 px-8 border-t border-sand/10">
+            <section className="bg-sand/5 border-t border-sand/10 grain-overlay py-20 px-8">
                 <div className="max-w-[800px] mx-auto">
                     <h2 className="font-display text-4xl uppercase text-center mb-12 text-sand">{t('faqSectionHeading')}</h2>
                     <div className="bg-sand/8 rounded-3xl border border-sand/10 px-8 py-2">

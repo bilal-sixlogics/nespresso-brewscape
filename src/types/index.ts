@@ -195,6 +195,7 @@ export function getProductImages(product: Product): string[] {
     return product.images?.map(i => i.url).filter(Boolean) ?? [];
 }
 
+
 /** Check if product is in stock */
 export function isInStock(product: Product): boolean {
     return (Number(product.stock_qty) - Number(product.reserved_stock)) > 0;
