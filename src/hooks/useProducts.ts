@@ -63,17 +63,37 @@ function writeCache(key: string, products: Product[], meta: PaginationMeta | nul
  * - sessionStorage cache restores last results instantly on back-navigation,
  *   while a background refresh keeps data fresh (2-minute TTL).
  */
-export function useProducts(params: ProductQueryParams = {}): UseProductsResult {
+export function useProducts(
+    params: ProductQueryParams = {},
+    /**
+     * Products already fetched on the server for this exact param set.
+     *
+     * When present the grid renders straight from the initial HTML and the
+     * first client fetch is skipped — that is what puts real product names and
+     * prices in front of crawlers that do not execute JavaScript.
+     */
+    initial?: { products: Product[]; meta: PaginationMeta | null } | null,
+): UseProductsResult {
     // Stable string key — only changes when param values actually differ
     const paramKey = JSON.stringify(params);
 
     // Skip sessionStorage cache for featured queries — admin changes must show immediately
     const skipCache = Boolean(params.featured);
 
-    // Seed initial state from cache so back-navigation shows data immediately
-    const [products, setProducts] = useState<Product[]>(() => skipCache ? [] : (readCache(paramKey)?.products ?? []));
-    const [meta, setMeta] = useState<PaginationMeta | null>(() => skipCache ? null : (readCache(paramKey)?.meta ?? null));
-    const [isLoading, setIsLoading] = useState(true);
+    // Server data wins over the sessionStorage cache: it is both fresher and
+    // the thing already painted into the HTML, so using anything else here
+    // would cause a visible swap on hydration.
+    const [products, setProducts] = useState<Product[]>(
+        () => initial?.products ?? (skipCache ? [] : readCache(paramKey)?.products ?? []),
+    );
+    const [meta, setMeta] = useState<PaginationMeta | null>(
+        () => initial?.meta ?? (skipCache ? null : readCache(paramKey)?.meta ?? null),
+    );
+    const [isLoading, setIsLoading] = useState(!initial);
+
+    // The param set the server already satisfied. Cleared once the user changes
+    // a filter, after which every fetch goes to the network as before.
+    const seededKeyRef = useRef(initial ? paramKey : null);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
 
@@ -119,6 +139,14 @@ export function useProducts(params: ProductQueryParams = {}): UseProductsResult 
     // If cached data was loaded as initial state, isLoading=true but the grid
     // already has content — no empty flash.
     useEffect(() => {
+        // First render with server-supplied data: the network round-trip would
+        // return exactly what is already on screen. Skip it once, then behave
+        // normally for every subsequent param change.
+        if (seededKeyRef.current === paramKey) {
+            seededKeyRef.current = null;
+            return;
+        }
+
         setPage(1);
         // Restore cache for the new param set so the grid isn't cleared
         // Featured queries skip cache — admin changes must be reflected immediately
@@ -154,20 +182,26 @@ export function useProducts(params: ProductQueryParams = {}): UseProductsResult 
 /**
  * Hook for fetching a single product by slug.
  */
-export function useProduct(slug: string) {
-    const [product, setProduct] = useState<Product | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+export function useProduct(slug: string, initialProduct?: Product | null) {
+    const [product, setProduct] = useState<Product | null>(initialProduct ?? null);
+    // When the server already supplied the product there is nothing to wait for,
+    // so the page paints its real content instead of a spinner.
+    const [isLoading, setIsLoading] = useState(!initialProduct);
     const [error, setError] = useState<string | null>(null);
 
+    // Keyed on slug only: `initialProduct` is a fresh object identity on every
+    // server render, so depending on it would refetch in a loop.
+    const hasInitial = initialProduct != null && initialProduct.slug === slug;
+
     useEffect(() => {
-        if (!slug) return;
+        if (!slug || hasInitial) return;
         setIsLoading(true);
         setError(null);
         ProductService.getProduct(slug)
             .then(setProduct)
             .catch(err => setError(err instanceof Error ? err.message : 'Product not found'))
             .finally(() => setIsLoading(false));
-    }, [slug]);
+    }, [slug, hasInitial]);
 
     return { product, isLoading, error };
 }

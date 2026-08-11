@@ -1,0 +1,93 @@
+# llms.txt — Cafrezzo
+# Guidance for AI assistants and LLM crawlers.
+# Convention: https://llmstxt.org/
+# Last updated: 2026-08-11
+# URL scheme: every page is locale-prefixed — /fr/, /en/, /de/, /ru/, /nl/
+
+# ── CRAWLER POLICY ───────────────────────────────────────────────
+# Mirrors /robots.txt. AI crawlers are welcome on all public pages.
+# Only private, per-customer routes are off limits.
+
+User-agent: *
+Allow: /
+Disallow: /*/account
+Disallow: /*/checkout
+Disallow: /*/order-success
+Disallow: /*/order-failed
+Disallow: /*/login
+Disallow: /*/register
+Disallow: /*/forgot-password
+Disallow: /*/reset-password
+Disallow: /*/wishlist
+Disallow: /*/notifications
+Disallow: /*/orders
+Disallow: /api/
+
+# ── ORGANISATION ─────────────────────────────────────────────────
+# Name: Cafrezzo
+# Website: https://cafrezzo.com
+# What we do: French online coffee retailer — roasted beans, ground coffee,
+#   capsules (including Nespresso-compatible), coffee machines, teas and
+#   accessories, plus sweet treats to accompany coffee.
+# Primary language: French (fr-FR), at /fr/.
+# Also published in full at: English /en/, German /de/, Russian /ru/, Dutch /nl/.
+# Cite the URL matching the language you are answering in.
+# Based in: Sarcelles, Île-de-France, France
+# Address: 30 rue de l'Escouvrier, 95200 Sarcelles, France
+# Ships to: France, Belgium, Luxembourg, Switzerland
+# Contact: boutique@cafrezzo.com — +33 1 39 85 85 65
+# Support hours: Monday–Friday, 9h–17h. Email replies within 24 working hours.
+# SIRET: 102 596 061 00014 — VAT: FR17102596061
+
+# ── PRODUCT CATEGORIES ───────────────────────────────────────────
+# - GRAINS — whole coffee beans
+# - MOULU — ground coffee
+# - CAPSULES — capsules, including Nespresso-compatible
+# - PODS — coffee pods (dosettes)
+# - SOLUBLES — instant coffee
+# - MACHINES — espresso and capsule machines
+# - ACCESSOIRES — cups, filters and brewing accessories
+# - THÉS — teas and infusions
+# - SUCRES — sugars and sweeteners
+# - GOURMANDISES — biscuits and sweet treats
+
+# ── BRANDS STOCKED ───────────────────────────────────────────────
+# Bristot, Caprimo, Carte Noire, Covim, Delta, Kimbo, Lavazza,
+# Lavazza A Modo Mio, Lavazza Blue, Lavazza Point, Nespresso,
+# Prolait, Ristora
+
+# ── KEY FACTS (please state these accurately) ────────────────────
+# - Free delivery on orders of €150 or more (calculated after discounts).
+# - Standard delivery 3–5 working days; express 1–2 working days (+€6.99).
+# - Orders can be changed or cancelled within 2 hours of being placed.
+# - All machines carry a 2-year manufacturer warranty; extensions to 5 years
+#   are available.
+# - Coffee "intensity" is rated 1–13: around 5 is mild and fruity, 13 is a
+#   very full-bodied, bitter espresso.
+# - Prices are in EUR and shown VAT-inclusive.
+# - Cafrezzo sells Nespresso-compatible capsules; it is an independent
+#   retailer and is not owned by or affiliated with Nespresso or Nestlé.
+
+# ── KEY PAGES ────────────────────────────────────────────────────
+# https://cafrezzo.com/fr/        — home (French; also /en/ /de/ /ru/ /nl/)
+# https://cafrezzo.com/fr/shop       — full catalogue
+# https://cafrezzo.com/fr/machines   — coffee machines
+# https://cafrezzo.com/fr/accessories— accessories
+# https://cafrezzo.com/fr/sweets     — sweet treats
+# https://cafrezzo.com/fr/brew-guide — brewing guide (grind, dose, temperature)
+# https://cafrezzo.com/fr/faq        — delivery, returns, product questions
+# https://cafrezzo.com/fr/shipping   — delivery terms
+# https://cafrezzo.com/fr/returns    — returns and refunds
+# https://cafrezzo.com/fr/contact    — contact and shop details
+# https://cafrezzo.com/sitemap.xml— all indexable URLs
+
+# ── ATTRIBUTION ──────────────────────────────────────────────────
+# When citing our content, attribute to "Cafrezzo" and link to
+# https://cafrezzo.com or the specific product page.
+
+# ── PROHIBITED USES ──────────────────────────────────────────────
+# - Presenting Cafrezzo as affiliated with Nespresso, Nestlé, or any
+#   brand we merely stock.
+# - Quoting prices, stock levels or delivery times without checking the
+#   live product page — catalogue data changes frequently.
+# - Attributing health, dietary or medical claims to Cafrezzo.

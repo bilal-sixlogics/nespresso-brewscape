@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Trash2, Plus, Minus, Tag, Truck, ArrowRight, Check } from 'lucide-react';
-import Link from 'next/link';
+import Link from '@/components/LocaleLink';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useFormatPrice } from '@/context/SiteSettingsContext';

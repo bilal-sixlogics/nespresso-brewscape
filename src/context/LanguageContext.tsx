@@ -1,82 +1,88 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { translations, TranslationKey } from '@/lib/translations';
+import {
+    DEFAULT_LOCALE,
+    LOCALE_META,
+    SUPPORTED_LOCALES,
+    localePath,
+    stripLocale,
+    type Locale,
+    type LocaleMeta,
+} from '@/lib/i18n';
 
-// ─── Language Definitions ─────────────────────────────────────────────────
-// To add a new language: add its code here, add its flag/label, and add a
-// translations block in translations.ts.
-export type Language = 'fr' | 'en' | 'de' | 'ru' | 'nl';
-
-export interface LanguageMeta {
-    code: Language;
-    label: string;   // Short label used in the toggle
-    flag: string;    // Emoji flag
-    nativeName: string; // Native name
-}
-
-export const SUPPORTED_LANGUAGES: LanguageMeta[] = [
-    { code: 'fr', label: 'FR', flag: '🇫🇷', nativeName: 'Français' },
-    { code: 'en', label: 'EN', flag: '🇬🇧', nativeName: 'English' },
-    { code: 'de', label: 'DE', flag: '🇩🇪', nativeName: 'Deutsch' },
-    { code: 'ru', label: 'RU', flag: '🇷🇺', nativeName: 'Русский' },
-    { code: 'nl', label: 'NL', flag: '🇳🇱', nativeName: 'Nederlands' },
-];
-
-// ─── Context ─────────────────────────────────────────────────────────────
+// Re-exported for the many components that already import these from here.
+export type Language = Locale;
+export type { LocaleMeta as LanguageMeta };
+export const SUPPORTED_LANGUAGES = SUPPORTED_LOCALES;
 
 interface LanguageContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
     t: (key: TranslationKey) => string;
-    currentLanguageMeta: LanguageMeta;
+    currentLanguageMeta: LocaleMeta;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// ─── Provider ─────────────────────────────────────────────────────────────
+/**
+ * Language state, driven by the URL.
+ *
+ * Previously the locale lived in localStorage, which meant all five languages
+ * shared one set of URLs — so only French could ever be indexed and the other
+ * four were invisible to search engines and AI crawlers. The locale now comes
+ * from the `[locale]` route segment, supplied by the server layout, so every
+ * language has its own crawlable URL and the server renders the correct
+ * language in the initial HTML.
+ *
+ * Switching language is a navigation, not a state update.
+ */
+export function LanguageProvider({
+    children,
+    locale,
+}: {
+    children: ReactNode;
+    /** Supplied by app/[locale]/layout.tsx. */
+    locale: Locale;
+}) {
+    const router = useRouter();
+    const pathname = usePathname();
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-    const [language, setLanguageState] = useState<Language>('fr'); // French is default
+    const setLanguage = useCallback(
+        (lang: Language) => {
+            // Navigate to the same page under the new locale prefix.
+            const bare = stripLocale(pathname || '/');
+            // Remembered only so a future visit to a bare URL can be sent to the
+            // right locale; the URL, not this value, is the source of truth.
+            try {
+                document.cookie = `cafrezzo-locale=${lang};path=/;max-age=31536000;samesite=lax`;
+            } catch { /* ignore */ }
+            router.push(localePath(lang, bare));
+        },
+        [pathname, router],
+    );
 
-    useEffect(() => {
-        // Restore persisted preference on mount
-        try {
-            const saved = localStorage.getItem('cafrezzo-language') as Language;
-            const isSupported = SUPPORTED_LANGUAGES.some(l => l.code === saved);
-            if (saved && isSupported) {
-                setLanguageState(saved);
-                document.documentElement.lang = saved;
-            }
-        } catch {
-            // localStorage may not be available in SSR
-        }
-    }, []);
+    const t = useCallback(
+        (key: TranslationKey): string => {
+            const dict = translations[locale] as Record<string, string> | undefined;
+            const fallback = translations[DEFAULT_LOCALE] as Record<string, string>;
+            return dict?.[key] ?? fallback?.[key] ?? key;
+        },
+        [locale],
+    );
 
-    const setLanguage = (lang: Language) => {
-        setLanguageState(lang);
-        try {
-            localStorage.setItem('cafrezzo-language', lang);
-        } catch { /* ignore */ }
-        document.documentElement.lang = lang;
-    };
-
-    const t = (key: TranslationKey): string => {
-        const langDict = translations[language] as Record<string, string>;
-        const frDict = translations['fr'] as Record<string, string>;
-        return langDict?.[key] ?? frDict?.[key] ?? key;
-    };
-
-    const currentLanguageMeta = SUPPORTED_LANGUAGES.find(l => l.code === language)!;
+    const currentLanguageMeta = LOCALE_META[locale];
 
     return (
-        <LanguageContext.Provider value={{ language, setLanguage, t, currentLanguageMeta }}>
+        <LanguageContext.Provider
+            value={{ language: locale, setLanguage, t, currentLanguageMeta }}
+        >
             {children}
         </LanguageContext.Provider>
     );
 }
-
-// ─── Hook ─────────────────────────────────────────────────────────────────
 
 export function useLanguage() {
     const context = useContext(LanguageContext);

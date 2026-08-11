@@ -10,7 +10,7 @@ import { TranslationKey } from '@/lib/translations';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/types';
-import Link from 'next/link';
+import Link from '@/components/LocaleLink';
 
 function usePasswordRules(t: (key: TranslationKey) => string) {
     return [
