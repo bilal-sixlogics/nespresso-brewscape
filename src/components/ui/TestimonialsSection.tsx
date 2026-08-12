@@ -309,22 +309,32 @@ export const TestimonialsSection = () => {
                                             <button
                                                 key={i}
                                                 onClick={() => { setDirection(i > safeIndex ? 1 : -1); setActive(i); }}
+                                                // These dots have no text and no icon, so without a
+                                                // label a screen reader announces only "button".
+                                                // aria-current marks which slide is showing — the
+                                                // colour difference alone conveys nothing non-visually.
+                                                aria-label={`${t('ariaGoToReview')} ${i + 1}`}
+                                                aria-current={i === safeIndex ? 'true' : undefined}
                                                 className={`rounded-full transition-all duration-400 ${i === safeIndex ? 'w-5 h-1.5 bg-gold' : 'w-1.5 h-1.5 bg-sand/20 hover:bg-sand/40'}`}
                                             />
                                         ))}
                                     </div>
 
+                                    {/* Icon-only controls: the SVG carries no text, so the
+                                        accessible name has to come from aria-label. */}
                                     <button
                                         onClick={prev}
+                                        aria-label={t('ariaPreviousReview')}
                                         className="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 text-sand/50 hover:text-sand border border-sand/15 hover:border-sand/30 hover:bg-sand/10"
                                     >
-                                        <ChevronLeft size={16} />
+                                        <ChevronLeft size={16} aria-hidden="true" />
                                     </button>
                                     <button
                                         onClick={next}
+                                        aria-label={t('ariaNextReview')}
                                         className="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 bg-gold text-ink hover:bg-[#b8914d]"
                                     >
-                                        <ChevronRight size={16} />
+                                        <ChevronRight size={16} aria-hidden="true" />
                                     </button>
                                 </div>
                             </div>

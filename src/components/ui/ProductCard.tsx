@@ -48,7 +48,14 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
     const intensity = extractIntensity(product.sections);
 
     return (
-        <motion.article
+        // A <div role="button">, not <article role="button">. An <article> is a
+        // document-structure landmark, so overriding it with a widget role is a
+        // conflict — assistive tech is told "this is a self-contained article"
+        // and "this is a button" at once. The whole card opens the detail panel
+        // and contains no nested interactive elements, so button is the correct
+        // role; only the element had to change. Rendering is unaffected: both
+        // are display:block and carry the same classes.
+        <motion.div
             initial={{ opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
@@ -61,7 +68,15 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
             role="button"
             tabIndex={0}
             aria-label={`${t('ariaView')} ${product.name}`}
-            onKeyDown={(e) => e.key === 'Enter' && onClick(product)}
+            // Native buttons fire on both Enter and Space; a role="button" has to
+            // reproduce that itself. Space was previously ignored, and its default
+            // page-scroll must be suppressed or the page jumps on activation.
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onClick(product);
+                }
+            }}
         >
             {/* ── Card Shell — beige, sitting on the black page background ── */}
             <div className="relative flex flex-col h-full bg-sand rounded-[28px] overflow-hidden border border-cocoa/15 shadow-[0_2px_16px_rgba(0,0,0,0.25)] transition-shadow duration-500 group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
@@ -231,6 +246,6 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                     </div>
                 </div>
             </div>
-        </motion.article>
+        </motion.div>
     );
 }
