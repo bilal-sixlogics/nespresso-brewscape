@@ -26,8 +26,15 @@ export interface ConsentCopy {
     reject: string;
     /** Accessible label for the banner region. */
     ariaLabel: string;
-    /** Link text to the full policy. */
-    learnMore: string;
+    /**
+     * Link text to the cookie section of the privacy policy.
+     *
+     * Must name the destination. This was "Learn more" / "En savoir plus",
+     * which an SEO audit correctly flagged as non-descriptive: read out of
+     * context — which is exactly how a screen reader's link list and a crawler
+     * both see it — "Learn more" says nothing about where it goes.
+     */
+    policyLink: string;
 }
 
 export const CONSENT_COPY: Record<Locale, ConsentCopy> = {
@@ -37,7 +44,7 @@ export const CONSENT_COPY: Record<Locale, ConsentCopy> = {
         accept: 'Accepter',
         reject: 'Refuser',
         ariaLabel: 'Consentement aux cookies',
-        learnMore: 'En savoir plus',
+        policyLink: 'Politique de cookies',
     },
     en: {
         message:
@@ -45,7 +52,7 @@ export const CONSENT_COPY: Record<Locale, ConsentCopy> = {
         accept: 'Accept',
         reject: 'Reject',
         ariaLabel: 'Cookie consent',
-        learnMore: 'Learn more',
+        policyLink: 'Cookie policy',
     },
     de: {
         message:
@@ -53,7 +60,7 @@ export const CONSENT_COPY: Record<Locale, ConsentCopy> = {
         accept: 'Akzeptieren',
         reject: 'Ablehnen',
         ariaLabel: 'Cookie-Einwilligung',
-        learnMore: 'Mehr erfahren',
+        policyLink: 'Cookie-Richtlinie',
     },
     ru: {
         message:
@@ -61,7 +68,7 @@ export const CONSENT_COPY: Record<Locale, ConsentCopy> = {
         accept: 'Принять',
         reject: 'Отклонить',
         ariaLabel: 'Согласие на использование cookie',
-        learnMore: 'Подробнее',
+        policyLink: 'Политика использования cookie',
     },
     nl: {
         message:
@@ -69,6 +76,6 @@ export const CONSENT_COPY: Record<Locale, ConsentCopy> = {
         accept: 'Accepteren',
         reject: 'Weigeren',
         ariaLabel: 'Cookietoestemming',
-        learnMore: 'Meer informatie',
+        policyLink: 'Cookiebeleid',
     },
 };
