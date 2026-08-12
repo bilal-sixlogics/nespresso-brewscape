@@ -28,8 +28,8 @@ export function ProtectedRoute({ children, requireGuest = false }: ProtectedRout
 
     if (isHydrating || (requireGuest ? isAuthenticated : !isAuthenticated)) {
         return (
-            <div className="min-h-[60vh] flex items-center justify-center">
-                <Loader2 className="animate-spin text-[#3B7E5A]" size={48} />
+            <div className="min-h-[60vh] flex items-center justify-center bg-ink">
+                <Loader2 className="animate-spin text-gold" size={48} />
             </div>
         );
     }

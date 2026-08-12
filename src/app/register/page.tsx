@@ -6,20 +6,24 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User as UserIcon, Loader2, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { ProtectedRoute } from '@/components/ui/ProtectedRoute';
 import { ApiError } from '@/lib/api/types';
+import { TranslationKey } from '@/lib/translations';
 
-const PASSWORD_RULES = [
-    { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
-    { label: 'Uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
-    { label: 'Lowercase letter', test: (p: string) => /[a-z]/.test(p) },
-    { label: 'Number', test: (p: string) => /[0-9]/.test(p) },
-];
+function usePasswordRules(t: (key: TranslationKey) => string) {
+    return [
+        { label: t('authPwMin'), test: (p: string) => p.length >= 8 },
+        { label: t('authPwUpper'), test: (p: string) => /[A-Z]/.test(p) },
+        { label: t('authPwLower'), test: (p: string) => /[a-z]/.test(p) },
+        { label: t('authPwNumber'), test: (p: string) => /[0-9]/.test(p) },
+    ];
+}
 
 export default function RegisterPage() {
     const { register } = useAuth();
-    const { isDark } = useTheme();
+    const { t } = useLanguage();
+    const PASSWORD_RULES = usePasswordRules(t);
     const router = useRouter();
 
     const [name, setName] = useState('');
@@ -43,20 +47,18 @@ export default function RegisterPage() {
         } catch (err) {
             const apiErr = err as ApiError;
             if (apiErr.errors) setFieldErrors(apiErr.errors);
-            else setError(apiErr.message ?? 'Registration failed. Please try again.');
+            else setError(apiErr.message ?? t('authGenericError'));
         } finally {
             setIsLoading(false);
         }
     };
 
-    const pageBg = isDark ? 'bg-[#0e0e0e]' : 'bg-gray-50';
-    const surface = isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100';
-    const inputBg = isDark
-        ? 'bg-white/5 border-white/10 text-white placeholder-white/40 focus:border-[#3B7E5A] focus:ring-[#3B7E5A]/20'
-        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#3B7E5A] focus:ring-[#3B7E5A]/20';
-    const labelColor = isDark ? 'text-white/60' : 'text-gray-500';
-    const headingColor = isDark ? 'text-white' : 'text-gray-900';
-    const iconColor = isDark ? 'text-white/30' : 'text-gray-400';
+    const pageBg = 'bg-ink grain-overlay';
+    const surface = 'bg-sand border-ink/10';
+    const inputBg = 'bg-ink/5 border-ink/10 text-ink placeholder-ink/30 focus:border-gold focus:ring-gold/20';
+    const labelColor = 'text-ink/60';
+    const headingColor = 'text-ink';
+    const iconColor = 'text-ink/30';
 
     const firstFieldError = (key: string) => fieldErrors[key]?.[0];
 
@@ -72,13 +74,13 @@ export default function RegisterPage() {
                     {/* Brand */}
                     <div className="text-center mb-8">
                         <Link href="/" className="inline-block">
-                            <span className="font-display text-2xl uppercase tracking-widest text-[#3B7E5A]">Cafrezzo</span>
+                            <span className="font-display text-2xl uppercase tracking-widest text-gold">Cafrezzo</span>
                         </Link>
                         <h1 className={`mt-4 font-display text-3xl uppercase tracking-tight ${headingColor}`}>
-                            Create Account
+                            {t('authCreateAccount')}
                         </h1>
                         <p className={`mt-2 text-sm ${labelColor}`}>
-                            Join Cafrezzo for exclusive offers and order tracking.
+                            {t('authRegisterSubtitle')}
                         </p>
                     </div>
 
@@ -106,7 +108,7 @@ export default function RegisterPage() {
                                     autoComplete="name"
                                     value={name}
                                     onChange={e => setName(e.target.value)}
-                                    placeholder="Full name"
+                                    placeholder={t('authFullName')}
                                     className={`w-full pl-11 pr-4 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg} ${firstFieldError('name') ? 'border-red-500' : ''}`}
                                 />
                             </div>
@@ -125,7 +127,7 @@ export default function RegisterPage() {
                                     autoComplete="email"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    placeholder="Email address"
+                                    placeholder={t('authEmailAddress')}
                                     className={`w-full pl-11 pr-4 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg} ${firstFieldError('email') ? 'border-red-500' : ''}`}
                                 />
                             </div>
@@ -144,14 +146,14 @@ export default function RegisterPage() {
                                     autoComplete="new-password"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
-                                    placeholder="Password"
+                                    placeholder={t('authPassword')}
                                     className={`w-full pl-11 pr-11 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg} ${firstFieldError('password') ? 'border-red-500' : ''}`}
                                 />
                                 <button
                                     type="button"
                                     tabIndex={-1}
                                     onClick={() => setShowPassword(v => !v)}
-                                    className={`absolute inset-y-0 right-0 pr-4 flex items-center ${iconColor} hover:text-[#3B7E5A] transition-colors`}
+                                    className={`absolute inset-y-0 right-0 pr-4 flex items-center ${iconColor} hover:text-gold transition-colors`}
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -164,7 +166,7 @@ export default function RegisterPage() {
                                     {PASSWORD_RULES.map(rule => {
                                         const ok = rule.test(password);
                                         return (
-                                            <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-[#3B7E5A]' : labelColor}`}>
+                                            <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-emerald-600' : labelColor}`}>
                                                 <CheckCircle2 size={12} className={ok ? 'opacity-100' : 'opacity-30'} />
                                                 {rule.label}
                                             </li>
@@ -186,36 +188,36 @@ export default function RegisterPage() {
                                     autoComplete="new-password"
                                     value={confirm}
                                     onChange={e => setConfirm(e.target.value)}
-                                    placeholder="Confirm password"
+                                    placeholder={t('authConfirmPassword')}
                                     className={`w-full pl-11 pr-11 py-3.5 rounded-xl border focus:ring-2 outline-none transition-all text-sm ${inputBg} ${confirm && confirm !== password ? 'border-red-500' : ''}`}
                                 />
                                 <button
                                     type="button"
                                     tabIndex={-1}
                                     onClick={() => setShowConfirm(v => !v)}
-                                    className={`absolute inset-y-0 right-0 pr-4 flex items-center ${iconColor} hover:text-[#3B7E5A] transition-colors`}
+                                    className={`absolute inset-y-0 right-0 pr-4 flex items-center ${iconColor} hover:text-gold transition-colors`}
                                 >
                                     {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
                             {confirm && confirm !== password && (
-                                <p className="mt-1 text-xs text-red-500 pl-1">Passwords do not match.</p>
+                                <p className="mt-1 text-xs text-red-500 pl-1">{t('authPasswordsMismatch')}</p>
                             )}
                         </div>
 
                         <button
                             type="submit"
                             disabled={isLoading || (confirm.length > 0 && confirm !== password)}
-                            className="w-full bg-[#3B7E5A] text-white rounded-xl py-3.5 font-black uppercase tracking-widest text-[11px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="w-full bg-gold text-ink rounded-xl py-3.5 font-black uppercase tracking-widest text-[11px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Create Account'}
+                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : t('authCreateAccount')}
                         </button>
                     </form>
 
                     <div className={`mt-8 text-center text-sm ${labelColor}`}>
-                        Already have an account?{' '}
-                        <Link href="/login" className="text-[#3B7E5A] font-bold hover:underline">
-                            Sign in
+                        {t('authHaveAccount')}{' '}
+                        <Link href="/login" className="text-gold font-bold hover:underline">
+                            {t('authLogIn')}
                         </Link>
                     </div>
                 </motion.div>

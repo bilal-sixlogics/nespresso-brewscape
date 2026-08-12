@@ -5,118 +5,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Search } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
-const faqs = [
-    {
-        category: 'Commandes & Livraison',
-        categoryEn: 'Orders & Delivery',
-        items: [
-            {
-                q: 'Quel est le délai de livraison standard ?',
-                qEn: 'What is the standard delivery time?',
-                a: 'La livraison standard prend 3 à 5 jours ouvrés. La livraison express est disponible en 1 à 2 jours ouvrés pour un supplément de €6,99.',
-                aEn: 'Standard delivery takes 3–5 working days. Express delivery is available in 1–2 working days for an additional €6.99.',
-            },
-            {
-                q: 'Comment bénéficier de la livraison gratuite ?',
-                qEn: 'How do I get free shipping?',
-                a: 'La livraison est offerte pour toute commande de €150 ou plus. La valeur est calculée après application des remises.',
-                aEn: 'Shipping is free on all orders of €150 or more. The value is calculated after discounts are applied.',
-            },
-            {
-                q: 'Puis-je modifier ou annuler ma commande ?',
-                qEn: 'Can I modify or cancel my order?',
-                a: 'Les modifications ou annulations sont possibles dans un délai de 2 heures après la passation de la commande. Contactez-nous rapidement à boutique@cafrezzo.com.',
-                aEn: 'Modifications or cancellations are possible within 2 hours of placing the order. Contact us promptly at boutique@cafrezzo.com.',
-            },
-            {
-                q: 'Livrez-vous en dehors de la France ?',
-                qEn: 'Do you deliver outside France?',
-                a: 'Nous livrons actuellement en France métropolitaine, Belgique, Luxembourg et Suisse. Des frais supplémentaires peuvent s\'appliquer pour la Suisse.',
-                aEn: 'We currently deliver to mainland France, Belgium, Luxembourg, and Switzerland. Additional fees may apply to Switzerland.',
-            },
-        ],
-    },
-    {
-        category: 'Produits & Café',
-        categoryEn: 'Products & Coffee',
-        items: [
-            {
-                q: 'Quelle est la différence entre l\'intensité 5 et 13 ?',
-                qEn: 'What is the difference between intensity 5 and 13?',
-                a: 'L\'intensité mesure la puissance aromatique et l\'amertume du café. Une intensité de 5 donne un café doux et fruité, tandis qu\'une intensité de 13 offre un espresso très corsé, amer et persistant.',
-                aEn: 'Intensity measures the aromatic strength and bitterness of the coffee. An intensity of 5 gives a mild, fruity coffee, while an intensity of 13 delivers a very bold, bitter, and lingering espresso.',
-            },
-            {
-                q: 'Vos cafés sont-ils certifiés bio ou équitables ?',
-                qEn: 'Are your coffees certified organic or fair trade?',
-                a: 'Plusieurs de nos références portent des certifications biologiques (AB) ou Rainforest Alliance. Ces informations sont indiquées sur chaque fiche produit.',
-                aEn: 'Several of our products carry organic (AB) or Rainforest Alliance certifications. This information is shown on each product page.',
-            },
-            {
-                q: 'Comment conserver mon café en grains ?',
-                qEn: 'How should I store my coffee beans?',
-                a: 'Conservez votre café dans un endroit frais et sec, à l\'abri de la lumière et de l\'humidité. Utilisez un contenant hermétique et évitez le réfrigérateur qui peut transférer des odeurs.',
-                aEn: 'Store your coffee in a cool, dry place away from light and moisture. Use an airtight container and avoid the fridge, which can transfer odours.',
-            },
-            {
-                q: 'Quelle mouture choisir pour mon type de machine ?',
-                qEn: 'Which grind should I choose for my machine type?',
-                a: 'Machine espresso : Fine. Cafetière filtre : Moyenne. French press : Grossière. Machine à piston / moka : Moyenne-fine.',
-                aEn: 'Espresso machine: Fine. Filter coffee maker: Medium. French press: Coarse. Moka pot: Medium-fine.',
-            },
-        ],
-    },
-    {
-        category: 'Machines',
-        categoryEn: 'Machines',
-        items: [
-            {
-                q: 'Proposez-vous une installation ou un service après-vente pour les machines ?',
-                qEn: 'Do you offer installation or after-sales service for machines?',
-                a: 'Oui, nous proposons un service technique pour l\'installation et la maintenance des machines professionnelles. Contactez notre équipe support pour un rendez-vous.',
-                aEn: 'Yes, we offer a technical service for the installation and maintenance of professional machines. Contact our support team to book an appointment.',
-            },
-            {
-                q: 'Les machines sont-elles garanties ?',
-                qEn: 'Are the machines under warranty?',
-                a: 'Toutes nos machines bénéficient d\'une garantie constructeur de 2 ans. Nous proposons également des extensions de garantie jusqu\'à 5 ans.',
-                aEn: 'All our machines come with a 2-year manufacturer\'s warranty. We also offer warranty extensions up to 5 years.',
-            },
-        ],
-    },
-    {
-        category: 'Retours & Remboursements',
-        categoryEn: 'Returns & Refunds',
-        items: [
-            {
-                q: 'Quelle est votre politique de retour ?',
-                qEn: 'What is your return policy?',
-                a: 'Vous disposez de 14 jours après réception pour retourner un article non ouvert dans son emballage d\'origine. Les frais de retour sont à notre charge pour tout article défectueux.',
-                aEn: 'You have 14 days after receipt to return an unopened item in its original packaging. Return shipping is covered by us for any defective item.',
-            },
-            {
-                q: 'Quand serai-je remboursé ?',
-                qEn: 'When will I be refunded?',
-                a: 'Le remboursement est effectué dans un délai de 5 à 10 jours ouvrés après réception et vérification de votre retour, via le même moyen de paiement d\'origine.',
-                aEn: 'The refund is processed within 5–10 working days after receipt and verification of your return, via the same original payment method.',
-            },
-        ],
-    },
-];
-
 function FaqItem({ q, a }: { q: string; a: string }) {
     const [open, setOpen] = useState(false);
     return (
-        <div className="border-b border-gray-100 last:border-0">
+        <div className="border-b border-ink/10 last:border-0">
             <button
                 onClick={() => setOpen(p => !p)}
                 className="w-full flex justify-between items-start py-5 text-left gap-4 group"
             >
-                <span className="font-semibold text-sm text-sb-black group-hover:text-sb-green transition-colors leading-relaxed">
+                <span className="font-semibold text-sm text-ink group-hover:text-gold transition-colors leading-relaxed">
                     {q}
                 </span>
                 <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="flex-shrink-0 mt-0.5">
-                    <ChevronDown size={18} className="text-gray-300" />
+                    <ChevronDown size={18} className="text-ink/30" />
                 </motion.div>
             </button>
             <AnimatePresence>
@@ -128,7 +29,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden"
                     >
-                        <p className="pb-5 text-sm text-gray-500 leading-relaxed pr-8">{a}</p>
+                        <p className="pb-5 text-sm text-ink/60 leading-relaxed pr-8">{a}</p>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -137,48 +38,79 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function FAQPage() {
-    const { language } = useLanguage();
-    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const { t } = useLanguage();
     const [query, setQuery] = useState('');
+
+    const faqs = [
+        {
+            category: t('faqPageCategory1'),
+            items: [
+                { q: t('faqPageQ1'), a: t('faqPageA1') },
+                { q: t('faqPageQ2'), a: t('faqPageA2') },
+                { q: t('faqPageQ3'), a: t('faqPageA3') },
+                { q: t('faqPageQ4'), a: t('faqPageA4') },
+            ],
+        },
+        {
+            category: t('faqPageCategory2'),
+            items: [
+                { q: t('faqPageQ5'), a: t('faqPageA5') },
+                { q: t('faqPageQ6'), a: t('faqPageA6') },
+                { q: t('faqPageQ7'), a: t('faqPageA7') },
+                { q: t('faqPageQ8'), a: t('faqPageA8') },
+            ],
+        },
+        {
+            category: t('faqPageCategory3'),
+            items: [
+                { q: t('faqPageQ9'), a: t('faqPageA9') },
+                { q: t('faqPageQ10'), a: t('faqPageA10') },
+            ],
+        },
+        {
+            category: t('faqPageCategory4'),
+            items: [
+                { q: t('faqPageQ11'), a: t('faqPageA11') },
+                { q: t('faqPageQ12'), a: t('faqPageA12') },
+            ],
+        },
+    ];
 
     const filtered = query.trim()
         ? faqs.map(cat => ({
             ...cat,
             items: cat.items.filter(item =>
-                (language === 'fr' ? item.q : item.qEn).toLowerCase().includes(query.toLowerCase()) ||
-                (language === 'fr' ? item.a : item.aEn).toLowerCase().includes(query.toLowerCase())
+                item.q.toLowerCase().includes(query.toLowerCase()) ||
+                item.a.toLowerCase().includes(query.toLowerCase())
             ),
         })).filter(cat => cat.items.length > 0)
         : faqs;
 
     return (
-        <div className="w-full bg-sb-white text-sb-black min-h-screen">
+        <div className="w-full bg-ink text-sand min-h-screen grain-overlay">
             {/* Hero */}
-            <section className="bg-sb-black pt-16 sm:pt-20 md:pt-24 pb-14 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.2),_transparent_60%)] pointer-events-none" />
+            <section className="bg-ink pt-16 sm:pt-20 md:pt-24 pb-14 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(201,160,90,0.15),_transparent_60%)] pointer-events-none" />
                 <div className="max-w-[900px] mx-auto relative z-10 text-center">
-                    <p className="text-sb-green text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                        {tx('Support', 'Support')}
+                    <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                        {t('support')}
                     </p>
-                    <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase text-white mb-4 sm:mb-6">
-                        {tx('Questions', 'Frequently')}
-                        <span className="text-sb-green block">{tx('Fréquentes', 'Asked Questions')}</span>
+                    <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase text-sand mb-4 sm:mb-6">
+                        {t('faqPageHeadingLine1')}
+                        <span className="text-gold block">{t('faqPageHeadingLine2')}</span>
                     </h1>
-                    <p className="text-white/50 text-base max-w-lg mx-auto mb-10">
-                        {tx(
-                            'Trouvez rapidement les réponses à vos questions sur nos produits, livraisons et services.',
-                            'Find quick answers about our products, deliveries, and services.'
-                        )}
+                    <p className="text-sand/50 text-base max-w-lg mx-auto mb-10">
+                        {t('faqPageSubtitle')}
                     </p>
                     {/* Search */}
                     <div className="relative max-w-lg mx-auto">
-                        <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-cocoa" />
                         <input
                             type="text"
                             value={query}
                             onChange={e => setQuery(e.target.value)}
-                            placeholder={tx('Rechercher une question…', 'Search a question…')}
-                            className="w-full pl-12 pr-5 py-4 rounded-full bg-white/10 border border-white/10 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-sb-green transition-colors"
+                            placeholder={t('faqPageSearchPlaceholder')}
+                            className="w-full pl-12 pr-5 py-4 rounded-full bg-sand/8 border border-sand/15 text-sand placeholder:text-sand/30 text-sm focus:outline-none focus:border-gold transition-colors"
                         />
                     </div>
                 </div>
@@ -189,9 +121,9 @@ export default function FAQPage() {
                 {filtered.length === 0 ? (
                     <div className="text-center py-16">
                         <p className="text-5xl mb-4">🔍</p>
-                        <p className="font-bold text-xl">{tx('Aucun résultat', 'No results found')}</p>
-                        <button onClick={() => setQuery('')} className="text-sb-green text-sm font-bold mt-4 underline">
-                            {tx('Réinitialiser', 'Reset')}
+                        <p className="font-bold text-xl text-sand">{t('noResults')}</p>
+                        <button onClick={() => setQuery('')} className="text-gold text-sm font-bold mt-4 underline">
+                            {t('reset')}
                         </button>
                     </div>
                 ) : (
@@ -204,16 +136,16 @@ export default function FAQPage() {
                                 viewport={{ once: true }}
                                 transition={{ delay: ci * 0.1 }}
                             >
-                                <h2 className="font-display text-2xl uppercase text-sb-black mb-4 flex items-center gap-3">
-                                    <span className="w-6 h-0.5 bg-sb-green block" />
-                                    {language === 'fr' ? cat.category : cat.categoryEn}
+                                <h2 className="font-display text-2xl uppercase text-sand mb-4 flex items-center gap-3">
+                                    <span className="w-6 h-0.5 bg-gold block" />
+                                    {cat.category}
                                 </h2>
-                                <div className="bg-white rounded-[24px] border border-gray-100 px-6 shadow-sm">
+                                <div className="bg-sand rounded-[24px] border border-ink/10 px-6 shadow-sm">
                                     {cat.items.map((item, ii) => (
                                         <FaqItem
                                             key={ii}
-                                            q={language === 'fr' ? item.q : item.qEn}
-                                            a={language === 'fr' ? item.a : item.aEn}
+                                            q={item.q}
+                                            a={item.a}
                                         />
                                     ))}
                                 </div>
@@ -223,25 +155,22 @@ export default function FAQPage() {
                 )}
 
                 {/* Contact CTA */}
-                <div className="mt-12 sm:mt-16 bg-sb-green rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 lg:p-10 text-center text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-                    <p className="text-[10px] font-black tracking-[0.3em] uppercase opacity-70 mb-3">
-                        {tx('Besoin d\'aide ?', 'Need help?')}
+                <div className="mt-12 sm:mt-16 bg-sand rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 lg:p-10 text-center text-ink relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gold/15 rounded-full -mr-16 -mt-16 blur-2xl" />
+                    <p className="text-[10px] font-black tracking-[0.3em] uppercase opacity-60 mb-3">
+                        {t('faqPageNeedHelpEyebrow')}
                     </p>
                     <h3 className="font-display text-3xl uppercase mb-4">
-                        {tx('Contactez Notre Équipe', 'Contact Our Team')}
+                        {t('faqPageNeedHelpHeading')}
                     </h3>
-                    <p className="text-white/70 text-sm mb-6 max-w-sm mx-auto">
-                        {tx(
-                            'Notre équipe est disponible du lundi au vendredi, 9h–17h.',
-                            'Our team is available Monday to Friday, 9am–5pm.'
-                        )}
+                    <p className="text-ink/70 text-sm mb-6 max-w-sm mx-auto">
+                        {t('faqPageNeedHelpDesc')}
                     </p>
                     <a
                         href="/contact"
-                        className="inline-flex items-center gap-2 bg-white text-sb-green font-bold text-xs uppercase tracking-widest px-8 py-4 rounded-full hover:bg-sb-black hover:text-white transition-all duration-300"
+                        className="inline-flex items-center gap-2 bg-gold text-ink font-bold text-xs uppercase tracking-widest px-8 py-4 rounded-full hover:bg-[#b8914d] transition-all duration-300"
                     >
-                        {tx('Nous contacter', 'Contact Us')}
+                        {t('faqPageNeedHelpLink')}
                     </a>
                 </div>
             </section>

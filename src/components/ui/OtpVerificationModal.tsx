@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, AlertCircle, Mail, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 import { ApiError } from '@/lib/api/types';
 
 interface OtpVerificationModalProps {
@@ -18,6 +20,7 @@ const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
 
 export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, onResend, email }: OtpVerificationModalProps) {
+    const { t } = useLanguage();
     const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
     const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
@@ -25,6 +28,13 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
     const [resendTimer, setResendTimer] = useState(RESEND_COOLDOWN);
     const [resendSuccess, setResendSuccess] = useState(false);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    // Portals require a DOM node — only available once mounted on the client.
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMounted(true);
+    }, []);
 
     // Countdown timer for resend
     useEffect(() => {
@@ -105,7 +115,7 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
             onVerified();
         } catch (err) {
             const apiErr = err as ApiError;
-            setError(apiErr.message ?? 'Invalid verification code. Please try again.');
+            setError(apiErr.message ?? t('authOtpError'));
         } finally {
             setIsVerifying(false);
         }
@@ -131,21 +141,21 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
             }, 1000);
         } catch (err) {
             const apiErr = err as ApiError;
-            setError(apiErr.message ?? 'Failed to resend code. Please try again.');
+            setError(apiErr.message ?? t('authResendError'));
         } finally {
             setIsResending(false);
         }
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !mounted) return null;
 
-    return (
+    return createPortal(
         <AnimatePresence>
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+                className="fixed inset-0 z-[99999] bg-ink/50 backdrop-blur-sm flex items-center justify-center p-4"
                 onClick={onClose}
             >
                 <motion.div
@@ -153,11 +163,11 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
                     onClick={e => e.stopPropagation()}
-                    className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl relative"
+                    className="w-full max-w-md bg-sand rounded-3xl overflow-hidden shadow-2xl relative"
                 >
                     <button
                         onClick={onClose}
-                        className="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-700 transition-colors z-10"
+                        className="absolute right-4 top-4 p-2 text-ink/40 hover:text-ink transition-colors z-10"
                     >
                         <X size={20} />
                     </button>
@@ -165,20 +175,20 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
                     <div className="p-8">
                         {/* Icon */}
                         <div className="flex justify-center mb-6">
-                            <div className="w-16 h-16 rounded-2xl bg-[#3B7E5A]/10 flex items-center justify-center">
-                                <Mail size={28} className="text-[#3B7E5A]" />
+                            <div className="w-16 h-16 rounded-2xl bg-gold/15 flex items-center justify-center">
+                                <Mail size={28} className="text-gold" />
                             </div>
                         </div>
 
                         {/* Heading */}
                         <div className="text-center mb-8">
-                            <h2 className="font-display text-3xl uppercase tracking-tight text-gray-900 mb-2">
-                                Verify Email
+                            <h2 className="font-display text-3xl uppercase tracking-tight text-ink mb-2">
+                                {t('authVerifyEmail')}
                             </h2>
-                            <p className="text-sm text-gray-500">
-                                We sent a 6-digit code to{' '}
-                                <span className="font-bold text-gray-700">{email}</span>.
-                                Enter it below to verify your account.
+                            <p className="text-sm text-ink/60">
+                                {t('authOtpSubtitle')}{' '}
+                                <span className="font-bold text-ink/80">{email}</span>.
+                                {' '}{t('authOtpInstructions')}
                             </p>
                         </div>
 
@@ -199,10 +209,10 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
                             <motion.div
                                 initial={{ opacity: 0, y: -8 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="mb-6 flex items-start gap-3 p-4 rounded-xl bg-[#3B7E5A]/10 border border-[#3B7E5A]/20 text-[#3B7E5A] text-sm"
+                                className="mb-6 flex items-start gap-3 p-4 rounded-xl bg-gold/10 border border-gold/20 text-gold text-sm"
                             >
                                 <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-                                <span>A new code has been sent to your email.</span>
+                                <span>{t('authCodeSent')}</span>
                             </motion.div>
                         )}
 
@@ -219,9 +229,9 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
                                     value={digit}
                                     onChange={e => handleDigitChange(i, e.target.value)}
                                     onKeyDown={e => handleKeyDown(i, e)}
-                                    className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 transition-all outline-none
-                                        ${digit ? 'border-[#3B7E5A] bg-[#3B7E5A]/5' : 'border-gray-200 bg-gray-50'}
-                                        focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 focus:bg-white`}
+                                    className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 transition-all outline-none text-ink
+                                        ${digit ? 'border-gold bg-gold/5' : 'border-ink/10 bg-ink/5'}
+                                        focus:border-gold focus:ring-2 focus:ring-gold/20 focus:bg-sand`}
                                 />
                             ))}
                         </div>
@@ -230,31 +240,32 @@ export function OtpVerificationModal({ isOpen, onClose, onVerified, onVerify, on
                         <button
                             onClick={handleVerify}
                             disabled={!isComplete || isVerifying}
-                            className="w-full bg-[#3B7E5A] text-white rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mb-6"
+                            className="w-full bg-gold text-ink rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mb-6"
                         >
-                            {isVerifying ? <Loader2 size={16} className="animate-spin" /> : 'Verify'}
+                            {isVerifying ? <Loader2 size={16} className="animate-spin" /> : t('authVerifyButton')}
                         </button>
 
                         {/* Resend */}
                         <div className="text-center">
-                            <p className="text-sm text-gray-500 mb-1">Didn&apos;t receive the code?</p>
+                            <p className="text-sm text-ink/60 mb-1">{t('authDidntReceive')}</p>
                             {resendTimer > 0 ? (
-                                <p className="text-sm text-gray-400">
-                                    Resend in <span className="font-bold text-gray-600">{resendTimer}s</span>
+                                <p className="text-sm text-ink/50">
+                                    {t('authResendIn')} <span className="font-bold text-ink/70">{resendTimer}s</span>
                                 </p>
                             ) : (
                                 <button
                                     onClick={handleResend}
                                     disabled={isResending}
-                                    className="text-sm font-bold text-[#3B7E5A] hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="text-sm font-bold text-gold hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    {isResending ? 'Sending...' : 'Resend Code'}
+                                    {isResending ? t('authSending') : t('authResendCode')}
                                 </button>
                             )}
                         </div>
                     </div>
                 </motion.div>
             </motion.div>
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

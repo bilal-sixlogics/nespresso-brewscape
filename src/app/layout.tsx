@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, Archivo_Black } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { AppConfig } from "@/lib/config";
 
@@ -8,9 +9,8 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const archivo = Archivo_Black({
-  variable: "--font-archivo",
-  weight: "400",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
 });
 
@@ -35,8 +35,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${archivo.variable} antialiased`} suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
+      <body className={`${inter.variable} ${playfair.variable} antialiased`} suppressHydrationWarning>
+        {/* Google tag (gtag.js) */}
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-MNS5LYCQ5H" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-MNS5LYCQ5H');
+          `}
+        </Script>
         <ThemeProvider>
           <SiteSettingsProvider>
           <AuthProvider>

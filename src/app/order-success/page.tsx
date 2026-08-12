@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface OrderShippingMethod {
     id: number;
@@ -39,7 +40,7 @@ function formatEstimatedDelivery(fromDate: Date, minDays: number, maxDays: numbe
 
 // Confetti component
 function Confetti() {
-    const COLORS = ['#39774D', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6', '#F97316'];
+    const COLORS = ['#C9A05A', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6', '#F97316'];
     const pieces = Array.from({ length: 60 }, (_, i) => ({
         id: i,
         color: COLORS[i % COLORS.length],
@@ -68,6 +69,7 @@ function OrderSuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const formatPrice = useFormatPrice();
+    const { t } = useLanguage();
     const [showConfetti, setShowConfetti] = useState(true);
 
     const orderId = searchParams.get('order') || '';
@@ -93,7 +95,7 @@ function OrderSuccessContent() {
     }, [orderId, email]);
 
     const PAYMENT_LABELS: Record<string, string> = {
-        cod: 'Cash on Delivery', stripe: 'Stripe', wise: 'Wise Transfer', card: 'Credit / Debit Card',
+        cod: t('accountPaymentCod'), stripe: t('accountPaymentStripe'), wise: t('accountPaymentWise'), card: t('accountPaymentCard'),
     };
 
     const shippingMethod = order?.shipping_method ?? null;
@@ -111,7 +113,7 @@ function OrderSuccessContent() {
     return (
         <>
             {showConfetti && <Confetti />}
-            <div className="min-h-screen bg-gradient-to-b from-sb-green/5 to-white pt-24 pb-32">
+            <div className="min-h-screen bg-ink text-sand grain-overlay pt-24 pb-32">
                 <div className="max-w-2xl mx-auto px-4 sm:px-6">
 
                     {/* Check Icon */}
@@ -121,8 +123,8 @@ function OrderSuccessContent() {
                         transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                         className="flex justify-center mb-8"
                     >
-                        <div className="w-28 h-28 rounded-full bg-sb-green flex items-center justify-center shadow-2xl shadow-sb-green/30 ring-8 ring-sb-green/10">
-                            <CheckCircle2 size={56} className="text-white" strokeWidth={2.5} />
+                        <div className="w-28 h-28 rounded-full bg-gold flex items-center justify-center shadow-2xl shadow-gold/30 ring-8 ring-gold/10">
+                            <CheckCircle2 size={56} className="text-ink" strokeWidth={2.5} />
                         </div>
                     </motion.div>
 
@@ -133,16 +135,16 @@ function OrderSuccessContent() {
                         transition={{ delay: 0.3 }}
                         className="text-center mb-10"
                     >
-                        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-sb-green mb-2">
-                            {paymentMethod === 'cod' ? 'Order Confirmed' : 'Payment Confirmed'}
+                        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-gold mb-2">
+                            {paymentMethod === 'cod' ? t('orderConfirmedEyebrow') : t('paymentConfirmedEyebrow')}
                         </p>
-                        <h1 className="font-display text-4xl lg:text-5xl uppercase tracking-tight text-sb-black mb-3">
-                            Order Placed!
+                        <h1 className="font-display text-4xl lg:text-5xl uppercase tracking-tight text-sand mb-3">
+                            {t('orderPlacedHeading')}
                         </h1>
-                        <p className="text-gray-500">
+                        <p className="text-sand/60">
                             {paymentMethod === 'cod'
-                                ? 'Thank you! Please prepare the exact amount. Payment will be collected on delivery.'
-                                : 'Thank you for your purchase. Your coffee is on its way!'}
+                                ? t('orderThankYouCod')
+                                : t('orderThankYouPaid')}
                         </p>
                     </motion.div>
 
@@ -151,87 +153,87 @@ function OrderSuccessContent() {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.45 }}
-                        className="bg-white rounded-[32px] border border-gray-100 shadow-xl overflow-hidden mb-6"
+                        className="bg-sand rounded-[32px] border border-ink/10 shadow-xl overflow-hidden mb-6"
                     >
-                        {/* Green header strip */}
-                        <div className="bg-sb-green px-6 py-4 flex items-center justify-between">
+                        {/* Gold header strip */}
+                        <div className="bg-gold px-6 py-4 flex items-center justify-between">
                             <div>
-                                <p className="text-white/70 text-[10px] uppercase tracking-widest font-bold">Order Number</p>
-                                <p className="text-white font-black text-xl tracking-widest font-mono">{orderId}</p>
+                                <p className="text-ink/60 text-[10px] uppercase tracking-widest font-bold">{t('orderNumber')}</p>
+                                <p className="text-ink font-black text-xl tracking-widest font-mono">{orderId}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-white/70 text-[10px] uppercase tracking-widest font-bold">
-                                    {paymentMethod === 'cod' ? 'Total Due' : 'Total Paid'}
+                                <p className="text-ink/60 text-[10px] uppercase tracking-widest font-bold">
+                                    {paymentMethod === 'cod' ? t('totalDue') : t('totalPaid')}
                                 </p>
-                                <p className="text-white font-display text-2xl">{formatPrice(parseFloat(total))}</p>
+                                <p className="text-ink font-display text-2xl">{formatPrice(parseFloat(total))}</p>
                             </div>
                         </div>
 
                         {/* Details grid */}
                         <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-sb-green/10 flex items-center justify-center flex-shrink-0">
-                                    <Calendar size={18} className="text-sb-green" />
+                                <div className="w-10 h-10 rounded-2xl bg-gold/15 flex items-center justify-center flex-shrink-0">
+                                    <Calendar size={18} className="text-gold" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Order Date</p>
-                                    <p className="font-semibold text-sm text-sb-black">{orderCreatedAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">{t('orderDateLabel')}</p>
+                                    <p className="font-semibold text-sm text-ink">{orderCreatedAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                <div className="w-10 h-10 rounded-2xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
                                     {isPickup ? <Store size={18} className="text-blue-500" /> : <Truck size={18} className="text-blue-500" />}
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">
-                                        {isPickup ? 'Ready for Pickup' : 'Est. Delivery'}
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">
+                                        {isPickup ? t('readyForPickupLabel') : t('estDeliveryLabel')}
                                     </p>
-                                    <p className="font-semibold text-sm text-sb-black">{estimatedDate}</p>
+                                    <p className="font-semibold text-sm text-ink">{estimatedDate}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-sb-green/10 flex items-center justify-center flex-shrink-0">
-                                    {isPickup ? <Store size={18} className="text-sb-green" /> : <Truck size={18} className="text-sb-green" />}
+                                <div className="w-10 h-10 rounded-2xl bg-gold/15 flex items-center justify-center flex-shrink-0">
+                                    {isPickup ? <Store size={18} className="text-gold" /> : <Truck size={18} className="text-gold" />}
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Delivery Method</p>
-                                    <p className="font-semibold text-sm text-sb-black">{shippingMethod?.name ?? '—'}</p>
-                                    <p className="text-[10px] text-sb-green mt-0.5 font-bold">
-                                        {shippingCost === null ? '' : isFreeShipping ? 'Free' : formatPrice(shippingCost)}
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">{t('deliveryMethodLabel')}</p>
+                                    <p className="font-semibold text-sm text-ink">{shippingMethod?.name ?? '—'}</p>
+                                    <p className="text-[10px] text-gold mt-0.5 font-bold">
+                                        {shippingCost === null ? '' : isFreeShipping ? t('freeLabel') : formatPrice(shippingCost)}
                                     </p>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                <div className="w-10 h-10 rounded-2xl bg-amber-500/15 flex items-center justify-center flex-shrink-0">
                                     <CreditCard size={18} className="text-amber-500" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Payment Method</p>
-                                    <p className="font-semibold text-sm text-sb-black">{PAYMENT_LABELS[paymentMethod] || paymentMethod}</p>
-                                    <p className="text-[10px] text-sb-green mt-0.5 font-bold">
-                                        {paymentMethod === 'cod' ? 'Pay on delivery' : 'No card details stored'}
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">{t('paymentMethodLabel')}</p>
+                                    <p className="font-semibold text-sm text-ink">{PAYMENT_LABELS[paymentMethod] || paymentMethod}</p>
+                                    <p className="text-[10px] text-gold mt-0.5 font-bold">
+                                        {paymentMethod === 'cod' ? t('payOnDelivery') : t('noCardStored')}
                                     </p>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                                <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
                                     <Package size={18} className="text-emerald-500" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Status</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-1">{t('statusLabel')}</p>
                                     {paymentMethod === 'cod' ? (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-50 border border-orange-200 text-orange-600">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-500/10 border border-orange-500/25 text-orange-500">
                                             <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                                            Awaiting Delivery
+                                            {t('awaitingDelivery')}
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 border border-amber-200 text-amber-600">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 border border-amber-500/25 text-amber-500">
                                             <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                                            Processing
+                                            {t('orderStatusProcessing')}
                                         </span>
                                     )}
                                 </div>
@@ -239,23 +241,23 @@ function OrderSuccessContent() {
                         </div>
 
                         {/* What next */}
-                        <div className="border-t border-gray-100 px-6 py-5 bg-gray-50/50">
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-3">What's next?</p>
+                        <div className="border-t border-ink/10 px-6 py-5 bg-ink/5">
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-ink/50 mb-3">{t('whatsNext')}</p>
                             <div className="space-y-2">
                                 {(paymentMethod === 'cod' ? [
-                                    'You\'ll receive a confirmation email shortly',
-                                    'Our courier will contact you before delivery',
-                                    'Please have ' + formatPrice(parseFloat(total)) + ' ready for the courier',
+                                    t('nextStepConfirmEmail'),
+                                    t('nextStepCourierContact'),
+                                    t('nextStepHaveCash').replace('{{total}}', formatPrice(parseFloat(total))),
                                 ] : [
-                                    'You\'ll receive a confirmation email shortly',
-                                    'We\'ll notify you when your order ships',
-                                    'Track real-time status in your dashboard',
+                                    t('nextStepConfirmEmail'),
+                                    t('nextStepShipNotify'),
+                                    t('nextStepTrackStatus'),
                                 ]).map((step, i) => (
                                     <div key={i} className="flex items-center gap-3">
-                                        <div className="w-5 h-5 rounded-full bg-sb-green/10 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-[9px] font-black text-sb-green">{i + 1}</span>
+                                        <div className="w-5 h-5 rounded-full bg-gold/15 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-[9px] font-black text-gold">{i + 1}</span>
                                         </div>
-                                        <p className="text-xs text-gray-600">{step}</p>
+                                        <p className="text-xs text-ink/60">{step}</p>
                                     </div>
                                 ))}
                             </div>
@@ -271,15 +273,15 @@ function OrderSuccessContent() {
                     >
                         <Link
                             href={`/orders/${orderId}${email ? `?email=${encodeURIComponent(email)}` : ''}`}
-                            className="flex-1 flex items-center justify-center gap-2 py-4 bg-sb-green text-white rounded-full font-black uppercase tracking-widest hover:bg-[#2C6345] transition-colors shadow-lg shadow-sb-green/25"
+                            className="flex-1 flex items-center justify-center gap-2 py-4 bg-gold text-ink rounded-full font-black uppercase tracking-widest hover:bg-[#b8914d] transition-colors shadow-lg shadow-gold/25"
                         >
-                                <Package size={16} /> Track Order
+                                <Package size={16} /> {t('trackOrderBtn')}
                         </Link>
                         <Link
                             href="/shop"
-                            className="flex-1 flex items-center justify-center gap-2 py-4 bg-white text-sb-black border-2 border-gray-100 rounded-full font-black uppercase tracking-widest hover:border-sb-green transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 py-4 bg-sand/5 text-sand border-2 border-sand/15 rounded-full font-black uppercase tracking-widest hover:border-gold transition-colors"
                         >
-                            <ShoppingBag size={16} /> Continue Shopping
+                            <ShoppingBag size={16} /> {t('continueBrowsing')}
                         </Link>
                     </motion.div>
                 </div>
@@ -290,7 +292,7 @@ function OrderSuccessContent() {
 
 export default function OrderSuccessPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-sb-green border-t-transparent rounded-full animate-spin" /></div>}>
+        <Suspense fallback={<div className="min-h-screen bg-ink flex items-center justify-center"><div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin" /></div>}>
             <OrderSuccessContent />
         </Suspense>
     );

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, User as UserIcon, CheckCircle2, Phone as PhoneIcon } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -54,6 +55,13 @@ export function LoginModal() {
     const [resendSuccess, setResendSuccess] = useState(false);
     const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+    // Portals require a DOM node — only available once mounted on the client.
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMounted(true);
+    }, []);
+
     // Resend timer countdown
     useEffect(() => {
         if (resendTimer <= 0) return;
@@ -94,7 +102,7 @@ export function LoginModal() {
         } catch (err) {
             const apiErr = err as ApiError;
             if (apiErr.errors) setFieldErrors(apiErr.errors);
-            else setError(apiErr.message ?? 'Something went wrong. Please try again.');
+            else setError(apiErr.message ?? t('authGenericError'));
         } finally {
             setIsLoading(false);
         }
@@ -208,15 +216,15 @@ export function LoginModal() {
     const allPasswordRulesPassed = passwordRules.every(r => r.test(password));
     const canSendOtp = !!(name && email && password && confirm && confirm === password && allPasswordRulesPassed);
 
-    if (!isLoginModalOpen) return null;
+    if (!isLoginModalOpen || !mounted) return null;
 
-    return (
+    return createPortal(
         <AnimatePresence>
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+                className="fixed inset-0 z-[99999] bg-ink/50 backdrop-blur-sm flex items-center justify-center p-4"
                 onClick={handleClose}
             >
                 <motion.div
@@ -224,11 +232,11 @@ export function LoginModal() {
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
                     onClick={e => e.stopPropagation()}
-                    className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl relative max-h-[90vh] overflow-y-auto"
+                    className="w-full max-w-md bg-sand rounded-3xl overflow-hidden shadow-2xl relative max-h-[90vh] overflow-y-auto"
                 >
                     <button
                         onClick={handleClose}
-                        className="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-700 transition-colors z-10"
+                        className="absolute right-4 top-4 p-2 text-ink/40 hover:text-ink transition-colors z-10"
                     >
                         <X size={20} />
                     </button>
@@ -240,14 +248,14 @@ export function LoginModal() {
                         </div>
 
                         <div className="text-center mb-8">
-                            <h2 className="font-display text-3xl uppercase tracking-tight text-gray-900 mb-2">
+                            <h2 className="font-display text-3xl uppercase tracking-tight text-ink mb-2">
                                 {view === 'login' ? t('authWelcomeBack') : registerStep === 'otp' ? t('authVerifyEmail') : t('authCreateAccount')}
                             </h2>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-ink/60">
                                 {view === 'login'
                                     ? t('authLoginSubtitle')
                                     : registerStep === 'otp'
-                                    ? <>{t('authOtpSubtitle')} <span className="font-bold text-gray-700">{email}</span>.</>
+                                    ? <>{t('authOtpSubtitle')} <span className="font-bold text-ink/80">{email}</span>.</>
                                     : t('authRegisterSubtitle')}
                             </p>
                         </div>
@@ -275,7 +283,7 @@ export function LoginModal() {
                                     className="space-y-4"
                                 >
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40">
                                             <Mail size={18} />
                                         </div>
                                         <input
@@ -285,11 +293,11 @@ export function LoginModal() {
                                             value={email}
                                             onChange={e => setEmail(e.target.value)}
                                             placeholder={t('authEmailAddress')}
-                                            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm"
+                                            className="w-full pl-11 pr-4 py-3.5 bg-ink/5 border border-ink/10 text-ink placeholder-ink/30 rounded-xl focus:bg-sand focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all text-sm"
                                         />
                                     </div>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40">
                                             <Lock size={18} />
                                         </div>
                                         <input
@@ -299,13 +307,13 @@ export function LoginModal() {
                                             value={password}
                                             onChange={e => setPassword(e.target.value)}
                                             placeholder={t('authPassword')}
-                                            className="w-full pl-11 pr-11 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm"
+                                            className="w-full pl-11 pr-11 py-3.5 bg-ink/5 border border-ink/10 text-ink placeholder-ink/30 rounded-xl focus:bg-sand focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all text-sm"
                                         />
                                         <button
                                             type="button"
                                             tabIndex={-1}
                                             onClick={() => setShowPassword(v => !v)}
-                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#3B7E5A] transition-colors"
+                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-ink/40 hover:text-gold transition-colors"
                                         >
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
@@ -314,7 +322,7 @@ export function LoginModal() {
                                         <Link
                                             href="/forgot-password"
                                             onClick={handleClose}
-                                            className="text-xs text-[#3B7E5A] hover:underline font-semibold"
+                                            className="text-xs text-gold hover:underline font-semibold"
                                         >
                                             {t('authForgotPassword')}
                                         </Link>
@@ -322,7 +330,7 @@ export function LoginModal() {
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="w-full bg-[#3B7E5A] text-white rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60"
+                                        className="w-full bg-gold text-ink rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60"
                                     >
                                         {isLoading ? <Loader2 size={16} className="animate-spin" /> : t('authSignIn')}
                                     </button>
@@ -340,7 +348,7 @@ export function LoginModal() {
                                     {/* Name */}
                                     <div>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40">
                                                 <UserIcon size={18} />
                                             </div>
                                             <input
@@ -350,7 +358,7 @@ export function LoginModal() {
                                                 value={name}
                                                 onChange={e => setName(e.target.value)}
                                                 placeholder={t('authFullName')}
-                                                className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm ${firstFieldError('name') ? 'border-red-500' : ''}`}
+                                                className={`w-full pl-11 pr-4 py-3.5 bg-ink/5 border border-ink/10 text-ink placeholder-ink/30 rounded-xl focus:bg-sand focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all text-sm ${firstFieldError('name') ? 'border-red-500' : ''}`}
                                             />
                                         </div>
                                         {firstFieldError('name') && <p className="mt-1 text-xs text-red-500 pl-1">{firstFieldError('name')}</p>}
@@ -359,7 +367,7 @@ export function LoginModal() {
                                     {/* Email */}
                                     <div>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40">
                                                 <Mail size={18} />
                                             </div>
                                             <input
@@ -369,7 +377,7 @@ export function LoginModal() {
                                                 value={email}
                                                 onChange={e => setEmail(e.target.value)}
                                                 placeholder={t('authEmailAddress')}
-                                                className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm ${firstFieldError('email') ? 'border-red-500' : ''}`}
+                                                className={`w-full pl-11 pr-4 py-3.5 bg-ink/5 border border-ink/10 text-ink placeholder-ink/30 rounded-xl focus:bg-sand focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all text-sm ${firstFieldError('email') ? 'border-red-500' : ''}`}
                                             />
                                         </div>
                                         {firstFieldError('email') && <p className="mt-1 text-xs text-red-500 pl-1">{firstFieldError('email')}</p>}
@@ -378,7 +386,7 @@ export function LoginModal() {
                                     {/* Phone */}
                                     <div>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40">
                                                 <PhoneIcon size={18} />
                                             </div>
                                             <input
@@ -387,7 +395,7 @@ export function LoginModal() {
                                                 onChange={e => setPhone(e.target.value)}
                                                 placeholder={t('authPhone')}
                                                 autoComplete="tel"
-                                                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm"
+                                                className="w-full pl-11 pr-4 py-3.5 bg-ink/5 border border-ink/10 text-ink placeholder-ink/30 rounded-xl focus:bg-sand focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all text-sm"
                                             />
                                         </div>
                                     </div>
@@ -395,7 +403,7 @@ export function LoginModal() {
                                     {/* Password */}
                                     <div>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40">
                                                 <Lock size={18} />
                                             </div>
                                             <input
@@ -405,13 +413,13 @@ export function LoginModal() {
                                                 value={password}
                                                 onChange={e => setPassword(e.target.value)}
                                                 placeholder={t('authPassword')}
-                                                className={`w-full pl-11 pr-11 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm ${firstFieldError('password') ? 'border-red-500' : ''}`}
+                                                className={`w-full pl-11 pr-11 py-3.5 bg-ink/5 border border-ink/10 text-ink placeholder-ink/30 rounded-xl focus:bg-sand focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all text-sm ${firstFieldError('password') ? 'border-red-500' : ''}`}
                                             />
                                             <button
                                                 type="button"
                                                 tabIndex={-1}
                                                 onClick={() => setShowPassword(v => !v)}
-                                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#3B7E5A] transition-colors"
+                                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-ink/40 hover:text-gold transition-colors"
                                             >
                                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                             </button>
@@ -424,7 +432,7 @@ export function LoginModal() {
                                                 {passwordRules.map(rule => {
                                                     const ok = rule.test(password);
                                                     return (
-                                                        <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-[#3B7E5A]' : 'text-gray-400'}`}>
+                                                        <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? 'text-gold' : 'text-ink/40'}`}>
                                                             <CheckCircle2 size={12} className={ok ? 'opacity-100' : 'opacity-30'} />
                                                             {rule.label}
                                                         </li>
@@ -437,7 +445,7 @@ export function LoginModal() {
                                     {/* Confirm password */}
                                     <div>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40">
                                                 <Lock size={18} />
                                             </div>
                                             <input
@@ -447,13 +455,13 @@ export function LoginModal() {
                                                 value={confirm}
                                                 onChange={e => setConfirm(e.target.value)}
                                                 placeholder={t('authConfirmPassword')}
-                                                className={`w-full pl-11 pr-11 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 outline-none transition-all text-sm ${confirm && confirm !== password ? 'border-red-500' : ''}`}
+                                                className={`w-full pl-11 pr-11 py-3.5 bg-ink/5 border border-ink/10 text-ink placeholder-ink/30 rounded-xl focus:bg-sand focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none transition-all text-sm ${confirm && confirm !== password ? 'border-red-500' : ''}`}
                                             />
                                             <button
                                                 type="button"
                                                 tabIndex={-1}
                                                 onClick={() => setShowConfirm(v => !v)}
-                                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#3B7E5A] transition-colors"
+                                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-ink/40 hover:text-gold transition-colors"
                                             >
                                                 {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                                             </button>
@@ -466,7 +474,7 @@ export function LoginModal() {
                                     <button
                                         type="submit"
                                         disabled={isLoading || !canSendOtp}
-                                        className="w-full bg-[#3B7E5A] text-white rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                        className="w-full bg-gold text-ink rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         {isLoading ? <Loader2 size={16} className="animate-spin" /> : t('authSendCode')}
                                     </button>
@@ -498,7 +506,7 @@ export function LoginModal() {
                                         <motion.div
                                             initial={{ opacity: 0, y: -8 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            className="flex items-start gap-3 p-4 rounded-xl bg-[#3B7E5A]/10 border border-[#3B7E5A]/20 text-[#3B7E5A] text-sm"
+                                            className="flex items-start gap-3 p-4 rounded-xl bg-gold/10 border border-gold/20 text-gold text-sm"
                                         >
                                             <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
                                             <span>{t('authCodeSent')}</span>
@@ -518,9 +526,9 @@ export function LoginModal() {
                                                 value={digit}
                                                 onChange={e => handleOtpDigitChange(i, e.target.value)}
                                                 onKeyDown={e => handleOtpKeyDown(i, e)}
-                                                className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 transition-all outline-none
-                                                    ${digit ? 'border-[#3B7E5A] bg-[#3B7E5A]/5' : 'border-gray-200 bg-gray-50'}
-                                                    focus:border-[#3B7E5A] focus:ring-2 focus:ring-[#3B7E5A]/20 focus:bg-white`}
+                                                className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 transition-all outline-none text-ink
+                                                    ${digit ? 'border-gold bg-gold/5' : 'border-ink/10 bg-ink/5'}
+                                                    focus:border-gold focus:ring-2 focus:ring-gold/20 focus:bg-sand`}
                                             />
                                         ))}
                                     </div>
@@ -529,23 +537,23 @@ export function LoginModal() {
                                     <button
                                         onClick={handleVerifyOtp}
                                         disabled={!otpComplete || isVerifyingOtp}
-                                        className="w-full bg-[#3B7E5A] text-white rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#2C6345] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                        className="w-full bg-gold text-ink rounded-xl py-3.5 font-bold uppercase tracking-widest text-[10px] hover:bg-[#b8914d] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         {isVerifyingOtp ? <Loader2 size={16} className="animate-spin" /> : t('authVerifyCreate')}
                                     </button>
 
                                     {/* Resend */}
                                     <div className="text-center">
-                                        <p className="text-sm text-gray-500 mb-1">{t('authDidntReceive')}</p>
+                                        <p className="text-sm text-ink/60 mb-1">{t('authDidntReceive')}</p>
                                         {resendTimer > 0 ? (
-                                            <p className="text-sm text-gray-400">
-                                                {t('authResendIn')} <span className="font-bold text-gray-600">{resendTimer}s</span>
+                                            <p className="text-sm text-ink/50">
+                                                {t('authResendIn')} <span className="font-bold text-ink/70">{resendTimer}s</span>
                                             </p>
                                         ) : (
                                             <button
                                                 onClick={handleResendOtp}
                                                 disabled={isResendingOtp}
-                                                className="text-sm font-bold text-[#3B7E5A] hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
+                                                className="text-sm font-bold text-gold hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
                                             >
                                                 {isResendingOtp ? t('authSending') : t('authResendCode')}
                                             </button>
@@ -555,7 +563,7 @@ export function LoginModal() {
                                     {/* Back to form */}
                                     <button
                                         onClick={() => { setRegisterStep('form'); setOtpError(null); setResendSuccess(false); setOtpDigits(Array(OTP_LENGTH).fill('')); }}
-                                        className="w-full text-center text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                                        className="w-full text-center text-xs text-ink/50 hover:text-ink/80 transition-colors"
                                     >
                                         {t('authBackToForm')}
                                     </button>
@@ -563,18 +571,18 @@ export function LoginModal() {
                             )}
                         </AnimatePresence>
 
-                        <div className="mt-8 text-center text-sm text-gray-500">
+                        <div className="mt-8 text-center text-sm text-ink/60">
                             {view === 'login' ? (
                                 <>
                                     {t('authNoAccount')}{' '}
-                                    <button onClick={() => switchView('register')} className="text-[#3B7E5A] font-bold hover:underline">
+                                    <button onClick={() => switchView('register')} className="text-gold font-bold hover:underline">
                                         {t('authSignUp')}
                                     </button>
                                 </>
                             ) : registerStep === 'form' ? (
                                 <>
                                     {t('authHaveAccount')}{' '}
-                                    <button onClick={() => switchView('login')} className="text-[#3B7E5A] font-bold hover:underline">
+                                    <button onClick={() => switchView('login')} className="text-gold font-bold hover:underline">
                                         {t('authLogIn')}
                                     </button>
                                 </>
@@ -583,6 +591,7 @@ export function LoginModal() {
                     </div>
                 </motion.div>
             </motion.div>
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

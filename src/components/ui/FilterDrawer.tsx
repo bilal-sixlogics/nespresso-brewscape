@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { Product, getDisplayPrice, isInStock, getTagLabels } from '@/types';
@@ -32,15 +33,15 @@ function RangeSlider({ label, value, min, max, unit = '', onChange }: {
     return (
         <div>
             <div className="flex justify-between items-center mb-3">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">{label}</span>
-                <span className="text-[10px] font-bold text-sb-black">{unit}{value[0]} – {unit}{value[1]}</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-cocoa">{label}</span>
+                <span className="text-[10px] font-bold text-sand">{unit}{value[0]} – {unit}{value[1]}</span>
             </div>
             <div className="relative h-5 flex items-center">
                 {/* Track */}
-                <div className="absolute left-0 right-0 h-1.5 bg-gray-100 rounded-full" />
+                <div className="absolute left-0 right-0 h-1.5 bg-sand/15 rounded-full" />
                 {/* Active range */}
                 <div
-                    className="absolute h-1.5 bg-sb-green rounded-full"
+                    className="absolute h-1.5 bg-gold rounded-full"
                     style={{
                         left: `${((value[0] - min) / (max - min)) * 100}%`,
                         right: `${100 - ((value[1] - min) / (max - min)) * 100}%`,
@@ -68,14 +69,14 @@ function RangeSlider({ label, value, min, max, unit = '', onChange }: {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     const [open, setOpen] = useState(true);
     return (
-        <div className="border-b border-gray-100 pb-4 sm:pb-5 last:border-0">
+        <div className="border-b border-sand/10 pb-4 sm:pb-5 last:border-0">
             <button
                 onClick={() => setOpen(p => !p)}
                 className="w-full flex items-center justify-between py-3 sm:py-4 text-left min-h-[44px]"
             >
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sb-black">{title}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sand">{title}</span>
                 <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                    <ChevronDown size={14} className="text-gray-300" />
+                    <ChevronDown size={14} className="text-sand/40" />
                 </motion.div>
             </button>
             <AnimatePresence>
@@ -111,8 +112,7 @@ interface FilterDrawerProps {
 }
 
 export function FilterDrawer({ open, onClose, filters, onChange, resultCount, availableCategories = [], availableBrands = [], availableTags = [] }: FilterDrawerProps) {
-    const { language } = useLanguage();
-    const t = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const { t, language } = useLanguage();
     const { currency_symbol } = useSiteSettings();
 
     // Detect mobile for bottom-sheet vs left-drawer
@@ -124,21 +124,30 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
         return () => window.removeEventListener('resize', check);
     }, []);
 
+    // Portals require a DOM node — only available once mounted on the client.
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMounted(true);
+    }, []);
+
     const activeCount = filters.brands.length + filters.categories.length + filters.tags.length +
         (filters.inStockOnly ? 1 : 0) +
         (filters.intensityRange[0] !== 1 || filters.intensityRange[1] !== 13 ? 1 : 0) +
         (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 500 ? 1 : 0);
 
-    // Mobile = bottom sheet, desktop = left drawer
+    // Mobile = bottom sheet, desktop = left drawer — beige panel on the black page per the brief
     const panelClass = isMobile
-        ? "fixed bottom-0 left-0 right-0 w-full max-h-[88vh] rounded-t-3xl bg-white z-[95] shadow-2xl flex flex-col"
-        : "fixed top-0 left-0 h-full w-[360px] bg-white z-[95] shadow-2xl flex flex-col";
+        ? "fixed bottom-0 left-0 right-0 w-full max-h-[88vh] rounded-t-3xl bg-ink z-[95] shadow-2xl flex flex-col"
+        : "fixed top-0 left-0 h-full w-[360px] bg-ink z-[95] shadow-2xl flex flex-col";
 
     const initialAnim = isMobile ? { y: '100%' } : { x: '-100%' };
     const openAnim = isMobile ? { y: 0 } : { x: 0 };
     const closedAnim = isMobile ? { y: '100%' } : { x: '-100%' };
 
-    return (
+    if (!mounted) return null;
+
+    return createPortal(
         <>
             {/* Backdrop */}
             <AnimatePresence>
@@ -161,23 +170,23 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                 {/* Mobile drag handle */}
                 {isMobile && (
                     <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-                        <div className="w-10 h-1 bg-gray-200 rounded-full" />
+                        <div className="w-10 h-1 bg-sand/30 rounded-full" />
                     </div>
                 )}
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 sm:px-6 py-3 sm:py-5 border-b border-gray-100 flex-shrink-0">
+                <div className="flex items-center justify-between px-5 sm:px-6 py-3 sm:py-5 border-b border-sand/10 flex-shrink-0">
                     <div className="flex items-center gap-3">
-                        <SlidersHorizontal size={16} className="text-sb-green" />
-                        <span className="font-black text-sm uppercase tracking-widest">{t('Filtres', 'Filters')}</span>
+                        <SlidersHorizontal size={16} className="text-gold" />
+                        <span className="font-black text-sm uppercase tracking-widest text-sand">{t('filters')}</span>
                         {activeCount > 0 && (
-                            <span className="w-5 h-5 bg-sb-green text-white text-[9px] font-black rounded-full flex items-center justify-center">{activeCount}</span>
+                            <span className="w-5 h-5 bg-gold text-ink text-[9px] font-black rounded-full flex items-center justify-center">{activeCount}</span>
                         )}
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-11 h-11 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
-                        aria-label="Close filters"
+                        className="w-11 h-11 bg-sand/10 rounded-full flex items-center justify-center text-sand hover:bg-sand/20 transition-colors"
+                        aria-label={t('ariaCloseFilters')}
                     >
                         <X size={15} />
                     </button>
@@ -186,25 +195,25 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                 {/* Scrollable filter body */}
                 <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-1">
                     {/* In stock toggle */}
-                    <div className="flex items-center justify-between py-3 sm:py-4 border-b border-gray-100 min-h-[52px]">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sb-black">{t('En stock uniquement', 'In Stock Only')}</span>
+                    <div className="flex items-center justify-between py-3 sm:py-4 border-b border-sand/10 min-h-[52px]">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sand">{t('inStock')}</span>
                         <button
                             onClick={() => onChange({ ...filters, inStockOnly: !filters.inStockOnly })}
                             role="switch"
                             aria-checked={filters.inStockOnly}
-                            aria-label="In stock only"
-                            className={`w-12 h-6 rounded-full transition-colors duration-200 relative focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2 ${filters.inStockOnly ? 'bg-sb-green' : 'bg-gray-200'}`}
+                            aria-label={t('inStock')}
+                            className={`w-12 h-6 rounded-full transition-colors duration-200 relative focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${filters.inStockOnly ? 'bg-gold' : 'bg-sand/15'}`}
                         >
                             <motion.div
                                 animate={{ x: filters.inStockOnly ? 24 : 2 }}
                                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                                className="absolute top-1 w-4 h-4 bg-sand rounded-full shadow-sm"
                             />
                         </button>
                     </div>
 
                     {/* Categories */}
-                    <Section title={t('Catégorie', 'Category')}>
+                    <Section title={t('category')}>
                         <div className="flex flex-wrap gap-2 pb-2">
                             {availableCategories.map(cat => {
                                 const active = filters.categories.includes(cat);
@@ -213,7 +222,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                                         key={cat}
                                         onClick={() => onChange({ ...filters, categories: toggle(filters.categories, cat) })}
                                         aria-pressed={active}
-                                        className={`min-h-[44px] px-3.5 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2 ${active ? 'bg-sb-green text-white shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-100 hover:border-sb-green/30'}`}
+                                        className={`min-h-[44px] px-3.5 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${active ? 'bg-gold text-ink shadow-sm' : 'bg-sand/10 text-sand/70 border border-sand/15 hover:border-gold/40'}`}
                                     >
                                         {cat}
                                     </button>
@@ -224,7 +233,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
 
                     {/* Brands */}
                     {availableBrands.length > 0 && (
-                        <Section title={t('Marque', 'Brand')}>
+                        <Section title={t('brandLabel')}>
                             <div className="flex flex-wrap gap-2 pb-2">
                                 {availableBrands.map(brand => {
                                     const active = filters.brands.includes(brand);
@@ -233,7 +242,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                                             key={brand}
                                             onClick={() => onChange({ ...filters, brands: toggle(filters.brands, brand) })}
                                             aria-pressed={active}
-                                            className={`min-h-[44px] px-3.5 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2 ${active ? 'bg-sb-black text-white shadow-sm' : 'bg-gray-50 text-gray-500 border border-gray-100 hover:border-gray-300'}`}
+                                            className={`min-h-[44px] px-3.5 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${active ? 'bg-gold text-ink shadow-sm' : 'bg-sand/10 text-sand/70 border border-sand/15 hover:border-sand/30'}`}
                                         >
                                             {brand === 'nespresso' ? 'Nespresso' : brand === 'starbucks' ? 'Starbucks' : brand}
                                         </button>
@@ -244,7 +253,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                     )}
 
                     {/* Intensity */}
-                    <Section title={t('Intensité', 'Intensity')}>
+                    <Section title={t('intensity')}>
                         <div className="pb-3">
                             <RangeSlider
                                 label="" value={filters.intensityRange} min={1} max={13}
@@ -252,14 +261,14 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                             />
                             <div className="flex justify-between mt-2">
                                 {[1, 4, 7, 10, 13].map(v => (
-                                    <span key={v} className="text-[10px] text-gray-400 font-bold">{v}</span>
+                                    <span key={v} className="text-[10px] text-cocoa font-bold">{v}</span>
                                 ))}
                             </div>
                         </div>
                     </Section>
 
                     {/* Price */}
-                    <Section title={t(`Prix (${currency_symbol})`, `Price (${currency_symbol})`)}>
+                    <Section title={`${t('priceTitle')} (${currency_symbol})`}>
                         <div className="pb-3">
                             <RangeSlider
                                 label="" value={filters.priceRange} min={0} max={500} unit={currency_symbol}
@@ -270,7 +279,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
 
                     {/* Tags */}
                     {availableTags.length > 0 && (
-                        <Section title="Tags">
+                        <Section title={t('tags')}>
                             <div className="flex flex-wrap gap-2 pb-2">
                                 {availableTags.map(tag => {
                                     const active = filters.tags.includes(tag);
@@ -279,7 +288,7 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                                             key={tag}
                                             onClick={() => onChange({ ...filters, tags: toggle(filters.tags, tag) })}
                                             aria-pressed={active}
-                                            className={`min-h-[44px] px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all focus-visible:outline-2 focus-visible:outline-sb-green focus-visible:outline-offset-2 ${active ? 'bg-sb-black text-white' : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-gray-300'}`}
+                                            className={`min-h-[44px] px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 ${active ? 'bg-gold text-ink' : 'bg-sand/10 text-sand/60 border border-sand/15 hover:border-sand/30'}`}
                                         >
                                             #{tag}
                                         </button>
@@ -294,22 +303,23 @@ export function FilterDrawer({ open, onClose, filters, onChange, resultCount, av
                 </div>
 
                 {/* Footer */}
-                <div className="border-t border-gray-100 px-5 sm:px-6 py-4 sm:py-5 flex gap-3 flex-shrink-0">
+                <div className="border-t border-sand/10 px-5 sm:px-6 py-4 sm:py-5 flex gap-3 flex-shrink-0">
                     <button
                         onClick={() => onChange(DEFAULT_FILTERS)}
-                        className="flex-1 py-3.5 rounded-full border-2 border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:border-gray-300 transition-colors min-h-[48px]"
+                        className="flex-1 py-3.5 rounded-full border-2 border-sand/20 text-[10px] font-black uppercase tracking-widest text-sand/70 hover:border-sand/40 transition-colors min-h-[48px]"
                     >
-                        {t('Réinitialiser', 'Reset')}
+                        {t('reset')}
                     </button>
                     <button
                         onClick={onClose}
-                        className="flex-1 py-3.5 rounded-full bg-sb-green text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-sb-green/20 hover:bg-[#2C6345] transition-colors min-h-[48px]"
+                        className="flex-1 py-3.5 rounded-full bg-gold text-ink text-[10px] font-black uppercase tracking-widest shadow-lg shadow-gold/20 hover:bg-[#b8914d] transition-colors min-h-[48px]"
                     >
-                        {t(`Voir ${resultCount} résultats`, `Show ${resultCount} results`)}
+                        {language === 'fr' ? `Voir ${resultCount} résultats` : `Show ${resultCount} results`}
                     </button>
                 </div>
             </motion.aside>
-        </>
+        </>,
+        document.body
     );
 }
 

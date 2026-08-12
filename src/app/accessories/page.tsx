@@ -13,11 +13,12 @@ import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
 import { useDragScroll } from '@/hooks/useDragScroll';
+import { CupSeparator } from '@/components/ui/CupSeparator';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
 
 export default function AccessoriesPage() {
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
     const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [filterOpen, setFilterOpen] = useState(false);
@@ -99,48 +100,47 @@ export default function AccessoriesPage() {
     ];
 
     return (
-        <div className="w-full bg-sb-white text-sb-black min-h-screen">
+        <div className="w-full bg-ink text-sand min-h-screen grain-overlay">
             {/* ── Hero ─────────────────────────────────────────── */}
-            <section className="bg-gradient-to-br from-[#2A2A2A] to-[#1a1a1a] pt-16 sm:pt-20 md:pt-24 pb-20 sm:pb-28 md:pb-40 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(57,119,77,0.2),_transparent_60%)]" />
+            <section className="bg-ink pt-16 sm:pt-20 md:pt-24 pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(201,160,90,0.15),_transparent_60%)]" />
                 <div className="max-w-[1400px] mx-auto relative z-10">
-                    <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-                        <p className="text-sb-green text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
-                            {tx('Complétez votre Setup', 'Complete Your Setup')}
-                        </p>
-                        <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-white leading-[0.85] mb-6 sm:mb-8">
-                            {tx('Accessoires', 'Accessories')}
-                        </h1>
-                        <p className="text-white/50 text-sm sm:text-base md:text-lg max-w-lg">
-                            {tx(
-                                "Gobelets, filtres, rangement — tout ce qu'il faut pour sublimer votre rituel café.",
-                                "Cups, filters, storage — everything to elevate your coffee ritual."
-                            )}
-                        </p>
-                    </motion.div>
-                </div>
-                <div className="torn-paper-white-down z-20" />
-            </section>
-
-            {/* ── Perks ────────────────────────────────────────── */}
-            <section className="bg-white py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8 border-b border-gray-100">
-                <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {perks.map((p, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
-                            className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6"
-                        >
-                            <span className="text-3xl">{p.icon}</span>
-                            <div>
-                                <p className="font-bold text-sm text-sb-black mb-1">{p.title}</p>
-                                <p className="text-xs text-gray-400 leading-relaxed">{p.desc}</p>
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
+                        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="w-full lg:w-1/2">
+                            <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                                {t('accessoriesHeroEyebrow')}
+                            </p>
+                            <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
+                                {t('accessoriesHeroTitle')}
+                            </h1>
+                            <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
+                                {t('accessoriesHeroDesc')}
+                            </p>
+                            <div className="max-w-xs mt-10">
+                                <CupSeparator tone="gold" />
                             </div>
                         </motion.div>
-                    ))}
+
+                        {/* ── Hero Image ── */}
+                        <div className="w-full lg:w-1/2 flex justify-center items-center relative h-[260px] sm:h-[340px] lg:h-[440px]">
+                            <div
+                                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl w-[240px] h-[240px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px]"
+                                style={{ background: 'radial-gradient(circle, rgba(201,160,90,0.35) 0%, rgba(201,160,90,0.1) 55%, transparent 75%)' }}
+                            />
+                            <motion.img
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1, y: [0, -14, 0] }}
+                                transition={{
+                                    opacity: { duration: 0.8, delay: 0.2 },
+                                    scale: { duration: 0.8, delay: 0.2 },
+                                    y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 },
+                                }}
+                                src="/accessories.png"
+                                alt={t('accessoriesImageAlt')}
+                                className="relative z-10 w-[220px] sm:w-[300px] lg:w-[380px] h-auto object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.5)]"
+                            />
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -149,18 +149,18 @@ export default function AccessoriesPage() {
                 <div className="max-w-[1400px] mx-auto">
 
                     {/* Controls bar */}
-                    <div className="flex flex-col gap-3 mb-8 border-b border-gray-100 pb-6">
+                    <div className="flex flex-col gap-3 mb-8 border-b border-sand/10 pb-6">
                         {/* Row 1: Filter + Sort + Reset (no overflow so dropdown is visible) */}
                         <div className="flex items-center gap-2 flex-shrink-0 z-50">
                             {/* Filter button */}
                             <button
                                 onClick={() => setFilterOpen(true)}
-                                className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sb-black text-white hover:bg-gray-800 transition-colors relative"
+                                className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gold text-ink hover:bg-[#b8914d] transition-colors relative"
                             >
                                 <SlidersHorizontal size={12} />
-                                <span className="hidden sm:inline">{tx('Filtres', 'Filters')}</span>
+                                <span className="hidden sm:inline">{t('filters')}</span>
                                 {activeFilterCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-sb-green text-white text-[8px] font-black rounded-full flex items-center justify-center">
+                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-ink text-gold border border-gold/50 text-[8px] font-black rounded-full flex items-center justify-center">
                                         {activeFilterCount}
                                     </span>
                                 )}
@@ -170,13 +170,13 @@ export default function AccessoriesPage() {
                             <div className="relative">
                                 <button
                                     onClick={() => setSortOpen(!sortOpen)}
-                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gray-50 text-gray-600 border border-gray-100 hover:border-gray-300 transition-colors"
+                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sand/8 text-sand/70 border border-sand/10 hover:border-sand/25 transition-colors"
                                 >
-                                    {sortBy === 'relevance' && tx('Pertinence', 'Relevance')}
-                                    {sortBy === 'price_asc' && tx('Prix: Croissant', 'Price: Low to High')}
-                                    {sortBy === 'price_desc' && tx('Prix: Décroissant', 'Price: High to Low')}
-                                    {sortBy === 'newest' && tx('Nouveautés', 'Newest')}
-                                    {sortBy === 'popularity' && tx('Popularité', 'Popularity')}
+                                    {sortBy === 'relevance' && t('sortRelevance')}
+                                    {sortBy === 'price_asc' && t('sortPriceLow')}
+                                    {sortBy === 'price_desc' && t('sortPriceHigh')}
+                                    {sortBy === 'newest' && t('sortNewest')}
+                                    {sortBy === 'popularity' && t('popularitySort')}
                                     <ChevronDown size={12} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
                                 </button>
 
@@ -186,19 +186,19 @@ export default function AccessoriesPage() {
                                             <div className="fixed inset-0 z-[80]" onClick={() => setSortOpen(false)} />
                                             <motion.div
                                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                                                className="absolute top-full left-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 z-[90] overflow-hidden py-2"
+                                                className="absolute top-full left-0 mt-2 w-52 bg-sand rounded-2xl shadow-xl border border-ink/10 z-[90] overflow-hidden py-2"
                                             >
                                                 {[
-                                                    { id: 'relevance', lbl: tx('Pertinence', 'Relevance') },
-                                                    { id: 'price_asc', lbl: tx('Prix: Croissant', 'Price: Low to High') },
-                                                    { id: 'price_desc', lbl: tx('Prix: Décroissant', 'Price: High to Low') },
-                                                    { id: 'newest', lbl: tx('Nouveautés', 'Newest') },
-                                                    { id: 'popularity', lbl: tx('Popularité', 'Popularity') },
+                                                    { id: 'relevance', lbl: t('sortRelevance') },
+                                                    { id: 'price_asc', lbl: t('sortPriceLow') },
+                                                    { id: 'price_desc', lbl: t('sortPriceHigh') },
+                                                    { id: 'newest', lbl: t('sortNewest') },
+                                                    { id: 'popularity', lbl: t('popularitySort') },
                                                 ].map(opt => (
                                                     <button
                                                         key={opt.id}
                                                         onClick={() => { setSortBy(opt.id as SortOption); setSortOpen(false); }}
-                                                        className={`block w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${sortBy === opt.id ? 'bg-gray-50 text-sb-green' : 'text-gray-500 hover:bg-gray-50 hover:text-sb-black'}`}
+                                                        className={`block w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${sortBy === opt.id ? 'bg-ink/5 text-gold' : 'text-ink/60 hover:bg-ink/5 hover:text-ink'}`}
                                                     >
                                                         {opt.lbl}
                                                     </button>
@@ -217,10 +217,10 @@ export default function AccessoriesPage() {
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.85 }}
                                         onClick={resetAll}
-                                        className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition-colors"
+                                        className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15 transition-colors"
                                     >
                                         <RotateCcw size={11} />
-                                        {tx('Réinitialiser', 'Reset')}
+                                        {t('reset')}
                                     </motion.button>
                                 )}
                             </AnimatePresence>
@@ -238,19 +238,19 @@ export default function AccessoriesPage() {
                             <button
                                 onClick={() => setFilters(f => ({ ...f, categories: [] }))}
                                 className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${!activeCategory
-                                    ? 'bg-sb-green text-white shadow-lg shadow-sb-green/20'
-                                    : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-sb-green/30 hover:text-sb-black'
+                                    ? 'bg-gold text-ink shadow-lg shadow-gold/20'
+                                    : 'bg-sand/8 text-sand/50 border border-sand/10 hover:border-gold/30 hover:text-sand'
                                     }`}
                             >
-                                {tx('Tout', 'All')}
+                                {t('all')}
                             </button>
                             {accessoryCategories.map(cat => (
                                 <button
                                     key={cat.slug}
                                     onClick={() => handleCategoryPill(cat.name)}
                                     className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${activeCategory === cat.name
-                                        ? 'bg-sb-green text-white shadow-lg shadow-sb-green/20'
-                                        : 'bg-gray-50 text-gray-400 border border-gray-100 hover:border-sb-green/30 hover:text-sb-black'
+                                        ? 'bg-gold text-ink shadow-lg shadow-gold/20'
+                                        : 'bg-sand/8 text-sand/50 border border-sand/10 hover:border-gold/30 hover:text-sand'
                                         }`}
                                 >
                                     {cat.name}
@@ -261,11 +261,11 @@ export default function AccessoriesPage() {
 
                     {/* Results header */}
                     <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-10">
-                        <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sb-black">
-                            {!activeCategory ? tx('Tous les Accessoires', 'All Accessories') : activeCategory}
+                        <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sand">
+                            {!activeCategory ? t('allAccessories') : activeCategory}
                         </h3>
-                        <div className="text-[10px] font-bold tracking-widest uppercase text-gray-400">
-                            {displayProducts.length} {tx('résultats', 'results')}
+                        <div className="text-[10px] font-bold tracking-widest uppercase text-cocoa">
+                            {displayProducts.length} {t('results')}
                         </div>
                     </div>
 
@@ -273,11 +273,11 @@ export default function AccessoriesPage() {
                     {!isLoading && displayProducts.length === 0 ? (
                         <div className="text-center py-24">
                             <p className="text-6xl mb-4">🧰</p>
-                            <p className="font-bold text-xl mb-2">
-                                {tx('Aucun accessoire trouvé', 'No accessories found')}
+                            <p className="font-bold text-xl mb-2 text-sand">
+                                {t('noAccessoriesFound')}
                             </p>
-                            <button onClick={resetAll} className="text-sb-green font-bold text-sm underline mt-2">
-                                {tx('Effacer les filtres', 'Clear filters')}
+                            <button onClick={resetAll} className="text-gold font-bold text-sm underline mt-2">
+                                {t('clearFilters')}
                             </button>
                         </div>
                     ) : (

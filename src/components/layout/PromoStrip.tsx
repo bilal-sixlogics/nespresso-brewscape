@@ -7,7 +7,7 @@ import { AppConfig } from '@/lib/config';
 import { useLanguage } from '@/context/LanguageContext';
 
 export function PromoStrip() {
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
     const [visible, setVisible] = useState(true);
     const [currentIdx, setCurrentIdx] = useState(0);
 
@@ -28,7 +28,7 @@ export function PromoStrip() {
     if (!visible) return null;
 
     return (
-        <div className="bg-sb-black text-white relative z-[200] overflow-hidden">
+        <div className="bg-ink text-sand relative z-[200] overflow-hidden">
             <div className="max-w-[1600px] mx-auto px-4 py-2.5 flex items-center justify-center gap-3">
                 <AnimatePresence mode="wait">
                     <motion.p
@@ -49,8 +49,8 @@ export function PromoStrip() {
                             <button
                                 key={i}
                                 onClick={() => setCurrentIdx(i)}
-                                className={`w-1 h-1 rounded-full transition-all duration-300 ${i === currentIdx ? 'bg-white w-3' : 'bg-white/30'}`}
-                                aria-label={`Message ${i + 1}`}
+                                className={`w-1 h-1 rounded-full transition-all duration-300 ${i === currentIdx ? 'bg-gold w-3' : 'bg-sand/30'}`}
+                                aria-label={`${t('ariaMessage')} ${i + 1}`}
                             />
                         ))}
                     </div>
@@ -58,8 +58,8 @@ export function PromoStrip() {
 
                 <button
                     onClick={() => setVisible(false)}
-                    className="ml-2 text-white/50 hover:text-white transition-colors flex-shrink-0"
-                    aria-label="Dismiss"
+                    className="ml-2 text-sand/50 hover:text-sand transition-colors flex-shrink-0"
+                    aria-label={t('ariaDismiss')}
                 >
                     <X size={12} />
                 </button>

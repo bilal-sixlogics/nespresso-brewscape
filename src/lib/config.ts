@@ -12,8 +12,8 @@ export const AppConfig = {
         heroLine1: "CAF-",
         heroLine2: "REZZO",
         heroSubtitle: "Discover the bold and sophisticated world of Cafrezzo premium coffee.",
-        seoTitle: "Cafrezzo | Premium Coffee Experience",
-        seoDescription: "Discover the art and science of premium coffee with Cafrezzo. Meticulously crafted for the modern coffee aficionado.",
+        seoTitle: "Cafrezzo | Intensément Café",
+        seoDescription: "Bienvenue dans l’univers Cafrezzo, où chaque tasse raconte une histoire de passion et de qualité. Découvrez notre sélection exclusive ..",
         copyrightYear: new Date().getFullYear(),
     },
 

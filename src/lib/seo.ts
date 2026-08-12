@@ -9,11 +9,11 @@ const BASE_URL = 'https://cafrezzo.com';
 export const baseMetadata: Metadata = {
     metadataBase: new URL(BASE_URL),
     title: {
-        default: 'Cafrezzo | Premium French Coffee',
+        default: 'Cafrezzo | Intensément Café',
         template: '%s | Cafrezzo',
     },
     description:
-        'Discover the bold and sophisticated world of Cafrezzo premium coffee. Shop capsules, beans, machines & gourmet sweets — shipped from France.',
+        'Bienvenue dans l’univers Cafrezzo, où chaque tasse raconte une histoire de passion et de qualité. Découvrez notre sélection exclusive',
     keywords: [
         'premium coffee', 'café français', 'nespresso compatible', 'coffee capsules',
         'coffee machines', 'café en grain', 'cafrezzo', 'café en ligne', 'livraison france',
@@ -33,21 +33,21 @@ export const baseMetadata: Metadata = {
         alternateLocale: 'en_GB',
         url: BASE_URL,
         siteName: 'Cafrezzo',
-        title: 'Cafrezzo | Premium French Coffee',
+        title: 'Cafrezzo | Intensément Café',
         description:
-            'Discover the bold and sophisticated world of Cafrezzo premium coffee. Shop capsules, beans, machines & gourmet sweets.',
+            'Bienvenue dans l’univers Cafrezzo, où chaque tasse raconte une histoire de passion et de qualité. Découvrez notre sélection exclusive',
         images: [
             {
                 url: '/og-image.png',
                 width: 1200,
                 height: 630,
-                alt: 'Cafrezzo — Premium Coffee Experience',
+                alt: 'Cafrezzo — Your Coffee Experience',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Cafrezzo | Premium French Coffee',
+        title: 'Cafrezzo | Your Coffee Experience',
         description: 'Shop premium coffee capsules, beans, machines & gourmet sweets — shipped from France.',
         images: ['/og-image.png'],
         creator: '@cafrezzo',
@@ -60,10 +60,9 @@ export const baseMetadata: Metadata = {
             'en-GB': `${BASE_URL}/en`,
         },
     },
-    // verification: {
-    //     // Replace with your actual verification codes when deploying
-    //     google: 'REPLACE_WITH_GOOGLE_SEARCH_CONSOLE_TOKEN',
-    // },
+    verification: {
+        google: 'cs7eUJ0hscfT6OXq6cH4MASeGmq6llEFkpYlTGeNToE',
+    },
 };
 
 /**

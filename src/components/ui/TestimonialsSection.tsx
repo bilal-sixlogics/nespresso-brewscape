@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { Star, Quote, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { Endpoints } from '@/lib/api/endpoints';
-
+import { useLanguage } from "@/context/LanguageContext";
 interface FeaturedReview {
     id: number;
     rating: number;
@@ -22,7 +22,7 @@ interface FeaturedReview {
     } | null;
 }
 
-const COLORS = ['#3B7E5A', '#2D5F41', '#1e4a34', '#4a9b6b', '#5aad7a'];
+const COLORS = ['#C9A05A', '#8B5E34', '#6b4726', '#d4b374', '#a67c42'];
 
 function StarRow({ rating, size = 12 }: { rating: number; size?: number }) {
     return (
@@ -31,7 +31,7 @@ function StarRow({ rating, size = 12 }: { rating: number; size?: number }) {
                 <Star
                     key={i}
                     size={size}
-                    className={i <= rating ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}
+                    className={i <= rating ? 'fill-gold text-gold' : 'fill-sand/15 text-sand/15'}
                 />
             ))}
         </div>
@@ -42,6 +42,7 @@ function Avatar({ name, src }: { name: string; src: string | null }) {
     const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     const color = COLORS[name.charCodeAt(0) % COLORS.length];
 
+
     if (src) {
         return (
             /* eslint-disable-next-line @next/next/no-img-element */
@@ -49,7 +50,7 @@ function Avatar({ name, src }: { name: string; src: string | null }) {
         );
     }
     return (
-        <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg" style={{ background: color }}>
+        <div className="w-full h-full flex items-center justify-center text-ink font-bold text-lg" style={{ background: color }}>
             {initials}
         </div>
     );
@@ -61,6 +62,7 @@ export const TestimonialsSection = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [direction, setDirection] = useState(1);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const { t } = useLanguage();
 
     useEffect(() => {
         fetch(Endpoints.featuredReviews)
@@ -97,9 +99,9 @@ export const TestimonialsSection = () => {
 
     if (isLoading) {
         return (
-            <section className="bg-white py-24 px-4">
+            <section className="bg-ink py-24 px-4">
                 <div className="max-w-6xl mx-auto">
-                    <div className="animate-pulse h-96 rounded-3xl bg-gray-100" />
+                    <div className="animate-pulse h-96 rounded-3xl bg-sand/8" />
                 </div>
             </section>
         );
@@ -113,7 +115,7 @@ export const TestimonialsSection = () => {
 
     const authorName = current.user?.name ?? current.user_name;
     const productImage = current.product?.featured_image ?? null;
-    const productName = current.product?.name ?? 'Cafrezzo Selection';
+    const productName = current.product?.name ?? t('testimonialFallbackProduct');
 
     const variants = {
         enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 60 : -60, filter: 'blur(6px)' }),
@@ -123,7 +125,7 @@ export const TestimonialsSection = () => {
 
     return (
         <section
-            className="relative overflow-hidden py-20 sm:py-28 lg:py-32 bg-white"
+            className="relative overflow-hidden pb-20 sm:pb-22 md:pb-24 bg-ink grain-overlay"
             onMouseEnter={pause}
             onMouseLeave={resume}
         >
@@ -140,12 +142,12 @@ export const TestimonialsSection = () => {
                 >
                     <div>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-8 h-px bg-[#3B7E5A]" />
-                            <span className="text-[9px] font-black tracking-[0.4em] uppercase text-[#3B7E5A]">Customer Stories</span>
+                            <div className="w-8 h-px bg-gold" />
+                            <span className="text-[9px] font-black tracking-[0.4em] uppercase text-gold">{t('customerStories')}</span>
                         </div>
-                        <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-gray-900 uppercase leading-[0.88] tracking-tight">
-                            What They<br />
-                            <span className="text-[#3B7E5A]">Say</span>
+                        <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl text-sand uppercase leading-[0.88] tracking-tight">
+                            {t('testimonialFirst')}<br />
+                            <span className="text-gold">{t('testimonialSecond')}</span>
                         </h2>
                     </div>
 
@@ -155,16 +157,16 @@ export const TestimonialsSection = () => {
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="flex items-center gap-4 bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4"
+                        className="flex items-center gap-4 bg-sand/8 border border-sand/15 rounded-2xl px-5 py-4"
                     >
                         <div className="text-center">
-                            <div className="font-display text-3xl text-gray-900 leading-none">{avgRating.toFixed(1)}</div>
-                            <div className="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Rating</div>
+                            <div className="font-display text-3xl text-sand leading-none">{avgRating.toFixed(1)}</div>
+                            <div className="text-[9px] text-cocoa uppercase tracking-widest mt-1">{t('ratingLabel')}</div>
                         </div>
-                        <div className="w-px h-10 bg-gray-200" />
+                        <div className="w-px h-10 bg-sand/15" />
                         <div>
                             <StarRow rating={Math.round(avgRating)} size={14} />
-                            <div className="text-[9px] text-gray-400 mt-1.5">{count} reviews</div>
+                            <div className="text-[9px] text-cocoa mt-1.5">{`${count} ${t('reviewsWord')}`}</div>
                         </div>
                     </motion.div>
                 </motion.div>
@@ -195,37 +197,37 @@ export const TestimonialsSection = () => {
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-6xl"
-                                        style={{ background: 'linear-gradient(135deg, #1e4a34, #0f2318)' }}>
+                                        style={{ background: 'linear-gradient(135deg, #2a2018, #1A1614)' }}>
                                         ☕
                                     </div>
                                 )}
 
                                 {/* Gradient overlay */}
-                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)' }} />
+                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(26,22,20,0.9) 0%, rgba(26,22,20,0.25) 50%, transparent 100%)' }} />
 
                                 {/* Product label */}
                                 <div className="absolute bottom-0 left-0 right-0 p-6">
                                     {current.is_verified_purchase && (
                                         <div className="flex items-center gap-1.5 mb-2">
-                                            <CheckCircle2 size={10} className="text-[#3B7E5A]" />
-                                            <span className="text-[9px] font-black text-[#3B7E5A] uppercase tracking-widest">Verified Purchase</span>
+                                            <CheckCircle2 size={10} className="text-gold" />
+                                            <span className="text-[9px] font-black text-gold uppercase tracking-widest">{t('verifiedPurchase')}</span>
                                         </div>
                                     )}
-                                    <p className="text-white font-semibold text-sm leading-snug line-clamp-2">{productName}</p>
+                                    <p className="text-sand font-semibold text-sm leading-snug line-clamp-2">{productName}</p>
                                 </div>
 
                                 {/* Gloss overlay */}
-                                <div className="absolute top-0 left-0 right-0 h-1/3 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.06), transparent)' }} />
+                                <div className="absolute top-0 left-0 right-0 h-1/3 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(237,227,211,0.06), transparent)' }} />
                             </motion.div>
                         </AnimatePresence>
                     </div>
 
                     {/* RIGHT — Review card */}
                     <div
-                        className="relative rounded-[28px] overflow-hidden flex flex-col bg-gray-50 border border-gray-200"
+                        className="relative rounded-[28px] overflow-hidden flex flex-col bg-sand/8 border border-sand/15"
                     >
                         {/* Inner top gloss */}
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300/60 to-transparent" />
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-sand/20 to-transparent" />
 
                         <div className="flex flex-col flex-1 p-8 lg:p-10">
 
@@ -236,7 +238,7 @@ export const TestimonialsSection = () => {
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6 }}
                             >
-                                <Quote size={40} className="text-[#3B7E5A]/40 mb-6" />
+                                <Quote size={40} className="text-gold/40 mb-6" />
                             </motion.div>
 
                             {/* Stars */}
@@ -265,14 +267,14 @@ export const TestimonialsSection = () => {
                                     animate="center"
                                     exit="exit"
                                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
-                                    className="flex-1 text-gray-700 text-xl sm:text-2xl lg:text-[1.6rem] font-light leading-relaxed"
+                                    className="flex-1 text-sand/80 text-xl sm:text-2xl lg:text-[1.6rem] font-light leading-relaxed"
                                 >
-                                    &ldquo;{current.comment ?? `Exceptional quality — rated ${current.rating} out of 5 stars.`}&rdquo;
+                                    &ldquo;{current.comment ?? t('testimonialFallbackQuote').replace('{{rating}}', String(current.rating))}&rdquo;
                                 </motion.blockquote>
                             </AnimatePresence>
 
                             {/* Divider */}
-                            <div className="h-px bg-gray-200 my-7" />
+                            <div className="h-px bg-sand/15 my-7" />
 
                             {/* Author + nav row */}
                             <div className="flex items-center justify-between gap-4">
@@ -289,12 +291,12 @@ export const TestimonialsSection = () => {
                                         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
                                         className="flex items-center gap-3"
                                     >
-                                        <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-[#3B7E5A]/40 shrink-0">
+                                        <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-gold/40 shrink-0">
                                             <Avatar name={authorName} src={current.user?.avatar ?? null} />
                                         </div>
                                         <div>
-                                            <div className="text-gray-900 font-bold text-sm">{authorName}</div>
-                                            <div className="text-gray-400 text-[10px] uppercase tracking-widest mt-0.5">Cafrezzo Customer</div>
+                                            <div className="text-sand font-bold text-sm">{authorName}</div>
+                                            <div className="text-cocoa text-[10px] uppercase tracking-widest mt-0.5">{t('cafrezzoCustomer')}</div>
                                         </div>
                                     </motion.div>
                                 </AnimatePresence>
@@ -307,20 +309,20 @@ export const TestimonialsSection = () => {
                                             <button
                                                 key={i}
                                                 onClick={() => { setDirection(i > safeIndex ? 1 : -1); setActive(i); }}
-                                                className={`rounded-full transition-all duration-400 ${i === safeIndex ? 'w-5 h-1.5 bg-[#3B7E5A]' : 'w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400'}`}
+                                                className={`rounded-full transition-all duration-400 ${i === safeIndex ? 'w-5 h-1.5 bg-gold' : 'w-1.5 h-1.5 bg-sand/20 hover:bg-sand/40'}`}
                                             />
                                         ))}
                                     </div>
 
                                     <button
                                         onClick={prev}
-                                        className="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 text-gray-400 hover:text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-100"
+                                        className="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 text-sand/50 hover:text-sand border border-sand/15 hover:border-sand/30 hover:bg-sand/10"
                                     >
                                         <ChevronLeft size={16} />
                                     </button>
                                     <button
                                         onClick={next}
-                                        className="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 bg-[#3B7E5A] text-white hover:bg-[#2D5F41]"
+                                        className="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 bg-gold text-ink hover:bg-[#b8914d]"
                                     >
                                         <ChevronRight size={16} />
                                     </button>
@@ -329,10 +331,10 @@ export const TestimonialsSection = () => {
                         </div>
 
                         {/* Progress bar */}
-                        <div className="h-[2px] bg-gray-200">
+                        <div className="h-[2px] bg-sand/15">
                             <motion.div
                                 key={safeIndex}
-                                className="h-full bg-[#3B7E5A]"
+                                className="h-full bg-gold"
                                 initial={{ width: '0%' }}
                                 animate={{ width: '100%' }}
                                 transition={{ duration: 7, ease: 'linear' }}
