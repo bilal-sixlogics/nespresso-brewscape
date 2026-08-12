@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/LocaleLink';
 import { Coffee, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { TikTokIcon } from '@/components/icons/TikTokIcon';
 import { FacebookIcon, InstagramIcon, LinkedinIcon } from '@/components/icons/SocialIcons';
@@ -56,11 +56,16 @@ export function Footer() {
 
                     {/* Brand */}
                     <div className="space-y-8">
-                        <h1 className="font-display text-2xl lg:text-3xl tracking-tight uppercase leading-none">
+                        {/* Brand mark, not a heading. This was an <h1>, which put a
+                            second "Cafrezzo" H1 on every page — and on client-rendered
+                            routes it was the ONLY H1 in the server HTML, so crawlers
+                            read every page's primary heading as "Cafrezzo". Identical
+                            classes, so the rendered appearance is unchanged. */}
+                        <div className="font-display text-2xl lg:text-3xl tracking-tight uppercase leading-none">
                             {AppConfig.brand.name}
                             <br />
                             <span className="text-base font-sans font-bold tracking-[0.2em] opacity-80 mt-1 block">{t('brandTagline')}</span>
-                        </h1>
+                        </div>
                         {/* <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
                             {t('brandDescription')}
                         </p> */}

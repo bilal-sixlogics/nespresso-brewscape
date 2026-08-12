@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import Link from 'next/link';
+import Link from '@/components/LocaleLink';
 import { usePathname, useRouter } from 'next/navigation';
 import { Search, ShoppingBag, ChevronDown, X, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,7 @@ import { useCart } from '@/store/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { AppConfig } from '@/lib/config';
 import { useLanguage, SUPPORTED_LANGUAGES, Language } from '@/context/LanguageContext';
+import { localeFromPathname, localePath } from '@/lib/i18n';
 import { FlagIcon } from '@/components/ui/FlagIcon';
 import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { useProducts } from '@/hooks/useProducts';
@@ -332,7 +333,7 @@ export function Header() {
                         </button>
 
                         <button
-                            onClick={() => isAuthenticated ? router.push('/account') : openLoginModal()}
+                            onClick={() => isAuthenticated ? router.push(localePath(localeFromPathname(pathname || '/'), '/account')) : openLoginModal()}
                             className="min-h-[44px] min-w-[44px] flex items-center justify-center gap-2 px-2 rounded-full hover:bg-sand/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold transition-colors text-sand"
                             aria-label={t('ariaAccount')}
                         >
