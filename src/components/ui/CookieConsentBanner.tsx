@@ -41,7 +41,7 @@ export function CookieConsentBanner() {
                                 href="/privacy#cookies"
                                 className="text-gold underline underline-offset-2 hover:text-sand transition-colors"
                             >
-                                {copy.learnMore}
+                                {copy.policyLink}
                             </Link>
                         </p>
                         <div className="flex gap-3 flex-shrink-0">
