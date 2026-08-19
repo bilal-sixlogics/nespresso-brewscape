@@ -90,7 +90,7 @@ export function Footer() {
 
                     {/* Quick Links */}
                     <div>
-                        <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-sand">{t('quickLinks')}</h4>
+                        <h2 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-sand">{t('quickLinks')}</h2>
                         <ul className="space-y-4 flex flex-col items-start">
                             <li><Link href="/" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navHome')}</Link></li>
                             <li><Link href="/machines" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navMachines')}</Link></li>
@@ -104,7 +104,7 @@ export function Footer() {
 
                     {/* Support */}
                     <div>
-                        <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-sand">{t('support')}</h4>
+                        <h2 className="font-bold text-xs tracking-[0.2em] uppercase mb-8 text-sand">{t('support')}</h2>
                         <ul className="space-y-4">
                             <li><Link href="/contact" className="text-cocoa hover:text-gold transition-colors text-sm">{t('footerContact')}</Link></li>
                             <li><Link href="/orders/track" className="text-cocoa hover:text-gold transition-colors text-sm">{t('footerTrackOrder')}</Link></li>
@@ -118,7 +118,7 @@ export function Footer() {
                     {/* Newsletter — beige banner per brand guidelines */}
                     <div>
                         <div className="bg-sand rounded-[32px] p-6 sm:p-7 text-ink">
-                            <h4 className="font-bold text-xs tracking-[0.2em] uppercase mb-6 text-ink">{t('stayConnected')}</h4>
+                            <h2 className="font-bold text-xs tracking-[0.2em] uppercase mb-6 text-ink">{t('stayConnected')}</h2>
                             <p className="text-ink/60 text-sm leading-relaxed mb-6">{t('subscribeHero')}</p>
                             {nlState === 'success' ? (
                                 <div className="flex items-center gap-3 bg-gold/15 border border-gold/30 rounded-full px-5 py-3">

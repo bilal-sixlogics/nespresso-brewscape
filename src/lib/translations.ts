@@ -1,5 +1,12 @@
 export const translations = {
     fr: {
+        // ── Homepage prose ──────────────────────────────────────────────
+        // Page-specific body copy. The homepage previously carried well under
+        // 200 visible words, most of it navigation and product tiles.
+        homeAboutHeading: "Le Café, Choisi et Torréfié avec Soin",
+        homeAboutBody1: "Cafrezzo est un torréfacteur et distributeur de café en ligne installé à Sarcelles, aux portes de Paris. Nous proposons des cafés en grains, moulus et en capsules compatibles, aux côtés de machines expresso, à capsules et automatiques issues de marques telles que Lavazza, Carte Noire, Bristot et Mambo.",
+        homeAboutBody2: "Nous livrons en France, en Belgique, en Suisse et au Luxembourg, avec la livraison offerte dès 150€ d’achat. Que vous équipiez un bureau, approvisionniez un restaurant ou perfectionniez simplement votre tasse du matin, notre équipe vous aide à associer la bonne torréfaction à la bonne machine — par téléphone, par email ou en boutique.",
+
         // ── SEO metadata ────────────────────────────────────────────────────
         // Titles and meta descriptions, wired through pageMetadata()’s
         // titleKey / descriptionKey. Before these existed the affected pages
@@ -193,7 +200,7 @@ export const translations = {
         digitalWallet: "Stripe / Portefeuille numérique",
         codInstructions: "Payez en toute simplicité lors de la réception de votre commande.",
         stripeInstructions: "Redirection vers le portail sécurisé Stripe.",
-        heroSubtitle: "Nous créons les meilleures expériences café pour tous ceux qui nous rejoignent. Dynamisez votre journée avec nos créations de café exquises.",
+        heroSubtitle: "Chez Cafrezzo, nous sélectionnons les meilleures marques de café et proposons des solutions adaptées à chaque besoin : cafés en grains, moulus, capsules, machines et services dédiés aux entreprises comme aux particuliers.",
         heritageTitle: "L'ART DU CAFÉ FRANÇAIS",
         heritageSubtitle: "Notre Héritage",
         heritageDesc: "CAFREZZO — Votre expérience café depuis des années. Nous parcourons le globe pour vous rapporter l'excellence dans chaque grain, torréfié avec passion.",
@@ -884,6 +891,13 @@ export const translations = {
     },
 
     en: {
+        // ── Homepage prose ──────────────────────────────────────────────
+        // Page-specific body copy. The homepage previously carried well under
+        // 200 visible words, most of it navigation and product tiles.
+        homeAboutHeading: "Coffee, Chosen and Roasted With Care",
+        homeAboutBody1: "Cafrezzo is a French coffee roaster and online retailer based in Sarcelles, just outside Paris. We stock whole beans, ground coffee and compatible capsules alongside espresso, capsule and bean-to-cup machines from brands including Lavazza, Carte Noire, Bristot and Mambo.",
+        homeAboutBody2: "Orders ship across France, Belgium, Switzerland and Luxembourg, with delivery free on baskets over €150. Whether you are equipping an office, supplying a restaurant or simply refining your morning cup at home, our team can help you match the right roast to the right machine — by phone, by email, or in the shop.",
+
         // ── SEO metadata ────────────────────────────────────────────────────
         // Titles and meta descriptions, wired through pageMetadata()’s
         // titleKey / descriptionKey. Before these existed the affected pages
@@ -1076,7 +1090,7 @@ export const translations = {
         digitalWallet: "Stripe / Digital Wallet",
         codInstructions: "Pay conveniently when your order arrives at your door.",
         stripeInstructions: "You will be redirected to the secure Stripe portal.",
-        heroSubtitle: "At Cafrezzo, we select the best coffee brands and offer solutions tailored to every need: coffee beans, ground coffee, capsules, coffee machines and dedicated services for both businesses and individuals",
+        heroSubtitle: "At Cafrezzo we select the best coffee brands and offer solutions for every need: whole beans, ground coffee, capsules, machines and dedicated services for businesses and individuals alike.",
         heritageTitle: "THE ART OF FRENCH COFFEE",
         heritageSubtitle: "Our Heritage",
         heritageDesc: "Cafrezzo - The New Worlds. Your French coffee expert for years. We travel the globe to bring you excellence in every bean, roasted with passion.",
@@ -1767,6 +1781,13 @@ export const translations = {
     },
 
     de: {
+        // ── Homepage prose ──────────────────────────────────────────────
+        // Page-specific body copy. The homepage previously carried well under
+        // 200 visible words, most of it navigation and product tiles.
+        homeAboutHeading: "Kaffee, mit Sorgfalt Ausgewählt und Geröstet",
+        homeAboutBody1: "Cafrezzo ist eine Kaffeerösterei und ein Online-Händler mit Sitz in Sarcelles vor den Toren von Paris. Wir führen ganze Bohnen, gemahlenen Kaffee und kompatible Kapseln sowie Espresso-, Kapsel- und Kaffeevollautomaten von Marken wie Lavazza, Carte Noire, Bristot und Mambo.",
+        homeAboutBody2: "Wir liefern nach Frankreich, Belgien, in die Schweiz und nach Luxemburg, versandkostenfrei ab 150 € Warenwert. Ob Sie ein Büro ausstatten, ein Restaurant beliefern oder einfach Ihre Tasse am Morgen verfeinern möchten — unser Team hilft Ihnen, die passende Röstung zur passenden Maschine zu finden, telefonisch, per E-Mail oder im Laden.",
+
         // ── SEO metadata ────────────────────────────────────────────────────
         // Titles and meta descriptions, wired through pageMetadata()’s
         // titleKey / descriptionKey. Before these existed the affected pages
@@ -1876,7 +1897,7 @@ export const translations = {
         fullName: "Vollständiger Name",
         emailAddress: "E-Mail-Adresse",
         placeOrder: "Bestellung abschicken",
-        heroSubtitle: "Wir schaffen die besten Kaffee-Erlebnisse für alle.",
+        heroSubtitle: "Bei Cafrezzo wählen wir die besten Kaffeemarken aus und bieten Lösungen für jeden Bedarf: ganze Bohnen, gemahlener Kaffee, Kapseln, Maschinen und Services für Unternehmen und Privatkunden.",
         heritageTitle: "FRANZÖSISCHE KAFFEEKUNST",
         heritageSubtitle: "Unser Erbe",
         newArrivals: "NEUHEITEN",
@@ -2647,6 +2668,13 @@ export const translations = {
     },
 
     ru: {
+        // ── Homepage prose ──────────────────────────────────────────────
+        // Page-specific body copy. The homepage previously carried well under
+        // 200 visible words, most of it navigation and product tiles.
+        homeAboutHeading: "Кофе, отобранный и обжаренный с заботой",
+        homeAboutBody1: "Cafrezzo — обжарщик кофе и интернет-магазин из Сарселя под Парижем. У нас есть кофе в зёрнах, молотый кофе и совместимые капсулы, а также эспрессо-, капсульные и автоматические кофемашины брендов Lavazza, Carte Noire, Bristot и Mambo.",
+        homeAboutBody2: "Мы доставляем во Францию, Бельгию, Швейцарию и Люксембург, а при заказе от 150 € доставка бесплатна. Оснащаете офис, снабжаете ресторан или просто совершенствуете утреннюю чашку — наша команда поможет подобрать нужную обжарку под нужную машину по телефону, по почте или в магазине.",
+
         // ── SEO metadata ────────────────────────────────────────────────────
         // Titles and meta descriptions, wired through pageMetadata()’s
         // titleKey / descriptionKey. Before these existed the affected pages
@@ -2756,7 +2784,7 @@ export const translations = {
         fullName: "Имя и фамилия",
         emailAddress: "Email",
         placeOrder: "Сделать заказ",
-        heroSubtitle: "Мы создаем лучший кофейный опыт для каждого.",
+        heroSubtitle: "Cafrezzo отбирает лучшие кофейные бренды и предлагает решения для любых задач: кофе в зёрнах и молотый, капсулы, кофемашины и услуги для компаний и частных клиентов.",
         heritageTitle: "ИСКУССТВО ФРАНЦУЗСКОГО КОФЕ",
         heritageSubtitle: "Наше наследие",
         newArrivals: "НОВИНКИ",
@@ -3527,6 +3555,13 @@ export const translations = {
     },
 
     nl: {
+        // ── Homepage prose ──────────────────────────────────────────────
+        // Page-specific body copy. The homepage previously carried well under
+        // 200 visible words, most of it navigation and product tiles.
+        homeAboutHeading: "Koffie, met Zorg Gekozen en Gebrand",
+        homeAboutBody1: "Cafrezzo is een Franse koffiebrander en webwinkel in Sarcelles, net buiten Parijs. We hebben koffiebonen, gemalen koffie en compatibele capsules, naast espresso-, capsule- en volautomatische machines van merken als Lavazza, Carte Noire, Bristot en Mambo.",
+        homeAboutBody2: "We leveren in Frankrijk, België, Zwitserland en Luxemburg, met gratis verzending vanaf € 150. Of je een kantoor inricht, een restaurant belevert of simpelweg je ochtendkop wilt verfijnen — ons team helpt je de juiste roostering bij de juiste machine te vinden, telefonisch, per e-mail of in de winkel.",
+
         // ── SEO metadata ────────────────────────────────────────────────────
         // Titles and meta descriptions, wired through pageMetadata()’s
         // titleKey / descriptionKey. Before these existed the affected pages
@@ -3636,7 +3671,7 @@ export const translations = {
         fullName: "Volledige naam",
         emailAddress: "E-mailadres",
         placeOrder: "Bestelling plaatsen",
-        heroSubtitle: "Wij creëren de beste koffie-ervaringen voor iedereen.",
+        heroSubtitle: "Bij Cafrezzo selecteren we de beste koffiemerken en bieden we oplossingen voor elke behoefte: koffiebonen, gemalen koffie, capsules, machines en diensten voor bedrijven en particulieren.",
         heritageTitle: "DE KUNST VAN FRANSE KOFFIE",
         heritageSubtitle: "Ons Erfgoed",
         newArrivals: "NIEUW BINNEN",
