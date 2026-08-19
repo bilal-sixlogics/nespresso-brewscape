@@ -15,6 +15,7 @@ export async function generateMetadata({
         title: 'Gourmandises & Biscuits',
         description: 'Biscuits, chocolats et douceurs à accompagner votre café. Sélection gourmande Cafrezzo, livraison offerte dès 150€.',
         path: '/sweets',
+        descriptionKey: 'sweetsMetaDescription',
         titleKey: 'sweetsHeroTitle',
     });
 }

@@ -15,6 +15,7 @@ export async function generateMetadata({
         title: 'Vente en Gros & Professionnels',
         description: 'Solutions café pour entreprises, bureaux et restaurateurs. Tarifs professionnels et accompagnement Cafrezzo.',
         path: '/wholesale',
+        descriptionKey: 'wholesaleMetaDescription',
         titleKey: 'wholesalePartnerHeading',
     });
 }

@@ -1,8 +1,7 @@
 import { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/seo';
 
 export const dynamic = 'force-static';
-
-const BASE_URL = 'https://cafrezzo.com';
 
 // Private / transactional routes — no crawler has any reason to index these.
 //
@@ -80,7 +79,7 @@ export default function robots(): MetadataRoute.Robots {
                 disallow: PRIVATE_PATHS,
             },
         ],
-        sitemap: `${BASE_URL}/sitemap.xml`,
-        host: BASE_URL,
+        sitemap: `${SITE_URL}/sitemap.xml`,
+        host: SITE_URL,
     };
 }

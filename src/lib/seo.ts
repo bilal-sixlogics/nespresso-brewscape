@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 
+import { AppConfig } from './config';
+
 import {
     DEFAULT_LOCALE,
     LOCALES,
@@ -9,7 +11,17 @@ import {
 } from './i18n';
 import { translations, type TranslationKey } from './translations';
 
-const BASE_URL = 'https://cafrezzo.com';
+/**
+ * Canonical origin for every absolute URL the site emits — metadataBase,
+ * canonicals, hreflang, robots.txt and the sitemap all read from here.
+ *
+ * Single source of truth on purpose: this was redeclared in robots.ts,
+ * sitemap.ts and shop/page.tsx, so changing the domain would have updated
+ * some canonicals and left the others advertising the old host.
+ */
+export const SITE_URL = `https://${AppConfig.brand.domain}`;
+
+const BASE_URL = SITE_URL;
 const SITE_NAME = 'Cafrezzo';
 const TITLE_TEMPLATE = `%s | ${SITE_NAME}`;
 
@@ -357,7 +369,10 @@ export const organizationSchema = {
         telephone: '+33-1-39-85-85-65',
         contactType: 'customer service',
         areaServed: ['FR', 'BE', 'CH', 'LU'],
-        availableLanguage: ['French', 'English'],
+        // Derived from LOCALES so it cannot drift out of sync. This
+        // previously named only French and English, while the site has
+        // published five languages since the locale routing landed.
+        availableLanguage: LOCALES.map(l => LOCALE_META[l].hreflang),
     },
     // Confirmed profile URLs. Getting these wrong breaks entity resolution —
     // Google cannot tie the site to the accounts — so only add a URL that has
@@ -423,19 +438,30 @@ export const storeSchema = {
     ],
 };
 
-export const websiteSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'Cafrezzo',
-    url: BASE_URL,
-    inLanguage: 'fr-FR',
-    publisher: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
-    // NOTE: no `potentialAction` / SearchAction.
-    // It previously declared `/shop?q={search_term_string}`, but /shop only
-    // reads the `category` and `brand` query params — `q` is ignored, so the
-    // sitelinks search box would have dropped users on unfiltered results.
-    // To restore it, make /shop honour a `q` param, then re-add the action.
-};
+/**
+ * WebSite schema for one locale.
+ *
+ * A function rather than a constant because `inLanguage` has to match the
+ * page it is emitted on. As a constant it hardcoded 'fr-FR', so /en, /de,
+ * /ru and /nl each told Google they were French — the identical defect that
+ * buildBaseMetadata() was turned into a function to fix, left behind in the
+ * schema layer. generateArticleSchema() already derives it this way.
+ */
+export function buildWebsiteSchema(locale: Locale) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'Cafrezzo',
+        url: BASE_URL,
+        inLanguage: LOCALE_META[locale].hreflang,
+        publisher: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
+        // NOTE: no `potentialAction` / SearchAction.
+        // It previously declared `/shop?q={search_term_string}`, but /shop only
+        // reads the `category` and `brand` query params — `q` is ignored, so the
+        // sitelinks search box would have dropped users on unfiltered results.
+        // To restore it, make /shop honour a `q` param, then re-add the action.
+    };
+}
 
 /**
  * JSON-LD product schema for PDP pages.

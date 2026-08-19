@@ -15,6 +15,8 @@ export async function generateMetadata({
         title: 'Nos Origines',
         description: 'L’histoire de Cafrezzo et les origines de nos cafés — terroirs, producteurs et méthodes de torréfaction.',
         path: '/our-origins',
+        titleKey: 'ourOriginsMetaTitle',
+        descriptionKey: 'ourOriginsMetaDescription',
     });
 }
 

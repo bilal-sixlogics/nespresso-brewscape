@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
-import { AppConfig } from '@/lib/config';
 import { Endpoints } from '@/lib/api/endpoints';
+import { SITE_URL } from '@/lib/seo';
 import { DEFAULT_LOCALE, LOCALES, LOCALE_META, localePath } from '@/lib/i18n';
 
 // Rebuilt hourly so newly published products appear without a redeploy.
@@ -8,10 +8,14 @@ import { DEFAULT_LOCALE, LOCALES, LOCALE_META, localePath } from '@/lib/i18n';
 // sitemap never reflected the real catalogue.)
 export const revalidate = 3600;
 
-const BASE_URL = `https://${AppConfig.brand.domain}`;
-
-// The catalogue is ~104 products; one page covers it with headroom.
+// The catalogue is ~104 products, so in practice one request covers it. It is
+// still paged through below: a single fixed-size request would quietly drop
+// everything past the first page the day the catalogue outgrows it.
 const CATALOGUE_PAGE_SIZE = 200;
+
+// Backstop for an API that ignores `page` and keeps answering with full pages.
+// Without it that case loops until the request budget dies.
+const MAX_CATALOGUE_PAGES = 25;
 
 interface ApiProduct {
     slug?: string;
@@ -64,6 +68,34 @@ function parseDate(value?: string): Date | undefined {
 }
 
 /**
+ * Every published product, paged through instead of capped at one request.
+ *
+ * Stops as soon as a page comes back short. That is also what happens when the
+ * API ignores `page` altogether — it repeats the same short page, so we exit
+ * after a single round trip. If a *full* page still arrives on the last allowed
+ * iteration the catalogue has outgrown the backstop and the sitemap really is
+ * incomplete, so that says so loudly rather than truncating in silence.
+ */
+async function fetchAllProducts(): Promise<ApiProduct[]> {
+    const all: ApiProduct[] = [];
+
+    for (let page = 1; page <= MAX_CATALOGUE_PAGES; page++) {
+        const batch = await fetchCollection<ApiProduct>(
+            `${Endpoints.products}?per_page=${CATALOGUE_PAGE_SIZE}&page=${page}`,
+            `products page ${page}`,
+        );
+        all.push(...batch);
+        if (batch.length < CATALOGUE_PAGE_SIZE) return all;
+    }
+
+    console.error(
+        `[sitemap] products still returning full pages after ${MAX_CATALOGUE_PAGES} requests ` +
+            `(${all.length} collected) — the sitemap is TRUNCATED; raise MAX_CATALOGUE_PAGES`,
+    );
+    return all;
+}
+
+/**
  * hreflang alternates for one locale-free path.
  *
  * Google treats sitemap-level hreflang as equivalent to the on-page link tags,
@@ -73,9 +105,9 @@ function parseDate(value?: string): Date | undefined {
 function hreflangFor(path: string): Record<string, string> {
     const languages: Record<string, string> = {};
     for (const locale of LOCALES) {
-        languages[LOCALE_META[locale].hreflang] = `${BASE_URL}${localePath(locale, path)}`;
+        languages[LOCALE_META[locale].hreflang] = `${SITE_URL}${localePath(locale, path)}`;
     }
-    languages['x-default'] = `${BASE_URL}${localePath(DEFAULT_LOCALE, path)}`;
+    languages['x-default'] = `${SITE_URL}${localePath(DEFAULT_LOCALE, path)}`;
     return languages;
 }
 
@@ -108,7 +140,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const staticRoutes: MetadataRoute.Sitemap = STATIC_PATHS.flatMap(entry =>
         LOCALES.map(locale => ({
-            url: `${BASE_URL}${localePath(locale, entry.path)}`,
+            url: `${SITE_URL}${localePath(locale, entry.path)}`,
             lastModified: now,
             changeFrequency: entry.changeFrequency,
             priority: locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9,
@@ -117,10 +149,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
 
     const [products, categories, posts, brewGuides] = await Promise.all([
-        fetchCollection<ApiProduct>(
-            `${Endpoints.products}?per_page=${CATALOGUE_PAGE_SIZE}`,
-            'products',
-        ),
+        fetchAllProducts(),
         fetchCollection<ApiCategory>(Endpoints.categories, 'categories'),
         fetchCollection<ApiBlogPost>(Endpoints.blogPosts, 'blog posts'),
         fetchCollection<unknown>(Endpoints.brewGuides, 'brew guides'),
@@ -133,7 +162,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // reappears on its own when the backend is fixed. No redeploy needed.
     const brewGuideRoutes: MetadataRoute.Sitemap = brewGuides.length
         ? LOCALES.map(locale => ({
-              url: `${BASE_URL}${localePath(locale, '/brew-guide')}`,
+              url: `${SITE_URL}${localePath(locale, '/brew-guide')}`,
               lastModified: now,
               changeFrequency: 'monthly' as const,
               priority: locale === DEFAULT_LOCALE ? 0.6 : 0.54,
@@ -149,7 +178,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .filter(p => p.slug && p.status !== 'inactive' && p.status !== 'draft')
         .flatMap(p =>
             LOCALES.map(locale => ({
-                url: `${BASE_URL}${localePath(locale, `/shop/${p.slug}`)}`,
+                url: `${SITE_URL}${localePath(locale, `/shop/${p.slug}`)}`,
                 lastModified: parseDate(p.updated_at) ?? now,
                 changeFrequency: 'weekly' as const,
                 priority: locale === DEFAULT_LOCALE ? 0.85 : 0.76,
@@ -175,7 +204,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .filter(p => p.id != null && p.status !== 'draft')
         .flatMap(p =>
             LOCALES.map(locale => ({
-                url: `${BASE_URL}${localePath(locale, `/blog/${p.id}`)}`,
+                url: `${SITE_URL}${localePath(locale, `/blog/${p.id}`)}`,
                 lastModified: parseDate(p.updated_at) ?? parseDate(p.published_at) ?? now,
                 changeFrequency: 'monthly' as const,
                 priority: locale === DEFAULT_LOCALE ? 0.6 : 0.54,

@@ -1,5 +1,27 @@
 export const translations = {
     fr: {
+        // ── SEO metadata ────────────────────────────────────────────────────
+        // Titles and meta descriptions, wired through pageMetadata()’s
+        // titleKey / descriptionKey. Before these existed the affected pages
+        // passed only the French literal, so en/de/ru/nl all shipped a French
+        // <title> and meta description. A key missing here silently falls back
+        // to fr via tr() — which was the bug, so keep all five blocks in sync.
+        shopMetaTitle: "Boutique — Cafés, Capsules & Machines",
+        shopMetaDescription: "Parcourez tout le catalogue Cafrezzo : cafés en grains, moulus, capsules compatibles, machines et gourmandises. Livraison offerte dès 150€.",
+        machinesMetaDescription: "Machines à café expresso, à capsules et automatiques sélectionnées par Cafrezzo. Marques premium, livraison offerte dès 150€.",
+        accessoriesMetaDescription: "Tasses, gobelets, filtres et accessoires pour préparer et servir votre café. Sélection Cafrezzo, livraison offerte dès 150€.",
+        sweetsMetaDescription: "Biscuits, chocolats et douceurs à accompagner votre café. Sélection gourmande Cafrezzo, livraison offerte dès 150€.",
+        ourOriginsMetaTitle: "Nos Origines",
+        ourOriginsMetaDescription: "L’histoire de Cafrezzo et les origines de nos cafés — terroirs, producteurs et méthodes de torréfaction.",
+        contactMetaDescription: "Contactez Cafrezzo : boutique de Sarcelles, téléphone, email et horaires d’ouverture. Réponse sous 24 heures ouvrables.",
+        wholesaleMetaDescription: "Solutions café pour entreprises, bureaux et restaurateurs. Tarifs professionnels et accompagnement Cafrezzo.",
+        shippingMetaDescription: "Délais, tarifs et conditions de livraison Cafrezzo. Livraison offerte dès 150€ d’achat en France.",
+        returnsMetaTitle: "Retours & Remboursements",
+        returnsMetaDescription: "Conditions de retour et de remboursement des commandes Cafrezzo — délais, procédure et prise en charge.",
+        termsMetaDescription: "Conditions générales d’utilisation et de vente du site Cafrezzo.",
+        privacyMetaDescription: "Comment Cafrezzo collecte, utilise et protège vos données personnelles. Politique de confidentialité et cookies.",
+        brewGuideMetaTitle: "Guide de Préparation du Café",
+
         // ... (previous keys remain the same, adding/updating testimonials)
         testimonialFirst:"Ils parlent de Nous",
         testimonialSecond: "de Nous",
@@ -862,6 +884,28 @@ export const translations = {
     },
 
     en: {
+        // ── SEO metadata ────────────────────────────────────────────────────
+        // Titles and meta descriptions, wired through pageMetadata()’s
+        // titleKey / descriptionKey. Before these existed the affected pages
+        // passed only the French literal, so en/de/ru/nl all shipped a French
+        // <title> and meta description. A key missing here silently falls back
+        // to fr via tr() — which was the bug, so keep all five blocks in sync.
+        shopMetaTitle: "Shop — Coffee, Capsules & Machines",
+        shopMetaDescription: "Browse the full Cafrezzo catalogue: whole bean and ground coffee, compatible capsules, machines and treats. Free shipping over €150.",
+        machinesMetaDescription: "Espresso, capsule and bean-to-cup coffee machines selected by Cafrezzo. Premium brands, free shipping over €150.",
+        accessoriesMetaDescription: "Cups, tumblers, filters and accessories for brewing and serving your coffee. Curated by Cafrezzo, free shipping over €150.",
+        sweetsMetaDescription: "Biscuits, chocolates and treats to go with your coffee. A gourmet selection from Cafrezzo, free shipping over €150.",
+        ourOriginsMetaTitle: "Our Origins",
+        ourOriginsMetaDescription: "The Cafrezzo story and where our coffees come from — terroirs, growers and roasting methods.",
+        contactMetaDescription: "Contact Cafrezzo: our Sarcelles shop, phone, email and opening hours. We reply within 24 business hours.",
+        wholesaleMetaDescription: "Coffee solutions for businesses, offices and restaurants. Trade pricing and dedicated support from Cafrezzo.",
+        shippingMetaDescription: "Cafrezzo delivery times, rates and conditions. Free shipping on orders over €150 within France.",
+        returnsMetaTitle: "Returns & Refunds",
+        returnsMetaDescription: "Return and refund conditions for Cafrezzo orders — deadlines, procedure and who covers the cost.",
+        termsMetaDescription: "General terms and conditions of use and sale for the Cafrezzo website.",
+        privacyMetaDescription: "How Cafrezzo collects, uses and protects your personal data. Privacy and cookie policy.",
+        brewGuideMetaTitle: "Coffee Brewing Guide",
+
         testimonialFirst:"They're talking about us",
         testimonialSecond: "about us",
         customerStories: "Customer Stories",
@@ -1723,6 +1767,28 @@ export const translations = {
     },
 
     de: {
+        // ── SEO metadata ────────────────────────────────────────────────────
+        // Titles and meta descriptions, wired through pageMetadata()’s
+        // titleKey / descriptionKey. Before these existed the affected pages
+        // passed only the French literal, so en/de/ru/nl all shipped a French
+        // <title> and meta description. A key missing here silently falls back
+        // to fr via tr() — which was the bug, so keep all five blocks in sync.
+        shopMetaTitle: "Shop — Kaffee, Kapseln & Maschinen",
+        shopMetaDescription: "Entdecken Sie das gesamte Cafrezzo-Sortiment: ganze Bohnen, gemahlener Kaffee, kompatible Kapseln, Maschinen und Feines. Versandkostenfrei ab 150 €.",
+        machinesMetaDescription: "Espresso-, Kapsel- und Kaffeevollautomaten, ausgewählt von Cafrezzo. Premium-Marken, versandkostenfrei ab 150 €.",
+        accessoriesMetaDescription: "Tassen, Becher, Filter und Zubehör für die Zubereitung und den Genuss Ihres Kaffees. Auswahl von Cafrezzo, versandkostenfrei ab 150 €.",
+        sweetsMetaDescription: "Kekse, Schokolade und Süßes als Begleitung zu Ihrem Kaffee. Feine Auswahl von Cafrezzo, versandkostenfrei ab 150 €.",
+        ourOriginsMetaTitle: "Unsere Ursprünge",
+        ourOriginsMetaDescription: "Die Geschichte von Cafrezzo und die Herkunft unserer Kaffees — Anbaugebiete, Produzenten und Röstverfahren.",
+        contactMetaDescription: "Kontakt zu Cafrezzo: Ladengeschäft in Sarcelles, Telefon, E-Mail und Öffnungszeiten. Antwort innerhalb von 24 Werkstunden.",
+        wholesaleMetaDescription: "Kaffeelösungen für Unternehmen, Büros und Gastronomie. Großhandelspreise und persönliche Betreuung von Cafrezzo.",
+        shippingMetaDescription: "Lieferzeiten, Versandkosten und Lieferbedingungen von Cafrezzo. Versandkostenfrei ab 150 € innerhalb Frankreichs.",
+        returnsMetaTitle: "Rückgabe & Rückerstattung",
+        returnsMetaDescription: "Rückgabe- und Rückerstattungsbedingungen für Cafrezzo-Bestellungen — Fristen, Ablauf und Kostenübernahme.",
+        termsMetaDescription: "Allgemeine Geschäftsbedingungen für die Nutzung und den Verkauf auf der Cafrezzo-Website.",
+        privacyMetaDescription: "Wie Cafrezzo Ihre personenbezogenen Daten erhebt, verwendet und schützt. Datenschutz- und Cookie-Richtlinie.",
+        brewGuideMetaTitle: "Kaffee-Zubereitungsguide",
+
         loading: "Laden...",
         loadMore: "Mehr laden",
         noMoreItems: "Du hast alles gesehen!",
@@ -2581,6 +2647,28 @@ export const translations = {
     },
 
     ru: {
+        // ── SEO metadata ────────────────────────────────────────────────────
+        // Titles and meta descriptions, wired through pageMetadata()’s
+        // titleKey / descriptionKey. Before these existed the affected pages
+        // passed only the French literal, so en/de/ru/nl all shipped a French
+        // <title> and meta description. A key missing here silently falls back
+        // to fr via tr() — which was the bug, so keep all five blocks in sync.
+        shopMetaTitle: "Магазин — кофе, капсулы и кофемашины",
+        shopMetaDescription: "Полный каталог Cafrezzo: кофе в зёрнах и молотый, совместимые капсулы, кофемашины и сладости. Бесплатная доставка от 150 €.",
+        machinesMetaDescription: "Эспрессо-, капсульные и автоматические кофемашины, отобранные Cafrezzo. Премиальные бренды, бесплатная доставка от 150 €.",
+        accessoriesMetaDescription: "Чашки, стаканы, фильтры и аксессуары для приготовления и подачи кофе. Подборка Cafrezzo, бесплатная доставка от 150 €.",
+        sweetsMetaDescription: "Печенье, шоколад и сладости к вашему кофе. Гурманская подборка Cafrezzo, бесплатная доставка от 150 €.",
+        ourOriginsMetaTitle: "Наши истоки",
+        ourOriginsMetaDescription: "История Cafrezzo и происхождение нашего кофе — терруары, производители и способы обжарки.",
+        contactMetaDescription: "Свяжитесь с Cafrezzo: магазин в Сарселе, телефон, эл. почта и часы работы. Отвечаем в течение 24 рабочих часов.",
+        wholesaleMetaDescription: "Кофейные решения для компаний, офисов и ресторанов. Оптовые цены и поддержка от Cafrezzo.",
+        shippingMetaDescription: "Сроки, тарифы и условия доставки Cafrezzo. Бесплатная доставка при заказе от 150 € по Франции.",
+        returnsMetaTitle: "Возврат и возмещение",
+        returnsMetaDescription: "Условия возврата и возмещения по заказам Cafrezzo — сроки, процедура и кто оплачивает.",
+        termsMetaDescription: "Общие условия использования и продажи на сайте Cafrezzo.",
+        privacyMetaDescription: "Как Cafrezzo собирает, использует и защищает ваши персональные данные. Политика конфиденциальности и файлов cookie.",
+        brewGuideMetaTitle: "Руководство по приготовлению кофе",
+
         loading: "Загрузка...",
         loadMore: "Показать больше",
         noMoreItems: "Вы все посмотрели!",
@@ -3439,6 +3527,28 @@ export const translations = {
     },
 
     nl: {
+        // ── SEO metadata ────────────────────────────────────────────────────
+        // Titles and meta descriptions, wired through pageMetadata()’s
+        // titleKey / descriptionKey. Before these existed the affected pages
+        // passed only the French literal, so en/de/ru/nl all shipped a French
+        // <title> and meta description. A key missing here silently falls back
+        // to fr via tr() — which was the bug, so keep all five blocks in sync.
+        shopMetaTitle: "Shop — koffie, capsules & machines",
+        shopMetaDescription: "Bekijk het volledige Cafrezzo-assortiment: koffiebonen, gemalen koffie, compatibele capsules, machines en lekkernijen. Gratis verzending vanaf € 150.",
+        machinesMetaDescription: "Espresso-, capsule- en volautomatische koffiemachines geselecteerd door Cafrezzo. Premiummerken, gratis verzending vanaf € 150.",
+        accessoriesMetaDescription: "Kopjes, bekers, filters en accessoires om je koffie te zetten en te serveren. Selectie van Cafrezzo, gratis verzending vanaf € 150.",
+        sweetsMetaDescription: "Koekjes, chocolade en lekkernijen bij je koffie. Gastronomische selectie van Cafrezzo, gratis verzending vanaf € 150.",
+        ourOriginsMetaTitle: "Onze oorsprong",
+        ourOriginsMetaDescription: "Het verhaal van Cafrezzo en de herkomst van onze koffie — terroirs, producenten en roostermethodes.",
+        contactMetaDescription: "Neem contact op met Cafrezzo: winkel in Sarcelles, telefoon, e-mail en openingstijden. Antwoord binnen 24 werkuren.",
+        wholesaleMetaDescription: "Koffieoplossingen voor bedrijven, kantoren en restaurants. Groothandelsprijzen en persoonlijke begeleiding van Cafrezzo.",
+        shippingMetaDescription: "Levertijden, tarieven en leveringsvoorwaarden van Cafrezzo. Gratis verzending vanaf € 150 binnen Frankrijk.",
+        returnsMetaTitle: "Retouren & terugbetalingen",
+        returnsMetaDescription: "Retour- en terugbetalingsvoorwaarden voor Cafrezzo-bestellingen — termijnen, procedure en kosten.",
+        termsMetaDescription: "Algemene voorwaarden voor gebruik en verkoop van de website van Cafrezzo.",
+        privacyMetaDescription: "Hoe Cafrezzo je persoonsgegevens verzamelt, gebruikt en beschermt. Privacy- en cookiebeleid.",
+        brewGuideMetaTitle: "Koffiezetgids",
+
         loading: "Laden...",
         loadMore: "Meer laden",
         noMoreItems: "Je hebt alles gezien!",

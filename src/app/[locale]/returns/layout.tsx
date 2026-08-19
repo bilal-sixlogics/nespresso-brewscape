@@ -15,6 +15,8 @@ export async function generateMetadata({
         title: 'Retours & Remboursements',
         description: 'Conditions de retour et de remboursement des commandes Cafrezzo — délais, procédure et prise en charge.',
         path: '/returns',
+        titleKey: 'returnsMetaTitle',
+        descriptionKey: 'returnsMetaDescription',
     });
 }
 

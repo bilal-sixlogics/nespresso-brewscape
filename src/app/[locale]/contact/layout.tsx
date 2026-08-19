@@ -15,6 +15,8 @@ export async function generateMetadata({
         title: 'Contact & Boutiques',
         description: 'Contactez Cafrezzo : boutique de Sarcelles, téléphone, email et horaires d’ouverture. Réponse sous 24 heures ouvrables.',
         path: '/contact',
+        titleKey: 'contactTitle',
+        descriptionKey: 'contactMetaDescription',
     });
 }
 

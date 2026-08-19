@@ -12,7 +12,7 @@ import type { Metadata } from 'next';
 import ShopPageClient from './ShopPageClient';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { getProductList } from '@/lib/api/server';
-import { generateBreadcrumbSchema, pageMetadata } from '@/lib/seo';
+import { generateBreadcrumbSchema, pageMetadata, SITE_URL } from '@/lib/seo';
 import { localePath, toLocale, type Locale } from '@/lib/i18n';
 
 export const revalidate = 3600;
@@ -37,6 +37,8 @@ export async function generateMetadata({
         description:
             'Parcourez tout le catalogue Cafrezzo : cafés en grains, moulus, capsules compatibles, machines et gourmandises. Livraison offerte dès 150€.',
         path: '/shop',
+        titleKey: 'shopMetaTitle',
+        descriptionKey: 'shopMetaDescription',
     });
 
     // A filtered view is a slice of the same listing, not a separate page.
@@ -46,7 +48,7 @@ export async function generateMetadata({
         return {
             ...base,
             robots: { index: false, follow: true },
-            alternates: { canonical: `https://cafrezzo.com${localePath(locale, '/shop')}` },
+            alternates: { canonical: `${SITE_URL}${localePath(locale, '/shop')}` },
         };
     }
 
@@ -62,7 +64,7 @@ function buildItemList(locale: Locale, products: { slug?: string; name: string }
             '@type': 'ListItem',
             position: i + 1,
             name: p.name,
-            url: `https://cafrezzo.com${localePath(locale, `/shop/${p.slug ?? ''}`)}`,
+            url: `${SITE_URL}${localePath(locale, `/shop/${p.slug ?? ''}`)}`,
         })),
     };
 }

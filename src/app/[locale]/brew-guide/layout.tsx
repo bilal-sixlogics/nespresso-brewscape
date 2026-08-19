@@ -15,6 +15,7 @@ export async function generateMetadata({
         title: 'Guide de Préparation du Café',
         description: 'Comment réussir votre café : dosage, mouture, température et temps d’extraction. Le guide de préparation Cafrezzo.',
         path: '/brew-guide',
+        titleKey: 'brewGuideMetaTitle',
         descriptionKey: 'brewGuideHeroDesc',
     });
 }

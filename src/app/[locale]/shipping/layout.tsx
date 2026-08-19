@@ -15,6 +15,9 @@ export async function generateMetadata({
         title: 'Livraison & Retours',
         description: 'Délais, tarifs et conditions de livraison Cafrezzo. Livraison offerte dès 150€ d’achat en France.',
         path: '/shipping',
+        titleKey: 'shippingPageHeadingLine1',
+        titleKey2: 'shippingPageHeadingLine2',
+        descriptionKey: 'shippingMetaDescription',
     });
 }
 
