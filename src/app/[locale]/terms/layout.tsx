@@ -15,6 +15,7 @@ export async function generateMetadata({
         title: 'Conditions d’Utilisation',
         description: 'Conditions générales d’utilisation et de vente du site Cafrezzo.',
         path: '/terms',
+        descriptionKey: 'termsMetaDescription',
         titleKey: 'legalTermsHeadingLine1',
         titleKey2: 'legalTermsHeadingLine2',
     });

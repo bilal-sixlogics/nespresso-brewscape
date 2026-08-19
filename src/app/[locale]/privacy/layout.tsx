@@ -15,6 +15,7 @@ export async function generateMetadata({
         title: 'Politique de Confidentialité',
         description: 'Comment Cafrezzo collecte, utilise et protège vos données personnelles. Politique de confidentialité et cookies.',
         path: '/privacy',
+        descriptionKey: 'privacyMetaDescription',
         titleKey: 'legalPrivacyHeadingLine1',
         titleKey2: 'legalPrivacyHeadingLine2',
     });

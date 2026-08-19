@@ -14,6 +14,8 @@ export async function generateMetadata({
         title: 'Boutique — Cafés, Capsules & Machines',
         description: 'Parcourez tout le catalogue Cafrezzo : cafés en grains, moulus, capsules compatibles, machines et gourmandises. Livraison offerte dès 150€.',
         path: '/shop',
+        titleKey: 'shopMetaTitle',
+        descriptionKey: 'shopMetaDescription',
     });
 }
 

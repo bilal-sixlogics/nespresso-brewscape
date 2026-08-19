@@ -15,6 +15,7 @@ export async function generateMetadata({
         title: 'Machines à Café',
         description: 'Machines à café expresso, à capsules et automatiques sélectionnées par Cafrezzo. Marques premium, livraison offerte dès 150€.',
         path: '/machines',
+        descriptionKey: 'machinesMetaDescription',
         titleKey: 'machinesHeroTitle',
     });
 }

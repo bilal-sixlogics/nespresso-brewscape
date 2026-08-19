@@ -15,6 +15,7 @@ export async function generateMetadata({
         title: 'Accessoires Café',
         description: 'Tasses, gobelets, filtres et accessoires pour préparer et servir votre café. Sélection Cafrezzo, livraison offerte dès 150€.',
         path: '/accessories',
+        descriptionKey: 'accessoriesMetaDescription',
         titleKey: 'accessoriesHeroTitle',
     });
 }

@@ -16,7 +16,7 @@ const playfair = Playfair_Display({
   subsets: ["latin", "cyrillic"],
 });
 
-import { buildBaseMetadata, organizationSchema, websiteSchema } from '@/lib/seo';
+import { buildBaseMetadata, buildWebsiteSchema, organizationSchema } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { ConsentProvider } from '@/context/ConsentContext';
@@ -92,8 +92,9 @@ export default async function RootLayout({
         </Script>
       </head>
       <body className={`${inter.variable} ${playfair.variable} antialiased`} suppressHydrationWarning>
-        {/* Site-wide structured data — identifies the brand and enables sitelinks search box */}
-        <JsonLd schema={[organizationSchema, websiteSchema]} />
+        {/* Site-wide structured data — identifies the brand. The WebSite block
+            is locale-dependent (inLanguage), so it is built per request. */}
+        <JsonLd schema={[organizationSchema, buildWebsiteSchema(locale as Locale)]} />
 
         <ConsentProvider>
         <ThemeProvider>
