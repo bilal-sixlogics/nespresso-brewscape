@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Enable dynamic rendering for product pages, accounts, and real-time data
   // Remove static export to support:
-  // - Dynamic routes (/shop/[slug], /blog/[id], /account)
+  // - Dynamic routes (/shop/[slug], /journal/[slug], /account)
   // - ISR (Incremental Static Regeneration)
   // - Real-time data updates
   images: {

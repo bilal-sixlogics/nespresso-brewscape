@@ -30,6 +30,7 @@ interface ApiCategory {
 
 interface ApiBlogPost {
     id?: number | string;
+    slug?: string;
     status?: string;
     updated_at?: string;
     published_at?: string;
@@ -126,7 +127,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { path: '/machines',     changeFrequency: 'weekly',  priority: 0.8 },
         { path: '/accessories',  changeFrequency: 'weekly',  priority: 0.8 },
         { path: '/sweets',       changeFrequency: 'weekly',  priority: 0.8 },
-        { path: '/blog',         changeFrequency: 'weekly',  priority: 0.7 },
+        { path: '/journal',      changeFrequency: 'weekly',  priority: 0.7 },
         { path: '/our-origins',  changeFrequency: 'monthly', priority: 0.6 },
         { path: '/contact',      changeFrequency: 'monthly', priority: 0.6 },
         { path: '/visit-shop',   changeFrequency: 'monthly', priority: 0.6 },
@@ -201,14 +202,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     void categories;
 
     const blogRoutes: MetadataRoute.Sitemap = posts
-        .filter(p => p.id != null && p.status !== 'draft')
+        .filter(p => p.slug && p.status !== 'draft')
         .flatMap(p =>
             LOCALES.map(locale => ({
-                url: `${SITE_URL}${localePath(locale, `/blog/${p.id}`)}`,
+                url: `${SITE_URL}${localePath(locale, `/journal/${p.slug}`)}`,
                 lastModified: parseDate(p.updated_at) ?? parseDate(p.published_at) ?? now,
                 changeFrequency: 'monthly' as const,
                 priority: locale === DEFAULT_LOCALE ? 0.6 : 0.54,
-                alternates: { languages: hreflangFor(`/blog/${p.id}`) },
+                alternates: { languages: hreflangFor(`/journal/${p.slug}`) },
             })),
         );
 

@@ -296,7 +296,7 @@ function BlogSection() {
             </h2>
           </div>
           <Link
-            href="/blog"
+            href="/journal"
             className="hidden md:inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold hover:bg-gold hover:text-ink px-7 py-3.5 rounded-full transition-all duration-300"
           >
             {language === 'fr' ? 'Voir tout' : 'View All'} <ArrowRight size={11} />
@@ -312,7 +312,7 @@ function BlogSection() {
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
             >
-              <Link href={`/blog/${post.id}`} className="group flex flex-col h-full">
+              <Link href={`/journal/${post.slug}`} className="group flex flex-col h-full">
                 <div className="rounded-[24px] overflow-hidden mb-5 aspect-[4/3] relative shadow-lg">
                   {post.featured_image ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -359,7 +359,7 @@ function BlogSection() {
         </div>
 
         <div className="flex md:hidden justify-center mt-10">
-          <Link href="/blog" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold px-7 py-3.5 rounded-full">
+          <Link href="/journal" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold px-7 py-3.5 rounded-full">
             {language === 'fr' ? 'Voir tous les articles' : 'View All Articles'} <ArrowRight size={11} />
           </Link>
         </div>

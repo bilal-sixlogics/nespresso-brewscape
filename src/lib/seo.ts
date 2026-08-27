@@ -290,7 +290,7 @@ export function pageMetadata(opts: {
     // `absolute` sets this segment's own title and opts out of the parent's
     // template, so the brand suffix is not appended twice. `template` is then
     // re-declared for nested routes — without it, a layout title would wipe the
-    // root '%s | Cafrezzo' template and leave /shop/[slug] and /blog/[id] with
+    // root '%s | Cafrezzo' template and leave /shop/[slug] and /journal/[slug] with
     // no brand suffix at all.
     const ownTitle = absoluteTitle ? title : `${title} | ${SITE_NAME}`;
 
@@ -532,13 +532,13 @@ export function generateArticleSchema(post: {
     locale: Locale;
     title: string;
     description?: string;
-    id: string | number;
+    slug: string;
     image?: string;
     author?: string;
     publishedAt?: string;
     updatedAt?: string;
 }) {
-    const url = absoluteUrl(post.locale, `/blog/${post.id}`);
+    const url = absoluteUrl(post.locale, `/journal/${post.slug}`);
     return {
         '@context': 'https://schema.org',
         '@type': 'Article',
