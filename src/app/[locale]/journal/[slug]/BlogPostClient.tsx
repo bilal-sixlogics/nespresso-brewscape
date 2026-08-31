@@ -14,7 +14,7 @@ interface BlogPost {
     published_at: string | null;
 }
 
-export default function BlogPostClient({ id }: { id: string }) {
+export default function BlogPostClient({ slug }: { slug: string }) {
     const { t } = useLanguage();
     const [post, setPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
@@ -31,12 +31,12 @@ export default function BlogPostClient({ id }: { id: string }) {
     };
 
     useEffect(() => {
-        fetch(Endpoints.blogPost(id))
+        fetch(Endpoints.blogPost(slug))
             .then(r => { if (!r.ok) throw new Error(); return r.json(); })
             .then(json => setPost(json?.data ?? null))
             .catch(() => setNotFound(true))
             .finally(() => setLoading(false));
-    }, [id]);
+    }, [slug]);
 
     if (loading) {
         return (
@@ -50,7 +50,7 @@ export default function BlogPostClient({ id }: { id: string }) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-ink">
                 <h2 className="font-display text-3xl uppercase text-sand">{t('postNotFound')}</h2>
-                <Link href="/blog" className="text-gold font-bold hover:underline text-sm">{t('backToJournal')}</Link>
+                <Link href="/journal" className="text-gold font-bold hover:underline text-sm">{t('backToJournal')}</Link>
             </div>
         );
     }
@@ -63,7 +63,7 @@ export default function BlogPostClient({ id }: { id: string }) {
         <div className="w-full relative bg-ink text-sand overflow-x-hidden min-h-screen grain-overlay">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
                 <div className="pt-20 lg:pt-32 px-4 lg:px-8 max-w-[1000px] mx-auto">
-                    <Link href="/blog" className="inline-flex items-center text-xs font-bold tracking-widest uppercase text-cocoa hover:text-gold transition-colors mb-12 group">
+                    <Link href="/journal" className="inline-flex items-center text-xs font-bold tracking-widest uppercase text-cocoa hover:text-gold transition-colors mb-12 group">
                         <ArrowLeft size={16} className="mr-3 transform group-hover:-translate-x-2 transition-transform" />
                         {t('backToJournal')}
                     </Link>
@@ -129,7 +129,7 @@ export default function BlogPostClient({ id }: { id: string }) {
                                 <span>{t('shareArticle')}</span>
                                 <button onClick={handleShare} className="w-10 h-10 rounded-full bg-sand/10 flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"><Share2 size={16} /></button>
                             </div>
-                            <Link href="/blog" className="bg-gold text-ink px-8 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-[#b8914d] transition-colors">
+                            <Link href="/journal" className="bg-gold text-ink px-8 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-[#b8914d] transition-colors">
                                 {t('moreArticles')}
                             </Link>
                         </div>

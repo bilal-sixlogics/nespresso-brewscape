@@ -13,7 +13,7 @@ export async function generateMetadata({
         locale,
         title: 'Journal',
         description: 'Actualités, conseils et histoires autour du café par Cafrezzo — origines, préparation et culture du café.',
-        path: '/blog',
+        path: '/journal',
         titleKey: 'blogTitle',
         descriptionKey: 'blogSubtitle',
     });

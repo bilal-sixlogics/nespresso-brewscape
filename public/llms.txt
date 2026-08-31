@@ -51,7 +51,7 @@ Key facts, stated so they can be quoted accurately:
 
 ## Editorial
 
-- [Journal](https://cafrezzo.com/fr/blog): Recipes, coffee history and seasonal guides.
+- [Journal](https://cafrezzo.com/fr/journal): Recipes, coffee history and seasonal guides.
 - [Brewing guide](https://cafrezzo.com/fr/brew-guide): Grind size, dose, ratio, water temperature and extraction time.
 - [Our origins](https://cafrezzo.com/fr/our-origins): Sourcing, producers and roasting.
 

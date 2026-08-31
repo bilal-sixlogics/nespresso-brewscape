@@ -99,7 +99,7 @@ export function Footer() {
                             <li><Link href="/sweets" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navSweets')}</Link></li>
                             <li><Link href="/our-origins" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navOrigins')}</Link></li>
                             <li><Link href="/wholesale" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navWholesale')}</Link></li>
-                            <li><Link href="/blog" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navBlog')}</Link></li>
+                            <li><Link href="/journal" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navBlog')}</Link></li>
                         </ul>
                     </div>
 
