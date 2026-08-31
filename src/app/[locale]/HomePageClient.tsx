@@ -407,11 +407,11 @@ export default function Home() {
         <section className="relative w-full pt-16 pb-12 sm:pb-20 lg:pb-32 z-10 overflow-visible min-h-[500px] sm:min-h-[600px] lg:min-h-[800px] flex flex-col justify-center">
           {/* The hero renders the brand as an SVG image, so the homepage had no
               <h1> at all — crawlers saw a page with no primary heading. This is
-              visually hidden (sr-only) and reuses copy that already exists and
-              is translated, so nothing on screen changes. */}
-          <h1 className="sr-only">
-            {AppConfig.brand.name} — {t('brandTagline')}
-          </h1>
+              visually hidden (sr-only), so nothing on screen changes. Copy is
+              product/category-focused rather than the brand tagline: the title
+              tag already states the brand, the H1 is what tells search engines
+              what Cafrezzo actually sells. */}
+          <h1 className="sr-only">{t('homeH1')}</h1>
           {/* Coffee Beans Decoration */}
 
           <div

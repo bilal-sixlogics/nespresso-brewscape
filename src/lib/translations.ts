@@ -3,6 +3,12 @@ export const translations = {
         // ── Homepage prose ──────────────────────────────────────────────
         // Page-specific body copy. The homepage previously carried well under
         // 200 visible words, most of it navigation and product tiles.
+        // sr-only H1 — the hero renders the brand as an SVG image with no
+        // visible heading, so this is the only <h1> a crawler sees. Kept
+        // product/category-focused rather than a brand tagline: the title tag
+        // already carries "Cafrezzo", the H1 is where search engines look for
+        // what the page is actually about.
+        homeH1: "Café en Grains, Capsules & Machines à Café",
         homeAboutHeading: "Le Café, Choisi et Torréfié avec Soin",
         homeAboutBody1: "Cafrezzo est un torréfacteur et distributeur de café en ligne installé à Sarcelles, aux portes de Paris. Nous proposons des cafés en grains, moulus et en capsules compatibles, aux côtés de machines expresso, à capsules et automatiques issues de marques telles que Lavazza, Carte Noire, Bristot et Mambo.",
         homeAboutBody2: "Nous livrons en France, en Belgique, en Suisse et au Luxembourg, avec la livraison offerte dès 150€ d’achat. Que vous équipiez un bureau, approvisionniez un restaurant ou perfectionniez simplement votre tasse du matin, notre équipe vous aide à associer la bonne torréfaction à la bonne machine — par téléphone, par email ou en boutique.",
@@ -72,6 +78,7 @@ export const translations = {
         navAccessories: "Accessoires",
         navBrewGuide: "Guide de Préparation",
         navOrigins: "Nos Origines",
+        navWholesale: "Professionnels",
         navBlog: "Journal",
         navContact: "Contact & Boutiques",
         searchPlaceholder: "Rechercher produits, machines, recettes...",
@@ -894,6 +901,7 @@ export const translations = {
         // ── Homepage prose ──────────────────────────────────────────────
         // Page-specific body copy. The homepage previously carried well under
         // 200 visible words, most of it navigation and product tiles.
+        homeH1: "Coffee Beans, Capsules & Coffee Machines",
         homeAboutHeading: "Coffee, Chosen and Roasted With Care",
         homeAboutBody1: "Cafrezzo is a French coffee roaster and online retailer based in Sarcelles, just outside Paris. We stock whole beans, ground coffee and compatible capsules alongside espresso, capsule and bean-to-cup machines from brands including Lavazza, Carte Noire, Bristot and Mambo.",
         homeAboutBody2: "Orders ship across France, Belgium, Switzerland and Luxembourg, with delivery free on baskets over €150. Whether you are equipping an office, supplying a restaurant or simply refining your morning cup at home, our team can help you match the right roast to the right machine — by phone, by email, or in the shop.",
@@ -963,6 +971,7 @@ export const translations = {
         navAccessories: "Accessories",
         navBrewGuide: "Brew Guide",
         navOrigins: "Our Origins",
+        navWholesale: "For Professionals",
         navBlog: "Journal",
         navContact: "Contact & Shops",
         searchPlaceholder: "Search products, machines, recipes...",

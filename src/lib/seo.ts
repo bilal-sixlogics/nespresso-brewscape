@@ -97,14 +97,14 @@ const POSTAL_ADDRESS = {
 /** Home title/description per locale — the only strings not already in the dictionary. */
 const HOME_SEO: Record<Locale, { title: string; description: string }> = {
     fr: {
-        title: 'Cafrezzo | Café en Grain, Capsules & Machines',
+        title: 'Cafrezzo | Café en Grains, Capsules & Machines à Café',
         description:
-            'Bienvenue dans l’univers Cafrezzo, où chaque tasse raconte une histoire de passion et de qualité. Découvrez notre sélection exclusive',
+            'Cafrezzo : café en grains, café moulu, capsules et machines à café pour particuliers et professionnels. Découvrez notre sélection et commandez en ligne.',
     },
     en: {
-        title: 'Cafrezzo | Premium Coffee, Capsules & Machines',
+        title: 'Cafrezzo | Coffee Beans, Capsules & Coffee Machines',
         description:
-            'Welcome to the world of Cafrezzo, where every cup tells a story of passion and quality. Discover our exclusive selection of coffee, capsules and machines.',
+            'Cafrezzo: coffee beans, ground coffee, capsules and coffee machines for home and business. Browse our selection and order online.',
     },
     de: {
         title: 'Cafrezzo | Kaffee, Kapseln & Maschinen',
