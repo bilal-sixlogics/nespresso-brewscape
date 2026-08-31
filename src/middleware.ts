@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { AppConfig } from '@/lib/config';
 import { DEFAULT_LOCALE, LOCALES, isLocale, type Locale } from '@/lib/i18n';
 
 /**
@@ -96,8 +97,23 @@ function logAiCrawler(request: NextRequest, pathname: string): void {
     );
 }
 
+// The canonical host. cafrezzo.com and www.cafrezzo.com serving the same
+// content unredirected splits link equity and crawl budget across two
+// URLs for every page on the site — this is the fix, not a DNS setting,
+// because both hosts already resolve to this deployment.
+const CANONICAL_HOST = AppConfig.brand.domain;
+
 export function middleware(request: NextRequest) {
     const { pathname, search } = request.nextUrl;
+
+    const host = request.headers.get('host');
+    if (host && host !== CANONICAL_HOST && host.replace(/^www\./, '') === CANONICAL_HOST) {
+        const url = request.nextUrl.clone();
+        url.protocol = 'https';
+        url.host = CANONICAL_HOST;
+        url.port = '';
+        return NextResponse.redirect(url, 308);
+    }
 
     logAiCrawler(request, pathname);
 

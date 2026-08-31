@@ -407,11 +407,11 @@ export default function Home() {
         <section className="relative w-full pt-16 pb-12 sm:pb-20 lg:pb-32 z-10 overflow-visible min-h-[500px] sm:min-h-[600px] lg:min-h-[800px] flex flex-col justify-center">
           {/* The hero renders the brand as an SVG image, so the homepage had no
               <h1> at all — crawlers saw a page with no primary heading. This is
-              visually hidden (sr-only) and reuses copy that already exists and
-              is translated, so nothing on screen changes. */}
-          <h1 className="sr-only">
-            {AppConfig.brand.name} — {t('brandTagline')}
-          </h1>
+              visually hidden (sr-only), so nothing on screen changes. Copy is
+              product/category-focused rather than the brand tagline: the title
+              tag already states the brand, the H1 is what tells search engines
+              what Cafrezzo actually sells. */}
+          <h1 className="sr-only">{t('homeH1')}</h1>
           {/* Coffee Beans Decoration */}
 
           <div
@@ -642,6 +642,23 @@ export default function Home() {
 
         {/* ── BLOG ─────────────────────────────────────────────────────── */}
         <BlogSection />
+
+        {/* ── ABOUT / CONTENT ──────────────────────────────────────────── */}
+        {/* Prose section. The homepage was almost entirely nav, imagery and
+            product tiles, which reads as thin to crawlers and answers none of
+            the questions a first-time visitor actually arrives with. Kept out
+            of the hero deliberately: that paragraph is a 280px column. */}
+        <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay border-t border-sand/10">
+          <div className="max-w-3xl mx-auto relative z-10">
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-sand uppercase tracking-tight leading-[0.95] mb-8">
+              {t('homeAboutHeading')}
+            </h2>
+            <div className="space-y-5 text-sand/70 text-sm sm:text-base leading-relaxed">
+              <p>{t('homeAboutBody1')}</p>
+              <p>{t('homeAboutBody2')}</p>
+            </div>
+          </div>
+        </section>
         {/* ── TESTIMONIALS ─────────────────────────────────────────────── */}
         {/* <TestimonialsSection /> */}
 

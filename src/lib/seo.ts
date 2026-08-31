@@ -97,27 +97,27 @@ const POSTAL_ADDRESS = {
 /** Home title/description per locale — the only strings not already in the dictionary. */
 const HOME_SEO: Record<Locale, { title: string; description: string }> = {
     fr: {
-        title: 'Cafrezzo | Intensément Café',
+        title: 'Cafrezzo | Café en Grains, Capsules & Machines à Café',
         description:
-            'Bienvenue dans l’univers Cafrezzo, où chaque tasse raconte une histoire de passion et de qualité. Découvrez notre sélection exclusive',
+            'Cafrezzo : café en grains, café moulu, capsules et machines à café pour particuliers et professionnels. Découvrez notre sélection et commandez en ligne.',
     },
     en: {
-        title: 'Cafrezzo | Intensely Coffee',
+        title: 'Cafrezzo | Coffee Beans, Capsules & Coffee Machines',
         description:
-            'Welcome to the world of Cafrezzo, where every cup tells a story of passion and quality. Discover our exclusive selection of coffee, capsules and machines.',
+            'Cafrezzo: coffee beans, ground coffee, capsules and coffee machines for home and business. Browse our selection and order online.',
     },
     de: {
-        title: 'Cafrezzo | Intensiv Kaffee',
+        title: 'Cafrezzo | Kaffee, Kapseln & Maschinen',
         description:
             'Willkommen in der Welt von Cafrezzo, wo jede Tasse eine Geschichte von Leidenschaft und Qualität erzählt. Entdecken Sie unsere exklusive Auswahl.',
     },
     ru: {
-        title: 'Cafrezzo | Насыщенный кофе',
+        title: 'Cafrezzo | Кофе, капсулы и кофемашины',
         description:
             'Добро пожаловать в мир Cafrezzo, где каждая чашка рассказывает историю страсти и качества. Откройте для себя наш эксклюзивный выбор кофе и машин.',
     },
     nl: {
-        title: 'Cafrezzo | Intens Koffie',
+        title: 'Cafrezzo | Koffie, Capsules & Machines',
         description:
             'Welkom in de wereld van Cafrezzo, waar elke kop een verhaal van passie en kwaliteit vertelt. Ontdek onze exclusieve selectie koffie en machines.',
     },
