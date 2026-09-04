@@ -268,11 +268,11 @@ function BlogSection() {
   const [posts, setPosts] = useState<ApiBlogPost[]>([]);
 
   useEffect(() => {
-    fetch(Endpoints.blogPosts + '?per_page=3')
+    fetch(Endpoints.blogPosts + '?per_page=8')
       .then(r => r.json())
       .then(json => {
         const data: ApiBlogPost[] = json?.data ?? [];
-        if (data.length > 0) setPosts(data);
+        if (data.length > 0) setPosts(data.slice(0, 8));
       })
       .catch(() => { /* keep empty, section renders nothing */ });
   }, []);
@@ -303,17 +303,22 @@ function BlogSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        {/* Four across on desktop so eight posts fill two complete rows; two on
+            tablet, one on mobile — every breakpoint divides evenly into eight. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 sm:gap-y-12">
           {posts.map((post, i) => (
             <motion.div
               key={post.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
+              // Stagger within the row, not across all eight — otherwise the
+              // last card is still animating three-quarters of a second in.
+              transition={{ duration: 0.6, delay: (i % 4) * 0.08 }}
+              className="h-full"
             >
               <Link href={`/journal/${post.slug}`} className="group flex flex-col h-full">
-                <div className="rounded-[24px] overflow-hidden mb-5 aspect-[4/3] relative shadow-lg">
+                <div className="rounded-[20px] overflow-hidden mb-4 aspect-[4/3] relative shadow-lg">
                   {post.featured_image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -324,8 +329,8 @@ function BlogSection() {
                   ) : (
                     <div className="w-full h-full bg-sand flex items-center justify-center text-4xl">☕</div>
                   )}
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-sand/90 backdrop-blur-sm text-ink text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full">
+                  <div className="absolute top-3 left-3 right-3">
+                    <span className="inline-block max-w-full truncate bg-sand/90 backdrop-blur-sm text-ink text-[9px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full">
                       {post.category}
                     </span>
                   </div>
@@ -339,17 +344,19 @@ function BlogSection() {
                   </div>
                 )}
 
-                <h3 className="font-display text-xl sm:text-2xl uppercase tracking-tight text-sand mb-2 leading-tight group-hover:text-gold transition-colors">
+                <h3 className="font-display text-lg sm:text-xl uppercase tracking-tight text-sand mb-2 leading-tight line-clamp-2 min-h-[2.75rem] sm:min-h-[3.1rem] group-hover:text-gold transition-colors">
                   {post.title}
                 </h3>
 
                 {post.excerpt && (
-                  <p className="text-sand/60 text-sm leading-relaxed line-clamp-2 mb-3 flex-1">
+                  <p className="text-sand/60 text-[13px] leading-relaxed line-clamp-2 mb-4">
                     {post.excerpt}
                   </p>
                 )}
 
-                <div className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-gold">
+                {/* mt-auto, not flex-1 on the excerpt: a post without one still
+                    pins its link to the bottom, so all four CTAs align. */}
+                <div className="flex items-center gap-2 mt-auto text-[11px] font-bold tracking-widest uppercase text-gold">
                   {t('readMore')}
                   <ArrowRight size={13} className="transform group-hover:translate-x-1.5 transition-transform duration-300" />
                 </div>
@@ -518,6 +525,59 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── SHOP BY CATEGORY ─────────────────────────────────────────── */}
+        <CategoriesSection />
+
+                {/* ── FEATURED COLLECTION ───────────────────────────────────────── */}
+        <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay">
+          {/* Subtle background texture */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(201,160,90,0.06),_transparent_60%)] pointer-events-none" />
+
+          <div className="max-w-[1400px] mx-auto relative z-10">
+            <div className="flex flex-col md:flex-row items-end justify-between mb-12 md:mb-16 px-2 gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-px bg-gold" />
+                  <span className="text-[9px] font-black tracking-[0.35em] uppercase text-gold">{t('premiumSelection')}</span>
+                </div>
+                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-sand uppercase tracking-tight leading-[0.88]">
+                  {language === 'fr' ? 'Sélection' : 'Featured'}<br />
+                  <span className="text-gold">{language === 'fr' ? 'Vedette' : 'Collection'}</span>
+                </h2>
+              </div>
+              <Link
+                href="/shop"
+                className="hidden md:inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold hover:bg-gold hover:text-ink px-7 py-3.5 rounded-full transition-all duration-300"
+              >
+                {language === 'fr' ? 'Voir tout' : 'View All'} <ArrowRight size={11} />
+              </Link>
+            </div>
+
+            {featuredLoading ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {[...Array(5)].map((_, i) => <ProductSkeleton key={i} />)}
+              </div>
+            ) : (
+              <MobileCarousel>
+                {featuredProducts.map((product, idx) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    index={idx}
+                    onClick={setSelectedProduct}
+                  />
+                ))}
+              </MobileCarousel>
+            )}
+
+            <div className="flex md:hidden justify-center mt-10">
+              <Link href="/shop" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold px-7 py-3.5 rounded-full">
+                {language === 'fr' ? 'Voir toute la collection' : 'View Entire Collection'} <ArrowRight size={11} />
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {/* ── VALUE PROPS ──────────────────────────────────────────────── */}
         <section className="relative bg-ink py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 grain-overlay overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(201,160,90,0.06),_transparent_60%)] pointer-events-none" />
@@ -584,58 +644,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── FEATURED COLLECTION ───────────────────────────────────────── */}
-        <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay">
-          {/* Subtle background texture */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(201,160,90,0.06),_transparent_60%)] pointer-events-none" />
 
-          <div className="max-w-[1400px] mx-auto relative z-10">
-            <div className="flex flex-col md:flex-row items-end justify-between mb-12 md:mb-16 px-2 gap-6">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-px bg-gold" />
-                  <span className="text-[9px] font-black tracking-[0.35em] uppercase text-gold">{t('premiumSelection')}</span>
-                </div>
-                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-sand uppercase tracking-tight leading-[0.88]">
-                  {language === 'fr' ? 'Sélection' : 'Featured'}<br />
-                  <span className="text-gold">{language === 'fr' ? 'Vedette' : 'Collection'}</span>
-                </h2>
-              </div>
-              <Link
-                href="/shop"
-                className="hidden md:inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold hover:bg-gold hover:text-ink px-7 py-3.5 rounded-full transition-all duration-300"
-              >
-                {language === 'fr' ? 'Voir tout' : 'View All'} <ArrowRight size={11} />
-              </Link>
-            </div>
 
-            {featuredLoading ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                {[...Array(5)].map((_, i) => <ProductSkeleton key={i} />)}
-              </div>
-            ) : (
-              <MobileCarousel>
-                {featuredProducts.map((product, idx) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    index={idx}
-                    onClick={setSelectedProduct}
-                  />
-                ))}
-              </MobileCarousel>
-            )}
-
-            <div className="flex md:hidden justify-center mt-10">
-              <Link href="/shop" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold px-7 py-3.5 rounded-full">
-                {language === 'fr' ? 'Voir toute la collection' : 'View Entire Collection'} <ArrowRight size={11} />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ── SHOP BY CATEGORY ─────────────────────────────────────────── */}
-        <CategoriesSection />
+        
 
         {/* ── BRANDS MARQUEE ───────────────────────────────────────────── */}
         <BrandsShowcaseSection />
