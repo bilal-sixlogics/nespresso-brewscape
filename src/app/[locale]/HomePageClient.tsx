@@ -42,53 +42,66 @@ function CategoriesSection() {
   if (topCategories.length === 0) return null;
 
   return (
-    <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay border-t border-sand/10">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(201,160,90,0.06),_transparent_60%)] pointer-events-none" />
+    /* Lives inside the hero, so it deliberately paints no background, grain or
+       side padding of its own: the hero already supplies all three, and an
+       opaque band here would cover the coffee-bean wash bleeding in from the
+       left. Type stays at eyebrow scale too — the logo is the hero's display
+       heading, and a second 6xl headline under it just fights for the eye. */
+    <div className="relative mt-10 sm:mt-14 lg:mt-16">
+      {/* Hairline that fades out at both ends, rather than a hard border ruled
+          straight across the middle of the hero. */}
+      <div className="h-px w-full max-w-3xl mx-auto bg-gradient-to-r from-transparent via-sand/20 to-transparent" />
 
-      <div className="max-w-[1400px] mx-auto relative z-10">
-        <div className="text-center mb-12 md:mb-16">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-8 h-px bg-gold" />
-            <span className="text-[9px] font-black tracking-[0.35em] uppercase text-gold">
-              {language === 'fr' ? 'Explorez' : 'Explore'}
-            </span>
-            <div className="w-8 h-px bg-gold" />
-          </div>
-          <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-sand uppercase tracking-tight">
-            {language === 'fr' ? 'Nos Catégories' : 'Shop by Category'}
-          </h2>
-        </div>
+      <div className="flex items-center justify-center gap-3 mt-10 sm:mt-12 mb-8 sm:mb-10">
+        <div className="w-6 h-px bg-gold/40" />
+        <span className="text-[9px] font-black tracking-[0.4em] uppercase text-sand/50">
+          {language === 'fr' ? 'Explorez Nos Catégories' : 'Shop by Category'}
+        </span>
+        <div className="w-6 h-px bg-gold/40" />
+      </div>
 
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-10 sm:gap-x-10 lg:gap-x-14">
-          {topCategories.map((cat, i) => (
-            <motion.div
-              key={cat.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-8 sm:gap-x-8 lg:gap-x-12">
+        {topCategories.map((cat, i) => (
+          <motion.div
+            key={cat.id}
+            /* Above the fold, so this animates on mount in sequence after the
+               logo — not on scroll like the sections further down. */
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.45 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Link
+              href={`${cat.storefront_page || '/shop'}?category=${cat.slug}`}
+              className="group flex flex-col items-center gap-3 w-[4.75rem] sm:w-24 lg:w-28"
             >
-              <Link
-                href={`${cat.storefront_page || '/shop'}?category=${cat.slug}`}
-                className="group flex flex-col items-center gap-3 w-24 sm:w-32"
-              >
-                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-sand border-2 border-transparent group-hover:border-gold overflow-hidden flex items-center justify-center shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] group-hover:scale-105 transition-all duration-500">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24">
+                {/* Gold bloom on hover — the same ambient glow language as the
+                    hero cup, so the two read as one composition. */}
+                <div className="absolute -inset-2 rounded-full bg-gold/25 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                {/* Frosted plate matching the hero's glass cards (sand/8 +
+                    backdrop-blur + sand/15 hairline) instead of a solid beige
+                    disc, which punched a bright hole in the dark hero. */}
+                <div className="relative w-full h-full rounded-full overflow-hidden bg-sand/[0.07] backdrop-blur-md border border-sand/15 group-hover:border-gold/70 flex items-center justify-center shadow-[0_14px_34px_-14px_rgba(0,0,0,0.65)] transition-all duration-500 group-hover:-translate-y-1">
                   {cat.icon_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cat.icon_url} alt={cat.name} className="w-full h-full object-cover" />
+                    <img
+                      src={cat.icon_url}
+                      alt={cat.name}
+                      className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                    />
                   ) : (
-                    <span className="text-3xl sm:text-4xl">{cat.icon || '☕'}</span>
+                    <span className="text-2xl sm:text-3xl lg:text-4xl">{cat.icon || '☕'}</span>
                   )}
                 </div>
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-sand group-hover:text-gold transition-colors text-center leading-snug">
-                  {cat.name}
-                </span>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+              </div>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] text-sand/70 group-hover:text-gold transition-colors text-center leading-snug">
+                {cat.name}
+              </span>
+            </Link>
+          </motion.div>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -411,7 +424,7 @@ export default function Home() {
       >
 
         {/* ── HERO ─────────────────────────────────────────────────────── */}
-        <section className="relative w-full pt-16 pb-12 sm:pb-20 lg:pb-32 z-10 overflow-visible min-h-[500px] sm:min-h-[600px] lg:min-h-[800px] flex flex-col justify-center">
+        <section className="relative w-full pt-16 pb-10 sm:pb-14 lg:pb-20 z-10 overflow-visible min-h-[500px] sm:min-h-[600px] lg:min-h-[800px] flex flex-col justify-center">
           {/* The hero renders the brand as an SVG image, so the homepage had no
               <h1> at all — crawlers saw a page with no primary heading. This is
               visually hidden (sr-only), so nothing on screen changes. Copy is
@@ -445,90 +458,12 @@ export default function Home() {
               />
             </motion.div>
 
-            <div className="flex flex-col lg:flex-row justify-between items-center lg:items-end -mt-10 sm:-mt-16 lg:-mt-40 xl:-mt-52 relative z-10 w-full px-4 lg:px-12">
-
-              <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-start mb-6 lg:mb-0 space-y-4 sm:space-y-6">
-             
-
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                  className="text-sand/60 max-w-[280px] text-sm leading-relaxed z-10 relative"
-                >
-                  {t('heroSubtitle')}
-                </motion.p>
-              </div>
-
-              {/* HERO CUP AND GLOW - Cup floats over a soft gold glow instead of a flat color circle */}
-              <div className="w-full lg:w-1/3 flex justify-center items-center relative z-[40] mt-2 sm:mt-4 lg:mt-0 h-[260px] sm:h-[350px] md:h-[400px] lg:h-[500px]">
-                {/* Gold ambient glow — BEHIND the cup (z-1) */}
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
-                  className="absolute left-1/2 transform -translate-x-1/2 rounded-full z-[1] w-[220px] h-[220px] sm:w-[300px] sm:h-[300px] md:h-[380px] md:w-[380px] lg:w-[460px] lg:h-[460px] blur-2xl"
-                  style={{
-                    top: '50%',
-                    marginTop: '-60px',
-                    background: 'radial-gradient(circle, rgba(201,160,90,0.45) 0%, rgba(201,160,90,0.15) 55%, transparent 75%)',
-                  }}
-                />
-                {/* The Cup - ABOVE the glow (z-2), transparent PNG floating */}
-                <motion.img
-                  animate={{ y: [0, -12, 0] }}
-                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                  src="/cup5.png"
-                  alt={t('icedCoffeeAlt')}
-                  className="absolute left-1/2 transform -translate-x-1/2 z-[2] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)] w-[210px] sm:w-[290px] md:w-[350px] lg:w-[600px] h-auto top-[75px] sm:top-[70px] lg:top-[120px]"
-                />
-              </div>
-
-              <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-end mb-6 lg:mb-0 space-y-5 sm:space-y-8 z-[50]">
-                <motion.div
-                  initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
-                  onClick={() => setSelectedProduct(dailyPick.product || featuredProducts[0] || null)}
-                  className="flex items-center space-x-6 mr-4 bg-sand/8 backdrop-blur-md p-4 rounded-3xl border border-sand/15 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] group cursor-pointer hover:bg-sand/14 hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.4)] transition-all duration-300"
-                >
-                  <div className="flex flex-col text-right">
-                    <span className="font-bold text-sm tracking-wide text-sand group-hover:text-gold transition-colors">{dailyPick.label || t('dailyPick')}</span>
-                    <span className="text-xs text-sand/50 max-w-[120px] truncate">{dailyPick.product?.name || ' '}</span>
-                  </div>
-                  <div className="w-16 h-20 bg-[#E1CDA4] rounded-xl p-1 relative shadow-inner transform group-hover:rotate-12 transition-transform duration-500 overflow-hidden">
-                    <div className="w-full h-full border border-ink/10 rounded-lg"></div>
-                    {dailyPick.product && getProductImage(dailyPick.product) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={getProductImage(dailyPick.product)!} alt={dailyPick.product.name} className="w-full h-full object-cover absolute top-0 left-0 scale-[0.8] drop-shadow-md" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center absolute top-0 left-0 text-2xl">☕</div>
-                    )}
-                  </div>
-                </motion.div>
-
-                <Link href="/shop" className="inline-block">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6 }}
-                    whileHover={{ scale: 1.05, backgroundColor: "#b8914d" }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-gold text-ink px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase shadow-xl hover:shadow-gold/50 transition-all duration-300 flex items-center cursor-pointer"
-                  >
-                    {t('shopNow')}
-                    <div className="w-1.5 h-1.5 ml-3 bg-ink rounded-full"></div>
-                  </motion.div>
-                </Link>
-                <Link
-                  href="/orders/track"
-                  className="text-[10px] font-bold tracking-[0.15em] uppercase text-sand/60 hover:text-gold transition-colors underline underline-offset-4"
-                >
-                  {t('footerTrackOrder')}
-                </Link>
-              </div>
-            </div>
+            {/* Category strip — part of the hero composition, not its own band. */}
+            <CategoriesSection />
           </div>
         </section>
 
-        {/* ── SHOP BY CATEGORY ─────────────────────────────────────────── */}
-        <CategoriesSection />
-
-                {/* ── FEATURED COLLECTION ───────────────────────────────────────── */}
+        {/* ── FEATURED COLLECTION ───────────────────────────────────────── */}
         <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay">
           {/* Subtle background texture */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(201,160,90,0.06),_transparent_60%)] pointer-events-none" />
@@ -644,12 +579,127 @@ export default function Home() {
           </div>
         </section>
 
-
-
-        
-
         {/* ── BRANDS MARQUEE ───────────────────────────────────────────── */}
         <BrandsShowcaseSection />
+
+        {/* ── DAILY PICK / SHOP CTA ────────────────────────────────────── */}
+        {/* This composition used to live in the hero, where the logo above it
+            served as its headline and negative top margins pulled it up over
+            the beans. Standing on its own it needs its own heading and top
+            rule, and no margin hacks — the cup is now centred inside its
+            column rather than hanging out of it, which the section's
+            overflow-hidden was clipping. */}
+        <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay border-t border-sand/10">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(201,160,90,0.05),_transparent_65%)] pointer-events-none" />
+
+          <div className="max-w-[1500px] mx-auto relative z-10">
+            <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-6">
+
+              {/* Copy */}
+              <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-start text-center lg:text-left">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div className="w-10 h-px bg-gold mb-5 mx-auto lg:mx-0" />
+                  <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-sand uppercase tracking-tight leading-[0.95] mb-5">
+                    {t('homeH1')}
+                  </h2>
+                  <p className="text-sand/60 text-sm leading-relaxed max-w-md lg:max-w-[320px]">
+                    {t('heroSubtitle')}
+                  </p>
+                </motion.div>
+              </div>
+
+              {/* Cup + gold ambient glow */}
+              <div className="w-full lg:w-1/3 relative flex items-center justify-center py-4">
+                <motion.div
+                  initial={{ scale: 0.85, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl pointer-events-none w-[240px] h-[240px] sm:w-[320px] sm:h-[320px] lg:w-[420px] lg:h-[420px]"
+                  style={{ background: 'radial-gradient(circle, rgba(201,160,90,0.45) 0%, rgba(201,160,90,0.15) 55%, transparent 75%)' }}
+                />
+                {/* Reveal and float are separate layers: one transform per
+                    element, so the looping y-float can't overwrite the
+                    entrance animation. */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative"
+                >
+                  <motion.img
+                    animate={{ y: [0, -12, 0] }}
+                    transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                    src="/cup5.png"
+                    alt={t('icedCoffeeAlt')}
+                    className="relative object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)] w-[210px] sm:w-[280px] lg:w-[350px] xl:w-[400px] h-auto"
+                  />
+                </motion.div>
+              </div>
+
+              {/* Daily pick + CTAs */}
+              <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-end gap-6 sm:gap-7">
+                {/* A button, not a clickable div: it opens the product panel,
+                    so it has to be reachable by keyboard. */}
+                <motion.button
+                  type="button"
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.6, delay: 0.15 }}
+                  onClick={() => setSelectedProduct(dailyPick.product || featuredProducts[0] || null)}
+                  className="w-full max-w-[300px] flex items-center justify-between gap-5 bg-sand/8 backdrop-blur-md p-4 rounded-3xl border border-sand/15 hover:border-gold/50 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] group cursor-pointer hover:bg-sand/14 hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.4)] transition-all duration-300"
+                >
+                  <div className="flex flex-col text-left min-w-0">
+                    <span className="text-[9px] font-black uppercase tracking-[0.25em] text-gold mb-1.5">
+                      {dailyPick.label || t('dailyPick')}
+                    </span>
+                    <span className="text-sm font-bold text-sand truncate group-hover:text-gold transition-colors">
+                      {dailyPick.product?.name || ' '}
+                    </span>
+                  </div>
+                  <div className="w-16 h-20 shrink-0 bg-[#E1CDA4] rounded-xl p-1 relative shadow-inner transform group-hover:rotate-12 transition-transform duration-500 overflow-hidden">
+                    <div className="w-full h-full border border-ink/10 rounded-lg"></div>
+                    {dailyPick.product && getProductImage(dailyPick.product) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={getProductImage(dailyPick.product)!} alt={dailyPick.product.name} className="w-full h-full object-cover absolute top-0 left-0 scale-[0.8] drop-shadow-md" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center absolute top-0 left-0 text-2xl">☕</div>
+                    )}
+                  </div>
+                </motion.button>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.5, delay: 0.25 }}
+                  className="flex flex-col items-center lg:items-end gap-5"
+                >
+                  <Link
+                    href="/shop"
+                    className="bg-gold text-ink px-10 py-5 rounded-full text-xs font-bold tracking-[0.2em] uppercase shadow-xl hover:bg-[#b8914d] hover:shadow-gold/50 hover:scale-[1.04] active:scale-95 transition-all duration-300 flex items-center"
+                  >
+                    {t('shopNow')}
+                    <div className="w-1.5 h-1.5 ml-3 bg-ink rounded-full" />
+                  </Link>
+                  <Link
+                    href="/orders/track"
+                    className="text-[10px] font-bold tracking-[0.15em] uppercase text-sand/60 hover:text-gold transition-colors underline underline-offset-4"
+                  >
+                    {t('footerTrackOrder')}
+                  </Link>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* ── BLOG ─────────────────────────────────────────────────────── */}
         <BlogSection />
