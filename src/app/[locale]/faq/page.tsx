@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Search } from 'lucide-react';
+import Link from '@/components/LocaleLink';
 import { useLanguage } from '@/context/LanguageContext';
 
 function FaqItem({ q, a }: { q: string; a: string }) {
@@ -166,12 +167,18 @@ export default function FAQPage() {
                     <p className="text-ink/70 text-sm mb-6 max-w-sm mx-auto">
                         {t('faqPageNeedHelpDesc')}
                     </p>
-                    <a
+                    {/* Was a raw <a href="/contact">, which drops the locale
+                        prefix: every click went to /contact and took a 308 hop
+                        through the middleware to /fr/contact. LocaleLink keeps
+                        the visitor in their locale and makes it a single
+                        request, as every other internal link on the site
+                        already is. */}
+                    <Link
                         href="/contact"
                         className="inline-flex items-center gap-2 bg-gold text-ink font-bold text-xs uppercase tracking-widest px-8 py-4 rounded-full hover:bg-[#b8914d] transition-all duration-300"
                     >
                         {t('faqPageNeedHelpLink')}
-                    </a>
+                    </Link>
                 </div>
             </section>
         </div>

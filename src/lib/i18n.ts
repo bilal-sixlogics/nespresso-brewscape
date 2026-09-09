@@ -74,3 +74,20 @@ export function localeFromPathname(pathname: string): Locale {
     const match = pathname.match(/^\/([a-z]{2})(?=\/|$)/);
     return match && isLocale(match[1]) ? match[1] : DEFAULT_LOCALE;
 }
+
+/**
+ * Locale sets for pages that are not published in all five languages.
+ *
+ * FRENCH_ONLY — local-intent commercial pages ("grossiste café Paris"). The
+ * query itself is French, so a translation would be a near-duplicate serving
+ * nobody: exactly the thin doorway page to avoid.
+ *
+ * FR_EN — the B2B hub and brand pages, where there is genuine non-francophone
+ * enquiry volume.
+ *
+ * These live here rather than in lib/seo.ts because they are facts about which
+ * locales a route exists in. Routes need them to decide whether to 404, and a
+ * route should not have to import the metadata layer to ask that question.
+ */
+export const FRENCH_ONLY: readonly Locale[] = ['fr'];
+export const FR_EN: readonly Locale[] = ['fr', 'en'];

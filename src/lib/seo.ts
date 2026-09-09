@@ -37,15 +37,34 @@ function absoluteUrl(locale: Locale, path: string): string {
  * near-identical structure and no statement that they are translations of one
  * another, which reads as duplication rather than internationalisation.
  */
-function hreflangAlternates(path: string): Record<string, string> {
+function hreflangAlternates(
+    path: string,
+    /**
+     * Locales this path is actually published in. Defaults to all of them.
+     *
+     * Narrowed for the French commercial landing pages (/professionnels,
+     * /grossiste-cafe-paris, ...): they exist only in the languages we wrote
+     * them in, and advertising a de/ru/nl alternate that 404s is a worse
+     * signal than advertising none.
+     */
+    locales: readonly Locale[] = LOCALES,
+): Record<string, string> {
     const languages: Record<string, string> = {};
-    for (const locale of LOCALES) {
+    for (const locale of locales) {
         languages[LOCALE_META[locale].hreflang] = absoluteUrl(locale, path);
     }
     // Visitors whose language we do not publish get the French original.
-    languages['x-default'] = absoluteUrl(DEFAULT_LOCALE, path);
+    languages['x-default'] = absoluteUrl(
+        locales.includes(DEFAULT_LOCALE) ? DEFAULT_LOCALE : locales[0],
+        path,
+    );
     return languages;
 }
+
+// Re-exported so callers that already reach for the metadata helpers do not
+// need a second import. Defined in lib/i18n.ts, which is where the question
+// "does this route exist in this locale" belongs.
+export { FRENCH_ONLY, FR_EN } from './i18n';
 
 /**
  * Resolves a translation key for a locale, falling back to French.
@@ -166,10 +185,16 @@ const baseMetadataShared: Metadata = {
     },
     description:
         'Bienvenue dans l’univers Cafrezzo, où chaque tasse raconte une histoire de passion et de qualité. Découvrez notre sélection exclusive',
+    // Google ignores this tag outright; it is kept only because a couple of
+    // smaller engines still read it, and it costs nothing. Re-pointed at the
+    // French commercial terms the site actually competes for — it previously
+    // listed English phrases and "nespresso compatible", which described a
+    // positioning Cafrezzo has moved away from.
     keywords: [
-        'premium coffee', 'café français', 'nespresso compatible', 'coffee capsules',
-        'coffee machines', 'café en grain', 'cafrezzo', 'café en ligne', 'livraison france',
-        'lavazza', 'delta cafes', 'specialty coffee',
+        'grossiste café', 'grossiste café Paris', 'fournisseur café professionnel',
+        'distributeur café', 'café CHR', 'grossiste machine à café',
+        'machine à café professionnelle', 'café en grains', 'café moulu',
+        'capsules café', 'cafrezzo', 'café Lavazza', 'café Delta', 'café Bristot',
     ],
     authors: [{ name: 'Cafrezzo', url: BASE_URL }],
     creator: 'Cafrezzo',
@@ -266,6 +291,12 @@ export function pageMetadata(opts: {
      * ("Cafrezzo | Intensément Café | Cafrezzo").
      */
     absoluteTitle?: boolean;
+    /**
+     * Locales this page exists in. Defaults to all five. Pass FRENCH_ONLY or
+     * FR_EN for pages that are not translated everywhere, so hreflang only
+     * names URLs that actually resolve.
+     */
+    locales?: readonly Locale[];
 }): Metadata {
     const {
         locale,
@@ -276,6 +307,7 @@ export function pageMetadata(opts: {
         titleKey,
         titleKey2,
         descriptionKey,
+        locales = LOCALES,
     } = opts;
 
     const title = titleKey ? joinHeading(tr(locale, titleKey, opts.title), titleKey2 ? tr(locale, titleKey2, '') : '') : opts.title;
@@ -311,7 +343,7 @@ export function pageMetadata(opts: {
             canonical: url,
             // Omitted for noindex routes: declaring translation alternates for a
             // page you are asking Google not to index is a contradiction.
-            ...(noindex ? {} : { languages: hreflangAlternates(path) }),
+            ...(noindex ? {} : { languages: hreflangAlternates(path, locales) }),
         },
         ...(noindex ? { robots: { index: false, follow: true } } : {}),
     };
@@ -320,6 +352,31 @@ export function pageMetadata(opts: {
 /**
  * Generates product-specific Open Graph metadata for PDP pages.
  */
+/**
+ * Fallback PDP description, per locale.
+ *
+ * Only reached when the catalogue has neither a `meta_description` nor a
+ * product description. It was previously a single hardcoded English sentence,
+ * so an untended French product page advertised "Buy … — premium coffee from
+ * Cafrezzo" in the French SERP.
+ *
+ * `{name}` is substituted; the trailing clause states the two facts most
+ * likely to earn the click (availability to professionals, free-shipping
+ * threshold), both of which are true sitewide.
+ */
+const PDP_FALLBACK_DESCRIPTION: Record<Locale, (name: string) => string> = {
+    fr: name =>
+        `${name} — disponible chez Cafrezzo, grossiste et distributeur de café. Vente aux particuliers et aux professionnels, livraison offerte dès 150€.`,
+    en: name =>
+        `${name} — available from Cafrezzo, coffee wholesaler and distributor. For home and trade customers, free delivery over €150.`,
+    de: name =>
+        `${name} — erhältlich bei Cafrezzo, Kaffeegroßhändler und Distributor. Für Privat- und Geschäftskunden, Versand ab 150 € kostenlos.`,
+    ru: name =>
+        `${name} — в наличии в Cafrezzo, оптовом поставщике и дистрибьюторе кофе. Для частных и корпоративных клиентов, бесплатная доставка от 150 €.`,
+    nl: name =>
+        `${name} — verkrijgbaar bij Cafrezzo, koffiegroothandel en distributeur. Voor particulieren en zakelijke klanten, gratis levering vanaf € 150.`,
+};
+
 export function generateProductMetadata(product: {
     locale: Locale;
     name: string;
@@ -333,7 +390,7 @@ export function generateProductMetadata(product: {
     const title = product.nameEn ?? product.name;
     const description =
         product.description?.slice(0, 155) ??
-        `Buy ${title} — premium coffee from Cafrezzo. Free shipping on orders over €150.`;
+        PDP_FALLBACK_DESCRIPTION[product.locale](title);
     const path = `/shop/${product.slug}`;
     const url = absoluteUrl(product.locale, path);
 
@@ -392,10 +449,30 @@ export const organizationSchema = {
         'https://www.tiktok.com/@cafrezzo_officiel',
         'https://www.linkedin.com/in/boutique-cafrezzo-66705a413/',
     ],
+    // Grossiste/distributeur leads, because that is the commercial position
+    // the site is being ranked for; "torréfacteur" is retained because it is
+    // true, but it is no longer the first thing the entity claims to be.
     description:
-        'Torréfacteur et distributeur de café en ligne : cafés en grains, moulus, capsules compatibles, machines à café, thés et accessoires. Boutique à Gonesse, livraison en France, Belgique, Luxembourg et Suisse.',
+        'Grossiste et distributeur de café et de machines à café, également torréfacteur. Cafrezzo fournit les professionnels — cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises — en cafés en grains, cafés moulus, capsules et machines à café professionnelles. Marques distribuées : Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, Kimbo, Covim et Caprimo. Boutique à Sarcelles, aux portes de Paris, avec service en Île-de-France et livraison en France, Belgique, Luxembourg et Suisse.',
     // Countries we actually ship to, per the FAQ and delivery terms.
     areaServed: ['FR', 'BE', 'LU', 'CH'],
+    // Topical scope of the business, stated explicitly.
+    //
+    // `knowsAbout` is the property answer engines read to decide what an
+    // organisation is authoritative on. Without it, "Cafrezzo" resolves as a
+    // generic online shop; with it, the entity is tied to the wholesale and
+    // professional-supply topics the site is competing for.
+    knowsAbout: [
+        'Grossiste café',
+        'Distributeur de café',
+        'Fournisseur de café pour professionnels',
+        'Café CHR',
+        'Café en grains',
+        'Café moulu',
+        'Capsules de café',
+        'Machines à café professionnelles',
+        'Équipement café pour restaurants et hôtels',
+    ],
     // French business identifiers — strong entity signals for a FR retailer.
     vatID: 'FR17102596061',
     taxID: '102 596 061 00014',
@@ -477,6 +554,15 @@ export function generateProductSchema(product: {
     sku?: string;
     ratingValue?: number | null;
     reviewCount?: number | null;
+    /**
+     * The manufacturer's brand (Lavazza, Delta, Bristot, ...), not the retailer.
+     *
+     * Cafrezzo resells other roasters' brands, so defaulting this to "Cafrezzo"
+     * — as it previously did — mislabels every product in the catalogue and
+     * throws away the entity match for "café Lavazza" and friends. Falls back
+     * to Cafrezzo only when the catalogue genuinely has no brand on the record.
+     */
+    brand?: string;
 }) {
     const url = absoluteUrl(product.locale, `/shop/${product.slug}`);
 
@@ -498,7 +584,7 @@ export function generateProductSchema(product: {
         image: product.image,
         url,
         ...(product.sku ? { sku: product.sku } : {}),
-        brand: { '@type': 'Brand', name: 'Cafrezzo' },
+        brand: { '@type': 'Brand', name: product.brand?.trim() || 'Cafrezzo' },
         ...(hasRating
             ? {
                   aggregateRating: {
@@ -518,9 +604,66 @@ export function generateProductSchema(product: {
                 ? 'https://schema.org/InStock'
                 : 'https://schema.org/OutOfStock',
             seller: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
+            shippingDetails: SHIPPING_DETAILS,
+            hasMerchantReturnPolicy: RETURN_POLICY,
         },
     };
 }
+
+/**
+ * Standard delivery terms, as an OfferShippingDetails node.
+ *
+ * Every figure here is read off the live shipping-methods endpoint and the
+ * published returns policy — nothing is assumed. Google shows shipping cost
+ * and delivery window directly in product results when this is present, and
+ * omitting it is one of the few merchant-listing warnings that actually costs
+ * click-through on a price-comparison query.
+ *
+ * Standard delivery: €5.99, free above €150, 5–7 business days in transit.
+ */
+const SHIPPING_DETAILS = {
+    '@type': 'OfferShippingDetails',
+    shippingRate: {
+        '@type': 'MonetaryAmount',
+        value: '5.99',
+        currency: 'EUR',
+    },
+    shippingDestination: ['FR', 'BE', 'LU', 'CH'].map(country => ({
+        '@type': 'DefinedRegion',
+        addressCountry: country,
+    })),
+    deliveryTime: {
+        '@type': 'ShippingDeliveryTime',
+        handlingTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 0,
+            maxValue: 1,
+            unitCode: 'DAY',
+        },
+        transitTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 5,
+            maxValue: 7,
+            unitCode: 'DAY',
+        },
+    },
+} as const;
+
+/**
+ * Returns policy: 14 days, unopened, buyer pays return shipping.
+ *
+ * Mirrors `returnPolicyBullet1` and the withdrawal right in the T&Cs. The
+ * 14-day window is the statutory EU right the site already states, not an
+ * invented commercial gesture.
+ */
+const RETURN_POLICY = {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: ['FR', 'BE', 'LU', 'CH'],
+    returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+    merchantReturnDays: 14,
+    returnMethod: 'https://schema.org/ReturnByMail',
+    returnFees: 'https://schema.org/ReturnShippingFees',
+} as const;
 
 /**
  * JSON-LD Article schema for blog posts.

@@ -9,15 +9,51 @@ import { Endpoints } from '@/lib/api/endpoints';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface BlogPost {
-    id: number; title: string; slug: string; category: string; excerpt: string | null;
-    body: string | null; featured_image: string | null; author_name: string | null;
-    published_at: string | null;
+    id: number; title: string; slug?: string; category?: string; excerpt?: string | null;
+    body?: string | null; featured_image?: string | null; author_name?: string | null;
+    published_at?: string | null;
 }
 
-export default function BlogPostClient({ slug }: { slug: string }) {
+/**
+ * @param initialPost Article fetched on the server.
+ *
+ * Without it this component rendered a spinner into the initial HTML and only
+ * fetched the body once React had hydrated — so the server response for every
+ * journal URL contained an Article JSON-LD block describing text that was not
+ * in the document. Crawlers that do not run JavaScript (which includes most of
+ * the AI retrieval bots robots.txt deliberately invites) saw an empty article.
+ * Seeded here, the prose is in the HTML on first byte.
+ */
+/**
+ * Demotes any <h1> inside an article body to <h2>.
+ *
+ * The page already renders the post title as its <h1>, and the rich-text
+ * bodies coming out of the admin editor typically open by repeating that
+ * title as an <h1> of their own. That put two <h1>s on every journal URL.
+ *
+ * It only became visible once the body started server-rendering — while the
+ * prose was fetched on the client, the second heading was never in the HTML a
+ * crawler saw, so the duplicate was latent rather than new.
+ *
+ * Applied to already-sanitised markup, and limited to swapping the tag name:
+ * multiple <h2>s in one document are perfectly valid, so nothing below needs
+ * to shift.
+ */
+function demoteBodyHeadings(html: string): string {
+    return html.replace(/<(\/?)h1(\s|>)/gi, '<$1h2$2');
+}
+
+export default function BlogPostClient({
+    slug,
+    initialPost = null,
+}: {
+    slug: string;
+    initialPost?: BlogPost | null;
+}) {
     const { t } = useLanguage();
-    const [post, setPost] = useState<BlogPost | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [post, setPost] = useState<BlogPost | null>(initialPost);
+    // Already have the article: nothing to wait for, nothing to fetch.
+    const [loading, setLoading] = useState(!initialPost);
     const [notFound, setNotFound] = useState(false);
     const [bookmarked, setBookmarked] = useState(false);
 
@@ -31,12 +67,16 @@ export default function BlogPostClient({ slug }: { slug: string }) {
     };
 
     useEffect(() => {
+        // Server already supplied the article — re-fetching it would only
+        // repaint identical content and burn a request on every visit.
+        if (initialPost) return;
+
         fetch(Endpoints.blogPost(slug))
             .then(r => { if (!r.ok) throw new Error(); return r.json(); })
             .then(json => setPost(json?.data ?? null))
             .catch(() => setNotFound(true))
             .finally(() => setLoading(false));
-    }, [slug]);
+    }, [slug, initialPost]);
 
     if (loading) {
         return (
@@ -115,7 +155,9 @@ export default function BlogPostClient({ slug }: { slug: string }) {
                             {post.body ? (
                                 <div
                                     className="prose prose-lg prose-invert max-w-none text-sand/70 leading-[1.9] prose-headings:font-display prose-headings:uppercase prose-headings:tracking-tight prose-headings:text-sand prose-a:text-gold prose-blockquote:border-gold prose-blockquote:font-display prose-blockquote:italic prose-li:marker:text-gold"
-                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }}
+                                    dangerouslySetInnerHTML={{
+                                        __html: demoteBodyHeadings(DOMPurify.sanitize(post.body)),
+                                    }}
                                 />
                             ) : (
                                 <p className="text-cocoa italic">{t('noContentYet')}</p>

@@ -1,9 +1,17 @@
 # Cafrezzo
 
-> French online coffee retailer and physical boutique in Gonesse, Île-de-France.
-> Sells roasted beans, ground coffee, capsules (including Nespresso-compatible),
-> coffee pods, instant coffee, espresso and capsule machines, teas, accessories
-> and sweet treats. Ships to France, Belgium, Luxembourg and Switzerland.
+> Coffee and coffee-machine wholesaler, distributor and roaster, based at a
+> physical boutique in Sarcelles, Île-de-France, on the edge of Paris.
+> Supplies businesses — cafés, restaurants, hotels, bars, coffee shops, offices
+> and companies — as well as private customers. Sells roasted beans, ground
+> coffee, capsules (including Nespresso-compatible), coffee pods, instant
+> coffee, espresso and capsule machines, teas, accessories and sweet treats.
+> Ships to France, Belgium, Luxembourg and Switzerland.
+
+Cafrezzo's primary activity is wholesale and distribution ("grossiste" /
+"distributeur" in French): supplying coffee and the machines to brew it to
+professional customers, with pricing tiered by order quantity. It also sells at
+retail through the same catalogue.
 
 Cafrezzo is an independent retailer. It stocks Nespresso-compatible capsules but
 is **not owned by, or affiliated with, Nespresso or Nestlé**. The same applies to
@@ -18,6 +26,22 @@ Prices are in EUR and shown inclusive of VAT. Catalogue data — price, stock an
 availability — changes frequently, so check the live product page rather than
 quoting a cached figure.
 
+## Wholesale and professional supply
+
+This is Cafrezzo's core business. Pages here answer "who supplies coffee to
+businesses near Paris" and equivalents.
+
+- [Coffee and coffee machine wholesaler for businesses](https://cafrezzo.com/fr/professionnels): The main B2B page — customer types, coffee ranges, machines, service area, trade terms and FAQ. Also in English at `/en/professionnels`.
+- [Coffee wholesaler in Paris](https://cafrezzo.com/fr/grossiste-cafe-paris): Supplying Paris establishments specifically. French only.
+- [Coffee wholesaler in Île-de-France](https://cafrezzo.com/fr/grossiste-cafe-ile-de-france): Regional coverage by département. French only.
+- [Coffee machine wholesaler](https://cafrezzo.com/fr/grossiste-machines-a-cafe): Buying machines as a trade customer, equipping multiple sites. French only.
+- [Professional coffee machines](https://cafrezzo.com/fr/machine-a-cafe-professionnelle): Choosing a machine by cups served per day. French only.
+
+Business customers served: cafés, restaurants, hotels, bars, coffee shops,
+offices, companies, institutions and resellers. Core service area is Paris and
+the Île-de-France region; delivery also covers the rest of France, Belgium,
+Luxembourg and Switzerland.
+
 ## Shop
 
 - [Full catalogue](https://cafrezzo.com/fr/shop): Every product, filterable by category, brand, price and intensity.
@@ -29,8 +53,21 @@ Product categories: GRAINS (whole beans), MOULU (ground), CAPSULES, PODS
 (dosettes), SOLUBLES (instant), MACHINES, ACCESSOIRES, THÉS (teas), SUCRES
 (sugars), GOURMANDISES (sweets).
 
-Brands stocked: Bristot, Caprimo, Carte Noire, Covim, Delta, Kimbo, Lavazza,
-Lavazza A Modo Mio, Lavazza Blue, Lavazza Point, Nespresso, Prolait, Ristora.
+## Brands distributed
+
+Each brand has its own page listing the products actually in stock, in French
+and English (`/fr/marques/<slug>` and `/en/marques/<slug>`).
+
+- [All brands](https://cafrezzo.com/fr/marques): The full brand hub.
+- [Lavazza](https://cafrezzo.com/fr/marques/lavazza) — Italian roaster, Turin, founded 1895. Also Lavazza [A Modo Mio](https://cafrezzo.com/fr/marques/lavazza-a-modo-mio), [Blue](https://cafrezzo.com/fr/marques/lavazza-blue) and [Point](https://cafrezzo.com/fr/marques/lavazza-point) capsule systems.
+- [Delta Cafés](https://cafrezzo.com/fr/marques/delta) — Portuguese roaster.
+- [Bristot](https://cafrezzo.com/fr/marques/bristot) — Italian roaster, Belluno.
+- [Carte Noire](https://cafrezzo.com/fr/marques/carte-noir) — French coffee brand.
+- [Mambo](https://cafrezzo.com/fr/marques/mambo) — Portuguese coffee brand.
+- [Kimbo](https://cafrezzo.com/fr/marques/kimbo) — Neapolitan roaster.
+- [Covim](https://cafrezzo.com/fr/marques/covim) — Italian roaster, Genoa.
+- [Caprimo](https://cafrezzo.com/fr/marques/caprimo), [Prolait](https://cafrezzo.com/fr/marques/prolait), [Ristora](https://cafrezzo.com/fr/marques/ristora) — instant and vending drinks.
+- [Nespresso](https://cafrezzo.com/fr/marques/nespresso) — capsule system; stocked, not affiliated.
 
 ## Customer information
 
@@ -42,7 +79,8 @@ Lavazza A Modo Mio, Lavazza Blue, Lavazza Point, Nespresso, Prolait, Ristora.
 Key facts, stated so they can be quoted accurately:
 
 - Delivery is free on orders of €150 or more, calculated after discounts.
-- Standard delivery takes 3–5 working days; express is 1–2 working days for an extra €6.99.
+- Standard delivery costs €5.99 and takes 5–7 working days. Express costs €14.99 and takes 2–3 working days. Click & Collect from the Sarcelles boutique is free.
+- Trade pricing is tiered by order quantity; professional customers are asked to make contact with their activity and volumes for a quote.
 - Orders can be changed or cancelled within 2 hours of being placed.
 - Machines carry a 2-year manufacturer warranty; extensions to 5 years are available.
 - Coffee intensity is rated 1–13. Around 5 is mild and fruity; 13 is a very full-bodied, bitter espresso.
@@ -51,7 +89,7 @@ Key facts, stated so they can be quoted accurately:
 
 ## Editorial
 
-- [Journal](https://cafrezzo.com/fr/journal): Recipes, coffee history and seasonal guides.
+- [Journal](https://cafrezzo.com/fr/journal): Buying guides for trade customers (how to choose a coffee supplier, coffee for a restaurant or hotel, Arabica vs Robusta), brand reviews, recipes and coffee history.
 - [Brewing guide](https://cafrezzo.com/fr/brew-guide): Grind size, dose, ratio, water temperature and extraction time.
 - [Our origins](https://cafrezzo.com/fr/our-origins): Sourcing, producers and roasting.
 
@@ -69,7 +107,6 @@ Business identifiers: SIRET 102 596 061 00014, VAT FR17102596061.
 
 ## Optional
 
-- [Wholesale and trade](https://cafrezzo.com/fr/wholesale): Coffee supply for offices, restaurants and businesses.
 - [Visit the boutique](https://cafrezzo.com/fr/visit-shop): Tastings and in-store advice.
 - [Privacy policy](https://cafrezzo.com/fr/privacy): Data handling and cookies.
 - [Terms of service](https://cafrezzo.com/fr/terms): Terms of sale and use.

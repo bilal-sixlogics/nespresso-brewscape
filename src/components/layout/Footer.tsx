@@ -21,8 +21,48 @@ const SOCIALS = [
     { name: 'LinkedIn', icon: LinkedinIcon, key: 'social_linkedin_url' as const },
 ];
 
+/**
+ * Sitewide links into the B2B / wholesale cluster.
+ *
+ * This block is the main reason those pages are reachable at all: a footer
+ * link appears on every indexed URL, which is what gives a new landing page a
+ * crawl path and a share of internal authority instead of leaving it to be
+ * found in the sitemap alone.
+ *
+ * Locale-aware because the pages are not all published in five languages. The
+ * four local-intent pages are French-only and /professionnels is French and
+ * English, so linking them unconditionally would put 404s in the footer of
+ * every German, Russian and Dutch page. For those three, the English B2B page
+ * is linked explicitly (`/en/...` is already locale-prefixed, so LocaleLink
+ * passes it through untouched) rather than dropping the link entirely.
+ */
+function proLinks(
+    language: string,
+    /** Already-translated label used for the de/ru/nl fallback link. */
+    fallbackLabel: string,
+): { href: string; label: string }[] {
+    if (language === 'fr') {
+        return [
+            { href: '/professionnels', label: 'Grossiste café professionnel' },
+            { href: '/grossiste-cafe-paris', label: 'Grossiste café Paris' },
+            { href: '/grossiste-cafe-ile-de-france', label: 'Grossiste café Île-de-France' },
+            { href: '/grossiste-machines-a-cafe', label: 'Grossiste machines à café' },
+            { href: '/machine-a-cafe-professionnelle', label: 'Machine à café professionnelle' },
+            { href: '/marques', label: 'Marques de café' },
+        ];
+    }
+    if (language === 'en') {
+        return [
+            { href: '/professionnels', label: 'Coffee wholesale for business' },
+            { href: '/marques', label: 'Coffee brands' },
+        ];
+    }
+    // de / ru / nl: no translated B2B pages, so point at the English one.
+    return [{ href: '/en/professionnels', label: fallbackLabel }];
+}
+
 export function Footer() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const siteSettings = useSiteSettings();
     const [nlEmail, setNlEmail] = useState('');
     const [nlState, setNlState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -98,8 +138,31 @@ export function Footer() {
                             <li><Link href="/shop" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navShop')}</Link></li>
                             <li><Link href="/sweets" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navSweets')}</Link></li>
                             <li><Link href="/our-origins" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navOrigins')}</Link></li>
-                            <li><Link href="/wholesale" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navWholesale')}</Link></li>
                             <li><Link href="/journal" className="text-cocoa hover:text-gold transition-colors text-sm">{t('navBlog')}</Link></li>
+
+                            {/* Professionals / wholesale cluster.
+                                Replaces the single generic "/wholesale" entry
+                                that used to sit here and pointed at a page with
+                                no <h1> and no commercial copy.
+
+                                Kept inside this existing column rather than
+                                given a new one: the footer grid is four columns
+                                wide and a fifth would push the newsletter card
+                                onto its own row, which is a layout change this
+                                task has no mandate to make.
+
+                                Anchor text is descriptive on purpose — the
+                                anchor is one of the few signals that tells
+                                Google what the *target* page is about, so
+                                "Grossiste café Paris" is worth considerably
+                                more here than a generic "Professionnels". */}
+                            {proLinks(language, t('navWholesale')).map(link => (
+                                <li key={link.href}>
+                                    <Link href={link.href} className="text-cocoa hover:text-gold transition-colors text-sm">
+                                        {link.label}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 

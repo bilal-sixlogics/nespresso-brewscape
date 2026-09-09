@@ -1,7 +1,13 @@
 import { MetadataRoute } from 'next';
 import { Endpoints } from '@/lib/api/endpoints';
-import { SITE_URL } from '@/lib/seo';
-import { DEFAULT_LOCALE, LOCALES, LOCALE_META, localePath } from '@/lib/i18n';
+import { FRENCH_ONLY, FR_EN, SITE_URL } from '@/lib/seo';
+import {
+    DEFAULT_LOCALE,
+    LOCALES,
+    LOCALE_META,
+    localePath,
+    type Locale,
+} from '@/lib/i18n';
 
 // Rebuilt hourly so newly published products appear without a redeploy.
 // (Previously `force-static` over a hardcoded mock array, which meant the
@@ -26,6 +32,11 @@ interface ApiProduct {
 interface ApiCategory {
     slug?: string;
     storefront_page?: string;
+}
+
+interface ApiBrand {
+    slug?: string;
+    status?: string;
 }
 
 interface ApiBlogPost {
@@ -103,12 +114,19 @@ async function fetchAllProducts(): Promise<ApiProduct[]> {
  * and having both is the recommended belt-and-braces: it tells the crawler the
  * five URLs are translations rather than duplicates before it fetches any.
  */
-function hreflangFor(path: string): Record<string, string> {
+function hreflangFor(
+    path: string,
+    // Must match the `locales` passed to pageMetadata() for the same route.
+    // A sitemap alternate for a locale the page 404s in contradicts the page's
+    // own link tags, and Google resolves that by trusting neither.
+    locales: readonly Locale[] = LOCALES,
+): Record<string, string> {
     const languages: Record<string, string> = {};
-    for (const locale of LOCALES) {
+    for (const locale of locales) {
         languages[LOCALE_META[locale].hreflang] = `${SITE_URL}${localePath(locale, path)}`;
     }
-    languages['x-default'] = `${SITE_URL}${localePath(DEFAULT_LOCALE, path)}`;
+    const primary = locales.includes(DEFAULT_LOCALE) ? DEFAULT_LOCALE : locales[0];
+    languages['x-default'] = `${SITE_URL}${localePath(primary, path)}`;
     return languages;
 }
 
@@ -131,12 +149,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { path: '/our-origins',  changeFrequency: 'monthly', priority: 0.6 },
         { path: '/contact',      changeFrequency: 'monthly', priority: 0.6 },
         { path: '/visit-shop',   changeFrequency: 'monthly', priority: 0.6 },
-        { path: '/wholesale',    changeFrequency: 'monthly', priority: 0.5 },
         { path: '/faq',          changeFrequency: 'monthly', priority: 0.5 },
         { path: '/shipping',     changeFrequency: 'monthly', priority: 0.4 },
         { path: '/returns',      changeFrequency: 'monthly', priority: 0.4 },
         { path: '/terms',        changeFrequency: 'yearly',  priority: 0.3 },
         { path: '/privacy',      changeFrequency: 'yearly',  priority: 0.3 },
+        // /wholesale is deliberately absent: it now 308s to /professionnels,
+        // and listing a redirect in a sitemap asks Google to index a URL that
+        // immediately tells it to go somewhere else.
     ];
 
     const staticRoutes: MetadataRoute.Sitemap = STATIC_PATHS.flatMap(entry =>
@@ -149,12 +169,63 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         })),
     );
 
-    const [products, categories, posts, brewGuides] = await Promise.all([
+    /**
+     * The commercial landing pages, which are not published in all five
+     * languages — so they are expanded over their own locale set rather than
+     * over LOCALES.
+     *
+     * Priorities are high on purpose: /professionnels is the page the whole
+     * "grossiste café" cluster is meant to funnel into, and it should be
+     * crawled at least as often as the shop.
+     */
+    const LANDING_PATHS: Array<{
+        path: string;
+        locales: readonly Locale[];
+        priority: number;
+    }> = [
+        { path: '/professionnels',               locales: FR_EN,       priority: 0.95 },
+        { path: '/grossiste-cafe-paris',         locales: FRENCH_ONLY, priority: 0.9 },
+        { path: '/grossiste-cafe-ile-de-france', locales: FRENCH_ONLY, priority: 0.9 },
+        { path: '/grossiste-machines-a-cafe',    locales: FRENCH_ONLY, priority: 0.85 },
+        { path: '/machine-a-cafe-professionnelle', locales: FRENCH_ONLY, priority: 0.85 },
+        { path: '/marques',                      locales: FR_EN,       priority: 0.8 },
+    ];
+
+    const landingRoutes: MetadataRoute.Sitemap = LANDING_PATHS.flatMap(entry =>
+        entry.locales.map(locale => ({
+            url: `${SITE_URL}${localePath(locale, entry.path)}`,
+            lastModified: now,
+            changeFrequency: 'monthly' as const,
+            priority: locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9,
+            alternates: { languages: hreflangFor(entry.path, entry.locales) },
+        })),
+    );
+
+    const [products, categories, posts, brewGuides, brands] = await Promise.all([
         fetchAllProducts(),
         fetchCollection<ApiCategory>(Endpoints.categories, 'categories'),
-        fetchCollection<ApiBlogPost>(Endpoints.blogPosts, 'blog posts'),
+        // per_page is explicit: the blog endpoint defaults to 12 and there are
+        // already 17 posts, so an unparameterised request left five published
+        // articles out of the sitemap altogether.
+        fetchCollection<ApiBlogPost>(`${Endpoints.blogPosts}?per_page=200`, 'blog posts'),
         fetchCollection<unknown>(Endpoints.brewGuides, 'brew guides'),
+        fetchCollection<ApiBrand>(Endpoints.brands, 'brands'),
     ]);
+
+    // One page per distributed brand — the targets for "café Lavazza",
+    // "café Delta", "café Bristot" and so on. Published in fr and en only,
+    // matching the pages themselves.
+    const brandRoutes: MetadataRoute.Sitemap = brands
+        .filter(b => b.slug && b.status !== 'inactive')
+        .flatMap(b =>
+            FR_EN.map(locale => ({
+                url: `${SITE_URL}${localePath(locale, `/marques/${b.slug}`)}`,
+                lastModified: now,
+                changeFrequency: 'weekly' as const,
+                priority: locale === DEFAULT_LOCALE ? 0.8 : 0.72,
+                alternates: { languages: hreflangFor(`/marques/${b.slug}`, FR_EN) },
+            })),
+        );
 
     // /brew-guide renders entirely from the brew-guides API. That endpoint is
     // currently returning HTTP 500, so the page serves an empty <main> — and
@@ -187,19 +258,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             })),
         );
 
-    // Category listings (?category=<slug>) are deliberately NOT listed.
-    //
-    // They were, briefly, but the listing pages canonicalise to their bare path
-    // (/shop, /machines, ...), so submitting `/shop?category=x` told Google to
-    // index a URL that simultaneously declares itself a copy of /shop. Google
-    // honours the canonical and ignores the sitemap entry, so the entries were
-    // contradictory noise.
-    //
-    // To make them genuinely indexable they need their own canonical, title and
-    // description, which means reading `searchParams` in a server component —
-    // the same refactor /shop needs to be server-rendered at all. Add them back
-    // as part of that work, not before.
-    void categories;
+    /**
+     * Category listings (/shop?category=<slug>).
+     *
+     * These are back in the sitemap. They were removed because /shop
+     * canonicalised every filtered view to its bare path, so submitting
+     * `?category=x` asked Google to index a URL that declared itself a copy of
+     * /shop — contradictory noise. The condition attached to restoring them
+     * was that /shop become a Server Component able to describe each filter
+     * with its own title, description and self-canonical. It now is, and
+     * generateMetadata() does exactly that, so the entries are no longer in
+     * conflict with the pages they point at.
+     *
+     * Only categories whose products live on /shop are listed: a category
+     * routed to /machines is reached through that page instead, and listing it
+     * under /shop would publish a second URL for the same set of products.
+     */
+    const categoryRoutes: MetadataRoute.Sitemap = categories
+        .filter(c => c.slug && (c.storefront_page ?? '/shop') === '/shop')
+        .flatMap(c =>
+            LOCALES.map(locale => ({
+                url: `${SITE_URL}${localePath(locale, `/shop?category=${c.slug}`)}`,
+                lastModified: now,
+                changeFrequency: 'weekly' as const,
+                priority: locale === DEFAULT_LOCALE ? 0.75 : 0.68,
+                alternates: {
+                    languages: hreflangFor(`/shop?category=${c.slug}`),
+                },
+            })),
+        );
 
     const blogRoutes: MetadataRoute.Sitemap = posts
         .filter(p => p.slug && p.status !== 'draft')
@@ -216,6 +303,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Guard against a duplicate URL slipping in from any source.
     const all = [
         ...staticRoutes,
+        ...landingRoutes,
+        ...brandRoutes,
+        ...categoryRoutes,
         ...brewGuideRoutes,
         ...productRoutes,
         ...blogRoutes,
