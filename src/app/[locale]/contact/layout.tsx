@@ -13,7 +13,7 @@ export async function generateMetadata({
     return pageMetadata({
         locale,
         title: 'Contact & Boutiques',
-        description: 'Contactez Cafrezzo : boutique de Sarcelles, téléphone, email et horaires d’ouverture. Réponse sous 24 heures ouvrables.',
+        description: 'Contactez Cafrezzo : boutique de Gonesse, téléphone, email et horaires d’ouverture. Réponse sous 24 heures ouvrables.',
         path: '/contact',
         titleKey: 'contactTitle',
         descriptionKey: 'contactMetaDescription',

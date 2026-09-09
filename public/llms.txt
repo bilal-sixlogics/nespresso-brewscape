@@ -1,6 +1,6 @@
 # Cafrezzo
 
-> French online coffee retailer and physical boutique in Sarcelles, Île-de-France.
+> French online coffee retailer and physical boutique in Gonesse, Île-de-France.
 > Sells roasted beans, ground coffee, capsules (including Nespresso-compatible),
 > coffee pods, instant coffee, espresso and capsule machines, teas, accessories
 > and sweet treats. Ships to France, Belgium, Luxembourg and Switzerland.
@@ -46,7 +46,7 @@ Key facts, stated so they can be quoted accurately:
 - Orders can be changed or cancelled within 2 hours of being placed.
 - Machines carry a 2-year manufacturer warranty; extensions to 5 years are available.
 - Coffee intensity is rated 1–13. Around 5 is mild and fruity; 13 is a very full-bodied, bitter espresso.
-- The boutique is at 30 rue de l'Escouvrier, 95200 Sarcelles, France, open Monday–Friday 09:00–17:00.
+- The boutique is at 30 rue de l'Escouvrier, 95200 Gonesse, France, open Monday–Friday 09:00–17:00.
 - Contact: boutique@cafrezzo.com, +33 1 39 85 85 65. Email replies within 24 working hours.
 
 ## Editorial

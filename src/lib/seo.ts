@@ -89,7 +89,7 @@ const POSTAL_ADDRESS = {
     '@type': 'PostalAddress',
     streetAddress: "30 rue de l'Escouvrier",
     postalCode: '95200',
-    addressLocality: 'Sarcelles',
+    addressLocality: 'Gonesse',
     addressRegion: 'Île-de-France',
     addressCountry: 'FR',
 } as const;
@@ -393,7 +393,7 @@ export const organizationSchema = {
         'https://www.linkedin.com/in/boutique-cafrezzo-66705a413/',
     ],
     description:
-        'Torréfacteur et distributeur de café en ligne : cafés en grains, moulus, capsules compatibles, machines à café, thés et accessoires. Boutique à Sarcelles, livraison en France, Belgique, Luxembourg et Suisse.',
+        'Torréfacteur et distributeur de café en ligne : cafés en grains, moulus, capsules compatibles, machines à café, thés et accessoires. Boutique à Gonesse, livraison en France, Belgique, Luxembourg et Suisse.',
     // Countries we actually ship to, per the FAQ and delivery terms.
     areaServed: ['FR', 'BE', 'LU', 'CH'],
     // French business identifiers — strong entity signals for a FR retailer.
@@ -408,7 +408,7 @@ export const organizationSchema = {
  *
  * Distinct from `organizationSchema`: that identifies the business entity,
  * this describes a visitable location and is what drives local/map results
- * for queries like "café Sarcelles". Belongs on the pages that describe the
+ * for queries like "café Gonesse". Belongs on the pages that describe the
  * shop itself (/contact, /visit-shop), not sitewide.
  *
  * `geo` is deliberately absent — we have no verified coordinates, and Google

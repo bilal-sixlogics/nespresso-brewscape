@@ -10,7 +10,7 @@ export const translations = {
         // what the page is actually about.
         homeH1: "Café en Grains, Capsules & Machines à Café",
         homeAboutHeading: "Le Café, Choisi et Torréfié avec Soin",
-        homeAboutBody1: "Cafrezzo est un torréfacteur et distributeur de café en ligne installé à Sarcelles, aux portes de Paris. Nous proposons des cafés en grains, moulus et en capsules compatibles, aux côtés de machines expresso, à capsules et automatiques issues de marques telles que Lavazza, Carte Noire, Bristot et Mambo.",
+        homeAboutBody1: "Cafrezzo est un torréfacteur et distributeur de café en ligne installé à Gonesse, aux portes de Paris. Nous proposons des cafés en grains, moulus et en capsules compatibles, aux côtés de machines expresso, à capsules et automatiques issues de marques telles que Lavazza, Carte Noire, Bristot et Mambo.",
         homeAboutBody2: "Nous livrons en France, en Belgique, en Suisse et au Luxembourg, avec la livraison offerte dès 150€ d’achat. Que vous équipiez un bureau, approvisionniez un restaurant ou perfectionniez simplement votre tasse du matin, notre équipe vous aide à associer la bonne torréfaction à la bonne machine — par téléphone, par email ou en boutique.",
 
         // ── SEO metadata ────────────────────────────────────────────────────
@@ -26,7 +26,7 @@ export const translations = {
         sweetsMetaDescription: "Biscuits, chocolats et douceurs à accompagner votre café. Sélection gourmande Cafrezzo, livraison offerte dès 150€.",
         ourOriginsMetaTitle: "Nos Origines",
         ourOriginsMetaDescription: "L’histoire de Cafrezzo et les origines de nos cafés — terroirs, producteurs et méthodes de torréfaction.",
-        contactMetaDescription: "Contactez Cafrezzo : boutique de Sarcelles, téléphone, email et horaires d’ouverture. Réponse sous 24 heures ouvrables.",
+        contactMetaDescription: "Contactez Cafrezzo : boutique de Gonesse, téléphone, email et horaires d’ouverture. Réponse sous 24 heures ouvrables.",
         wholesaleMetaDescription: "Solutions café pour entreprises, bureaux et restaurateurs. Tarifs professionnels et accompagnement Cafrezzo.",
         shippingMetaDescription: "Délais, tarifs et conditions de livraison Cafrezzo. Livraison offerte dès 150€ d’achat en France.",
         returnsMetaTitle: "Retours & Remboursements",
@@ -903,7 +903,7 @@ export const translations = {
         // 200 visible words, most of it navigation and product tiles.
         homeH1: "Coffee Beans, Capsules & Coffee Machines",
         homeAboutHeading: "Coffee, Chosen and Roasted With Care",
-        homeAboutBody1: "Cafrezzo is a French coffee roaster and online retailer based in Sarcelles, just outside Paris. We stock whole beans, ground coffee and compatible capsules alongside espresso, capsule and bean-to-cup machines from brands including Lavazza, Carte Noire, Bristot and Mambo.",
+        homeAboutBody1: "Cafrezzo is a French coffee roaster and online retailer based in Gonesse, just outside Paris. We stock whole beans, ground coffee and compatible capsules alongside espresso, capsule and bean-to-cup machines from brands including Lavazza, Carte Noire, Bristot and Mambo.",
         homeAboutBody2: "Orders ship across France, Belgium, Switzerland and Luxembourg, with delivery free on baskets over €150. Whether you are equipping an office, supplying a restaurant or simply refining your morning cup at home, our team can help you match the right roast to the right machine — by phone, by email, or in the shop.",
 
         // ── SEO metadata ────────────────────────────────────────────────────
@@ -919,7 +919,7 @@ export const translations = {
         sweetsMetaDescription: "Biscuits, chocolates and treats to go with your coffee. A gourmet selection from Cafrezzo, free shipping over €150.",
         ourOriginsMetaTitle: "Our Origins",
         ourOriginsMetaDescription: "The Cafrezzo story and where our coffees come from — terroirs, growers and roasting methods.",
-        contactMetaDescription: "Contact Cafrezzo: our Sarcelles shop, phone, email and opening hours. We reply within 24 business hours.",
+        contactMetaDescription: "Contact Cafrezzo: our Gonesse shop, phone, email and opening hours. We reply within 24 business hours.",
         wholesaleMetaDescription: "Coffee solutions for businesses, offices and restaurants. Trade pricing and dedicated support from Cafrezzo.",
         shippingMetaDescription: "Cafrezzo delivery times, rates and conditions. Free shipping on orders over €150 within France.",
         returnsMetaTitle: "Returns & Refunds",
@@ -1794,7 +1794,7 @@ export const translations = {
         // Page-specific body copy. The homepage previously carried well under
         // 200 visible words, most of it navigation and product tiles.
         homeAboutHeading: "Kaffee, mit Sorgfalt Ausgewählt und Geröstet",
-        homeAboutBody1: "Cafrezzo ist eine Kaffeerösterei und ein Online-Händler mit Sitz in Sarcelles vor den Toren von Paris. Wir führen ganze Bohnen, gemahlenen Kaffee und kompatible Kapseln sowie Espresso-, Kapsel- und Kaffeevollautomaten von Marken wie Lavazza, Carte Noire, Bristot und Mambo.",
+        homeAboutBody1: "Cafrezzo ist eine Kaffeerösterei und ein Online-Händler mit Sitz in Gonesse vor den Toren von Paris. Wir führen ganze Bohnen, gemahlenen Kaffee und kompatible Kapseln sowie Espresso-, Kapsel- und Kaffeevollautomaten von Marken wie Lavazza, Carte Noire, Bristot und Mambo.",
         homeAboutBody2: "Wir liefern nach Frankreich, Belgien, in die Schweiz und nach Luxemburg, versandkostenfrei ab 150 € Warenwert. Ob Sie ein Büro ausstatten, ein Restaurant beliefern oder einfach Ihre Tasse am Morgen verfeinern möchten — unser Team hilft Ihnen, die passende Röstung zur passenden Maschine zu finden, telefonisch, per E-Mail oder im Laden.",
 
         // ── SEO metadata ────────────────────────────────────────────────────
@@ -1810,7 +1810,7 @@ export const translations = {
         sweetsMetaDescription: "Kekse, Schokolade und Süßes als Begleitung zu Ihrem Kaffee. Feine Auswahl von Cafrezzo, versandkostenfrei ab 150 €.",
         ourOriginsMetaTitle: "Unsere Ursprünge",
         ourOriginsMetaDescription: "Die Geschichte von Cafrezzo und die Herkunft unserer Kaffees — Anbaugebiete, Produzenten und Röstverfahren.",
-        contactMetaDescription: "Kontakt zu Cafrezzo: Ladengeschäft in Sarcelles, Telefon, E-Mail und Öffnungszeiten. Antwort innerhalb von 24 Werkstunden.",
+        contactMetaDescription: "Kontakt zu Cafrezzo: Ladengeschäft in Gonesse, Telefon, E-Mail und Öffnungszeiten. Antwort innerhalb von 24 Werkstunden.",
         wholesaleMetaDescription: "Kaffeelösungen für Unternehmen, Büros und Gastronomie. Großhandelspreise und persönliche Betreuung von Cafrezzo.",
         shippingMetaDescription: "Lieferzeiten, Versandkosten und Lieferbedingungen von Cafrezzo. Versandkostenfrei ab 150 € innerhalb Frankreichs.",
         returnsMetaTitle: "Rückgabe & Rückerstattung",
@@ -3568,7 +3568,7 @@ export const translations = {
         // Page-specific body copy. The homepage previously carried well under
         // 200 visible words, most of it navigation and product tiles.
         homeAboutHeading: "Koffie, met Zorg Gekozen en Gebrand",
-        homeAboutBody1: "Cafrezzo is een Franse koffiebrander en webwinkel in Sarcelles, net buiten Parijs. We hebben koffiebonen, gemalen koffie en compatibele capsules, naast espresso-, capsule- en volautomatische machines van merken als Lavazza, Carte Noire, Bristot en Mambo.",
+        homeAboutBody1: "Cafrezzo is een Franse koffiebrander en webwinkel in Gonesse, net buiten Parijs. We hebben koffiebonen, gemalen koffie en compatibele capsules, naast espresso-, capsule- en volautomatische machines van merken als Lavazza, Carte Noire, Bristot en Mambo.",
         homeAboutBody2: "We leveren in Frankrijk, België, Zwitserland en Luxemburg, met gratis verzending vanaf € 150. Of je een kantoor inricht, een restaurant belevert of simpelweg je ochtendkop wilt verfijnen — ons team helpt je de juiste roostering bij de juiste machine te vinden, telefonisch, per e-mail of in de winkel.",
 
         // ── SEO metadata ────────────────────────────────────────────────────
@@ -3584,7 +3584,7 @@ export const translations = {
         sweetsMetaDescription: "Koekjes, chocolade en lekkernijen bij je koffie. Gastronomische selectie van Cafrezzo, gratis verzending vanaf € 150.",
         ourOriginsMetaTitle: "Onze oorsprong",
         ourOriginsMetaDescription: "Het verhaal van Cafrezzo en de herkomst van onze koffie — terroirs, producenten en roostermethodes.",
-        contactMetaDescription: "Neem contact op met Cafrezzo: winkel in Sarcelles, telefoon, e-mail en openingstijden. Antwoord binnen 24 werkuren.",
+        contactMetaDescription: "Neem contact op met Cafrezzo: winkel in Gonesse, telefoon, e-mail en openingstijden. Antwoord binnen 24 werkuren.",
         wholesaleMetaDescription: "Koffieoplossingen voor bedrijven, kantoren en restaurants. Groothandelsprijzen en persoonlijke begeleiding van Cafrezzo.",
         shippingMetaDescription: "Levertijden, tarieven en leveringsvoorwaarden van Cafrezzo. Gratis verzending vanaf € 150 binnen Frankrijk.",
         returnsMetaTitle: "Retouren & terugbetalingen",
