@@ -450,10 +450,7 @@ export const translations = {
         authVerifyButton: "Vérifier",
         reviewAlreadySubmitted: "Vous avez déjà évalué ce produit. Merci pour votre avis !",
         reviewGenericError: "Une erreur s'est produite. Veuillez réessayer.",
-        reviewSubmitted
-      
-      
-      ing: "Avis envoyé",
+        reviewSubmittedHeading: "Avis envoyé",
         reviewSubmittedDesc: "Merci d'avoir partagé votre expérience. Il a été publié.",
         reviewRateExperience: "Évaluez Votre Expérience",
         reviewRatingPoor: "Mauvais",
