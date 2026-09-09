@@ -13,7 +13,7 @@ export async function generateMetadata({
     return pageMetadata({
         locale,
         title: 'Visiter la Boutique',
-        description: 'Venez découvrir la boutique Cafrezzo à Sarcelles — dégustation, conseils et sélection complète de cafés et machines.',
+        description: 'Venez découvrir la boutique Cafrezzo à Gonesse — dégustation, conseils et sélection complète de cafés et machines.',
         path: '/visit-shop',
         titleKey: 'visitShopTitle',
         descriptionKey: 'visitShopSubtitle',

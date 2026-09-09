@@ -7,7 +7,7 @@ export const AppConfig = {
         description: "Découvrez l'excellence du café avec Cafrezzo. Expert en café français depuis des années, nous vous proposons une sélection premium de grains, capsules et machines.",
         email: "boutique@cafrezzo.com",
         phone: "+33 1 39 85 85 65",
-        address: "30 rue de l'Escouvrier, 95200 Sarcelles, France",
+        address: "30 rue de l'Escouvrier, 95200 Gonesse, France",
         hours: "Lundi–Vendredi 9h–17h",
         heroLine1: "CAF-",
         heroLine2: "REZZO",

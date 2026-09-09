@@ -33,7 +33,7 @@ Complete design reference for the Cafrezzo website — a premium French coffee b
 | Domain         | cafrezzo.com                                   |
 | Email          | boutique@cafrezzo.com                           |
 | Phone          | +33 1 39 85 85 65                              |
-| Address        | 30 rue de l'Escouvrier, 95200 Sarcelles, France |
+| Address        | 30 rue de l'Escouvrier, 95200 Gonesse, France |
 | Hours          | Monday–Friday, 9h–17h                          |
 
 **Social Channels:** Facebook, Instagram, Twitter, YouTube
