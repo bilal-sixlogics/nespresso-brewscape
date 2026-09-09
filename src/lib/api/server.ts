@@ -190,12 +190,47 @@ export async function getBlogPost(id: string): Promise<BlogPost | null> {
     return post && typeof post === 'object' && 'title' in post ? post : null;
 }
 
-/** Fetches all published blog posts — used by the sitemap. */
+/**
+ * Every published blog post.
+ *
+ * Pages through the endpoint rather than taking whatever one request returns.
+ * The blog API defaults to `per_page=12` and there are currently 17 posts, so
+ * the previous single unparameterised request silently dropped five of them —
+ * they were missing from the sitemap, missing from generateStaticParams(), and
+ * missing from the journal index. Asking for a large page and then following
+ * `last_page` fixes both the current shortfall and the next one.
+ */
+const BLOG_PAGE_SIZE = 100;
+/** Backstop for an API that ignores `page` and keeps returning full pages. */
+const MAX_BLOG_PAGES = 10;
+
 export async function getBlogPosts(): Promise<BlogPost[]> {
-    const body = await getJson<{ data: BlogPost[] } | BlogPost[]>(Endpoints.blogPosts, 'blog list');
-    if (!body) return [];
-    const items = Array.isArray(body) ? body : (body as { data?: BlogPost[] }).data;
-    return Array.isArray(items) ? items : [];
+    const all: BlogPost[] = [];
+
+    for (let page = 1; page <= MAX_BLOG_PAGES; page++) {
+        const body = await getJson<
+            { data?: BlogPost[]; meta?: { last_page?: number } } | BlogPost[]
+        >(`${Endpoints.blogPosts}?per_page=${BLOG_PAGE_SIZE}&page=${page}`, `blog list p${page}`);
+        if (!body) break;
+
+        const items = Array.isArray(body) ? body : body.data;
+        if (!Array.isArray(items) || items.length === 0) break;
+        all.push(...items);
+
+        // A bare array carries no pagination info, so one request is all there is.
+        const lastPage = Array.isArray(body) ? 1 : (body.meta?.last_page ?? 1);
+        if (page >= lastPage) break;
+    }
+
+    // De-duplicate by slug: an API that ignores `page` would otherwise return
+    // the same posts repeatedly and multiply every journal URL in the sitemap.
+    const seen = new Set<string>();
+    return all.filter(post => {
+        const key = post.slug ?? String(post.id);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
 }
 
 /**
@@ -212,4 +247,79 @@ export async function probeApiReachable(): Promise<boolean> {
     } catch {
         return false;
     }
+}
+
+// ── Brands & categories ──────────────────────────────────────────────────────
+
+export interface ApiBrand {
+    id: number;
+    name: string;
+    slug?: string;
+    logo?: string | null;
+    description?: string | null;
+    status?: string;
+}
+
+export interface ApiCategory {
+    id: number;
+    name: string;
+    slug?: string;
+    icon_url?: string | null;
+    description?: string | null;
+    status?: string;
+    storefront_page?: string;
+}
+
+/** Every active brand in the catalogue. Used by /marques and the sitemap. */
+export async function getBrands(): Promise<ApiBrand[]> {
+    const body = await getJson<{ data: ApiBrand[] } | ApiBrand[]>(Endpoints.brands, 'brands');
+    if (!body) return [];
+    const items = Array.isArray(body) ? body : (body as { data?: ApiBrand[] }).data;
+    if (!Array.isArray(items)) return [];
+    return items.filter(b => b?.slug && b.status !== 'inactive');
+}
+
+/** One brand by slug, or null when unknown/unreachable. */
+export async function getBrandBySlug(slug: string): Promise<ApiBrand | null> {
+    const brands = await getBrands();
+    return brands.find(b => b.slug === slug) ?? null;
+}
+
+/** Every active category. */
+export async function getCategories(): Promise<ApiCategory[]> {
+    const body = await getJson<{ data: ApiCategory[] } | ApiCategory[]>(
+        Endpoints.categories,
+        'categories',
+    );
+    if (!body) return [];
+    const items = Array.isArray(body) ? body : (body as { data?: ApiCategory[] }).data;
+    if (!Array.isArray(items)) return [];
+    return items.filter(c => c?.slug && c.status !== 'inactive');
+}
+
+/**
+ * Products in the category with this display name, e.g. 'GRAINS' or 'MACHINES'.
+ *
+ * Resolves the name to a slug at request time rather than hardcoding one. The
+ * catalogue's category slugs do not match their names — 'GRAINS' is currently
+ * slugged `delta-caf-s-grain` and 'MACHINES' is `machine-capsule-delta-q`,
+ * both leftovers from how the categories were first created. Hardcoding those
+ * strings into page files would break silently the day someone tidies them up
+ * in the admin panel.
+ *
+ * Returns [] when the category or the API is unavailable, which the callers
+ * render as "no product grid" rather than an error.
+ */
+export async function getProductsInCategoryNamed(
+    name: string,
+    perPage = 8,
+): Promise<Product[]> {
+    const categories = await getCategories();
+    const match = categories.find(c => c.name?.trim().toUpperCase() === name.trim().toUpperCase());
+    if (!match?.slug) {
+        console.warn(`[server-api] no category named "${name}"; omitting its product grid`);
+        return [];
+    }
+    const { products } = await getProductList({ category: match.slug, perPage });
+    return products;
 }

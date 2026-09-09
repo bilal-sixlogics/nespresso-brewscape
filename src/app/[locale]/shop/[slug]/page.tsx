@@ -113,10 +113,11 @@ export default async function ProductDetailPage({
             sku: getDefaultUnit(product)?.sku,
             ratingValue: product.average_rating,
             reviewCount: product.reviews_count,
+            // The real roaster (Lavazza, Delta, Bristot, ...). Passed in rather
+            // than spread over the result afterwards so there is one code path
+            // deciding the brand instead of two.
+            brand: product.brand?.name,
         }),
-        ...(product.brand?.name
-            ? { brand: { '@type': 'Brand', name: product.brand.name } }
-            : {}),
         ...(product.category?.name ? { category: product.category.name } : {}),
     };
 

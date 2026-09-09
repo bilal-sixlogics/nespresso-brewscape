@@ -10,7 +10,12 @@ export const translations = {
         // what the page is actually about.
         homeH1: "Café en Grains, Capsules & Machines à Café",
         homeAboutHeading: "Le Café, Choisi et Torréfié avec Soin",
-        homeAboutBody1: "Cafrezzo est un torréfacteur et distributeur de café en ligne installé à Sarcelles, aux portes de Paris. Nous proposons des cafés en grains, moulus et en capsules compatibles, aux côtés de machines expresso, à capsules et automatiques issues de marques telles que Lavazza, Carte Noire, Bristot et Mambo.",
+        // Grossiste/distributeur leads. "Torréfacteur" is retained because it
+        // is accurate, but it was the first thing the homepage said about the
+        // business and it is not the position being ranked for.
+        homeAboutBody1: "Cafrezzo est un grossiste et distributeur de café et de machines à café, également torréfacteur, installé à Sarcelles, aux portes de Paris. Nous proposons des cafés en grains, des cafés moulus et des capsules, aux côtés de machines expresso, à capsules et automatiques, issues de marques telles que Lavazza, Delta Cafés, Bristot, Carte Noire et Mambo.",
+        homeAboutBody3: "Nous fournissons les particuliers comme les professionnels : cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises. Paris et l’Île-de-France constituent notre zone de service principale, avec des tarifs professionnels dégressifs selon les quantités commandées.",
+        homeAboutProCta: "Découvrir notre offre grossiste",
         homeAboutBody2: "Nous livrons en France, en Belgique, en Suisse et au Luxembourg, avec la livraison offerte dès 150€ d’achat. Que vous équipiez un bureau, approvisionniez un restaurant ou perfectionniez simplement votre tasse du matin, notre équipe vous aide à associer la bonne torréfaction à la bonne machine — par téléphone, par email ou en boutique.",
 
         // ── SEO metadata ────────────────────────────────────────────────────
@@ -903,7 +908,9 @@ export const translations = {
         // 200 visible words, most of it navigation and product tiles.
         homeH1: "Coffee Beans, Capsules & Coffee Machines",
         homeAboutHeading: "Coffee, Chosen and Roasted With Care",
-        homeAboutBody1: "Cafrezzo is a French coffee roaster and online retailer based in Sarcelles, just outside Paris. We stock whole beans, ground coffee and compatible capsules alongside espresso, capsule and bean-to-cup machines from brands including Lavazza, Carte Noire, Bristot and Mambo.",
+        homeAboutBody1: "Cafrezzo is a coffee and coffee machine wholesaler and distributor — and a roaster — based in Sarcelles, just outside Paris. We stock whole beans, ground coffee and capsules alongside espresso, capsule and bean-to-cup machines from brands including Lavazza, Delta Cafés, Bristot, Carte Noire and Mambo.",
+        homeAboutBody3: "We supply private customers and businesses alike: cafés, restaurants, hotels, bars, coffee shops, offices and companies. Paris and the Île-de-France region are our core service area, with trade pricing tiered by order quantity.",
+        homeAboutProCta: "See our wholesale offer",
         homeAboutBody2: "Orders ship across France, Belgium, Switzerland and Luxembourg, with delivery free on baskets over €150. Whether you are equipping an office, supplying a restaurant or simply refining your morning cup at home, our team can help you match the right roast to the right machine — by phone, by email, or in the shop.",
 
         // ── SEO metadata ────────────────────────────────────────────────────

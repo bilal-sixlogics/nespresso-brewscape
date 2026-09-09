@@ -99,9 +99,26 @@ const CURATED_BRAND_SLUGS = ["bristot", "lavazza", "carte-noir", "covim", "kimbo
 // that straightens and lifts on hover. Shared by the left/right collage columns and
 // the compact mobile grid below.
 function BrandTile({ brand, className = '' }: { brand: ApiBrand; className?: string }) {
+  const { language } = useLanguage();
+
+  // Point at the brand's own page where one exists.
+  //
+  // These tiles used to link to /shop?brand=<slug>, which is a filtered view
+  // of the catalogue: it carries no brand copy, and now canonicalises to
+  // /marques/<slug> and is marked noindex. Linking the tile straight to the
+  // brand page instead means the homepage passes authority to the page built
+  // to rank for "café Lavazza" rather than to a URL asking not to be indexed.
+  //
+  // Brand pages are published in French and English only, so the other three
+  // locales keep the filtered-catalogue link — a working page beats a 404.
+  const href =
+    language === 'fr' || language === 'en'
+      ? `/marques/${brand.slug}`
+      : `/shop?brand=${brand.slug}`;
+
   return (
     <Link
-      href={`/shop?brand=${brand.slug}`}
+      href={href}
       className={`group relative block rounded-2xl bg-sand border border-sand/60 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] hover:shadow-[0_18px_40px_-10px_rgba(201,160,90,0.4)] transition-all duration-500 cursor-pointer overflow-hidden hover:z-20 hover:rotate-0 hover:scale-[1.06] ${className}`}
     >
       <div className="absolute inset-0 rounded-2xl border border-gold/0 group-hover:border-gold/50 transition-colors duration-500 pointer-events-none z-10" />
@@ -110,7 +127,9 @@ function BrandTile({ brand, className = '' }: { brand: ApiBrand; className?: str
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={brand.logo}
-            alt={brand.name}
+            // Says what the image is. A bare brand name reads as the tile's
+            // label rather than a description of the logo itself.
+            alt={language === 'fr' ? `Logo ${brand.name}` : `${brand.name} logo`}
             className="w-full h-full object-contain p-4 sm:p-5 opacity-85 group-hover:opacity-100 transition-opacity duration-500"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
@@ -209,8 +228,12 @@ function BrandsShowcaseSection() {
                 ? 'Les grandes marques du café, toutes réunies sur notre plateforme.'
                 : 'World-renowned coffee brands, all available on our platform.'}
             </p>
+            {/* Was /our-origins, which is about coffee origins rather than the
+                brands this section is showing. /marques is the brand hub and
+                the correct destination for this anchor text; the other locales
+                keep the origins page, which is translated. */}
             <Link
-              href="/our-origins"
+              href={language === 'fr' || language === 'en' ? '/marques' : '/our-origins'}
               className="inline-flex items-center gap-3 text-gold border border-gold/40 hover:border-gold hover:bg-gold hover:text-ink px-7 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300"
             >
               {language === 'fr' ? 'Découvrir Nos Marques' : 'Discover Our Brands'} <ArrowRight size={12} />
@@ -656,7 +679,43 @@ export default function Home() {
             <div className="space-y-5 text-sand/70 text-sm sm:text-base leading-relaxed">
               <p>{t('homeAboutBody1')}</p>
               <p>{t('homeAboutBody2')}</p>
+              {/* Third paragraph states who Cafrezzo sells to and where it
+                  operates. Written to stand alone: this is the passage an AI
+                  answer engine is most likely to quote when asked what
+                  Cafrezzo is, and previously the homepage never said the
+                  business serves the trade at all. */}
+              <p>{t('homeAboutBody3')}</p>
             </div>
+
+            {/* The homepage's only route into the B2B cluster. Before this the
+                sole link was a generic "Professionnels" entry buried in the
+                footer's Quick Links. */}
+            {(language === 'fr' || language === 'en') && (
+              <div className="mt-10 flex flex-wrap gap-x-8 gap-y-4">
+                <Link
+                  href="/professionnels"
+                  className="text-gold font-bold text-xs uppercase tracking-widest hover:underline"
+                >
+                  {t('homeAboutProCta')}
+                </Link>
+                {language === 'fr' && (
+                  <>
+                    <Link
+                      href="/grossiste-cafe-paris"
+                      className="text-gold font-bold text-xs uppercase tracking-widest hover:underline"
+                    >
+                      Grossiste café à Paris
+                    </Link>
+                    <Link
+                      href="/machine-a-cafe-professionnelle"
+                      className="text-gold font-bold text-xs uppercase tracking-widest hover:underline"
+                    >
+                      Machines à café professionnelles
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </section>
         {/* ── TESTIMONIALS ─────────────────────────────────────────────── */}

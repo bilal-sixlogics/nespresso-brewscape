@@ -11,7 +11,7 @@ import type { Metadata } from 'next';
 
 import ShopPageClient from './ShopPageClient';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { getProductList } from '@/lib/api/server';
+import { getCategories, getProductList } from '@/lib/api/server';
 import { generateBreadcrumbSchema, pageMetadata, SITE_URL } from '@/lib/seo';
 import { localePath, toLocale, type Locale } from '@/lib/i18n';
 
@@ -41,14 +41,52 @@ export async function generateMetadata({
         descriptionKey: 'shopMetaDescription',
     });
 
-    // A filtered view is a slice of the same listing, not a separate page.
-    // Point it back at the bare /shop canonical so the variants consolidate
-    // instead of competing as near-duplicates.
-    if (category || brand) {
+    // A brand filter now has a proper home at /marques/<slug> — a real page
+    // with its own copy, FAQ and Brand schema. Point the query-param variant
+    // there rather than at /shop, so whatever authority `?brand=lavazza` has
+    // accumulated consolidates onto the page built to rank for "café Lavazza".
+    if (brand) {
         return {
             ...base,
             robots: { index: false, follow: true },
-            alternates: { canonical: `${SITE_URL}${localePath(locale, '/shop')}` },
+            alternates: { canonical: `${SITE_URL}${localePath(locale, `/marques/${brand}`)}` },
+        };
+    }
+
+    // Category views ARE indexable, as of this change.
+    //
+    // They were noindex and canonicalised to /shop, on the reasoning that a
+    // filtered slice is a duplicate of the listing. That was correct while the
+    // page could not describe itself — but /shop is now a Server Component
+    // that reads searchParams and renders the filtered grid server-side, which
+    // was the stated prerequisite. So each category can now carry its own
+    // title, description and self-canonical, giving "café en grains", "café
+    // moulu" and "capsules" somewhere to land instead of pointing every
+    // category query at an undifferentiated catalogue.
+    if (category) {
+        const categories = await getCategories();
+        const match = categories.find(c => c.slug === category);
+
+        // Unknown slug: nothing to describe, so keep it out of the index
+        // rather than publishing an empty grid under an invented title.
+        if (!match?.name) {
+            return {
+                ...base,
+                robots: { index: false, follow: true },
+                alternates: { canonical: `${SITE_URL}${localePath(locale, '/shop')}` },
+            };
+        }
+
+        // Category names come from the admin in caps ("GRAINS"); title-case
+        // them so the <title> is not shouting.
+        const label = match.name.charAt(0).toUpperCase() + match.name.slice(1).toLowerCase();
+        const url = `${SITE_URL}${localePath(locale, `/shop?category=${category}`)}`;
+
+        return {
+            ...base,
+            title: { absolute: `${label} | Cafrezzo` },
+            description: `${label} disponible chez Cafrezzo, grossiste et distributeur de café aux portes de Paris. Vente aux particuliers et aux professionnels, livraison offerte dès 150€.`,
+            alternates: { canonical: url },
         };
     }
 
