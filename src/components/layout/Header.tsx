@@ -276,7 +276,7 @@ export function Header() {
     return (
         <>
             <header className="bg-ink text-sand relative z-[9999]">
-                <div className="max-w-[1600px] mx-auto w-full flex border-b border-sand/10 relative z-[9999]">
+                <div className="max-w-[1600px] mx-auto w-full pt-4 flex border-b border-sand/10 relative z-[9999]">
 
                     {/* ── Mobile Menu Toggle ────────────────────────────── */}
                     <button

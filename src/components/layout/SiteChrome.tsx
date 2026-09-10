@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useEffect } from 'react';
-import { PromoStrip } from './PromoStrip';
 import { Header } from './Header';
 import { Footer } from './Footer';
 
@@ -28,7 +27,6 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     return (
         <div className="bg-ink text-sand overflow-x-clip grain-overlay">
             <div ref={navRef} className="sticky top-0 z-[9999]">
-                <PromoStrip />
                 <Header />
             </div>
             <main className="min-h-screen">{children}</main>
