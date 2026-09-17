@@ -513,6 +513,30 @@ export default async function ProfessionnelsPage({
                                 : 'Grossiste café en Île-de-France'}
                         </Link>
                     </div>
+
+                    {/* Department pages. French only — they are not published
+                        in English, and this hub is. Without these links the
+                        four pages are reachable from the Île-de-France hub
+                        alone, one click further from the nav than they need
+                        to be. */}
+                    {locale === 'fr' && (
+                        <div className="flex flex-wrap gap-x-6 gap-y-3 mt-6">
+                            {[
+                                ['/grossiste-cafe-val-d-oise', 'Val-d’Oise (95)'],
+                                ['/grossiste-cafe-seine-saint-denis', 'Seine-Saint-Denis (93)'],
+                                ['/grossiste-cafe-hauts-de-seine', 'Hauts-de-Seine (92)'],
+                                ['/grossiste-cafe-seine-et-marne', 'Seine-et-Marne (77)'],
+                            ].map(([href, label]) => (
+                                <Link
+                                    key={href}
+                                    href={localePath(locale, href)}
+                                    className="text-sand/60 text-xs uppercase tracking-widest hover:text-gold hover:underline"
+                                >
+                                    Grossiste café {label}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 

@@ -218,13 +218,26 @@ const BOTTOM_NAV: NavLink[] = [
     { href: '/contact', labelKey: 'navContact' },
 ];
 
+/**
+ * B2B entry point in the nav.
+ *
+ * Kept separate from BOTTOM_NAV because it is conditional: /professionnels is
+ * published in French and English only (FR_EN), so rendering it for de, ru or
+ * nl would put a link to a 404 in the header of every page in those locales.
+ *
+ * One tab rather than one per department. The four department pages hang off
+ * /professionnels and the Île-de-France hub; promoting all of them to the
+ * header would double the nav to carry pages that only exist in one language.
+ */
+const PRO_NAV: NavLink = { href: '/professionnels', labelKey: 'navWholesale' };
+
 // ─── Header ────────────────────────────────────────────────────────────────
 export function Header() {
     const pathname = usePathname();
     const router = useRouter();
     const { cartCount } = useCart();
     const { isAuthenticated, openLoginModal, user } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const [searchOpen, setSearchOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -265,7 +278,10 @@ export function Header() {
     }, [mobileMenuOpen]);
 
     const topRow = TOP_NAV;
-    const bottomRow = BOTTOM_NAV;
+    // /professionnels exists in fr and en only — see PRO_NAV. Both the desktop
+    // rows and the mobile menu read these, so gating here covers both.
+    const bottomRow =
+        language === 'fr' || language === 'en' ? [...BOTTOM_NAV, PRO_NAV] : BOTTOM_NAV;
 
     const navLinkClass = (href: string) =>
         `flex-1 p-3 lg:p-4 flex items-center justify-center border-r border-sand/10 transition-all duration-300 text-[10px] font-medium tracking-[0.22em] uppercase relative group ${pathname === href
