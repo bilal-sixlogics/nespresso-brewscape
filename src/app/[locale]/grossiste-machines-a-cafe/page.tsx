@@ -11,7 +11,7 @@ import { notFound } from 'next/navigation';
 
 import { LandingPage, type LandingContent } from '@/components/seo/LandingPage';
 import { getProductsInCategoryNamed } from '@/lib/api/server';
-import { FRENCH_ONLY, pageMetadata } from '@/lib/seo';
+import { FRENCH_ONLY, pageMetadata, wholesalerSchema } from '@/lib/seo';
 import { toLocale } from '@/lib/i18n';
 
 export const revalidate = 3600;
@@ -98,7 +98,7 @@ const CONTENT: LandingContent = {
         {
             question: 'Livrez-vous les machines en Île-de-France et en France ?',
             answer:
-                'Oui. Nous sommes basés à Sarcelles, aux portes de Paris, et livrons en Île-de-France, dans toute la France, ainsi qu’en Belgique, au Luxembourg et en Suisse. Le retrait en boutique est également possible.',
+                'Oui. Nous sommes basés à Gonesse, aux portes de Paris, et livrons en Île-de-France, dans toute la France, ainsi qu’en Belgique, au Luxembourg et en Suisse. Le retrait en boutique est également possible.',
         },
     ],
     ctaHeading: 'Un projet d’équipement ?',
@@ -156,5 +156,13 @@ export default async function GrossisteMachinesPage({
 
     const products = await getProductsInCategoryNamed('MACHINES', 8);
 
-    return <LandingPage locale={locale} path={PATH} content={CONTENT} products={products} />;
+    return (
+        <LandingPage
+            locale={locale}
+            path={PATH}
+            content={CONTENT}
+            products={products}
+            extraSchemas={[wholesalerSchema]}
+        />
+    );
 }

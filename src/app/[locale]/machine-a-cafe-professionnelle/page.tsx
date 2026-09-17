@@ -10,7 +10,7 @@ import { notFound } from 'next/navigation';
 
 import { LandingPage, type LandingContent } from '@/components/seo/LandingPage';
 import { getProductsInCategoryNamed } from '@/lib/api/server';
-import { FRENCH_ONLY, pageMetadata } from '@/lib/seo';
+import { FRENCH_ONLY, pageMetadata, wholesalerSchema } from '@/lib/seo';
 import { toLocale } from '@/lib/i18n';
 
 export const revalidate = 3600;
@@ -21,7 +21,7 @@ const CONTENT: LandingContent = {
     h1: 'Machine à Café Professionnelle',
     breadcrumbLabel: 'Machine à café professionnelle',
     intro: [
-        'Cafrezzo distribue des machines à café professionnelles : machines à grains, machines à capsules et machines automatiques, pour les cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises. Nous sommes basés à Sarcelles, aux portes de Paris, et livrons en Île-de-France et dans toute la France.',
+        'Cafrezzo distribue des machines à café professionnelles : machines à grains, machines à capsules et machines automatiques, pour les cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises. Nous sommes basés à Gonesse, aux portes de Paris, et livrons en Île-de-France et dans toute la France.',
         'Le critère décisif n’est ni la marque ni le prix d’achat, mais le nombre de tasses servies par jour. C’est lui qui détermine le mode de préparation, la taille du groupe et, au bout du compte, le coût par tasse.',
     ],
     sections: [
@@ -88,7 +88,7 @@ const CONTENT: LandingContent = {
         {
             question: 'Où acheter une machine à café professionnelle à Paris ?',
             answer:
-                'Cafrezzo distribue des machines à café professionnelles depuis sa boutique du 30 rue de l’Escouvrier, 95200 Sarcelles, aux portes de Paris. Nous livrons en Île-de-France et dans toute la France, et le retrait en boutique est possible.',
+                'Cafrezzo distribue des machines à café professionnelles depuis sa boutique du 41 rue d’Aulnay, 95500 Gonesse, aux portes de Paris. Nous livrons en Île-de-France et dans toute la France, et le retrait en boutique est possible.',
         },
         {
             question: 'Fournissez-vous aussi le café pour la machine ?',
@@ -156,5 +156,13 @@ export default async function MachineProPage({
 
     const products = await getProductsInCategoryNamed('MACHINES', 8);
 
-    return <LandingPage locale={locale} path={PATH} content={CONTENT} products={products} />;
+    return (
+        <LandingPage
+            locale={locale}
+            path={PATH}
+            content={CONTENT}
+            products={products}
+            extraSchemas={[wholesalerSchema]}
+        />
+    );
 }

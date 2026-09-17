@@ -111,8 +111,8 @@ export default async function MarquesPage({
                     </div>
                     <p className="text-sand/70 text-lg leading-relaxed text-left">
                         {en
-                            ? 'Cafrezzo is a coffee wholesaler and distributor based in Sarcelles, on the edge of Paris. We distribute Italian, Portuguese and French coffee brands as beans, ground coffee and capsules — to private customers and to cafés, restaurants, hotels, bars, coffee shops, offices and companies.'
-                            : 'Cafrezzo est grossiste et distributeur de café, installé à Sarcelles, aux portes de Paris. Nous distribuons des marques de café italiennes, portugaises et françaises, en grains, moulu et en capsules — aux particuliers comme aux cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises.'}
+                            ? 'Cafrezzo is a coffee wholesaler and distributor based in Gonesse, on the edge of Paris. We distribute Italian, Portuguese and French coffee brands as beans, ground coffee and capsules — to private customers and to cafés, restaurants, hotels, bars, coffee shops, offices and companies.'
+                            : 'Cafrezzo est grossiste et distributeur de café, installé à Gonesse, aux portes de Paris. Nous distribuons des marques de café italiennes, portugaises et françaises, en grains, moulu et en capsules — aux particuliers comme aux cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises.'}
                     </p>
                 </div>
             </section>

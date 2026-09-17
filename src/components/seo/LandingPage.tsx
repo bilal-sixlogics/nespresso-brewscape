@@ -61,6 +61,7 @@ export function LandingPage({
     path,
     content,
     products = [],
+    extraSchemas = [],
 }: {
     locale: Locale;
     /** Locale-free path of this page, for the breadcrumb trail. */
@@ -68,12 +69,20 @@ export function LandingPage({
     content: LandingContent;
     /** Real catalogue items, so the page is a shop entry point, not just prose. */
     products?: Product[];
+    /**
+     * Additional JSON-LD for this page — in practice `wholesalerSchema` on the
+     * B2B pages, which is what states the supplier claim and the Île-de-France
+     * service area to an answer engine. Passed in rather than emitted here
+     * because not every page built on this shell is a B2B page.
+     */
+    extraSchemas?: object[];
 }) {
     const schemas: object[] = [
         generateBreadcrumbSchema(locale, [
             { name: locale === 'en' ? 'Home' : 'Accueil', url: '/' },
             { name: content.breadcrumbLabel, url: path },
         ]),
+        ...extraSchemas,
     ];
 
     // Only emit FAQPage when there are genuine questions on the page. An empty
