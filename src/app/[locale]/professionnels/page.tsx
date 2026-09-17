@@ -18,7 +18,13 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { RelatedLinks } from '@/components/seo/RelatedLinks';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 import { getBrands } from '@/lib/api/server';
-import { FR_EN, generateBreadcrumbSchema, generateFaqSchema, pageMetadata } from '@/lib/seo';
+import {
+    FR_EN,
+    generateBreadcrumbSchema,
+    generateFaqSchema,
+    pageMetadata,
+    wholesalerSchema,
+} from '@/lib/seo';
 import { localePath, toLocale, type Locale } from '@/lib/i18n';
 
 export const revalidate = 3600;
@@ -75,7 +81,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
         // engine extracting two sentences about Cafrezzo should come away with
         // the activity, the offer, the customer types and the location.
         intro: [
-            'Cafrezzo est un grossiste et distributeur de café et de machines à café, installé à Sarcelles, aux portes de Paris. Nous fournissons les professionnels en cafés en grains, cafés moulus, capsules et machines à café, ainsi qu’en thés, solubles et accessoires.',
+            'Cafrezzo est un grossiste et distributeur de café et de machines à café, installé à Gonesse, aux portes de Paris. Nous fournissons les professionnels en cafés en grains, cafés moulus, capsules et machines à café, ainsi qu’en thés, solubles et accessoires.',
             'Nous accompagnons les cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises qui cherchent un fournisseur de café unique, capable de livrer à la fois le café et le matériel qui va avec. Notre zone de service principale est Paris et l’Île-de-France, et nous livrons partout en France, en Belgique, au Luxembourg et en Suisse.',
         ],
         segmentsHeading: 'Les professionnels que nous approvisionnons',
@@ -137,7 +143,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
             'Cafrezzo distribue plusieurs marques de café, disponibles aux tarifs professionnels :',
         areaHeading: 'Zone de service et livraison',
         areaBody: [
-            'Notre boutique se trouve au 30 rue de l’Escouvrier, 95200 Sarcelles, dans le Val-d’Oise, aux portes de Paris. Cette implantation nous place à proximité immédiate de Paris et de la majeure partie de l’Île-de-France.',
+            'Notre boutique se trouve au 41 rue d’Aulnay, 95500 Gonesse, dans le Val-d’Oise, aux portes de Paris. Cette implantation nous place à proximité immédiate de Paris et de la majeure partie de l’Île-de-France.',
             'Nous livrons en France, en Belgique, au Luxembourg et en Suisse. La livraison standard est facturée 5,99 € et offerte à partir de 150 € de commande, avec un acheminement en 5 à 7 jours ouvrés ; la livraison express est disponible en 2 à 3 jours ouvrés. Le retrait en boutique (Click & Collect) est également possible.',
         ],
         howHeading: 'Devenir client professionnel',
@@ -153,7 +159,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
             {
                 question: 'Cafrezzo est-il un grossiste en café ?',
                 answer:
-                    'Oui. Cafrezzo est grossiste et distributeur de café et de machines à café, basé à Sarcelles, aux portes de Paris. Nous fournissons les professionnels en cafés en grains, cafés moulus, capsules et machines à café, et nous vendons également aux particuliers.',
+                    'Oui. Cafrezzo est grossiste et distributeur de café et de machines à café, basé à Gonesse, aux portes de Paris. Nous fournissons les professionnels en cafés en grains, cafés moulus, capsules et machines à café, et nous vendons également aux particuliers.',
             },
             {
                 question: 'Quels types de professionnels fournissez-vous ?',
@@ -163,7 +169,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
             {
                 question: 'Livrez-vous à Paris et en Île-de-France ?',
                 answer:
-                    'Oui. Notre boutique est située à Sarcelles, dans le Val-d’Oise, ce qui fait de Paris et de l’Île-de-France notre zone de service principale. Nous livrons également partout en France, ainsi qu’en Belgique, au Luxembourg et en Suisse.',
+                    'Oui. Notre boutique est située à Gonesse, dans le Val-d’Oise, ce qui fait de Paris et de l’Île-de-France notre zone de service principale. Nous livrons également partout en France, ainsi qu’en Belgique, au Luxembourg et en Suisse.',
             },
             {
                 question: 'Fournissez-vous aussi les machines à café ?',
@@ -194,7 +200,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
             'Cafrezzo is a coffee and coffee machine wholesaler supplying cafés, restaurants, hotels, bars, coffee shops and offices. Based near Paris, delivering across France and Europe.',
         h1: 'Coffee & Coffee Machine Wholesaler for Businesses',
         intro: [
-            'Cafrezzo is a coffee and coffee machine wholesaler and distributor based in Sarcelles, on the edge of Paris. We supply businesses with coffee beans, ground coffee, capsules and coffee machines, alongside teas, instant drinks and accessories.',
+            'Cafrezzo is a coffee and coffee machine wholesaler and distributor based in Gonesse, on the edge of Paris. We supply businesses with coffee beans, ground coffee, capsules and coffee machines, alongside teas, instant drinks and accessories.',
             'We work with cafés, restaurants, hotels, bars, coffee shops and offices looking for a single coffee supplier able to deliver both the coffee and the equipment to brew it. Paris and the Île-de-France region are our core service area, and we deliver throughout France, Belgium, Luxembourg and Switzerland.',
         ],
         segmentsHeading: 'The businesses we supply',
@@ -254,7 +260,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
         brandsIntro: 'Cafrezzo distributes a number of coffee brands, available at trade prices:',
         areaHeading: 'Service area and delivery',
         areaBody: [
-            'Our shop is at 30 rue de l’Escouvrier, 95200 Sarcelles, in the Val-d’Oise, on the edge of Paris — putting us within immediate reach of Paris and most of the Île-de-France region.',
+            'Our shop is at 41 rue d’Aulnay, 95500 Gonesse, in the Val-d’Oise, on the edge of Paris — putting us within immediate reach of Paris and most of the Île-de-France region.',
             'We deliver to France, Belgium, Luxembourg and Switzerland. Standard delivery is €5.99 and free above €150, arriving in 5–7 business days; express delivery is available in 2–3 business days. Click & Collect from the shop is also possible.',
         ],
         howHeading: 'Becoming a trade customer',
@@ -270,7 +276,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
             {
                 question: 'Is Cafrezzo a coffee wholesaler?',
                 answer:
-                    'Yes. Cafrezzo is a coffee and coffee machine wholesaler and distributor based in Sarcelles, on the edge of Paris. We supply businesses with coffee beans, ground coffee, capsules and coffee machines, and also sell to private customers.',
+                    'Yes. Cafrezzo is a coffee and coffee machine wholesaler and distributor based in Gonesse, on the edge of Paris. We supply businesses with coffee beans, ground coffee, capsules and coffee machines, and also sell to private customers.',
             },
             {
                 question: 'Which types of business do you supply?',
@@ -280,7 +286,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
             {
                 question: 'Do you deliver to Paris and the Île-de-France?',
                 answer:
-                    'Yes. Our shop is in Sarcelles, Val-d’Oise, which makes Paris and the Île-de-France our core service area. We also deliver throughout France, as well as Belgium, Luxembourg and Switzerland.',
+                    'Yes. Our shop is in Gonesse, Val-d’Oise, which makes Paris and the Île-de-France our core service area. We also deliver throughout France, as well as Belgium, Luxembourg and Switzerland.',
             },
             {
                 question: 'Do you supply coffee machines as well?',
@@ -351,7 +357,7 @@ export default async function ProfessionnelsPage({
 
     return (
         <div className="w-full relative bg-ink text-sand overflow-x-hidden grain-overlay">
-            <JsonLd schema={[faqSchema, breadcrumbSchema]} />
+            <JsonLd schema={[faqSchema, breadcrumbSchema, wholesalerSchema]} />
 
             {/* ── Hero ─────────────────────────────────────────────────── */}
             <section className="pt-20 pb-12 px-4 sm:px-8">
@@ -507,6 +513,30 @@ export default async function ProfessionnelsPage({
                                 : 'Grossiste café en Île-de-France'}
                         </Link>
                     </div>
+
+                    {/* Department pages. French only — they are not published
+                        in English, and this hub is. Without these links the
+                        four pages are reachable from the Île-de-France hub
+                        alone, one click further from the nav than they need
+                        to be. */}
+                    {locale === 'fr' && (
+                        <div className="flex flex-wrap gap-x-6 gap-y-3 mt-6">
+                            {[
+                                ['/grossiste-cafe-val-d-oise', 'Val-d’Oise (95)'],
+                                ['/grossiste-cafe-seine-saint-denis', 'Seine-Saint-Denis (93)'],
+                                ['/grossiste-cafe-hauts-de-seine', 'Hauts-de-Seine (92)'],
+                                ['/grossiste-cafe-seine-et-marne', 'Seine-et-Marne (77)'],
+                            ].map(([href, label]) => (
+                                <Link
+                                    key={href}
+                                    href={localePath(locale, href)}
+                                    className="text-sand/60 text-xs uppercase tracking-widest hover:text-gold hover:underline"
+                                >
+                                    Grossiste café {label}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -579,7 +609,7 @@ export default async function ProfessionnelsPage({
                               {
                                   href: '/contact',
                                   label: 'Contact the trade team',
-                                  hint: 'Sarcelles shop, phone, email and opening hours.',
+                                  hint: 'Gonesse shop, phone, email and opening hours.',
                               },
                           ]
                         : [
@@ -601,7 +631,7 @@ export default async function ProfessionnelsPage({
                               {
                                   href: '/contact',
                                   label: 'Contacter le service professionnel',
-                                  hint: 'Boutique de Sarcelles, téléphone, email et horaires.',
+                                  hint: 'Boutique de Gonesse, téléphone, email et horaires.',
                               },
                           ]
                 }

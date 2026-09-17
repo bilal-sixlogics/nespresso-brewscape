@@ -4,7 +4,7 @@
 // Distinct from /grossiste-cafe-paris on purpose. That page is about the city
 // — dense sites, no storage, short reassorts. This one is about the region:
 // the départements we actually cover, business parks and office contracts,
-// multi-site operators, and the fact that Sarcelles sits inside the region
+// multi-site operators, and the fact that Gonesse sits inside the region
 // rather than serving it from outside. Same business, genuinely different
 // buying situation, so neither page is a copy of the other.
 import type { Metadata } from 'next';
@@ -12,7 +12,7 @@ import { notFound } from 'next/navigation';
 
 import { LandingPage, type LandingContent } from '@/components/seo/LandingPage';
 import { getProductsInCategoryNamed } from '@/lib/api/server';
-import { FRENCH_ONLY, pageMetadata } from '@/lib/seo';
+import { FRENCH_ONLY, pageMetadata, wholesalerSchema } from '@/lib/seo';
 import { toLocale } from '@/lib/i18n';
 
 export const revalidate = 3600;
@@ -23,20 +23,20 @@ const CONTENT: LandingContent = {
     h1: 'Grossiste Café en Île-de-France',
     breadcrumbLabel: 'Grossiste café en Île-de-France',
     intro: [
-        'Cafrezzo est un grossiste et distributeur de café basé en Île-de-France, au 30 rue de l’Escouvrier à Sarcelles, dans le Val-d’Oise. Nous fournissons les professionnels de la région en cafés en grains, cafés moulus, capsules, thés et machines à café.',
+        'Cafrezzo est un grossiste et distributeur de café basé en Île-de-France, au 41 rue d’Aulnay à Gonesse, dans le Val-d’Oise. Nous fournissons les professionnels de la région en cafés en grains, cafés moulus, capsules, thés et machines à café.',
         'Nous ne desservons pas l’Île-de-France depuis l’extérieur : nous y sommes établis. Pour un établissement de la région, cela veut dire un interlocuteur proche, la possibilité de passer récupérer une commande en boutique, et un réassort qui ne dépend pas d’un acheminement longue distance.',
     ],
     sections: [
         {
             heading: 'Une zone de service qui couvre toute la région',
             body: [
-                'Notre implantation à Sarcelles nous place au nord de la région, à proximité immédiate de Paris et bien positionnés pour le Val-d’Oise, la Seine-Saint-Denis, les Hauts-de-Seine, la Seine-et-Marne, les Yvelines, l’Essonne et le Val-de-Marne.',
+                'Notre implantation à Gonesse nous place au nord de la région, à proximité immédiate de Paris et bien positionnés pour le Val-d’Oise, la Seine-Saint-Denis, les Hauts-de-Seine, la Seine-et-Marne, les Yvelines, l’Essonne et le Val-de-Marne.',
                 'Nous livrons également partout en France, ainsi qu’en Belgique, au Luxembourg et en Suisse — utile pour les groupes dont les établissements ne sont pas tous en Île-de-France.',
             ],
             cards: [
                 {
                     name: 'Val-d’Oise',
-                    body: 'Notre département. Boutique à Sarcelles pour le retrait des commandes et le conseil en direct sur les références et le matériel.',
+                    body: 'Notre département. Boutique à Gonesse pour le retrait des commandes et le conseil en direct sur les références et le matériel.',
                 },
                 {
                     name: 'Paris et petite couronne',
@@ -58,6 +58,23 @@ const CONTENT: LandingContent = {
                     name: 'Revendeurs régionaux',
                     body: 'Volumes de gros et gammes multi-marques pour les structures qui redistribuent en Île-de-France.',
                 },
+            ],
+        },
+        {
+            // The hub links down to each department page here. Without this
+            // the four pages are only reachable from the sitemap, which makes
+            // them orphans: crawled, but carrying none of the internal
+            // authority that decides whether they rank.
+            heading: 'Nos pages par département',
+            body: [
+                'Les besoins ne sont pas les mêmes d’un département à l’autre — proximité immédiate dans le Val-d’Oise, volumes irréguliers en Seine-Saint-Denis, contrats de bureaux dans les Hauts-de-Seine, distances et livraisons planifiées en Seine-et-Marne. Chaque page détaille l’organisation correspondante.',
+            ],
+            links: [
+                { href: '/grossiste-cafe-val-d-oise', label: 'Grossiste café Val-d’Oise (95)' },
+                { href: '/grossiste-cafe-seine-saint-denis', label: 'Grossiste café Seine-Saint-Denis (93)' },
+                { href: '/grossiste-cafe-hauts-de-seine', label: 'Grossiste café Hauts-de-Seine (92)' },
+                { href: '/grossiste-cafe-seine-et-marne', label: 'Grossiste café Seine-et-Marne (77)' },
+                { href: '/grossiste-cafe-paris', label: 'Grossiste café Paris (75)' },
             ],
         },
         {
@@ -94,7 +111,7 @@ const CONTENT: LandingContent = {
         {
             question: 'Où est basé Cafrezzo en Île-de-France ?',
             answer:
-                'Cafrezzo est établi au 30 rue de l’Escouvrier, 95200 Sarcelles, dans le Val-d’Oise, aux portes de Paris. La boutique est ouverte du lundi au vendredi de 9h à 17h.',
+                'Cafrezzo est établi au 41 rue d’Aulnay, 95500 Gonesse, dans le Val-d’Oise, aux portes de Paris. La boutique est ouverte du lundi au vendredi de 9h à 17h.',
         },
         {
             question: 'Quels départements desservez-vous ?',
@@ -104,7 +121,7 @@ const CONTENT: LandingContent = {
         {
             question: 'Peut-on retirer une commande sur place ?',
             answer:
-                'Oui. Le retrait en boutique (Click & Collect) est disponible à Sarcelles, sans frais de livraison. La livraison standard est sinon facturée 5,99 €, offerte à partir de 150 € de commande.',
+                'Oui. Le retrait en boutique (Click & Collect) est disponible à Gonesse, sans frais de livraison. La livraison standard est sinon facturée 5,99 €, offerte à partir de 150 € de commande.',
         },
         {
             question: 'Fournissez-vous les bureaux et les entreprises ?',
@@ -140,7 +157,7 @@ const CONTENT: LandingContent = {
         },
         {
             href: '/contact',
-            label: 'Contacter la boutique de Sarcelles',
+            label: 'Contacter la boutique de Gonesse',
             hint: 'Adresse, téléphone, email et horaires d’ouverture.',
         },
     ],
@@ -156,7 +173,7 @@ export async function generateMetadata({
         locale,
         title: 'Grossiste Café en Île-de-France | Fournisseur Professionnel',
         description:
-            'Cafrezzo, grossiste et distributeur de café en Île-de-France, basé à Sarcelles (Val-d’Oise). Cafés en grains, moulus, capsules et machines à café pour les professionnels de toute la région.',
+            'Cafrezzo, grossiste et distributeur de café en Île-de-France, basé à Gonesse (Val-d’Oise). Cafés en grains, moulus, capsules et machines à café pour les professionnels de toute la région.',
         path: PATH,
         locales: FRENCH_ONLY,
     });
@@ -172,5 +189,13 @@ export default async function GrossisteCafeIdfPage({
 
     const products = await getProductsInCategoryNamed('GRAINS', 8);
 
-    return <LandingPage locale={locale} path={PATH} content={CONTENT} products={products} />;
+    return (
+        <LandingPage
+            locale={locale}
+            path={PATH}
+            content={CONTENT}
+            products={products}
+            extraSchemas={[wholesalerSchema]}
+        />
+    );
 }

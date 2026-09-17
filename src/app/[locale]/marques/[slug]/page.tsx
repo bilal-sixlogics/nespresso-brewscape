@@ -51,6 +51,40 @@ export async function generateStaticParams() {
  * knowledge. Deliberately incomplete: a brand absent from this map simply gets
  * no origin sentence, which is better than a guessed one.
  */
+/**
+ * Hand-written title/description for the brands that carry real search
+ * volume, overriding the generated pair below.
+ *
+ * The generated version is built from a template and reads like one
+ * ("Café Lavazza | Grossiste & Distributeur"). For the three brands that
+ * actually get searched, a written title can carry the qualifier a buyer
+ * types — "en grains", "capsules", "au meilleur prix" — which a template
+ * cannot know to include.
+ *
+ * Titles are stored WITHOUT the "| Cafrezzo" suffix: pageMetadata() appends
+ * it, and including it here would render it twice.
+ *
+ * Every other brand keeps the generated pair, which is correct and scales to
+ * the whole catalogue without hand-maintenance.
+ */
+const BRAND_SEO: Record<string, { title: string; description: string }> = {
+    lavazza: {
+        title: 'Café en Grains & Capsules Lavazza au Meilleur Prix',
+        description:
+            'Achetez votre café italien Lavazza chez Cafrezzo à Gonesse. Large choix de café en grains, Qualità Oro, Crema e Aroma. Particuliers et professionnels, livraison rapide.',
+    },
+    delta: {
+        title: 'Café en Grains Portugais Delta Cafés en Ligne',
+        description:
+            'Retrouvez l’authenticité de Delta Cafés chez Cafrezzo. Gamme de café en grains et moulu portugais intense pour particuliers et professionnels. Tarifs dégressifs.',
+    },
+    bristot: {
+        title: 'Café en Grains Bristot : Grossiste & Particuliers',
+        description:
+            'Découvrez le café des Dolomites Bristot Classico chez Cafrezzo. Torréfaction italienne premium en grain 1 kg, idéale pour expresso et CHR. Achat au carton et à la palette.',
+    },
+};
+
 const BRAND_ORIGIN: Record<string, { fr: string; en: string }> = {
     lavazza: {
         fr: 'Lavazza est un torréfacteur italien fondé à Turin en 1895.',
@@ -182,13 +216,18 @@ export async function generateMetadata({
                   formats.length ? `Disponible en ${listJoin(formats, locale)}. ` : ''
               }Vente aux particuliers et aux professionnels, livraison offerte dès 150€.`;
 
+    // Written copy wins over the template, French only — the overrides are
+    // written in French and there is no English equivalent for them.
+    const override = locale === 'fr' ? BRAND_SEO[slug] : undefined;
+
     return pageMetadata({
         locale,
         title:
-            locale === 'en'
+            override?.title ??
+            (locale === 'en'
                 ? `${heading} — Wholesaler & Distributor`
-                : `${heading} | Grossiste & Distributeur`,
-        description,
+                : `${heading} | Grossiste & Distributeur`),
+        description: override?.description ?? description,
         path: `/marques/${slug}`,
         image: products.length ? (getProductImage(products[0]) ?? undefined) : undefined,
         locales: FR_EN,
@@ -223,8 +262,8 @@ export default async function BrandPage({
                 ? `Where can I buy ${brand.name} coffee?`
                 : `Où acheter du café ${brand.name} ?`,
             answer: en
-                ? `Cafrezzo distributes ${brand.name} from its shop at 30 rue de l’Escouvrier, 95200 Sarcelles, near Paris, and online with delivery across France, Belgium, Luxembourg and Switzerland. ${products.length} ${brand.name} references are currently in the catalogue.`
-                : `Cafrezzo distribue ${brand.name} depuis sa boutique du 30 rue de l’Escouvrier, 95200 Sarcelles, aux portes de Paris, et en ligne avec livraison en France, en Belgique, au Luxembourg et en Suisse. ${products.length} références ${brand.name} sont actuellement au catalogue.`,
+                ? `Cafrezzo distributes ${brand.name} from its shop at 41 rue d’Aulnay, 95500 Gonesse, near Paris, and online with delivery across France, Belgium, Luxembourg and Switzerland. ${products.length} ${brand.name} references are currently in the catalogue.`
+                : `Cafrezzo distribue ${brand.name} depuis sa boutique du 41 rue d’Aulnay, 95500 Gonesse, aux portes de Paris, et en ligne avec livraison en France, en Belgique, au Luxembourg et en Suisse. ${products.length} références ${brand.name} sont actuellement au catalogue.`,
         },
         {
             question: en
@@ -308,12 +347,12 @@ export default async function BrandPage({
                         {origin && <p className="text-sand/70 text-lg leading-relaxed">{origin}</p>}
                         <p className="text-sand/70 text-lg leading-relaxed">
                             {en
-                                ? `Cafrezzo is a coffee wholesaler and distributor based in Sarcelles, on the edge of Paris, and distributes ${brand.name}${
+                                ? `Cafrezzo is a coffee wholesaler and distributor based in Gonesse, on the edge of Paris, and distributes ${brand.name}${
                                       formats.length ? ` as ${listJoin(formats, locale)}` : ''
                                   }. ${products.length} reference${products.length === 1 ? '' : 's'} ${
                                       products.length === 1 ? 'is' : 'are'
                                   } currently in the catalogue, for both home and trade customers.`
-                                : `Cafrezzo est grossiste et distributeur de café, installé à Sarcelles, aux portes de Paris, et distribue ${brand.name}${
+                                : `Cafrezzo est grossiste et distributeur de café, installé à Gonesse, aux portes de Paris, et distribue ${brand.name}${
                                       formats.length ? ` en ${listJoin(formats, locale)}` : ''
                                   }. ${products.length} référence${products.length === 1 ? '' : 's'} ${
                                       products.length === 1 ? 'est' : 'sont'
@@ -386,6 +425,15 @@ export default async function BrandPage({
                         {en
                             ? `As a wholesaler, Cafrezzo supplies ${brand.name} to cafés, restaurants, hotels, bars, coffee shops, offices and companies. Trade pricing is tiered by quantity, and coffee can be ordered alongside the machine to brew it.`
                             : `En tant que grossiste, Cafrezzo fournit ${brand.name} aux cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises. Les tarifs professionnels sont dégressifs selon les quantités, et le café peut être commandé avec la machine qui le prépare.`}
+                    </p>
+                    {/* States the wholesale purchase units explicitly. A trade
+                        buyer searching "café en gros" is filtering for whether
+                        a supplier sells by the case at all — the page said it
+                        supplied businesses, but never in what quantity. */}
+                    <p className="text-sand/70 text-lg leading-relaxed mb-5">
+                        {en
+                            ? `${brand.name} can be bought by the case or by the pallet for trade customers, with a quantity-tiered quote on request. Whole beans are supplied in the 1 kg format used in most establishments, and orders can be collected from the Gonesse shop or delivered across the Île-de-France.`
+                            : `Achat au carton et à la palette pour professionnels : ${brand.name} est disponible en gros, avec une étude tarifaire dégressive sur demande. Les cafés en grains sont fournis au format 1 kg, le plus utilisé en établissement, avec retrait en boutique à Gonesse ou livraison dans toute l’Île-de-France.`}
                     </p>
                     <div className="flex flex-wrap gap-6">
                         <Link

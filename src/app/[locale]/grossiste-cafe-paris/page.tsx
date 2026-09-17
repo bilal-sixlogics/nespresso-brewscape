@@ -13,7 +13,7 @@ import { notFound } from 'next/navigation';
 
 import { LandingPage, type LandingContent } from '@/components/seo/LandingPage';
 import { getProductsInCategoryNamed } from '@/lib/api/server';
-import { FRENCH_ONLY, pageMetadata } from '@/lib/seo';
+import { FRENCH_ONLY, pageMetadata, wholesalerSchema } from '@/lib/seo';
 import { toLocale } from '@/lib/i18n';
 
 export const revalidate = 3600;
@@ -24,7 +24,7 @@ const CONTENT: LandingContent = {
     h1: 'Grossiste Café à Paris',
     breadcrumbLabel: 'Grossiste café à Paris',
     intro: [
-        'Cafrezzo est un grossiste et distributeur de café qui approvisionne les professionnels de Paris. Installés au 30 rue de l’Escouvrier à Sarcelles, aux portes de Paris, nous fournissons cafés en grains, cafés moulus, capsules et machines à café aux cafés, restaurants, hôtels, bars, coffee shops et bureaux parisiens.',
+        'Cafrezzo est un grossiste et distributeur de café qui approvisionne les professionnels de Paris. Installés au 41 rue d’Aulnay à Gonesse, aux portes de Paris, nous fournissons cafés en grains, cafés moulus, capsules et machines à café aux cafés, restaurants, hôtels, bars, coffee shops et bureaux parisiens.',
         'Être implanté en limite nord de Paris plutôt qu’en province change une chose concrète : les réassorts sont courts. C’est ce qui compte pour un établissement parisien, où l’on stocke peu faute de place et où une rupture de café se voit dès le service suivant.',
     ],
     sections: [
@@ -95,7 +95,7 @@ const CONTENT: LandingContent = {
         {
             question: 'Cafrezzo est-il un grossiste en café à Paris ?',
             answer:
-                'Cafrezzo est un grossiste et distributeur de café installé à Sarcelles, aux portes de Paris, et approvisionne les professionnels parisiens en cafés en grains, cafés moulus, capsules et machines à café. La boutique se trouve au 30 rue de l’Escouvrier, 95200 Sarcelles.',
+                'Cafrezzo est un grossiste et distributeur de café installé à Gonesse, aux portes de Paris, et approvisionne les professionnels parisiens en cafés en grains, cafés moulus, capsules et machines à café. La boutique se trouve au 41 rue d’Aulnay, 95500 Gonesse.',
         },
         {
             question: 'Livrez-vous dans Paris intra-muros ?',
@@ -175,5 +175,13 @@ export default async function GrossisteCafeParisPage({
     // instead of being prose with a contact form at the bottom.
     const products = await getProductsInCategoryNamed('GRAINS', 8);
 
-    return <LandingPage locale={locale} path={PATH} content={CONTENT} products={products} />;
+    return (
+        <LandingPage
+            locale={locale}
+            path={PATH}
+            content={CONTENT}
+            products={products}
+            extraSchemas={[wholesalerSchema]}
+        />
+    );
 }

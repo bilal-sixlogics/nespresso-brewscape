@@ -94,11 +94,17 @@ function tr(locale: Locale, key: string, fallback: string): string {
 
 export type { TranslationKey };
 
-// Social / AI link-preview image.
-// TODO(design): replace with a purpose-built 1200x630 og-image.png. This points
-// at an existing catalogue photo so previews resolve at all — the previous
-// /og-image.png was never added to /public and returned 404 on every share.
-const OG_IMAGE = '/coffee-beans.jpg';
+// Social / AI link-preview image: 1200x630, the ratio Facebook, LinkedIn,
+// Slack, WhatsApp and X all crop to.
+//
+// Previously this pointed at /coffee-beans.jpg, a 1024x1024 catalogue photo.
+// Square art in a 1.91:1 slot gets centre-cropped, so every shared link lost
+// the top and bottom third of the image and carried no branding at all.
+// Composited from the existing beans photo and the site wordmark over the
+// brand ink ground — no new visual language, just the correct canvas.
+const OG_IMAGE = '/og-image.jpg';
+const OG_IMAGE_WIDTH = 1200;
+const OG_IMAGE_HEIGHT = 630;
 
 // Organization logo for structured data. The previous /logo.png did not exist.
 const LOGO_URL = `${BASE_URL}/assets/logo.svg`;
@@ -106,8 +112,8 @@ const LOGO_URL = `${BASE_URL}/assets/logo.svg`;
 // Shared by Organization and Store so the two can never drift apart.
 const POSTAL_ADDRESS = {
     '@type': 'PostalAddress',
-    streetAddress: "30 rue de l'Escouvrier",
-    postalCode: '95200',
+    streetAddress: "41 rue d'Aulnay",
+    postalCode: '95500',
     addressLocality: 'Gonesse',
     addressRegion: 'Île-de-France',
     addressCountry: 'FR',
@@ -228,9 +234,9 @@ const baseMetadataShared: Metadata = {
         images: [
             {
                 url: OG_IMAGE,
-                width: 1024,
-                height: 1024,
-                alt: 'Cafrezzo — Votre expérience café',
+                width: OG_IMAGE_WIDTH,
+                height: OG_IMAGE_HEIGHT,
+                alt: 'Cafrezzo — grossiste et distributeur de café, Gonesse (Île-de-France)',
             },
         ],
     },
@@ -453,7 +459,7 @@ export const organizationSchema = {
     // the site is being ranked for; "torréfacteur" is retained because it is
     // true, but it is no longer the first thing the entity claims to be.
     description:
-        'Grossiste et distributeur de café et de machines à café, également torréfacteur. Cafrezzo fournit les professionnels — cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises — en cafés en grains, cafés moulus, capsules et machines à café professionnelles. Marques distribuées : Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, Kimbo, Covim et Caprimo. Boutique à Sarcelles, aux portes de Paris, avec service en Île-de-France et livraison en France, Belgique, Luxembourg et Suisse.',
+        'Grossiste et distributeur de café et de machines à café, également torréfacteur. Cafrezzo fournit les professionnels — cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises — en cafés en grains, cafés moulus, capsules et machines à café professionnelles. Marques distribuées : Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, Kimbo, Covim et Caprimo. Boutique à Gonesse, aux portes de Paris, avec service en Île-de-France et livraison en France, Belgique, Luxembourg et Suisse.',
     // Countries we actually ship to, per the FAQ and delivery terms.
     areaServed: ['FR', 'BE', 'LU', 'CH'],
     // Topical scope of the business, stated explicitly.
@@ -481,19 +487,55 @@ export const organizationSchema = {
 };
 
 /**
+ * Approximate coordinates for the Gonesse shop.
+ *
+ * TODO(ops): replace with the exact rooftop lat/long from the Google Business
+ * Profile listing. This is the commune centroid, accurate to a few hundred
+ * metres — good enough to corroborate the postal address for an answer
+ * engine, but it is not what places the Map Pack pin. That comes from GBP.
+ */
+const GEO = {
+    '@type': 'GeoCoordinates',
+    latitude: 48.9872,
+    longitude: 2.4486,
+} as const;
+
+/**
+ * The Île-de-France departments the shop actively serves.
+ *
+ * Stated explicitly because the commercial target is regional B2B supply
+ * ("grossiste café Île-de-France"), and a bare postal address only says
+ * where the business sits — not how far it delivers. Each entry is the
+ * administrative department, which is the unit French B2B buyers search in.
+ */
+const IDF_AREA_SERVED = [
+    { '@type': 'AdministrativeArea', name: 'Paris (75)' },
+    { '@type': 'AdministrativeArea', name: 'Val-d’Oise (95)' },
+    { '@type': 'AdministrativeArea', name: 'Seine-Saint-Denis (93)' },
+    { '@type': 'AdministrativeArea', name: 'Hauts-de-Seine (92)' },
+    { '@type': 'AdministrativeArea', name: 'Seine-et-Marne (77)' },
+    { '@type': 'AdministrativeArea', name: 'Yvelines (78)' },
+    { '@type': 'AdministrativeArea', name: 'Essonne (91)' },
+    { '@type': 'AdministrativeArea', name: 'Val-de-Marne (94)' },
+    { '@type': 'AdministrativeArea', name: 'Île-de-France' },
+] as const;
+
+/**
  * JSON-LD for the physical shop.
  *
  * Distinct from `organizationSchema`: that identifies the business entity,
  * this describes a visitable location and is what drives local/map results
- * for queries like "café Gonesse". Belongs on the pages that describe the
- * shop itself (/contact, /visit-shop), not sitewide.
+ * for queries like "grossiste café Gonesse".
  *
- * `geo` is deliberately absent — we have no verified coordinates, and Google
- * treats it as recommended, not required. Add it once the lat/long is known.
+ * Typed as both Store and WholesaleStore. The business genuinely does both —
+ * a walk-in shop and trade supply — and the wholesale half is the half being
+ * ranked for, so it has to be stated in the vocabulary rather than only in
+ * the prose. Note `WholesaleStore` is the real schema.org term; `Wholesaler`
+ * is not in the vocabulary and would be silently discarded.
  */
 export const storeSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Store',
+    '@type': ['Store', 'WholesaleStore'],
     '@id': `${BASE_URL}/#store`,
     name: 'Cafrezzo',
     url: `${BASE_URL}/visit-shop`,
@@ -502,9 +544,54 @@ export const storeSchema = {
     telephone: '+33-1-39-85-85-65',
     email: 'boutique@cafrezzo.com',
     address: POSTAL_ADDRESS,
+    geo: GEO,
+    areaServed: IDF_AREA_SERVED,
     priceRange: '€€',
     currenciesAccepted: 'EUR',
     parentOrganization: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
+    openingHoursSpecification: [
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            opens: '09:00',
+            closes: '17:00',
+        },
+    ],
+};
+
+/**
+ * LocalBusiness/WholesaleStore schema for the commercial landing pages.
+ *
+ * Separate from `storeSchema` on purpose. That one is scoped to the visitable
+ * shop and belongs on /contact and /visit-shop. This one is the B2B supplier
+ * claim — same NAP, same `@id` so the two resolve to one entity rather than
+ * competing, but carrying the wholesale description and service area that a
+ * "grossiste café Paris" query is actually matching against.
+ */
+export const wholesalerSchema = {
+    '@context': 'https://schema.org',
+    '@type': ['LocalBusiness', 'WholesaleStore'],
+    '@id': `${BASE_URL}/#store`,
+    name: 'Cafrezzo',
+    url: `${BASE_URL}/professionnels`,
+    image: `${BASE_URL}${OG_IMAGE}`,
+    logo: LOGO_URL,
+    telephone: '+33-1-39-85-85-65',
+    email: 'boutique@cafrezzo.com',
+    address: POSTAL_ADDRESS,
+    geo: GEO,
+    areaServed: IDF_AREA_SERVED,
+    priceRange: '€€',
+    currenciesAccepted: 'EUR',
+    vatID: 'FR17102596061',
+    taxID: '102 596 061 00014',
+    description:
+        'Grossiste et fournisseur de café pour les professionnels d’Île-de-France. ' +
+        'Cafrezzo livre les cafés, restaurants, hôtels, bars, coffee shops, bureaux et ' +
+        'entreprises en café en grains, café moulu, capsules et machines à café ' +
+        'professionnelles. Achat au carton et à la palette, tarifs dégressifs. ' +
+        'Marques distribuées : Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, ' +
+        'Kimbo, Covim et Caprimo.',
     openingHoursSpecification: [
         {
             '@type': 'OpeningHoursSpecification',

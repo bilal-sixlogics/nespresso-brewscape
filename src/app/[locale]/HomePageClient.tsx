@@ -464,7 +464,7 @@ export default function Home() {
               maskImage: 'radial-gradient(ellipse at left center, black 20%, transparent 70%)'
             }}
           >
-            <img src="/coffee-beans.png" alt="" className="w-full h-full object-cover opacity-30" />
+            <img src="/coffee-beans.webp" alt="" className="w-full h-full object-cover opacity-30" />
           </div>
 
           <div className="max-w-[1700px] mx-auto px-4 sm:px-8 relative mb-6 sm:mb-12">

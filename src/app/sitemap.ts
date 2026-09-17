@@ -189,6 +189,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { path: '/grossiste-machines-a-cafe',    locales: FRENCH_ONLY, priority: 0.85 },
         { path: '/machine-a-cafe-professionnelle', locales: FRENCH_ONLY, priority: 0.85 },
         { path: '/marques',                      locales: FR_EN,       priority: 0.8 },
+
+        // Department pages under the Île-de-France hub. Val-d'Oise ranks
+        // highest of the four because it is the one backed by a physical
+        // address rather than only a delivery radius — the shop is in it.
+        { path: '/grossiste-cafe-val-d-oise',          locales: FRENCH_ONLY, priority: 0.88 },
+        { path: '/grossiste-cafe-seine-saint-denis',   locales: FRENCH_ONLY, priority: 0.82 },
+        { path: '/grossiste-cafe-hauts-de-seine',      locales: FRENCH_ONLY, priority: 0.82 },
+        { path: '/grossiste-cafe-seine-et-marne',      locales: FRENCH_ONLY, priority: 0.8 },
     ];
 
     const landingRoutes: MetadataRoute.Sitemap = LANDING_PATHS.flatMap(entry =>
