@@ -19,6 +19,23 @@ export interface SaleUnit {
     pricing_method: 'direct' | 'percentage_off' | 'fixed_off';
     discount_value?: number;
     sku: string;
+    /**
+     * EAN-13 / UPC barcode, when the catalogue carries one.
+     *
+     * Optional because the API does not currently return it for any product.
+     * Declared anyway so that the moment the backend starts populating a
+     * barcode field, `generateProductSchema()` picks it up and emits `gtin13`
+     * with no further frontend change. GTIN is what lets Google match an offer
+     * to the product in its shopping graph — without it these branded FMCG
+     * items cannot be tied to the same product sold elsewhere.
+     *
+     * Several key names are accepted because which one the backend settles on
+     * is not yet decided.
+     */
+    gtin13?: string;
+    gtin?: string;
+    ean?: string;
+    barcode?: string;
     stock: number;
     is_default: boolean;
     status: 'active' | 'inactive';

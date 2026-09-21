@@ -106,28 +106,55 @@ const CANONICAL_HOST = AppConfig.brand.domain;
 export function middleware(request: NextRequest) {
     const { pathname, search } = request.nextUrl;
 
+    // Host and locale are resolved together, then emitted as ONE redirect.
+    //
+    // These used to be two sequential redirects: the host fix returned
+    // immediately, so https://www.cafrezzo.com/ cost the visitor a 308 to the
+    // apex and then a second 308 to /fr. Every hop is a full round trip for the
+    // visitor and a wasted fetch of the crawl budget, and redirect chains are
+    // exactly what Search Console flags. Now the destination is computed once.
     const host = request.headers.get('host');
-    if (host && host !== CANONICAL_HOST && host.replace(/^www\./, '') === CANONICAL_HOST) {
-        const url = request.nextUrl.clone();
+    const needsHostFix =
+        !!host && host !== CANONICAL_HOST && host.replace(/^www\./, '') === CANONICAL_HOST;
+
+    /** Applies the canonical host to a cloned URL. */
+    const withCanonicalHost = (url: URL) => {
         url.protocol = 'https';
         url.host = CANONICAL_HOST;
         url.port = '';
-        return NextResponse.redirect(url, 308);
-    }
+        return url;
+    };
 
     logAiCrawler(request, pathname);
 
-    if (isExcluded(pathname)) return NextResponse.next();
+    // Paths that must never be locale-prefixed (robots.txt, sitemap, assets).
+    // They still need the host corrected, but nothing else.
+    if (isExcluded(pathname)) {
+        if (needsHostFix) {
+            return NextResponse.redirect(withCanonicalHost(request.nextUrl.clone()), 308);
+        }
+        return NextResponse.next();
+    }
 
     const firstSegment = pathname.split('/')[1];
 
-    // Already correctly prefixed — nothing to do.
-    if (isLocale(firstSegment)) return NextResponse.next();
+    // Already correctly prefixed — only the host might still need fixing.
+    if (isLocale(firstSegment)) {
+        if (needsHostFix) {
+            return NextResponse.redirect(withCanonicalHost(request.nextUrl.clone()), 308);
+        }
+        return NextResponse.next();
+    }
 
     // A two-letter segment that is NOT a supported locale (e.g. /es/shop) is
     // left alone so the [locale] layout can 404 it. Prefixing it would produce
     // /fr/es/shop, a nonsense URL that resolves to nothing.
-    if (/^[a-z]{2}$/.test(firstSegment)) return NextResponse.next();
+    if (/^[a-z]{2}$/.test(firstSegment)) {
+        if (needsHostFix) {
+            return NextResponse.redirect(withCanonicalHost(request.nextUrl.clone()), 308);
+        }
+        return NextResponse.next();
+    }
 
     // Bare path: pick the destination locale.
     const cookieLocale = request.cookies.get('cafrezzo-locale')?.value;
@@ -138,9 +165,13 @@ export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/${chosen}${pathname === '/' ? '' : pathname}`;
     url.search = search;
+    // Folded into the same response rather than deferred to a second hop.
+    if (needsHostFix) withCanonicalHost(url);
 
     // Permanent only when landing on the default locale, which is the true new
-    // home of the old URL. Personalised targets stay temporary.
+    // home of the old URL. Personalised targets stay temporary — including when
+    // a host fix is bundled in, because the locale half of the destination
+    // still varies per visitor and must not be cached as canonical.
     return chosen === DEFAULT_LOCALE
         ? NextResponse.redirect(url, 308)
         : NextResponse.redirect(url, 307);

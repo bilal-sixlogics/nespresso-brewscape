@@ -533,47 +533,35 @@ const IDF_AREA_SERVED = [
  * the prose. Note `WholesaleStore` is the real schema.org term; `Wholesaler`
  * is not in the vocabulary and would be silently discarded.
  */
-export const storeSchema = {
+/**
+ * The single local-business node for the Gonesse shop.
+ *
+ * There used to be two: `storeSchema` (on /contact and /visit-shop) and
+ * `wholesalerSchema` (on the B2B landing pages). Both claimed the same
+ * `@id` — `https://cafrezzo.com/#store` — while disagreeing about `@type`
+ * (`Store` vs `LocalBusiness`), `url` (/visit-shop vs /professionnels) and
+ * which of `description`, `vatID`, `taxID` and `parentOrganization` they
+ * carried.
+ *
+ * An `@id` *is* the identity: Google merges nodes that share one, so the
+ * business was being described two different ways depending on which page got
+ * crawled last. That is the "duplicate or conflicting schema" failure mode,
+ * and on a local entity it undermines exactly the signal the map pack reads.
+ *
+ * Now there is one node, carrying the union of both. `WholesaleStore` is a
+ * subtype of `Store`, which is a subtype of `LocalBusiness`, so this types the
+ * business as specifically as the vocabulary allows while still satisfying
+ * every consumer looking for a LocalBusiness.
+ */
+const LOCAL_BUSINESS_SCHEMA = {
     '@context': 'https://schema.org',
     '@type': ['Store', 'WholesaleStore'],
     '@id': `${BASE_URL}/#store`,
     name: 'Cafrezzo',
-    url: `${BASE_URL}/visit-shop`,
-    image: `${BASE_URL}${OG_IMAGE}`,
-    logo: LOGO_URL,
-    telephone: '+33-1-39-85-85-65',
-    email: 'boutique@cafrezzo.com',
-    address: POSTAL_ADDRESS,
-    geo: GEO,
-    areaServed: IDF_AREA_SERVED,
-    priceRange: '€€',
-    currenciesAccepted: 'EUR',
-    parentOrganization: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
-    openingHoursSpecification: [
-        {
-            '@type': 'OpeningHoursSpecification',
-            dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-            opens: '09:00',
-            closes: '17:00',
-        },
-    ],
-};
-
-/**
- * LocalBusiness/WholesaleStore schema for the commercial landing pages.
- *
- * Separate from `storeSchema` on purpose. That one is scoped to the visitable
- * shop and belongs on /contact and /visit-shop. This one is the B2B supplier
- * claim — same NAP, same `@id` so the two resolve to one entity rather than
- * competing, but carrying the wholesale description and service area that a
- * "grossiste café Paris" query is actually matching against.
- */
-export const wholesalerSchema = {
-    '@context': 'https://schema.org',
-    '@type': ['LocalBusiness', 'WholesaleStore'],
-    '@id': `${BASE_URL}/#store`,
-    name: 'Cafrezzo',
-    url: `${BASE_URL}/professionnels`,
+    // Locale-prefixed: the bare /visit-shop 308s to /fr/visit-shop, and a
+    // schema `url` that redirects is an avoidable hop for anything resolving
+    // the entity.
+    url: `${BASE_URL}/fr/visit-shop`,
     image: `${BASE_URL}${OG_IMAGE}`,
     logo: LOGO_URL,
     telephone: '+33-1-39-85-85-65',
@@ -585,6 +573,7 @@ export const wholesalerSchema = {
     currenciesAccepted: 'EUR',
     vatID: 'FR17102596061',
     taxID: '102 596 061 00014',
+    parentOrganization: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
     description:
         'Grossiste et fournisseur de café pour les professionnels d’Île-de-France. ' +
         'Cafrezzo livre les cafés, restaurants, hôtels, bars, coffee shops, bureaux et ' +
@@ -601,6 +590,23 @@ export const wholesalerSchema = {
         },
     ],
 };
+
+/**
+ * Both names resolve to the same node, so the two dozen existing call sites
+ * keep working and it is now impossible for them to drift apart again.
+ */
+export const storeSchema = LOCAL_BUSINESS_SCHEMA;
+
+/**
+ * LocalBusiness/WholesaleStore schema for the commercial landing pages.
+ *
+ * Separate from `storeSchema` on purpose. That one is scoped to the visitable
+ * shop and belongs on /contact and /visit-shop. This one is the B2B supplier
+ * claim — same NAP, same `@id` so the two resolve to one entity rather than
+ * competing, but carrying the wholesale description and service area that a
+ * "grossiste café Paris" query is actually matching against.
+ */
+export const wholesalerSchema = LOCAL_BUSINESS_SCHEMA;
 
 /**
  * WebSite schema for one locale.
@@ -630,6 +636,13 @@ export function buildWebsiteSchema(locale: Locale) {
 /**
  * JSON-LD product schema for PDP pages.
  */
+/** ISO date one year out, for `Offer.priceValidUntil`. */
+function priceValidUntil(): string {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    return d.toISOString().slice(0, 10);
+}
+
 export function generateProductSchema(product: {
     locale: Locale;
     name: string;
@@ -639,6 +652,11 @@ export function generateProductSchema(product: {
     price: number;
     inStock?: boolean;
     sku?: string;
+    /**
+     * EAN-13 barcode, when the catalogue has one. Currently never supplied —
+     * see the note on `SaleUnit.gtin13`. Emitted as `gtin13` when present.
+     */
+    gtin13?: string;
     ratingValue?: number | null;
     reviewCount?: number | null;
     /**
@@ -671,6 +689,10 @@ export function generateProductSchema(product: {
         image: product.image,
         url,
         ...(product.sku ? { sku: product.sku } : {}),
+        // Only emitted when the catalogue actually carries a barcode. A
+        // fabricated or placeholder GTIN is worse than none: Google validates
+        // check digits and treats a bad one as a structured-data error.
+        ...(product.gtin13 ? { gtin13: product.gtin13 } : {}),
         brand: { '@type': 'Brand', name: product.brand?.trim() || 'Cafrezzo' },
         ...(hasRating
             ? {
@@ -685,6 +707,14 @@ export function generateProductSchema(product: {
             '@type': 'Offer',
             url,
             priceCurrency: 'EUR',
+            // Rolling one-year horizon, recomputed on every revalidation.
+            //
+            // Google drops an offer whose priceValidUntil has passed, so a
+            // fixed date would quietly delist the whole catalogue from rich
+            // results on its expiry day. This is an offer-expiry hint rather
+            // than a claim about the product, and a rolling window is the
+            // standard way to express "this price stands until further notice".
+            priceValidUntil: priceValidUntil(),
             price: product.price.toFixed(2),
             itemCondition: 'https://schema.org/NewCondition',
             availability: product.inStock !== false

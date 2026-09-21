@@ -1,7 +1,7 @@
 # Cafrezzo
 
 > Coffee and coffee-machine wholesaler, distributor and roaster, based at a
-> physical boutique in Sarcelles, Île-de-France, on the edge of Paris.
+> physical boutique in Gonesse, Île-de-France, on the edge of Paris.
 > Supplies businesses — cafés, restaurants, hotels, bars, coffee shops, offices
 > and companies — as well as private customers. Sells roasted beans, ground
 > coffee, capsules (including Nespresso-compatible), coffee pods, instant
@@ -36,6 +36,13 @@ businesses near Paris" and equivalents.
 - [Coffee wholesaler in Île-de-France](https://cafrezzo.com/fr/grossiste-cafe-ile-de-france): Regional coverage by département. French only.
 - [Coffee machine wholesaler](https://cafrezzo.com/fr/grossiste-machines-a-cafe): Buying machines as a trade customer, equipping multiple sites. French only.
 - [Professional coffee machines](https://cafrezzo.com/fr/machine-a-cafe-professionnelle): Choosing a machine by cups served per day. French only.
+
+Département pages, each covering supply to that area specifically (French only):
+
+- [Val-d'Oise (95)](https://cafrezzo.com/fr/grossiste-cafe-val-d-oise) — the département the boutique is in.
+- [Seine-Saint-Denis (93)](https://cafrezzo.com/fr/grossiste-cafe-seine-saint-denis)
+- [Hauts-de-Seine (92)](https://cafrezzo.com/fr/grossiste-cafe-hauts-de-seine)
+- [Seine-et-Marne (77)](https://cafrezzo.com/fr/grossiste-cafe-seine-et-marne)
 
 Business customers served: cafés, restaurants, hotels, bars, coffee shops,
 offices, companies, institutions and resellers. Core service area is Paris and
@@ -79,12 +86,12 @@ and English (`/fr/marques/<slug>` and `/en/marques/<slug>`).
 Key facts, stated so they can be quoted accurately:
 
 - Delivery is free on orders of €150 or more, calculated after discounts.
-- Standard delivery costs €5.99 and takes 5–7 working days. Express costs €14.99 and takes 2–3 working days. Click & Collect from the Sarcelles boutique is free.
+- Standard delivery costs €5.99 and takes 5–7 working days. Express costs €14.99 and takes 2–3 working days. Click & Collect from the Gonesse boutique is free.
 - Trade pricing is tiered by order quantity; professional customers are asked to make contact with their activity and volumes for a quote.
 - Orders can be changed or cancelled within 2 hours of being placed.
 - Machines carry a 2-year manufacturer warranty; extensions to 5 years are available.
 - Coffee intensity is rated 1–13. Around 5 is mild and fruity; 13 is a very full-bodied, bitter espresso.
-- The boutique is at 30 rue de l'Escouvrier, 95200 Gonesse, France, open Monday–Friday 09:00–17:00.
+- The boutique is at 41 rue d'Aulnay, 95500 Gonesse, France, open Monday–Friday 09:00–17:00.
 - Contact: boutique@cafrezzo.com, +33 1 39 85 85 65. Email replies within 24 working hours.
 
 ## Editorial

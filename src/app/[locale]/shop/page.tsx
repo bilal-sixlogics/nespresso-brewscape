@@ -21,6 +21,112 @@ type SearchParams = Promise<{ category?: string; brand?: string }>;
 
 const PER_PAGE = 20;
 
+/**
+ * Per-category title and description, keyed by the catalogue's display NAME.
+ *
+ * Keyed by name rather than slug on purpose: the backend slugs do not match
+ * their categories at all — GRAINS is slugged `delta-caf-s-grain`, SUCRES is
+ * `lavazza-compatible-nespresso` — so a slug-keyed map would silently break
+ * the day someone tidies them up in the admin panel.
+ *
+ * Written out per category because the previous version generated
+ * `"${label} | Cafrezzo"` and one shared description sentence for all seven.
+ * That produced titles as thin as "Moulu | Cafrezzo" and seven near-identical
+ * descriptions — which is what makes a faceted URL look like duplicate chaff
+ * rather than a category page worth indexing.
+ */
+interface CategorySeo {
+    title: string;
+    description: string;
+}
+
+const CATEGORY_SEO: Record<string, { fr: CategorySeo; en: CategorySeo }> = {
+    GRAINS: {
+        fr: {
+            title: 'Café en Grains — Grossiste & Vente en Ligne',
+            description:
+                'Café en grains en conditionnement 1 kg : Lavazza, Delta Cafés, Bristot, Mambo et Kimbo. Cafrezzo, grossiste à Gonesse, livre particuliers et professionnels en Île-de-France et dans toute la France.',
+        },
+        en: {
+            title: 'Coffee Beans — Wholesale & Online',
+            description:
+                'Coffee beans in 1 kg packs: Lavazza, Delta Cafés, Bristot, Mambo and Kimbo. Cafrezzo, a wholesaler near Paris, supplies both households and trade customers.',
+        },
+    },
+    MOULU: {
+        fr: {
+            title: 'Café Moulu — Grossiste & Vente en Ligne',
+            description:
+                'Café moulu pour machines à filtre, percolateurs et cafetières. Marques Carte Noire, Lavazza et Delta Cafés. Grossiste à Gonesse, livraison offerte dès 150€.',
+        },
+        en: {
+            title: 'Ground Coffee — Wholesale & Online',
+            description:
+                'Ground coffee for filter machines, percolators and cafetières, from Carte Noire, Lavazza and Delta Cafés. Free delivery over €150.',
+        },
+    },
+    CAPSULES: {
+        fr: {
+            title: 'Capsules de Café Compatibles — Grossiste',
+            description:
+                'Capsules compatibles avec les principaux systèmes, dont Nespresso et Lavazza. Idéales pour chambres d’hôtel, salles de pause et petits points de consommation. Tarifs professionnels dégressifs.',
+        },
+        en: {
+            title: 'Coffee Capsules — Wholesale',
+            description:
+                'Capsules compatible with the main systems, including Nespresso and Lavazza. Suited to hotel rooms, breakrooms and small serving points. Trade pricing available.',
+        },
+    },
+    PODS: {
+        fr: {
+            title: 'Dosettes de Café — Grossiste pour Professionnels',
+            description:
+                'Dosettes souples pour un dosage constant sans réglage ni entretien de moulin. Approvisionnement régulier pour bureaux, hôtels et petites structures.',
+        },
+        en: {
+            title: 'Coffee Pods — Wholesale for Business',
+            description:
+                'Soft pods for consistent dosing with no grinder to set or clean. Regular resupply for offices, hotels and smaller sites.',
+        },
+    },
+    SOLUBLES: {
+        fr: {
+            title: 'Café Soluble & Boissons Instantanées — Grossiste',
+            description:
+                'Cafés solubles, chocolats et boissons instantanées pour distributeurs automatiques et espaces de pause. Marques Caprimo, Ristora et Prolait.',
+        },
+        en: {
+            title: 'Instant Coffee & Drinks — Wholesale',
+            description:
+                'Instant coffee, chocolate and hot drinks for vending machines and breakrooms. Caprimo, Ristora and Prolait.',
+        },
+    },
+    'THÉS': {
+        fr: {
+            title: 'Thés & Infusions — Grossiste pour Professionnels',
+            description:
+                'Thés et infusions pour compléter une offre de boissons chaudes sans multiplier les fournisseurs. Livraison en Île-de-France et dans toute la France.',
+        },
+        en: {
+            title: 'Teas & Infusions — Wholesale',
+            description:
+                'Teas and infusions to round out a hot-drinks offer without adding suppliers. Delivered across France and neighbouring countries.',
+        },
+    },
+    SUCRES: {
+        fr: {
+            title: 'Sucres & Consommables Café — Grossiste',
+            description:
+                'Sucres, bûchettes et consommables pour accompagner le service café en établissement. Achat au carton, tarifs dégressifs selon les quantités.',
+        },
+        en: {
+            title: 'Sugar & Coffee Consumables — Wholesale',
+            description:
+                'Sugar sticks and consumables for coffee service in hospitality. Sold by the case, with quantity-based pricing.',
+        },
+    },
+};
+
 export async function generateMetadata({
     params,
     searchParams,
@@ -77,16 +183,41 @@ export async function generateMetadata({
             };
         }
 
-        // Category names come from the admin in caps ("GRAINS"); title-case
-        // them so the <title> is not shouting.
-        const label = match.name.charAt(0).toUpperCase() + match.name.slice(1).toLowerCase();
         const url = `${SITE_URL}${localePath(locale, `/shop?category=${category}`)}`;
+        const seo = CATEGORY_SEO[match.name.trim().toUpperCase()];
+
+        // Indexable only where we have real, hand-written copy for the
+        // language — French and English.
+        //
+        // These facets were indexable in all five locales while carrying French
+        // metadata, which published a German and a Russian URL describing
+        // themselves in French. That is five near-duplicates per category
+        // rather than one page worth ranking. Where there is no copy, the facet
+        // consolidates back onto /shop instead.
+        const copy = locale === 'fr' ? seo?.fr : locale === 'en' ? seo?.en : undefined;
+
+        if (!copy) {
+            return {
+                ...base,
+                robots: { index: false, follow: true },
+                alternates: { canonical: `${SITE_URL}${localePath(locale, '/shop')}` },
+            };
+        }
 
         return {
             ...base,
-            title: { absolute: `${label} | Cafrezzo` },
-            description: `${label} disponible chez Cafrezzo, grossiste et distributeur de café aux portes de Paris. Vente aux particuliers et aux professionnels, livraison offerte dès 150€.`,
-            alternates: { canonical: url },
+            title: { absolute: `${copy.title} | Cafrezzo` },
+            description: copy.description,
+            alternates: {
+                canonical: url,
+                // Only the two locales this facet is published in, matching the
+                // page's own robots directive.
+                languages: {
+                    'fr-FR': `${SITE_URL}${localePath('fr', `/shop?category=${category}`)}`,
+                    'en-GB': `${SITE_URL}${localePath('en', `/shop?category=${category}`)}`,
+                    'x-default': `${SITE_URL}${localePath('fr', `/shop?category=${category}`)}`,
+                },
+            },
         };
     }
 
