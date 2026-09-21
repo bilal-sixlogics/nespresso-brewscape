@@ -111,6 +111,14 @@ export default async function ProductDetailPage({
             price: getDisplayPrice(product),
             inStock: isInStock(product),
             sku: getDefaultUnit(product)?.sku,
+            // No product currently carries a barcode, so this resolves to
+            // undefined and nothing is emitted. Wired up now so that GTIN
+            // appears automatically once the backend populates any of these
+            // fields — see the note on SaleUnit.gtin13.
+            gtin13: (() => {
+                const unit = getDefaultUnit(product);
+                return unit?.gtin13 ?? unit?.gtin ?? unit?.ean ?? unit?.barcode;
+            })(),
             ratingValue: product.average_rating,
             reviewCount: product.reviews_count,
             // The real roaster (Lavazza, Delta, Bristot, ...). Passed in rather

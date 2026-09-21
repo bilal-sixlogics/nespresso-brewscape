@@ -740,12 +740,27 @@ export default function Home() {
             <div className="space-y-5 text-sand/70 text-sm sm:text-base leading-relaxed">
               <p>{t('homeAboutBody1')}</p>
               <p>{t('homeAboutBody2')}</p>
-              {/* Third paragraph states who Cafrezzo sells to and where it
-                  operates. Written to stand alone: this is the passage an AI
-                  answer engine is most likely to quote when asked what
-                  Cafrezzo is, and previously the homepage never said the
-                  business serves the trade at all. */}
-              <p>{t('homeAboutBody3')}</p>
+              {/* The trade paragraphs are French/English only.
+                  `t()` falls back to French for a missing key, so rendering
+                  these unconditionally printed French prose on the German,
+                  Russian and Dutch homepages. Gating them keeps each locale
+                  monolingual; those three keep the two fully translated
+                  paragraphs above.
+
+                  body3 states who Cafrezzo sells to and where it operates —
+                  written to stand alone, since it is the passage an answer
+                  engine is most likely to quote. body4 and body5 add the
+                  substance the homepage was missing: how trade supply actually
+                  works, and why the machine and the roast are chosen together.
+                  At ~500 words the page was thin for a head term as
+                  competitive as "grossiste café Paris". */}
+              {(language === 'fr' || language === 'en') && (
+                <>
+                  <p>{t('homeAboutBody3')}</p>
+                  <p>{t('homeAboutBody4')}</p>
+                  <p>{t('homeAboutBody5')}</p>
+                </>
+              )}
             </div>
 
             {/* The homepage's only route into the B2B cluster. Before this the

@@ -32,11 +32,13 @@ interface ApiProduct {
 interface ApiCategory {
     slug?: string;
     storefront_page?: string;
+    updated_at?: string;
 }
 
 interface ApiBrand {
     slug?: string;
     status?: string;
+    updated_at?: string;
 }
 
 interface ApiBlogPost {
@@ -159,10 +161,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         // immediately tells it to go somewhere else.
     ];
 
+    /**
+     * `lastmod` is deliberately OMITTED for code-defined pages.
+     *
+     * Every URL in this sitemap previously carried `lastModified: now`, so all
+     * ~800 of them claimed to have changed at the moment the sitemap was
+     * regenerated — which is simply untrue for /terms or /faq, and is the
+     * pattern Google explicitly says causes it to stop trusting the field
+     * sitewide. Since these pages change only when someone edits the source,
+     * there is no accurate per-URL date available at request time.
+     *
+     * Google's guidance is that an omitted lastmod is better than an
+     * inaccurate one: without it the crawler falls back on its own change
+     * history, rather than being told something false. API-backed URLs below
+     * (products, posts, brands, categories) do have real timestamps and keep
+     * theirs.
+     */
     const staticRoutes: MetadataRoute.Sitemap = STATIC_PATHS.flatMap(entry =>
         LOCALES.map(locale => ({
             url: `${SITE_URL}${localePath(locale, entry.path)}`,
-            lastModified: now,
             changeFrequency: entry.changeFrequency,
             priority: locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9,
             alternates: { languages: hreflangFor(entry.path) },
@@ -199,10 +216,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { path: '/grossiste-cafe-seine-et-marne',      locales: FRENCH_ONLY, priority: 0.8 },
     ];
 
+    // Same reasoning as staticRoutes: these are code-defined, so there is no
+    // honest per-URL modification date to emit.
     const landingRoutes: MetadataRoute.Sitemap = LANDING_PATHS.flatMap(entry =>
         entry.locales.map(locale => ({
             url: `${SITE_URL}${localePath(locale, entry.path)}`,
-            lastModified: now,
             changeFrequency: 'monthly' as const,
             priority: locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9,
             alternates: { languages: hreflangFor(entry.path, entry.locales) },
@@ -223,17 +241,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // One page per distributed brand — the targets for "café Lavazza",
     // "café Delta", "café Bristot" and so on. Published in fr and en only,
     // matching the pages themselves.
+    // Brands carry a real `updated_at`, so these get an accurate lastmod
+    // rather than the regeneration timestamp. Omitted when the API does not
+    // supply one — a missing date beats a fabricated one.
     const brandRoutes: MetadataRoute.Sitemap = brands
         .filter(b => b.slug && b.status !== 'inactive')
-        .flatMap(b =>
-            FR_EN.map(locale => ({
+        .flatMap(b => {
+            const modified = parseDate(b.updated_at);
+            return FR_EN.map(locale => ({
                 url: `${SITE_URL}${localePath(locale, `/marques/${b.slug}`)}`,
-                lastModified: now,
+                ...(modified ? { lastModified: modified } : {}),
                 changeFrequency: 'weekly' as const,
                 priority: locale === DEFAULT_LOCALE ? 0.8 : 0.72,
                 alternates: { languages: hreflangFor(`/marques/${b.slug}`, FR_EN) },
-            })),
-        );
+            }));
+        });
 
     // /brew-guide renders entirely from the brew-guides API. That endpoint is
     // currently returning HTTP 500, so the page serves an empty <main> — and
@@ -243,7 +265,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const brewGuideRoutes: MetadataRoute.Sitemap = brewGuides.length
         ? LOCALES.map(locale => ({
               url: `${SITE_URL}${localePath(locale, '/brew-guide')}`,
-              lastModified: now,
               changeFrequency: 'monthly' as const,
               priority: locale === DEFAULT_LOCALE ? 0.6 : 0.54,
               alternates: { languages: hreflangFor('/brew-guide') },
@@ -284,17 +305,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
      */
     const categoryRoutes: MetadataRoute.Sitemap = categories
         .filter(c => c.slug && (c.storefront_page ?? '/shop') === '/shop')
-        .flatMap(c =>
-            LOCALES.map(locale => ({
+        .flatMap(c => {
+            const modified = parseDate(c.updated_at);
+            // fr/en only — those are the locales /shop's generateMetadata
+            // publishes real category copy for. The other three now noindex the
+            // facet and canonicalise it to /shop, so listing them here would
+            // ask Google to index URLs that decline to be indexed.
+            return FR_EN.map(locale => ({
                 url: `${SITE_URL}${localePath(locale, `/shop?category=${c.slug}`)}`,
-                lastModified: now,
+                ...(modified ? { lastModified: modified } : {}),
                 changeFrequency: 'weekly' as const,
                 priority: locale === DEFAULT_LOCALE ? 0.75 : 0.68,
                 alternates: {
-                    languages: hreflangFor(`/shop?category=${c.slug}`),
+                    languages: hreflangFor(`/shop?category=${c.slug}`, FR_EN),
                 },
-            })),
-        );
+            }));
+        });
 
     const blogRoutes: MetadataRoute.Sitemap = posts
         .filter(p => p.slug && p.status !== 'draft')
