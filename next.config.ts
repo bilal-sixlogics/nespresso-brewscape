@@ -79,6 +79,21 @@ const CSP_REPORT_ONLY = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // NOTE: do not add `turbopack.root` here.
+  //
+  // If there is a stray package-lock.json above this directory (a developer's
+  // home folder is the usual culprit), Next logs "inferred your workspace
+  // root, but it may not be correct" on every run. The obvious fix is to pin
+  // `turbopack: { root: process.cwd() }` — don't. It silences the warning and
+  // breaks route resolution outright: every route, including /fr, then returns
+  // 404 in `next dev`. Verified by A/B test.
+  //
+  // The warning is cosmetic. Remove the stray lockfile instead.
+  //
+  // Related: don't run `next build` and `next dev` against the same .next
+  // directory — the mixed artifacts make dev 404 every route below /[locale].
+  // `npm run dev:clean` exists for that.
+
   // Removes `X-Powered-By: Next.js`. Naming the framework and its version in
   // every response tells an attacker which CVE list to work through and buys
   // nothing in return.
