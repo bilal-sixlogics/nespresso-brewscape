@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { Endpoints } from '@/lib/api/endpoints';
 import { FRENCH_ONLY, FR_EN, SITE_URL } from '@/lib/seo';
+import { isConsolidatedJournalSlug } from '@/lib/seo-redirects';
 import {
     DEFAULT_LOCALE,
     LOCALES,
@@ -350,7 +351,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
 
     const blogRoutes: MetadataRoute.Sitemap = posts
-        .filter(p => p.slug && p.status !== 'draft')
+        // Consolidated articles now 308 to a commercial page; submitting a URL
+        // that immediately redirects asks Google to index a redirect.
+        .filter(p => p.slug && p.status !== 'draft' && !isConsolidatedJournalSlug(p.slug))
         .flatMap(p =>
             LOCALES.map(locale => ({
                 url: `${SITE_URL}${localePath(locale, `/journal/${p.slug}`)}`,

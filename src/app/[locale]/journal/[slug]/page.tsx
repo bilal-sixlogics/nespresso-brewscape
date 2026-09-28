@@ -1,20 +1,23 @@
 // Server Component — owns metadata and Article structured data for a journal post.
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import BlogPostClient from './BlogPostClient';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { RelatedLinks, type RelatedLink } from '@/components/seo/RelatedLinks';
 import { getBlogPost, getBlogPosts, getBrands, probeApiReachable } from '@/lib/api/server';
 import { generateArticleSchema, generateBreadcrumbSchema, pageMetadata } from '@/lib/seo';
-import { LOCALES, toLocale, type Locale } from '@/lib/i18n';
+import { isConsolidatedJournalSlug, journalRedirectTarget } from '@/lib/seo-redirects';
+import { LOCALES, localePath, toLocale, type Locale } from '@/lib/i18n';
 
 export const revalidate = 3600;
 
 /** Pre-render every published post in every locale; unknown slugs render on demand. */
 export async function generateStaticParams() {
     const posts = await getBlogPosts();
-    const slugs = posts.map(p => p.slug).filter((s): s is string => Boolean(s));
+    const slugs = posts
+        .map(p => p.slug)
+        .filter((s): s is string => Boolean(s) && !isConsolidatedJournalSlug(s));
     return LOCALES.flatMap(locale => slugs.map(slug => ({ locale, slug })));
 }
 
@@ -125,6 +128,14 @@ export default async function BlogPostPage({
 }) {
     const { locale: rawLocale, slug } = await params;
     const locale = toLocale(rawLocale);
+
+    // Consolidated into a commercial page — see lib/seo-redirects.ts for why.
+    // Checked before the fetch: the article still exists in the CMS, we simply
+    // no longer serve it at its own URL, so there is nothing to look up.
+    // permanentRedirect throws a control-flow signal; nothing after it runs.
+    const consolidated = journalRedirectTarget(slug);
+    if (consolidated) permanentRedirect(localePath(locale, consolidated));
+
     const post = await getBlogPost(slug);
 
     if (!post) {

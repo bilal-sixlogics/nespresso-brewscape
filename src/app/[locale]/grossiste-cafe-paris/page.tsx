@@ -135,8 +135,12 @@ const CONTENT: LandingContent = {
             hint: 'Approvisionnement des établissements du Val-d’Oise et de toute la région.',
         },
         {
-            href: '/journal/grossiste-cafe-a-paris-et-en-ile-de-france-comment-choisir-son-fournisseur',
-            label: 'Comment choisir son fournisseur de café',
+            // Was a link to a journal article that has since been consolidated
+            // into this cluster (see lib/seo-redirects.ts). Pointing at the
+            // journal index instead keeps the link live rather than sending
+            // readers and crawlers through a redirect.
+            href: '/journal',
+            label: 'Guides et conseils café',
             hint: 'Les critères à comparer avant de s’engager avec un grossiste.',
         },
         {

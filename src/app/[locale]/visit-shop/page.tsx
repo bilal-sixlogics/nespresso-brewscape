@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, Clock, Loader2, ExternalLink } from 'lucide-react';
 import { Endpoints } from '@/lib/api/endpoints';
+import { AppConfig } from '@/lib/config';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 import { useLanguage } from '@/context/LanguageContext';
 import { CategoryContent } from '@/components/seo/CategoryContent';
@@ -96,12 +97,12 @@ export default function VisitShopPage() {
                                                     <p className="text-sm text-ink/60">{store.hours}</p>
                                                 </div>
                                             )}
-                                            {store.phone && (
-                                                <div className="flex items-center gap-3">
-                                                    <Phone size={16} className="text-gold flex-shrink-0" />
-                                                    <a href={`tel:${store.phone}`} className="text-sm text-ink/60 hover:text-gold transition-colors">{store.phone}</a>
-                                                </div>
-                                            )}
+                                            {/* Canonical number from AppConfig — see the note on
+                                                /contact. The store record still carries the old one. */}
+                                            <div className="flex items-center gap-3">
+                                                <Phone size={16} className="text-gold flex-shrink-0" />
+                                                <a href={`tel:${AppConfig.brand.phone.replace(/\s/g, '')}`} className="text-sm text-ink/60 hover:text-gold transition-colors">{AppConfig.brand.phone}</a>
+                                            </div>
                                             {store.email && (
                                                 <div className="flex items-center gap-3">
                                                     <Mail size={16} className="text-gold flex-shrink-0" />
@@ -180,7 +181,7 @@ export default function VisitShopPage() {
                             },
                             {
                                 heading: 'Nous contacter',
-                                body: 'Par téléphone au +33 1 39 85 85 65 ou par email à boutique@cafrezzo.com. Nous répondons aux demandes écrites sous 24 heures ouvrables.',
+                                body: 'Par téléphone au +33 6 03 84 11 94 ou par email à boutique@cafrezzo.com. Nous répondons aux demandes écrites sous 24 heures ouvrables.',
                             },
                         ]}
                         links={[

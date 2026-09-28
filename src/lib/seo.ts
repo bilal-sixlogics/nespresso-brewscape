@@ -449,7 +449,7 @@ export const organizationSchema = {
     logo: LOGO_URL,
     contactPoint: {
         '@type': 'ContactPoint',
-        telephone: '+33-1-39-85-85-65',
+        telephone: '+33-6-03-84-11-94',
         contactType: 'customer service',
         areaServed: ['FR', 'BE', 'CH', 'LU'],
         // Derived from LOCALES so it cannot drift out of sync. This
@@ -584,7 +584,7 @@ const LOCAL_BUSINESS_SCHEMA = {
     url: `${BASE_URL}/fr/visit-shop`,
     image: `${BASE_URL}${OG_IMAGE}`,
     logo: LOGO_URL,
-    telephone: '+33-1-39-85-85-65',
+    telephone: '+33-6-03-84-11-94',
     email: 'boutique@cafrezzo.com',
     address: POSTAL_ADDRESS,
     geo: GEO,

@@ -6,7 +6,7 @@ export const AppConfig = {
         tagline: "CAFREZZO — Votre expérience café",
         description: "Découvrez l'excellence du café avec Cafrezzo. Expert en café français depuis des années, nous vous proposons une sélection premium de grains, capsules et machines.",
         email: "boutique@cafrezzo.com",
-        phone: "+33 1 39 85 85 65",
+        phone: "+33 6 03 84 11 94",
         address: "41 rue d'Aulnay, 95500 Gonesse, France",
         // Real trading hours, matching the shop's store-locations record and
         // the openingHoursSpecification in lib/seo.ts. The previous
