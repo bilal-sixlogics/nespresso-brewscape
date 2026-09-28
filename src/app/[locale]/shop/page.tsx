@@ -183,8 +183,32 @@ export async function generateMetadata({
             };
         }
 
+        const name = match.name.trim().toUpperCase();
+
+        // Categories that now have a real, dedicated page consolidate onto it.
+        //
+        // A `?category=` facet and a clean category page targeting the same
+        // intent are two URLs competing for one query — the cannibalisation
+        // this whole structure is meant to avoid. The dedicated page has the
+        // H1, the intro copy, the FAQ and the schema, so it wins the canonical
+        // and the facet becomes a navigational view only.
+        const DEDICATED_CATEGORY_PAGE: Record<string, string> = {
+            GRAINS: '/cafe-en-grains',
+            MOULU: '/cafe-moulu',
+            CAPSULES: '/capsules-cafe',
+        };
+
+        const dedicated = DEDICATED_CATEGORY_PAGE[name];
+        if (dedicated) {
+            return {
+                ...base,
+                robots: { index: false, follow: true },
+                alternates: { canonical: `${SITE_URL}${localePath(locale, dedicated)}` },
+            };
+        }
+
         const url = `${SITE_URL}${localePath(locale, `/shop?category=${category}`)}`;
-        const seo = CATEGORY_SEO[match.name.trim().toUpperCase()];
+        const seo = CATEGORY_SEO[name];
 
         // Indexable only where we have real, hand-written copy for the
         // language — French and English.

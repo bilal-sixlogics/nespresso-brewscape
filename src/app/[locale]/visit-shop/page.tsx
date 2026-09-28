@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, Clock, Loader2, ExternalLink } from 'lucide-react';
 import { Endpoints } from '@/lib/api/endpoints';
+import { AppConfig } from '@/lib/config';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 import { useLanguage } from '@/context/LanguageContext';
+import { CategoryContent } from '@/components/seo/CategoryContent';
 
 interface StoreLocation {
     id: number; name: string; address: string; city: string; country: string;
@@ -14,7 +16,7 @@ interface StoreLocation {
 }
 
 export default function VisitShopPage() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const [stores, setStores] = useState<StoreLocation[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -33,10 +35,17 @@ export default function VisitShopPage() {
                 {/* Hero */}
                 <section className="bg-ink pt-20 pb-16 px-8 relative text-sand">
                     <div className="max-w-[1400px] mx-auto text-center">
-                        <motion.h2 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                        {/* Was a <motion.h2>, which left this page with no
+                            <h1> at all. French gets the specific heading —
+                            this is the page that carries the physical address,
+                            so it should say where the shop is; the other
+                            locales keep their translated title. */}
+                        <motion.h1 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                             className="font-display text-5xl md:text-7xl lg:text-8xl uppercase tracking-tight mb-6">
-                            {t('visitShopTitle')}
-                        </motion.h2>
+                            {language === 'fr'
+                                ? 'Boutique Cafrezzo à Gonesse — Café et Machines à Café'
+                                : t('visitShopTitle')}
+                        </motion.h1>
                         <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
                             className="text-sand/60 max-w-2xl mx-auto text-lg">
                             {t('visitShopSubtitle')}
@@ -88,12 +97,12 @@ export default function VisitShopPage() {
                                                     <p className="text-sm text-ink/60">{store.hours}</p>
                                                 </div>
                                             )}
-                                            {store.phone && (
-                                                <div className="flex items-center gap-3">
-                                                    <Phone size={16} className="text-gold flex-shrink-0" />
-                                                    <a href={`tel:${store.phone}`} className="text-sm text-ink/60 hover:text-gold transition-colors">{store.phone}</a>
-                                                </div>
-                                            )}
+                                            {/* Canonical number from AppConfig — see the note on
+                                                /contact. The store record still carries the old one. */}
+                                            <div className="flex items-center gap-3">
+                                                <Phone size={16} className="text-gold flex-shrink-0" />
+                                                <a href={`tel:${AppConfig.brand.phone.replace(/\s/g, '')}`} className="text-sm text-ink/60 hover:text-gold transition-colors">{AppConfig.brand.phone}</a>
+                                            </div>
                                             {store.email && (
                                                 <div className="flex items-center gap-3">
                                                     <Mail size={16} className="text-gold flex-shrink-0" />
@@ -121,7 +130,7 @@ export default function VisitShopPage() {
                     return (
                         <section className="bg-ink py-24 px-8 relative border-t border-sand/10">
                             <div className="max-w-[1400px] mx-auto text-center">
-                                <h3 className="font-display text-4xl md:text-5xl uppercase mb-6 text-sand">{t('visitUsToday')}</h3>
+                                <h2 className="font-display text-4xl md:text-5xl uppercase mb-6 text-sand">{t('visitUsToday')}</h2>
                                 <p className="text-sand/60 max-w-lg mx-auto mb-12">{t('visitUsDesc')}</p>
                                 <div className="rounded-3xl overflow-hidden border border-sand/15 shadow-lg">
                                     <iframe
@@ -137,6 +146,52 @@ export default function VisitShopPage() {
                         </section>
                     );
                 })()}
+
+                {/* Real shop information, French only.
+                    Every fact here already exists elsewhere on the site or in
+                    the API — the address in config and Store schema, the hours
+                    in the opening-hours specification, the contact details on
+                    /contact, the brands in the catalogue, Click & Collect in
+                    the shipping methods. Nothing is invented, and no service
+                    is claimed that the business does not already advertise.
+
+                    The page previously carried the store cards and a map and
+                    almost no prose, which is thin for the URL that represents
+                    the physical location in local search. */}
+                {language === 'fr' && (
+                    <CategoryContent
+                        locale="fr"
+                        heading="La boutique Cafrezzo à Gonesse"
+                        intro={[
+                            'Notre boutique se trouve au 41 rue d’Aulnay, 95500 Gonesse, dans le Val-d’Oise, aux portes de Paris. Elle est ouverte du lundi au vendredi, de 9h à 17h.',
+                            'Cafrezzo est grossiste et distributeur de café et de machines à café. La boutique reçoit aussi bien les particuliers que les professionnels — cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises — et sert de point de retrait pour les commandes passées en ligne.',
+                        ]}
+                        blocks={[
+                            {
+                                heading: 'Ce que vous trouverez sur place',
+                                body: 'Cafés en grains et cafés moulus en conditionnement 1 kg, capsules et dosettes compatibles avec les principaux systèmes, thés, boissons solubles, ainsi que des machines à café à grains, à capsules et automatiques.',
+                            },
+                            {
+                                heading: 'Les marques distribuées',
+                                body: 'Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, Kimbo, Covim et Caprimo, entre autres. La gamme disponible en boutique suit le catalogue en ligne.',
+                            },
+                            {
+                                heading: 'Retrait de commande (Click & Collect)',
+                                body: 'Les commandes passées en ligne peuvent être retirées gratuitement à la boutique, sans frais de livraison, pendant les heures d’ouverture.',
+                            },
+                            {
+                                heading: 'Nous contacter',
+                                body: 'Par téléphone au +33 6 03 84 11 94 ou par email à boutique@cafrezzo.com. Nous répondons aux demandes écrites sous 24 heures ouvrables.',
+                            },
+                        ]}
+                        links={[
+                            { href: '/professionnels', label: 'Offre grossiste pour les professionnels' },
+                            { href: '/contact', label: 'Contact et horaires' },
+                            { href: '/machines', label: 'Machines à café' },
+                            { href: '/cafe-en-grains', label: 'Café en grains' },
+                        ]}
+                    />
+                )}
             </motion.div>
         </div>
     );

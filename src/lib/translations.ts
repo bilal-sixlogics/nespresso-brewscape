@@ -43,7 +43,13 @@ export const translations = {
         brewGuideMetaTitle: "Guide de Préparation du Café",
 
         // ... (previous keys remain the same, adding/updating testimonials)
-        testimonialFirst:"Ils parlent de Nous",
+        // Rendered as `{first}<br/><span>{second}</span>`, so the split point
+        // matters: "Ils parlent de Nous" + "de Nous" printed the phrase as
+        // "Ils parlent de Nous de Nous" on every page carrying the
+        // testimonials block. The other locales split correctly
+        // ("They talk" / "about us"); only French had the first half
+        // duplicating the second.
+        testimonialFirst: "Ils parlent",
         testimonialSecond: "de Nous",
         customerStories: "Témoignages clients",
         loading: "Chargement...",
@@ -83,7 +89,7 @@ export const translations = {
         navMachines: "Machines",
         navSweets: "Gourmandises",
         navAccessories: "Accessoires",
-        navBrewGuide: "Guide de Préparation",
+        navBrewGuide: "Guide",
         navOrigins: "Nos Origines",
         navWholesale: "Professionnels",
         navBlog: "Journal",
@@ -980,7 +986,7 @@ export const translations = {
         navMachines: "Machines",
         navSweets: "Treats",
         navAccessories: "Accessories",
-        navBrewGuide: "Brew Guide",
+        navBrewGuide: "Guide",
         navOrigins: "Our Origins",
         navWholesale: "For Professionals",
         navBlog: "Journal",

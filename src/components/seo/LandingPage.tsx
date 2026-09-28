@@ -5,6 +5,7 @@ import { RelatedLinks, type RelatedLink } from '@/components/seo/RelatedLinks';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 import { generateBreadcrumbSchema, generateFaqSchema } from '@/lib/seo';
 import { localePath, type Locale } from '@/lib/i18n';
+import { AppConfig } from '@/lib/config';
 import type { Product } from '@/types';
 import { getProductImage, getDisplayPrice } from '@/types';
 
@@ -253,6 +254,35 @@ export function LandingPage({
                     >
                         {content.ctaLabel}
                     </Link>
+
+                    {/* Direct contact details, on the page itself.
+                        Every B2B landing page told the reader to "contactez-nous
+                        par téléphone" and then supplied no phone number, no
+                        email and no form — the only route was one more hop to
+                        /contact. A wholesale page that cannot be phoned loses
+                        the leads least willing to fill in a form, which in CHR
+                        is most of them.
+
+                        Rendered as real tel:/mailto: links so they are
+                        click-to-call on mobile, and so the number finally
+                        appears in crawlable text rather than only inside
+                        JSON-LD. Both values come from AppConfig, the same
+                        source the schema reads, so they cannot drift apart. */}
+                    <div className="mt-10 pt-8 border-t border-sand/15 flex flex-col sm:flex-row items-center justify-center gap-x-10 gap-y-3 text-sm">
+                        <a
+                            href={`tel:${AppConfig.brand.phone.replace(/\s/g, '')}`}
+                            className="text-sand hover:text-gold transition-colors font-bold tracking-wide"
+                        >
+                            {AppConfig.brand.phone}
+                        </a>
+                        <a
+                            href={`mailto:${AppConfig.brand.email}`}
+                            className="text-sand hover:text-gold transition-colors font-bold tracking-wide"
+                        >
+                            {AppConfig.brand.email}
+                        </a>
+                        <span className="text-sand/50">{AppConfig.brand.hours}</span>
+                    </div>
                 </div>
             </section>
 

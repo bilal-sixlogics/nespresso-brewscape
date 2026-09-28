@@ -10,6 +10,7 @@ import { Mail, Phone, MapPin, Clock, Send, ChevronDown, AlertCircle, Loader2, Gl
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
+import { AppConfig } from '@/lib/config';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 import { StoreGallery } from './StoreGallery';
 
@@ -138,13 +139,22 @@ function StoreCard({ store, index, t }: { store: StoreLocation; index: number; t
                             <Clock size={14} className="mt-0.5 flex-shrink-0" />
                             <span className="text-[12px] leading-snug">{store.hours}</span>
                         </div>
+                        {/* Canonical number from AppConfig, not the store record.
+                                The store-locations API still returns the old
+                                01 86 90 48 38, which is what customers were
+                                seeing and clicking while every JSON-LD block
+                                published a different number. Reading the
+                                canonical value here makes the visible page,
+                                the schema and llms.txt agree immediately,
+                                without waiting on the admin record — that
+                                record should still be corrected at source. */}
                         <a
-                            href={`tel:${store.phone.replace(/\s/g, '')}`}
+                            href={`tel:${AppConfig.brand.phone.replace(/\s/g, '')}`}
                             className="flex items-center gap-2.5 text-ink/55 hover:text-gold transition-colors"
                         >
-                        
+
                             <Phone size={14} className="flex-shrink-0" />
-                            <span className="text-[12px]">{store.phone}</span>
+                            <span className="text-[12px]">{AppConfig.brand.phone}</span>
                         </a>
                         <a
                             href={`mailto:${store.email}`}

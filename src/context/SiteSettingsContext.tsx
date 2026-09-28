@@ -26,7 +26,12 @@ const DEFAULTS: SiteSettings = {
     tax_label: 'VAT',
     tax_included_in_price: true,
     contact_email: 'boutique@cafrezzo.com',
-    contact_response_time: 'Within 24 business hours',
+    // French, not English. This default is what renders server-side, before
+    // the settings fetch resolves — so a non-JS crawler (and the first paint
+    // for every visitor) saw the English string "Within 24 business hours" on
+    // the French contact page. The API returns this exact French sentence, so
+    // the default now matches what replaces it rather than contradicting it.
+    contact_response_time: 'Dans un délai de 24 heures ouvrables.',
     store_name: 'Cafrezzo',
     business_siret: '',
     business_vat_number: '',

@@ -49,6 +49,12 @@ function proLinks(
             { href: '/grossiste-machines-a-cafe', label: 'Grossiste machines à café' },
             { href: '/machine-a-cafe-professionnelle', label: 'Machine à café professionnelle' },
             { href: '/marques', label: 'Marques de café' },
+            // The commercial category pages. Sitewide links keep them off the
+            // orphan list and give each one a crawl path from every indexed
+            // URL, which the `?category=` facets they replaced never had.
+            { href: '/cafe-en-grains', label: 'Café en grains' },
+            { href: '/cafe-moulu', label: 'Café moulu' },
+            { href: '/capsules-cafe', label: 'Capsules de café' },
         ];
     }
     if (language === 'en') {

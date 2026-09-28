@@ -14,6 +14,7 @@ import JournalPageClient from './JournalPageClient';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { RelatedLinks } from '@/components/seo/RelatedLinks';
 import { getBlogPosts } from '@/lib/api/server';
+import { isConsolidatedJournalSlug } from '@/lib/seo-redirects';
 import { generateBreadcrumbSchema, SITE_URL } from '@/lib/seo';
 import { localePath, toLocale, type Locale } from '@/lib/i18n';
 
@@ -49,7 +50,9 @@ export default async function JournalPage({
 }) {
     const locale = toLocale((await params).locale);
     const posts = await getBlogPosts();
-    const published = posts.filter(p => p.slug);
+    // Consolidated articles are excluded: linking to a URL that redirects
+    // wastes crawl budget and sends readers on a pointless hop.
+    const published = posts.filter(p => p.slug && !isConsolidatedJournalSlug(p.slug));
 
     return (
         <>

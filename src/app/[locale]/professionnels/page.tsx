@@ -26,6 +26,7 @@ import {
     wholesalerSchema,
 } from '@/lib/seo';
 import { localePath, toLocale, type Locale } from '@/lib/i18n';
+import { AppConfig } from '@/lib/config';
 
 export const revalidate = 3600;
 
@@ -381,6 +382,30 @@ export default async function ProfessionnelsPage({
                     >
                         {copy.ctaLabel}
                     </Link>
+
+                    {/* Phone and email, above the fold on the B2B hub.
+                        The page said "Contactez-nous par téléphone, par email
+                        ou via le formulaire" and then contained no phone
+                        number, no email address and no form — the number
+                        existed only inside JSON-LD, invisible to the reader.
+                        A CHR buyer comparing suppliers picks up the phone; a
+                        wholesale page that cannot be called loses that lead
+                        before it starts. */}
+                    <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-x-8 gap-y-2 text-sm">
+                        <a
+                            href={`tel:${AppConfig.brand.phone.replace(/\s/g, '')}`}
+                            className="text-sand hover:text-gold transition-colors font-bold tracking-wide"
+                        >
+                            {AppConfig.brand.phone}
+                        </a>
+                        <a
+                            href={`mailto:${AppConfig.brand.email}`}
+                            className="text-sand hover:text-gold transition-colors font-bold tracking-wide"
+                        >
+                            {AppConfig.brand.email}
+                        </a>
+                    </div>
+                    <p className="mt-3 text-sand/50 text-xs">{AppConfig.brand.hours}</p>
                 </div>
             </section>
 

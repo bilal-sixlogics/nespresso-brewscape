@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import { Star } from 'lucide-react';
+import { localePath } from '@/lib/i18n';
 import {
     Product,
     getProductImage, getProductImages, getDefaultUnit, getDisplayPrice,
@@ -19,7 +21,10 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick, index }: ProductCardProps) {
-    const { t } = useLanguage();
+    // `language` comes from the [locale] route segment on the server, so the
+    // product href is deterministic during SSR rather than depending on
+    // anything only available after hydration.
+    const { t, language } = useLanguage();
     const formatPrice = useFormatPrice();
     const [imgIdx, setImgIdx] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
@@ -48,13 +53,23 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
     const intensity = extractIntensity(product.sections);
 
     return (
-        // A <div role="button">, not <article role="button">. An <article> is a
-        // document-structure landmark, so overriding it with a widget role is a
-        // conflict — assistive tech is told "this is a self-contained article"
-        // and "this is a button" at once. The whole card opens the detail panel
-        // and contains no nested interactive elements, so button is the correct
-        // role; only the element had to change. Rendering is unaffected: both
-        // are display:block and carry the same classes.
+        // A plain container, not a <div role="button">.
+        //
+        // The card used to be a role="button" widget whose only affordance was
+        // an onClick opening the detail panel — it contained no <a href> at
+        // all. That meant NO listing page on the site (shop, machines,
+        // accessories, sweets) linked to a single product detail page:
+        // products were reachable only from the sitemap, with no internal link
+        // equity and no crawl path from the catalogue that lists them.
+        //
+        // The product title is now a real link (see below). With a genuine
+        // focusable control inside, the widget role and its hand-rolled
+        // Enter/Space handling are no longer needed — and would in fact be a
+        // nested-interactive conflict. The whole-card click is kept purely as a
+        // pointer convenience, which is allowed on a non-interactive container
+        // precisely because the link carries the keyboard and AT semantics.
+        //
+        // Rendering is unchanged: same element, same classes.
         <motion.div
             initial={{ opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -65,18 +80,6 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
             onHoverEnd={() => setIsHovered(false)}
             className="group relative cursor-pointer flex flex-col w-full h-full"
             style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
-            role="button"
-            tabIndex={0}
-            aria-label={`${t('ariaView')} ${product.name}`}
-            // Native buttons fire on both Enter and Space; a role="button" has to
-            // reproduce that itself. Space was previously ignored, and its default
-            // page-scroll must be suppressed or the page jumps on activation.
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onClick(product);
-                }
-            }}
         >
             {/* ── Card Shell — beige, sitting on the black page background ── */}
             <div className="relative flex flex-col h-full bg-sand rounded-[28px] overflow-hidden border border-cocoa/15 shadow-[0_2px_16px_rgba(0,0,0,0.25)] transition-shadow duration-500 group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
@@ -193,8 +196,27 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                                 {product.brand.name}
                             </p>
                         )}
+                        {/* The crawlable route to the product detail page.
+                            A real <a href>, present in the server HTML, so the
+                            catalogue pages actually link to what they list.
+                            Normal clicks still open the detail panel — the
+                            href exists for crawlers, for keyboard users, and
+                            so middle-click / ctrl-click / "open in new tab"
+                            work, which they previously did not. */}
                         <h3 className="font-display text-[0.95rem] sm:text-base font-bold leading-snug text-ink group-hover:text-gold transition-colors duration-300 line-clamp-2">
-                            {product.name}
+                            <Link
+                                href={localePath(language, `/shop/${product.slug}`)}
+                                onClick={(e) => {
+                                    // Let the browser handle modified clicks
+                                    // (new tab/window) as real navigations.
+                                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                                    e.preventDefault();
+                                    onClick(product);
+                                }}
+                                className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
+                            >
+                                {product.name}
+                            </Link>
                         </h3>
                         {product.tagline && (
                             <p className="text-[11px] text-cocoa/80 mt-0.5 line-clamp-1 font-medium">

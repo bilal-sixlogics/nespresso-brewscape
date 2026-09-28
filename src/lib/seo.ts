@@ -256,7 +256,19 @@ const baseMetadataShared: Metadata = {
     // which previously made all routes declare themselves duplicates of the
     // homepage.
     verification: {
-        google: 'cs7eUJ0hscfT6OXq6cH4MASeGmq6llEFkpYlTGeNToE',
+        // Both Search Console properties. Next renders one
+        // <meta name="google-site-verification"> per entry, and Google accepts
+        // any matching token — so keeping both means verifying the second
+        // property cannot silently un-verify the first.
+        //
+        // The matching HTML-file method is also live: the two
+        // google*.html tokens live in /public. They were previously sitting in
+        // the repo root, which Next does not serve, so both returned 404 and
+        // the file method had never actually worked.
+        google: [
+            'cs7eUJ0hscfT6OXq6cH4MASeGmq6llEFkpYlTGeNToE',
+            '0m5l-D9kMSwhAFccBs6j4WSnRc2iQjHznUV_6LDaCag',
+        ],
     },
 };
 
@@ -421,15 +433,23 @@ export function generateProductMetadata(product: {
 /**
  * JSON-LD structured data for the homepage (Organization + WebSite schema).
  */
+/** Stable identity for the Organization node, referenced across the graph. */
+const ORGANIZATION_ID = `${BASE_URL}/#organization`;
+
 export const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    // Without an @id the other nodes could only repeat an anonymous
+    // {name, url} stub, so Google saw three lookalike Organization fragments
+    // instead of one entity referenced three times. An @id turns them into a
+    // single graph node.
+    '@id': ORGANIZATION_ID,
     name: 'Cafrezzo',
     url: BASE_URL,
     logo: LOGO_URL,
     contactPoint: {
         '@type': 'ContactPoint',
-        telephone: '+33-1-39-85-85-65',
+        telephone: '+33-6-03-84-11-94',
         contactType: 'customer service',
         areaServed: ['FR', 'BE', 'CH', 'LU'],
         // Derived from LOCALES so it cannot drift out of sync. This
@@ -564,7 +584,7 @@ const LOCAL_BUSINESS_SCHEMA = {
     url: `${BASE_URL}/fr/visit-shop`,
     image: `${BASE_URL}${OG_IMAGE}`,
     logo: LOGO_URL,
-    telephone: '+33-1-39-85-85-65',
+    telephone: '+33-6-03-84-11-94',
     email: 'boutique@cafrezzo.com',
     address: POSTAL_ADDRESS,
     geo: GEO,
@@ -573,7 +593,7 @@ const LOCAL_BUSINESS_SCHEMA = {
     currenciesAccepted: 'EUR',
     vatID: 'FR17102596061',
     taxID: '102 596 061 00014',
-    parentOrganization: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
+    parentOrganization: { '@id': ORGANIZATION_ID },
     description:
         'Grossiste et fournisseur de café pour les professionnels d’Île-de-France. ' +
         'Cafrezzo livre les cafés, restaurants, hôtels, bars, coffee shops, bureaux et ' +
@@ -581,12 +601,42 @@ const LOCAL_BUSINESS_SCHEMA = {
         'professionnelles. Achat au carton et à la palette, tarifs dégressifs. ' +
         'Marques distribuées : Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, ' +
         'Kimbo, Covim et Caprimo.',
+    /**
+     * Real trading hours, taken from the shop's own store-locations record.
+     *
+     * This previously declared a single continuous Monday–Friday 09:00–17:00
+     * block, which was wrong twice over: it ignored the midday closure, and it
+     * omitted Saturday entirely — so Google was being told the shop is shut on
+     * one of the days it actually trades. For a local business that is a
+     * direct loss of "open now" eligibility in the map pack every Saturday.
+     *
+     * Each contiguous trading period needs its own specification; a lunch
+     * break cannot be expressed inside one opens/closes pair.
+     */
     openingHoursSpecification: [
         {
             '@type': 'OpeningHoursSpecification',
             dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
             opens: '09:00',
-            closes: '17:00',
+            closes: '12:30',
+        },
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            opens: '13:30',
+            closes: '17:30',
+        },
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Saturday'],
+            opens: '09:00',
+            closes: '12:30',
+        },
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Saturday'],
+            opens: '13:30',
+            closes: '16:00',
         },
     ],
 };
@@ -624,7 +674,7 @@ export function buildWebsiteSchema(locale: Locale) {
         name: 'Cafrezzo',
         url: BASE_URL,
         inLanguage: LOCALE_META[locale].hreflang,
-        publisher: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
+        publisher: { '@id': ORGANIZATION_ID },
         // NOTE: no `potentialAction` / SearchAction.
         // It previously declared `/shop?q={search_term_string}`, but /shop only
         // reads the `category` and `brand` query params — `q` is ignored, so the

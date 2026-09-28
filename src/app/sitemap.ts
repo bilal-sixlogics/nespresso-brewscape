@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { Endpoints } from '@/lib/api/endpoints';
 import { FRENCH_ONLY, FR_EN, SITE_URL } from '@/lib/seo';
+import { isConsolidatedJournalSlug } from '@/lib/seo-redirects';
 import {
     DEFAULT_LOCALE,
     LOCALES,
@@ -31,6 +32,7 @@ interface ApiProduct {
 
 interface ApiCategory {
     slug?: string;
+    name?: string;
     storefront_page?: string;
     updated_at?: string;
 }
@@ -132,6 +134,19 @@ function hreflangFor(
     return languages;
 }
 
+/**
+ * Rounds a sitemap priority to two decimals.
+ *
+ * `entry.priority * 0.9` is binary floating-point arithmetic, so 0.4 * 0.9
+ * serialised as `<priority>0.36000000000000004</priority>` and 0.8 * 0.9 as
+ * `0.7200000000000001`. Valid XML and harmless to ranking — Google ignores
+ * priority entirely — but it is visibly broken output in a file that gets
+ * read by humans and third-party crawlers.
+ */
+function priority(value: number): number {
+    return Math.round(value * 100) / 100;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const now = new Date();
 
@@ -181,7 +196,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         LOCALES.map(locale => ({
             url: `${SITE_URL}${localePath(locale, entry.path)}`,
             changeFrequency: entry.changeFrequency,
-            priority: locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9,
+            priority: priority(locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9),
             alternates: { languages: hreflangFor(entry.path) },
         })),
     );
@@ -207,6 +222,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { path: '/machine-a-cafe-professionnelle', locales: FRENCH_ONLY, priority: 0.85 },
         { path: '/marques',                      locales: FR_EN,       priority: 0.8 },
 
+        // Commercial category pages. These replaced the `?category=` facets as
+        // the canonical target for their intent, so they are listed and the
+        // facets are not (see categoryRoutes below).
+        { path: '/cafe-en-grains',               locales: FRENCH_ONLY, priority: 0.85 },
+        { path: '/cafe-moulu',                   locales: FRENCH_ONLY, priority: 0.82 },
+        { path: '/capsules-cafe',                locales: FRENCH_ONLY, priority: 0.82 },
+
         // Department pages under the Île-de-France hub. Val-d'Oise ranks
         // highest of the four because it is the one backed by a physical
         // address rather than only a delivery radius — the shop is in it.
@@ -222,7 +244,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         entry.locales.map(locale => ({
             url: `${SITE_URL}${localePath(locale, entry.path)}`,
             changeFrequency: 'monthly' as const,
-            priority: locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9,
+            priority: priority(locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9),
             alternates: { languages: hreflangFor(entry.path, entry.locales) },
         })),
     );
@@ -303,8 +325,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
      * routed to /machines is reached through that page instead, and listing it
      * under /shop would publish a second URL for the same set of products.
      */
+    // Categories that now have a dedicated page. Their `?category=` facet
+    // canonicalises to that page and is noindex, so listing the facet here
+    // would submit a URL that declines to be indexed.
+    const SUPERSEDED_CATEGORY_NAMES = new Set(['GRAINS', 'MOULU', 'CAPSULES']);
+
     const categoryRoutes: MetadataRoute.Sitemap = categories
         .filter(c => c.slug && (c.storefront_page ?? '/shop') === '/shop')
+        .filter(c => !SUPERSEDED_CATEGORY_NAMES.has((c.name ?? '').trim().toUpperCase()))
         .flatMap(c => {
             const modified = parseDate(c.updated_at);
             // fr/en only — those are the locales /shop's generateMetadata
@@ -323,7 +351,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
 
     const blogRoutes: MetadataRoute.Sitemap = posts
-        .filter(p => p.slug && p.status !== 'draft')
+        // Consolidated articles now 308 to a commercial page; submitting a URL
+        // that immediately redirects asks Google to index a redirect.
+        .filter(p => p.slug && p.status !== 'draft' && !isConsolidatedJournalSlug(p.slug))
         .flatMap(p =>
             LOCALES.map(locale => ({
                 url: `${SITE_URL}${localePath(locale, `/journal/${p.slug}`)}`,

@@ -329,7 +329,7 @@ function ShopPageContent({ initialCategory, initialBrand, initialProducts }: Sho
 
                         {/* Results header */}
                         <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-12">
-                            <h3 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sand">{categoryLabel}</h3>
+                            <h2 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sand">{categoryLabel}</h2>
                             <div className="text-[10px] font-bold tracking-widest uppercase text-cocoa">
                                 {totalCount} {t('results')}
                             </div>
