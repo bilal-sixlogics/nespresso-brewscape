@@ -593,12 +593,42 @@ const LOCAL_BUSINESS_SCHEMA = {
         'professionnelles. Achat au carton et à la palette, tarifs dégressifs. ' +
         'Marques distribuées : Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, ' +
         'Kimbo, Covim et Caprimo.',
+    /**
+     * Real trading hours, taken from the shop's own store-locations record.
+     *
+     * This previously declared a single continuous Monday–Friday 09:00–17:00
+     * block, which was wrong twice over: it ignored the midday closure, and it
+     * omitted Saturday entirely — so Google was being told the shop is shut on
+     * one of the days it actually trades. For a local business that is a
+     * direct loss of "open now" eligibility in the map pack every Saturday.
+     *
+     * Each contiguous trading period needs its own specification; a lunch
+     * break cannot be expressed inside one opens/closes pair.
+     */
     openingHoursSpecification: [
         {
             '@type': 'OpeningHoursSpecification',
             dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
             opens: '09:00',
-            closes: '17:00',
+            closes: '12:30',
+        },
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            opens: '13:30',
+            closes: '17:30',
+        },
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Saturday'],
+            opens: '09:00',
+            closes: '12:30',
+        },
+        {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Saturday'],
+            opens: '13:30',
+            closes: '16:00',
         },
     ],
 };

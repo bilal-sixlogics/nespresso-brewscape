@@ -8,7 +8,10 @@ export const AppConfig = {
         email: "boutique@cafrezzo.com",
         phone: "+33 1 39 85 85 65",
         address: "41 rue d'Aulnay, 95500 Gonesse, France",
-        hours: "Lundi–Vendredi 9h–17h",
+        // Real trading hours, matching the shop's store-locations record and
+        // the openingHoursSpecification in lib/seo.ts. The previous
+        // "Lundi–Vendredi 9h–17h" missed both the midday closure and Saturday.
+        hours: "Lundi–Vendredi 9h–12h30 et 13h30–17h30 · Samedi 9h–12h30 et 13h30–16h",
         heroLine1: "CAF-",
         heroLine2: "REZZO",
         heroSubtitle: "Discover the bold and sophisticated world of Cafrezzo premium coffee.",
