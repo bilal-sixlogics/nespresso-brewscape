@@ -133,6 +133,19 @@ function hreflangFor(
     return languages;
 }
 
+/**
+ * Rounds a sitemap priority to two decimals.
+ *
+ * `entry.priority * 0.9` is binary floating-point arithmetic, so 0.4 * 0.9
+ * serialised as `<priority>0.36000000000000004</priority>` and 0.8 * 0.9 as
+ * `0.7200000000000001`. Valid XML and harmless to ranking — Google ignores
+ * priority entirely — but it is visibly broken output in a file that gets
+ * read by humans and third-party crawlers.
+ */
+function priority(value: number): number {
+    return Math.round(value * 100) / 100;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const now = new Date();
 
@@ -182,7 +195,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         LOCALES.map(locale => ({
             url: `${SITE_URL}${localePath(locale, entry.path)}`,
             changeFrequency: entry.changeFrequency,
-            priority: locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9,
+            priority: priority(locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9),
             alternates: { languages: hreflangFor(entry.path) },
         })),
     );
@@ -230,7 +243,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         entry.locales.map(locale => ({
             url: `${SITE_URL}${localePath(locale, entry.path)}`,
             changeFrequency: 'monthly' as const,
-            priority: locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9,
+            priority: priority(locale === DEFAULT_LOCALE ? entry.priority : entry.priority * 0.9),
             alternates: { languages: hreflangFor(entry.path, entry.locales) },
         })),
     );

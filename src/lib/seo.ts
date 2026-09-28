@@ -433,9 +433,17 @@ export function generateProductMetadata(product: {
 /**
  * JSON-LD structured data for the homepage (Organization + WebSite schema).
  */
+/** Stable identity for the Organization node, referenced across the graph. */
+const ORGANIZATION_ID = `${BASE_URL}/#organization`;
+
 export const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    // Without an @id the other nodes could only repeat an anonymous
+    // {name, url} stub, so Google saw three lookalike Organization fragments
+    // instead of one entity referenced three times. An @id turns them into a
+    // single graph node.
+    '@id': ORGANIZATION_ID,
     name: 'Cafrezzo',
     url: BASE_URL,
     logo: LOGO_URL,
@@ -585,7 +593,7 @@ const LOCAL_BUSINESS_SCHEMA = {
     currenciesAccepted: 'EUR',
     vatID: 'FR17102596061',
     taxID: '102 596 061 00014',
-    parentOrganization: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
+    parentOrganization: { '@id': ORGANIZATION_ID },
     description:
         'Grossiste et fournisseur de café pour les professionnels d’Île-de-France. ' +
         'Cafrezzo livre les cafés, restaurants, hôtels, bars, coffee shops, bureaux et ' +
@@ -666,7 +674,7 @@ export function buildWebsiteSchema(locale: Locale) {
         name: 'Cafrezzo',
         url: BASE_URL,
         inLanguage: LOCALE_META[locale].hreflang,
-        publisher: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
+        publisher: { '@id': ORGANIZATION_ID },
         // NOTE: no `potentialAction` / SearchAction.
         // It previously declared `/shop?q={search_term_string}`, but /shop only
         // reads the `category` and `brand` query params — `q` is ignored, so the
