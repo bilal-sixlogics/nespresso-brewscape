@@ -31,6 +31,7 @@ interface ApiProduct {
 
 interface ApiCategory {
     slug?: string;
+    name?: string;
     storefront_page?: string;
     updated_at?: string;
 }
@@ -207,6 +208,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { path: '/machine-a-cafe-professionnelle', locales: FRENCH_ONLY, priority: 0.85 },
         { path: '/marques',                      locales: FR_EN,       priority: 0.8 },
 
+        // Commercial category pages. These replaced the `?category=` facets as
+        // the canonical target for their intent, so they are listed and the
+        // facets are not (see categoryRoutes below).
+        { path: '/cafe-en-grains',               locales: FRENCH_ONLY, priority: 0.85 },
+        { path: '/cafe-moulu',                   locales: FRENCH_ONLY, priority: 0.82 },
+        { path: '/capsules-cafe',                locales: FRENCH_ONLY, priority: 0.82 },
+
         // Department pages under the Île-de-France hub. Val-d'Oise ranks
         // highest of the four because it is the one backed by a physical
         // address rather than only a delivery radius — the shop is in it.
@@ -303,8 +311,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
      * routed to /machines is reached through that page instead, and listing it
      * under /shop would publish a second URL for the same set of products.
      */
+    // Categories that now have a dedicated page. Their `?category=` facet
+    // canonicalises to that page and is noindex, so listing the facet here
+    // would submit a URL that declines to be indexed.
+    const SUPERSEDED_CATEGORY_NAMES = new Set(['GRAINS', 'MOULU', 'CAPSULES']);
+
     const categoryRoutes: MetadataRoute.Sitemap = categories
         .filter(c => c.slug && (c.storefront_page ?? '/shop') === '/shop')
+        .filter(c => !SUPERSEDED_CATEGORY_NAMES.has((c.name ?? '').trim().toUpperCase()))
         .flatMap(c => {
             const modified = parseDate(c.updated_at);
             // fr/en only — those are the locales /shop's generateMetadata

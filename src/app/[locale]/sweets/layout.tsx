@@ -10,6 +10,16 @@ export async function generateMetadata({
     params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
     const locale = toLocale((await params).locale);
+    if (locale === 'fr') {
+        return pageMetadata({
+            locale,
+            title: 'Gourmandises & Biscuits à Accompagner le Café',
+            description:
+                'Biscuits, chocolats et douceurs à servir avec le café, pour la maison comme pour les établissements. Sélection Cafrezzo, livraison offerte dès 150€.',
+            path: '/sweets',
+        });
+    }
+
     return pageMetadata({
         locale,
         title: 'Gourmandises & Biscuits',

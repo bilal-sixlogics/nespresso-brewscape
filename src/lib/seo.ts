@@ -256,7 +256,19 @@ const baseMetadataShared: Metadata = {
     // which previously made all routes declare themselves duplicates of the
     // homepage.
     verification: {
-        google: 'cs7eUJ0hscfT6OXq6cH4MASeGmq6llEFkpYlTGeNToE',
+        // Both Search Console properties. Next renders one
+        // <meta name="google-site-verification"> per entry, and Google accepts
+        // any matching token — so keeping both means verifying the second
+        // property cannot silently un-verify the first.
+        //
+        // The matching HTML-file method is also live: the two
+        // google*.html tokens live in /public. They were previously sitting in
+        // the repo root, which Next does not serve, so both returned 404 and
+        // the file method had never actually worked.
+        google: [
+            'cs7eUJ0hscfT6OXq6cH4MASeGmq6llEFkpYlTGeNToE',
+            '0m5l-D9kMSwhAFccBs6j4WSnRc2iQjHznUV_6LDaCag',
+        ],
     },
 };
 

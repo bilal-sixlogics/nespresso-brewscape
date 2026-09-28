@@ -1,0 +1,354 @@
+"use client";
+
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react';
+import { ProductCard } from '@/components/ui/ProductCard';
+import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
+import { FilterDrawer, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
+import { Product, hasTag, getTagLabels } from '@/types';
+import type { PaginationMeta } from '@/lib/api/types';
+import { useProducts, useCategories, useBrands } from '@/hooks/useProducts';
+import { ProductQueryParams } from '@/lib/api/types';
+import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
+import { ProductSkeleton } from '@/components/ui/ProductSkeleton';
+import { useLanguage } from '@/context/LanguageContext';
+import { useDragScroll } from '@/hooks/useDragScroll';
+import { CupSeparator } from '@/components/ui/CupSeparator';
+
+type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'popularity';
+
+/**
+ * @param initialProducts The first page of machines, fetched on the server.
+ *
+ * Without it this page rendered its grid entirely on the client, so the
+ * server response for /fr/machines contained the H1 and zero product links —
+ * a crawler (and anything without JavaScript) saw an empty catalogue on the
+ * page that is supposed to rank for "machine à café professionnelle" and
+ * "grossiste machine à café". The eight machines were in the API the whole
+ * time; they just never reached the HTML.
+ *
+ * Only seeds the unfiltered first view. As soon as the visitor picks a
+ * category, brand or sort order the param set stops matching and useProducts
+ * goes to the network exactly as before.
+ */
+export default function MachinesPageClient({
+    initialProducts = null,
+}: {
+    initialProducts?: { products: Product[]; meta: PaginationMeta | null } | null;
+}) {
+    const { language, t } = useLanguage();
+    const tx = (fr: string, en: string) => language === 'fr' ? fr : en;
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [filterOpen, setFilterOpen] = useState(false);
+    const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+    const [sortBy, setSortBy] = useState<SortOption>('relevance');
+    const [sortOpen, setSortOpen] = useState(false);
+    const { scrollRef, onMouseDown, onMouseUp, onMouseMove } = useDragScroll();
+
+    // Real categories/brands from backend
+    const { categories: allCategories } = useCategories();
+    const { brands } = useBrands();
+    const machineCategories = useMemo(
+        () => allCategories.filter(c => c.storefront_page === '/machines' && c.status === 'active'),
+        [allCategories]
+    );
+
+    // Single source of truth: driven by filters.categories
+    const activeCategory = filters.categories[0] ?? '';
+
+    const handleCategoryPill = (catName: string) => {
+        setFilters(f => ({ ...f, categories: f.categories[0] === catName ? [] : [catName] }));
+    };
+
+    // Stable params via useMemo — only rebuilds when actual values change
+    const queryParams = useMemo<ProductQueryParams>(() => {
+        const p: ProductQueryParams = { storefront_page: '/machines', per_page: 12 };
+
+        if (activeCategory) {
+            const cat = machineCategories.find(c => c.name === activeCategory);
+            if (cat) p.category = cat.slug;
+        }
+        if (sortBy === 'price_asc' || sortBy === 'price_desc' || sortBy === 'newest') {
+            p.sort_by = sortBy;
+        }
+        if (filters.inStockOnly) p.in_stock = true;
+        if (filters.brands.length > 0) {
+            const b = brands.find(br => br.name === filters.brands[0]);
+            if (b) p.brand = b.slug;
+        }
+        if (filters.priceRange[0] !== 0) p.min_price = filters.priceRange[0];
+        if (filters.priceRange[1] !== 500) p.max_price = filters.priceRange[1];
+        if (filters.tags.length > 0) p.tags = filters.tags.join(',');
+
+        return p;
+    }, [activeCategory, machineCategories, sortBy, filters, brands]);
+
+    const { products: machineProducts, isLoading, hasMore, loadMore } = useProducts(
+        queryParams,
+        initialProducts,
+    );
+
+    const displayProducts = useMemo(() => {
+        if (sortBy !== 'popularity') return machineProducts;
+        return [...machineProducts].sort((a, b) => (hasTag(b, 'best-seller') ? 1 : 0) - (hasTag(a, 'best-seller') ? 1 : 0));
+    }, [machineProducts, sortBy]);
+
+    const availableCategories = useMemo(() => machineCategories.map(c => c.name), [machineCategories]);
+    const availableBrands = useMemo(() => brands.map(b => b.name), [brands]);
+    const availableTags = useMemo(() => {
+        const set = new Set<string>();
+        machineProducts.forEach(p => getTagLabels(p).forEach(t => set.add(t)));
+        return Array.from(set);
+    }, [machineProducts]);
+
+    const activeFilterCount = filters.brands.length + filters.categories.length + filters.tags.length +
+        (filters.inStockOnly ? 1 : 0) +
+        (filters.intensityRange[0] !== 1 || filters.intensityRange[1] !== 13 ? 1 : 0) +
+        (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 500 ? 1 : 0);
+
+    const hasActiveFilters = activeFilterCount > 0 || sortBy !== 'relevance';
+
+    const resetAll = () => {
+        setFilters(DEFAULT_FILTERS);
+        setSortBy('relevance');
+    };
+
+    const highlights = [
+        { icon: '⚡', label: tx('Pression 15 bars', '15 Bar Pressure'), desc: tx('Extraction professionnelle', 'Professional extraction') },
+        { icon: '🫘', label: tx('Mouture intégrée', 'Built-in Grinder'), desc: tx('Grains fraîchement moulus', 'Freshly ground beans') },
+        { icon: '🌡️', label: tx('Contrôle thermique', 'Thermal Control'), desc: tx('Température optimale', 'Optimal temperature') },
+        { icon: '🧹', label: tx('Nettoyage auto', 'Auto-Clean'), desc: tx('Entretien facile', 'Easy maintenance') },
+    ];
+
+    return (
+        <div className="w-full bg-ink text-sand min-h-screen grain-overlay">
+            {/* ── Hero ─────────────────────────────────────────── */}
+            <section className="bg-ink pt-16 sm:pt-20 md:pt-24 pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-transparent to-ink" />
+                <div className="absolute top-10 sm:top-20 right-0 sm:right-20 w-32 h-32 sm:w-64 sm:h-64 md:w-96 md:h-96 bg-gold/10 rounded-full blur-3xl" />
+                <div className="max-w-[1400px] mx-auto relative z-10">
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
+                        <motion.div
+                            initial={{ opacity: 0, y: 40 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7 }}
+                            className="w-full lg:w-1/2"
+                        >
+                            <p className="text-gold text-[10px] font-bold tracking-[0.3em] uppercase mb-4">
+                                {t('machinesHeroEyebrow')}
+                            </p>
+                            <h1 className="font-display text-5xl sm:text-6xl md:text-8xl xl:text-9xl uppercase text-sand leading-[0.85] mb-6 sm:mb-8">
+                                {t('machinesHeroTitle')}
+                            </h1>
+                            <p className="text-sand/60 text-sm sm:text-base md:text-lg max-w-lg">
+                                {t('machinesHeroDesc')}
+                            </p>
+                            <div className="max-w-xs mt-10">
+                                <CupSeparator tone="gold" />
+                            </div>
+                        </motion.div>
+
+                        {/* ── Hero Image ── */}
+                        <div className="w-full lg:w-1/2 flex justify-center items-center relative h-[260px] sm:h-[340px] lg:h-[440px]">
+                            <div
+                                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl w-[240px] h-[240px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px]"
+                                style={{ background: 'radial-gradient(circle, rgba(201,160,90,0.35) 0%, rgba(201,160,90,0.1) 55%, transparent 75%)' }}
+                            />
+                            <motion.img
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1, y: [0, -14, 0] }}
+                                transition={{
+                                    opacity: { duration: 0.8, delay: 0.2 },
+                                    scale: { duration: 0.8, delay: 0.2 },
+                                    y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 },
+                                }}
+                                src="/machine.png"
+                                alt={t('machinesImageAlt')}
+                                className="relative z-10 w-[220px] sm:w-[300px] lg:w-[380px] h-auto object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.5)]"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+         
+
+            {/* ── Products ─────────────────────────────────────── */}
+            <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-ink">
+                <div className="max-w-[1400px] mx-auto">
+
+                    {/* Controls bar */}
+                    <div className="flex flex-col gap-3 mb-8 border-b border-sand/10 pb-6">
+                        {/* Row 1: Filter + Sort + Reset (no overflow so dropdown is visible) */}
+                        <div className="flex items-center gap-2 flex-shrink-0 z-50">
+                            {/* Filter button */}
+                            <button
+                                onClick={() => setFilterOpen(true)}
+                                className="flex-shrink-0 flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gold text-ink hover:bg-[#b8914d] transition-colors relative"
+                            >
+                                <SlidersHorizontal size={12} />
+                                <span className="hidden sm:inline">{t('filters')}</span>
+                                {activeFilterCount > 0 && (
+                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-ink text-gold border border-gold/50 text-[8px] font-black rounded-full flex items-center justify-center">
+                                        {activeFilterCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Sort dropdown */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setSortOpen(!sortOpen)}
+                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sand/8 text-sand/70 border border-sand/10 hover:border-sand/25 transition-colors"
+                                >
+                                    {sortBy === 'relevance' && t('sortRelevance')}
+                                    {sortBy === 'price_asc' && t('sortPriceLow')}
+                                    {sortBy === 'price_desc' && t('sortPriceHigh')}
+                                    {sortBy === 'newest' && t('sortNewest')}
+                                    {sortBy === 'popularity' && tx('Popularité', 'Popularity')}
+                                    <ChevronDown size={12} className={`transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                <AnimatePresence>
+                                    {sortOpen && (
+                                        <>
+                                            <div className="fixed inset-0 z-[80]" onClick={() => setSortOpen(false)} />
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                                                className="absolute top-full left-0 mt-2 w-52 bg-sand rounded-2xl shadow-xl border border-ink/10 z-[90] overflow-hidden py-2"
+                                            >
+                                                {[
+                                                    { id: 'relevance', lbl: t('sortRelevance') },
+                                                    { id: 'price_asc', lbl: t('sortPriceLow') },
+                                                    { id: 'price_desc', lbl: t('sortPriceHigh') },
+                                                    { id: 'newest', lbl: t('sortNewest') },
+                                                    { id: 'popularity', lbl: tx('Popularité', 'Popularity') },
+                                                ].map(opt => (
+                                                    <button
+                                                        key={opt.id}
+                                                        onClick={() => { setSortBy(opt.id as SortOption); setSortOpen(false); }}
+                                                        className={`block w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors ${sortBy === opt.id ? 'bg-ink/5 text-gold' : 'text-ink/60 hover:bg-ink/5 hover:text-ink'}`}
+                                                    >
+                                                        {opt.lbl}
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Reset button */}
+                            <AnimatePresence>
+                                {hasActiveFilters && (
+                                    <motion.button
+                                        initial={{ opacity: 0, scale: 0.85 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.85 }}
+                                        onClick={resetAll}
+                                        className="flex-shrink-0 flex items-center gap-2 px-5 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15 transition-colors"
+                                    >
+                                        <RotateCcw size={11} />
+                                        {t('reset')}
+                                    </motion.button>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Row 2: Scrollable category tabs */}
+                        <div
+                            ref={scrollRef}
+                            onMouseDown={onMouseDown}
+                            onMouseUp={onMouseUp}
+                            onMouseLeave={onMouseUp}
+                            onMouseMove={onMouseMove}
+                            className="flex gap-3 overflow-x-auto no-scrollbar items-center cursor-grab active:cursor-grabbing pb-1"
+                        >
+                            <button
+                                onClick={() => setFilters(f => ({ ...f, categories: [] }))}
+                                className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${!activeCategory
+                                    ? 'bg-gold text-ink shadow-xl shadow-gold/20'
+                                    : 'bg-sand/8 text-sand/50 border border-sand/10 hover:border-gold/30 hover:text-sand'
+                                    }`}
+                            >
+                                {t('all')}
+                            </button>
+                            {machineCategories.map(cat => (
+                                <button
+                                    key={cat.slug}
+                                    onClick={() => handleCategoryPill(cat.name)}
+                                    className={`flex-shrink-0 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${activeCategory === cat.name
+                                        ? 'bg-gold text-ink shadow-xl shadow-gold/20'
+                                        : 'bg-sand/8 text-sand/50 border border-sand/10 hover:border-gold/30 hover:text-sand'
+                                        }`}
+                                >
+                                    {cat.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Results header */}
+                    <div className="flex items-center justify-between mb-6 sm:mb-8 md:mb-10">
+                        <h2 className="font-display text-xl sm:text-2xl md:text-3xl uppercase text-sand">
+                            {!activeCategory ? tx('Toutes les Machines', 'All Machines') : activeCategory}
+                        </h2>
+                        <div className="text-[10px] font-bold tracking-widest uppercase text-cocoa">
+                            {displayProducts.length} {t('results')}
+                        </div>
+                    </div>
+
+                    {/* Grid */}
+                    {!isLoading && displayProducts.length === 0 ? (
+                        <div className="text-center py-24">
+                            <p className="text-6xl mb-4">☕</p>
+                            <p className="font-bold text-xl mb-2 text-sand">
+                                {t('noProductsFound')}
+                            </p>
+                            <button onClick={resetAll} className="text-gold font-bold text-sm underline mt-2">
+                                {t('clearFilters')}
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8">
+                            {displayProducts.map((product, idx) => (
+                                <ProductCard
+                                    key={`${product.id}-${idx}`}
+                                    product={product}
+                                    index={idx}
+                                    onClick={setSelectedProduct}
+                                />
+                            ))}
+                            {isLoading && [...Array(4)].map((_, i) => (
+                                <ProductSkeleton key={`skeleton-${i}`} />
+                            ))}
+                        </div>
+                    )}
+
+                    <LoadMoreButton
+                        isLoading={isLoading}
+                        hasMore={hasMore}
+                        onLoadMore={loadMore}
+                        totalCount={displayProducts.length}
+                    />
+                </div>
+            </section>
+
+            {/* Filter Drawer */}
+            <FilterDrawer
+                open={filterOpen}
+                onClose={() => setFilterOpen(false)}
+                filters={filters}
+                onChange={setFilters}
+                resultCount={displayProducts.length}
+                availableCategories={availableCategories}
+                availableBrands={availableBrands}
+                availableTags={availableTags}
+            />
+
+            {/* Side Panel */}
+            <ProductDetailPanel product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+        </div>
+    );
+}

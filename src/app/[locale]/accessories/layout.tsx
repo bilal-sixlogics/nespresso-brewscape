@@ -10,6 +10,16 @@ export async function generateMetadata({
     params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
     const locale = toLocale((await params).locale);
+    if (locale === 'fr') {
+        return pageMetadata({
+            locale,
+            title: 'Accessoires Café & Matériel pour Professionnels',
+            description:
+                'Tasses, gobelets, filtres et accessoires pour préparer et servir le café, en boutique et en établissement. Cafrezzo, grossiste à Gonesse près de Paris. Livraison offerte dès 150€.',
+            path: '/accessories',
+        });
+    }
+
     return pageMetadata({
         locale,
         title: 'Accessoires Café',
