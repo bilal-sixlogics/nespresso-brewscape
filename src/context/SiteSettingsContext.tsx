@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { AppConfig } from '@/lib/config';
 
 interface SiteSettings {
     currency: string;
@@ -9,6 +10,7 @@ interface SiteSettings {
     tax_label: string;
     tax_included_in_price: boolean;
     contact_email: string;
+    contact_phone: string;
     contact_response_time: string;
     store_name: string;
     business_siret: string;
@@ -26,6 +28,7 @@ const DEFAULTS: SiteSettings = {
     tax_label: 'VAT',
     tax_included_in_price: true,
     contact_email: 'boutique@cafrezzo.com',
+    contact_phone: AppConfig.brand.phone,
     // French, not English. This default is what renders server-side, before
     // the settings fetch resolves — so a non-JS crawler (and the first paint
     // for every visitor) saw the English string "Within 24 business hours" on
@@ -59,6 +62,8 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
                     tax_label: data.tax_label ?? DEFAULTS.tax_label,
                     tax_included_in_price: data.tax_included_in_price === 'true',
                     contact_email: data.contact_email ?? DEFAULTS.contact_email,
+                    // Blank in admin falls back to the config number rather than hiding it
+                    contact_phone: data.contact_phone || DEFAULTS.contact_phone,
                     contact_response_time: data.contact_response_time ?? DEFAULTS.contact_response_time,
                     store_name: data.store_name ?? DEFAULTS.store_name,
                     business_siret: data.business_siret ?? DEFAULTS.business_siret,

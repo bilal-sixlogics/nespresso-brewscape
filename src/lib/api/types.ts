@@ -61,7 +61,7 @@ export interface ProductQueryParams extends PaginationParams {
     min_price?: number;
     max_price?: number;
     in_stock?: boolean;
-    sort_by?: 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'name_asc' | 'name_desc';
+    sort_by?: 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'best_selling';
     tags?: string;             // comma-separated tag labels
     tag?: string;              // single tag label
     intensity_min?: number;

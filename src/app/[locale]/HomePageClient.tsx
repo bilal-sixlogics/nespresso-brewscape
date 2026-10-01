@@ -4,11 +4,10 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from '@/components/LocaleLink';
 import { AppConfig } from "@/lib/config";
-import { ArrowRight, Truck, CreditCard, ShieldCheck, Headphones, BookOpen, Calendar } from "lucide-react";
+import { ArrowRight, Truck, CreditCard, ShieldCheck, Headphones, BookOpen, Calendar, MapPin, Briefcase, Globe2 } from "lucide-react";
 
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
-import { MobileCarousel } from "@/components/ui/MobileCarousel";
 import { TestimonialsSection } from '@/components/ui/TestimonialsSection';
 import { useLanguage } from "@/context/LanguageContext";
 import { Product, getProductImage } from "@/types";
@@ -411,11 +410,80 @@ function BlogSection() {
   );
 }
 
+// Ten products: five across on desktop, two across below — both divide ten
+// evenly, so neither breakpoint leaves a half-empty last row.
+const HOME_GRID_COUNT = 10;
+
+function ProductGridSection({
+  eyebrow, line1, line2, products, isLoading, onSelect, glow = 'top_left',
+}: {
+  eyebrow: string;
+  line1: string;
+  line2: string;
+  products: Product[];
+  isLoading: boolean;
+  onSelect: (product: Product) => void;
+  glow?: 'top_left' | 'top_right';
+}) {
+  const { t } = useLanguage();
+
+  if (!isLoading && products.length === 0) return null;
+
+  return (
+    <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay">
+      <div className={`absolute inset-0 pointer-events-none ${glow === 'top_left'
+        ? 'bg-[radial-gradient(ellipse_at_top_left,_rgba(201,160,90,0.06),_transparent_60%)]'
+        : 'bg-[radial-gradient(ellipse_at_top_right,_rgba(201,160,90,0.06),_transparent_60%)]'}`} />
+
+      <div className="max-w-[1400px] mx-auto relative z-10">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-10 md:mb-14 px-2 gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-px bg-gold" />
+              <span className="text-[9px] font-black tracking-[0.35em] uppercase text-gold">{eyebrow}</span>
+            </div>
+            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-sand uppercase tracking-tight leading-[0.88]">
+              {line1}<br />
+              <span className="text-gold">{line2}</span>
+            </h2>
+          </div>
+          <Link
+            href="/shop"
+            className="hidden md:inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold hover:bg-gold hover:text-ink px-7 py-3.5 rounded-full transition-all duration-300"
+          >
+            {t('shopNow')} <ArrowRight size={11} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 xl:gap-6">
+          {isLoading
+            ? [...Array(HOME_GRID_COUNT)].map((_, i) => <ProductSkeleton key={i} />)
+            : products.slice(0, HOME_GRID_COUNT).map((product, idx) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                index={idx}
+                onClick={onSelect}
+              />
+            ))}
+        </div>
+
+        <div className="flex md:hidden justify-center mt-10">
+          <Link href="/shop" className="inline-flex items-center gap-2 min-h-11 text-[10px] font-black uppercase tracking-widest text-gold border border-gold px-7 py-3.5 rounded-full">
+            {t('shopNow')} <ArrowRight size={11} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const { t, language } = useLanguage();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const { products: featuredProducts, isLoading: featuredLoading } = useProducts({ featured: true, per_page: 20 });
+  const { products: bestSellers, isLoading: bestSellersLoading } = useProducts({ sort_by: 'best_selling', per_page: HOME_GRID_COUNT });
+  const { products: newArrivals, isLoading: newArrivalsLoading } = useProducts({ sort_by: 'newest', per_page: HOME_GRID_COUNT });
 
   // Daily pick — fetched from admin-configured section config
   const [dailyPick, setDailyPick] = useState<{ product: Product | null; label: string | null }>({ product: null, label: null });
@@ -481,60 +549,46 @@ export default function Home() {
               />
             </motion.div>
 
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="flex justify-center mt-6 sm:mt-8"
+            >
+              <Link
+                href="/shop"
+                className="group inline-flex items-center gap-3 min-h-11 bg-gold text-ink px-9 sm:px-11 py-4 sm:py-5 rounded-full text-xs font-bold tracking-[0.25em] uppercase shadow-[0_18px_40px_-12px_rgba(201,160,90,0.55)] hover:bg-[#b8914d] hover:scale-[1.04] active:scale-95 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-4"
+              >
+                {t('heroShopNow')}
+                <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180" />
+              </Link>
+            </motion.div>
+
             {/* Category strip — part of the hero composition, not its own band. */}
             <CategoriesSection />
           </div>
         </section>
 
-        {/* ── FEATURED COLLECTION ───────────────────────────────────────── */}
-        <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay">
-          {/* Subtle background texture */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(201,160,90,0.06),_transparent_60%)] pointer-events-none" />
+        {/* ── BEST SELLING ──────────────────────────────────────────────── */}
+        <ProductGridSection
+          eyebrow={t('bestSellingEyebrow')}
+          line1={t('bestSellingLine1')}
+          line2={t('bestSellingLine2')}
+          products={bestSellers}
+          isLoading={bestSellersLoading}
+          onSelect={setSelectedProduct}
+        />
 
-          <div className="max-w-[1400px] mx-auto relative z-10">
-            <div className="flex flex-col md:flex-row items-end justify-between mb-12 md:mb-16 px-2 gap-6">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-px bg-gold" />
-                  <span className="text-[9px] font-black tracking-[0.35em] uppercase text-gold">{t('premiumSelection')}</span>
-                </div>
-                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-sand uppercase tracking-tight leading-[0.88]">
-                  {language === 'fr' ? 'Sélection' : 'Featured'}<br />
-                  <span className="text-gold">{language === 'fr' ? 'Vedette' : 'Collection'}</span>
-                </h2>
-              </div>
-              <Link
-                href="/shop"
-                className="hidden md:inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold hover:bg-gold hover:text-ink px-7 py-3.5 rounded-full transition-all duration-300"
-              >
-                {language === 'fr' ? 'Voir tout' : 'View All'} <ArrowRight size={11} />
-              </Link>
-            </div>
-
-            {featuredLoading ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                {[...Array(5)].map((_, i) => <ProductSkeleton key={i} />)}
-              </div>
-            ) : (
-              <MobileCarousel>
-                {featuredProducts.map((product, idx) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    index={idx}
-                    onClick={setSelectedProduct}
-                  />
-                ))}
-              </MobileCarousel>
-            )}
-
-            <div className="flex md:hidden justify-center mt-10">
-              <Link href="/shop" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold border border-gold px-7 py-3.5 rounded-full">
-                {language === 'fr' ? 'Voir toute la collection' : 'View Entire Collection'} <ArrowRight size={11} />
-              </Link>
-            </div>
-          </div>
-        </section>
+        {/* ── NEW ARRIVALS ─────────────────────────────────────────────── */}
+        <ProductGridSection
+          eyebrow={t('newArrivalsEyebrow')}
+          line1={t('newArrivalsLine1')}
+          line2={t('newArrivalsLine2')}
+          products={newArrivals}
+          isLoading={newArrivalsLoading}
+          onSelect={setSelectedProduct}
+          glow="top_right"
+        />
 
         {/* ── VALUE PROPS ──────────────────────────────────────────────── */}
         <section className="relative bg-ink py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 grain-overlay overflow-hidden">
@@ -676,7 +730,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-80px" }}
                   transition={{ duration: 0.6, delay: 0.15 }}
-                  onClick={() => setSelectedProduct(dailyPick.product || featuredProducts[0] || null)}
+                  onClick={() => setSelectedProduct(dailyPick.product || bestSellers[0] || null)}
                   className="w-full max-w-[300px] flex items-center justify-between gap-5 bg-sand/8 backdrop-blur-md p-4 rounded-3xl border border-sand/15 hover:border-gold/50 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.3)] group cursor-pointer hover:bg-sand/14 hover:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.4)] transition-all duration-300"
                 >
                   <div className="flex flex-col text-left min-w-0">
@@ -732,66 +786,135 @@ export default function Home() {
             product tiles, which reads as thin to crawlers and answers none of
             the questions a first-time visitor actually arrives with. Kept out
             of the hero deliberately: that paragraph is a 280px column. */}
-        <section className="bg-ink py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay border-t border-sand/10">
-          <div className="max-w-3xl mx-auto relative z-10">
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-sand uppercase tracking-tight leading-[0.95] mb-8">
-              {t('homeAboutHeading')}
-            </h2>
-            <div className="space-y-5 text-sand/70 text-sm sm:text-base leading-relaxed">
-              <p>{t('homeAboutBody1')}</p>
-              <p>{t('homeAboutBody2')}</p>
-              {/* The trade paragraphs are French/English only.
-                  `t()` falls back to French for a missing key, so rendering
-                  these unconditionally printed French prose on the German,
-                  Russian and Dutch homepages. Gating them keeps each locale
-                  monolingual; those three keep the two fully translated
-                  paragraphs above.
+        <section className="bg-ink py-16 sm:py-20 md:py-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay border-t border-sand/10">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(201,160,90,0.07),_transparent_60%)] pointer-events-none" />
 
-                  body3 states who Cafrezzo sells to and where it operates —
-                  written to stand alone, since it is the passage an answer
-                  engine is most likely to quote. body4 and body5 add the
-                  substance the homepage was missing: how trade supply actually
-                  works, and why the machine and the roast are chosen together.
-                  At ~500 words the page was thin for a head term as
-                  competitive as "grossiste café Paris". */}
-              {(language === 'fr' || language === 'en') && (
-                <>
-                  <p>{t('homeAboutBody3')}</p>
-                  <p>{t('homeAboutBody4')}</p>
-                  <p>{t('homeAboutBody5')}</p>
-                </>
-              )}
-            </div>
+          <div className="max-w-[1400px] mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-20 items-start">
 
-            {/* The homepage's only route into the B2B cluster. Before this the
-                sole link was a generic "Professionnels" entry buried in the
-                footer's Quick Links. */}
-            {(language === 'fr' || language === 'en') && (
-              <div className="mt-10 flex flex-wrap gap-x-8 gap-y-4">
-                <Link
-                  href="/professionnels"
-                  className="text-gold font-bold text-xs uppercase tracking-widest hover:underline"
-                >
-                  {t('homeAboutProCta')}
-                </Link>
-                {language === 'fr' && (
+            {/* Visual column — framed bean shot with the house's key facts
+                pinned over it. Sticky on desktop so it stays beside the prose. */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:col-span-5 lg:sticky lg:top-28"
+            >
+              <div className="relative">
+                {/* Offset gold frame behind the image for depth */}
+                <div className="hidden sm:block absolute -inset-4 rounded-[36px] border border-gold/25 translate-x-4 translate-y-4 rtl:-translate-x-4 pointer-events-none" />
+                <div className="relative aspect-[4/5] rounded-[32px] overflow-hidden shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/coffee-beans.jpg"
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-cover object-right scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent" />
+
+                  <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6">
+                    <ul className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-3">
+                      {[
+                        { icon: MapPin, value: t('homeAboutStat1Value'), label: t('homeAboutStat1Label') },
+                        { icon: Briefcase, value: t('homeAboutStat2Value'), label: t('homeAboutStat2Label') },
+                        { icon: Globe2, value: t('homeAboutStat3Value'), label: t('homeAboutStat3Label') },
+                      ].map((stat) => (
+                        <li
+                          key={stat.value}
+                          className="flex xl:flex-col items-center xl:items-start gap-3 xl:gap-2 bg-sand/[0.08] backdrop-blur-md border border-sand/15 rounded-2xl p-3 sm:p-4"
+                        >
+                          <span className="w-9 h-9 shrink-0 rounded-full bg-gold/15 text-gold flex items-center justify-center">
+                            <stat.icon size={16} aria-hidden="true" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block font-display text-base sm:text-lg text-sand uppercase leading-tight">{stat.value}</span>
+                            <span className="block text-[10px] sm:text-[11px] text-sand/60 leading-snug">{stat.label}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Prose column */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:col-span-7"
+            >
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-8 h-px bg-gold" />
+                <span className="text-[9px] font-black tracking-[0.35em] uppercase text-gold">{t('homeAboutEyebrow')}</span>
+              </div>
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-sand uppercase tracking-tight leading-[0.92] mb-10">
+                {t('homeAboutHeading')}
+              </h2>
+
+              {/* Lead paragraph, set larger behind a gold rule */}
+              <p className="border-s-2 border-gold ps-5 sm:ps-6 text-sand/90 text-base sm:text-lg leading-relaxed mb-8">
+                {t('homeAboutBody1')}
+              </p>
+
+              <div className="space-y-5 text-sand/65 text-sm sm:text-[15px] leading-relaxed">
+                <p>{t('homeAboutBody2')}</p>
+                {/* The trade paragraphs are French/English only.
+                    `t()` falls back to French for a missing key, so rendering
+                    these unconditionally printed French prose on the German,
+                    Russian and Dutch homepages. Gating them keeps each locale
+                    monolingual; those three keep the two fully translated
+                    paragraphs above.
+
+                    body3 states who Cafrezzo sells to and where it operates —
+                    written to stand alone, since it is the passage an answer
+                    engine is most likely to quote. body4 and body5 add the
+                    substance the homepage was missing: how trade supply actually
+                    works, and why the machine and the roast are chosen together.
+                    At ~500 words the page was thin for a head term as
+                    competitive as "grossiste café Paris". */}
+                {(language === 'fr' || language === 'en') && (
                   <>
-                    <Link
-                      href="/grossiste-cafe-paris"
-                      className="text-gold font-bold text-xs uppercase tracking-widest hover:underline"
-                    >
-                      Grossiste café à Paris
-                    </Link>
-                    <Link
-                      href="/machine-a-cafe-professionnelle"
-                      className="text-gold font-bold text-xs uppercase tracking-widest hover:underline"
-                    >
-                      Machines à café professionnelles
-                    </Link>
+                    <p>{t('homeAboutBody3')}</p>
+                    <p>{t('homeAboutBody4')}</p>
+                    <p>{t('homeAboutBody5')}</p>
                   </>
                 )}
               </div>
-            )}
+
+              {/* The homepage's only route into the B2B cluster. Before this the
+                  sole link was a generic "Professionnels" entry buried in the
+                  footer's Quick Links. */}
+              {(language === 'fr' || language === 'en') && (
+                <div className="mt-10 pt-8 border-t border-sand/10 flex flex-wrap gap-3">
+                  <Link
+                    href="/professionnels"
+                    className="inline-flex items-center gap-2 min-h-11 bg-gold text-ink px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#b8914d] transition-colors"
+                  >
+                    {t('homeAboutProCta')} <ArrowRight size={12} className="rtl:rotate-180" />
+                  </Link>
+                  {language === 'fr' && (
+                    <>
+                      <Link
+                        href="/grossiste-cafe-paris"
+                        className="inline-flex items-center min-h-11 text-gold border border-gold/40 hover:border-gold hover:bg-gold/10 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors"
+                      >
+                        Grossiste café à Paris
+                      </Link>
+                      <Link
+                        href="/machine-a-cafe-professionnelle"
+                        className="inline-flex items-center min-h-11 text-gold border border-gold/40 hover:border-gold hover:bg-gold/10 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors"
+                      >
+                        Machines à café professionnelles
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
+            </motion.div>
           </div>
         </section>
         {/* ── TESTIMONIALS ─────────────────────────────────────────────── */}

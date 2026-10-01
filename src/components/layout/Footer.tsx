@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from '@/components/LocaleLink';
-import { Coffee, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Coffee, CheckCircle2, Loader2, AlertCircle, Phone, Mail } from 'lucide-react';
 import { TikTokIcon } from '@/components/icons/TikTokIcon';
 import { FacebookIcon, InstagramIcon, LinkedinIcon } from '@/components/icons/SocialIcons';
 import { AppConfig } from '@/lib/config';
@@ -115,6 +115,37 @@ export function Footer() {
                         {/* <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
                             {t('brandDescription')}
                         </p> */}
+                        {/* Direct contact — admin-editable via site settings */}
+                        <ul className="space-y-3">
+                            <li>
+                                <a
+                                    href={`tel:${siteSettings.contact_phone.replace(/[^\d+]/g, '')}`}
+                                    className="group inline-flex items-center gap-3 min-h-11 text-sm text-cocoa hover:text-gold transition-colors"
+                                >
+                                    <span className="w-9 h-9 shrink-0 rounded-full border border-sand/10 group-hover:border-gold flex items-center justify-center transition-colors">
+                                        <Phone size={14} aria-hidden="true" />
+                                    </span>
+                                    <span>
+                                        <span className="sr-only">{t('footerPhoneLabel')}: </span>
+                                        <span dir="ltr">{siteSettings.contact_phone}</span>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href={`mailto:${siteSettings.contact_email}`}
+                                    className="group inline-flex items-center gap-3 min-h-11 text-sm text-cocoa hover:text-gold transition-colors break-all"
+                                >
+                                    <span className="w-9 h-9 shrink-0 rounded-full border border-sand/10 group-hover:border-gold flex items-center justify-center transition-colors">
+                                        <Mail size={14} aria-hidden="true" />
+                                    </span>
+                                    <span>
+                                        <span className="sr-only">{t('footerEmailLabel')}: </span>
+                                        {siteSettings.contact_email}
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
                         <div className="flex space-x-3">
                             {SOCIALS.filter((social) => siteSettings[social.key]?.trim()).map((social) => {
                                 const Icon = social.icon;
@@ -243,6 +274,36 @@ export function Footer() {
                         <Link href="/terms" className="text-cocoa/70 hover:text-gold text-xs tracking-widest uppercase transition-colors">{t('terms')}</Link>
                         <Link href="/privacy#cookies" className="text-cocoa/70 hover:text-gold text-xs tracking-widest uppercase transition-colors">{t('cookies')}</Link>
                     </div>
+                </div>
+
+                {/* Agency credit — a quiet badge under the legal bar, kept
+                    deliberately smaller and dimmer than the store's own brand.
+                    nofollow: a link repeated in every page's footer counts as
+                    a widely distributed template link under Google's link-spam
+                    policy unless it is qualified. */}
+                <div className="mt-8 pt-6 border-t border-sand/5 flex justify-center">
+                    <a
+                        href="https://www.b-wyz.com"
+                        target="_blank"
+                        rel="noopener nofollow"
+                        aria-label={`${t('footerCredit')} B.Wyz (www.b-wyz.com)`}
+                        className="group inline-flex items-center gap-3 min-h-11 rounded-full border border-sand/10 hover:border-gold/40 bg-sand/[0.03] hover:bg-sand/[0.06] ps-5 pe-4 py-1.5 transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
+                    >
+                        <span className="text-[10px] font-semibold tracking-[0.25em] uppercase text-sand/45 group-hover:text-sand/70 transition-colors">
+                            {t('footerCredit')}
+                        </span>
+                        <span className="w-px h-5 bg-sand/10" aria-hidden="true" />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src="/b-wyz-logo.svg"
+                            alt=""
+                            width={89}
+                            height={32}
+                            loading="lazy"
+                            decoding="async"
+                            className="h-8 w-auto opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                        />
+                    </a>
                 </div>
             </div>
         </footer>

@@ -1,5 +1,23 @@
 export const translations = {
     fr: {
+        // ── Homepage sections & footer contact ──
+        heroShopNow: "Acheter maintenant",
+        bestSellingEyebrow: "Les Préférés de nos Clients",
+        bestSellingLine1: "Meilleures",
+        bestSellingLine2: "Ventes",
+        newArrivalsEyebrow: "Tout Juste Arrivés",
+        newArrivalsLine1: "Nouveaux",
+        newArrivalsLine2: "Arrivages",
+        homeAboutEyebrow: "Notre Maison",
+        homeAboutStat1Value: "Gonesse",
+        homeAboutStat1Label: "Torréfacteur aux portes de Paris",
+        homeAboutStat2Value: "Pros & Particuliers",
+        homeAboutStat2Label: "Tarifs dégressifs pour les professionnels",
+        homeAboutStat3Value: "4 Pays",
+        homeAboutStat3Label: "Livrés en France, Belgique, Suisse et Luxembourg",
+        footerPhoneLabel: "Téléphone",
+        footerEmailLabel: "Email",
+        footerCredit: "Conception & développement",
         // ── Homepage prose ──────────────────────────────────────────────
         // Page-specific body copy. The homepage previously carried well under
         // 200 visible words, most of it navigation and product tiles.
@@ -911,6 +929,24 @@ export const translations = {
     },
 
     en: {
+        // ── Homepage sections & footer contact ──
+        heroShopNow: "Shop Now",
+        bestSellingEyebrow: "Customer Favourites",
+        bestSellingLine1: "Best",
+        bestSellingLine2: "Selling",
+        newArrivalsEyebrow: "Just Landed",
+        newArrivalsLine1: "New",
+        newArrivalsLine2: "Arrivals",
+        homeAboutEyebrow: "Our House",
+        homeAboutStat1Value: "Gonesse",
+        homeAboutStat1Label: "Roaster at the gates of Paris",
+        homeAboutStat2Value: "Trade & Home",
+        homeAboutStat2Label: "Volume pricing for professionals",
+        homeAboutStat3Value: "4 Countries",
+        homeAboutStat3Label: "Delivered to France, Belgium, Switzerland and Luxembourg",
+        footerPhoneLabel: "Phone",
+        footerEmailLabel: "Email",
+        footerCredit: "Designed & developed by",
         // ── Homepage prose ──────────────────────────────────────────────
         // Page-specific body copy. The homepage previously carried well under
         // 200 visible words, most of it navigation and product tiles.
@@ -1807,6 +1843,24 @@ export const translations = {
     },
 
     de: {
+        // ── Homepage sections & footer contact ──
+        heroShopNow: "Jetzt einkaufen",
+        bestSellingEyebrow: "Kundenlieblinge",
+        bestSellingLine1: "Best",
+        bestSellingLine2: "Seller",
+        newArrivalsEyebrow: "Gerade eingetroffen",
+        newArrivalsLine1: "Neu",
+        newArrivalsLine2: "Eingetroffen",
+        homeAboutEyebrow: "Unser Haus",
+        homeAboutStat1Value: "Gonesse",
+        homeAboutStat1Label: "Rösterei vor den Toren von Paris",
+        homeAboutStat2Value: "Gewerbe & Privat",
+        homeAboutStat2Label: "Staffelpreise für Profis",
+        homeAboutStat3Value: "4 Länder",
+        homeAboutStat3Label: "Lieferung nach Frankreich, Belgien, Schweiz und Luxemburg",
+        footerPhoneLabel: "Telefon",
+        footerEmailLabel: "E-Mail",
+        footerCredit: "Design & Entwicklung von",
         // ── Homepage prose ──────────────────────────────────────────────
         // Page-specific body copy. The homepage previously carried well under
         // 200 visible words, most of it navigation and product tiles.
@@ -2694,6 +2748,24 @@ export const translations = {
     },
 
     ru: {
+        // ── Homepage sections & footer contact ──
+        heroShopNow: "Купить сейчас",
+        bestSellingEyebrow: "Выбор покупателей",
+        bestSellingLine1: "Хиты",
+        bestSellingLine2: "Продаж",
+        newArrivalsEyebrow: "Только что поступили",
+        newArrivalsLine1: "Новые",
+        newArrivalsLine2: "Поступления",
+        homeAboutEyebrow: "Наш дом",
+        homeAboutStat1Value: "Гонесс",
+        homeAboutStat1Label: "Обжарщик у ворот Парижа",
+        homeAboutStat2Value: "Бизнес и дом",
+        homeAboutStat2Label: "Оптовые цены для профессионалов",
+        homeAboutStat3Value: "4 страны",
+        homeAboutStat3Label: "Доставка во Францию, Бельгию, Швейцарию и Люксембург",
+        footerPhoneLabel: "Телефон",
+        footerEmailLabel: "Эл. почта",
+        footerCredit: "Дизайн и разработка",
         // ── Homepage prose ──────────────────────────────────────────────
         // Page-specific body copy. The homepage previously carried well under
         // 200 visible words, most of it navigation and product tiles.
@@ -3581,6 +3653,24 @@ export const translations = {
     },
 
     nl: {
+        // ── Homepage sections & footer contact ──
+        heroShopNow: "Nu winkelen",
+        bestSellingEyebrow: "Favorieten van klanten",
+        bestSellingLine1: "Best",
+        bestSellingLine2: "Verkocht",
+        newArrivalsEyebrow: "Net binnen",
+        newArrivalsLine1: "Nieuw",
+        newArrivalsLine2: "Binnen",
+        homeAboutEyebrow: "Ons Huis",
+        homeAboutStat1Value: "Gonesse",
+        homeAboutStat1Label: "Branderij aan de poorten van Parijs",
+        homeAboutStat2Value: "Zakelijk & Thuis",
+        homeAboutStat2Label: "Staffelprijzen voor professionals",
+        homeAboutStat3Value: "4 Landen",
+        homeAboutStat3Label: "Geleverd in Frankrijk, België, Zwitserland en Luxemburg",
+        footerPhoneLabel: "Telefoon",
+        footerEmailLabel: "E-mail",
+        footerCredit: "Ontwerp & ontwikkeling door",
         // ── Homepage prose ──────────────────────────────────────────────
         // Page-specific body copy. The homepage previously carried well under
         // 200 visible words, most of it navigation and product tiles.
