@@ -52,11 +52,17 @@ const AI_CRAWLERS = [
     'ChatGPT-User',
     // Anthropic
     'ClaudeBot',
+    'Claude-SearchBot',
     'Claude-User',
     'anthropic-ai',
     // Perplexity
     'PerplexityBot',
     'Perplexity-User',
+    // Mistral Le Chat — the most-used French assistant, so it matters more
+    // here than its global share would suggest.
+    'MistralAI-User',
+    // Meta AI (also the agent Meta uses to ground answers in its apps).
+    'meta-externalagent',
     // Google Gemini / AI Overviews grounding
     'Google-Extended',
     // Apple Intelligence

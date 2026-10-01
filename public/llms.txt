@@ -52,6 +52,9 @@ Luxembourg and Switzerland.
 ## Shop
 
 - [Full catalogue](https://cafrezzo.com/fr/shop): Every product, filterable by category, brand, price and intensity.
+- [Coffee beans](https://cafrezzo.com/fr/cafe-en-grains): Whole-bean coffee for espresso machines and bean-to-cup machines, mostly in 1 kg bags; trade supply by the carton or pallet.
+- [Ground coffee](https://cafrezzo.com/fr/cafe-moulu): Pre-ground coffee for filter machines, percolators and espresso.
+- [Coffee capsules](https://cafrezzo.com/fr/capsules-cafe): Nespresso-compatible, Lavazza A Modo Mio, Blue and Point, and Delta Q capsules.
 - [Coffee machines](https://cafrezzo.com/fr/machines): Espresso, capsule and automatic machines.
 - [Accessories](https://cafrezzo.com/fr/accessories): Cups, filters and brewing equipment.
 - [Sweet treats](https://cafrezzo.com/fr/sweets): Biscuits and confectionery to accompany coffee.

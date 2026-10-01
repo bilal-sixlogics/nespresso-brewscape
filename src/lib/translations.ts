@@ -846,7 +846,7 @@ export const translations = {
         faqPageCategory3: "Machines",
         faqPageCategory4: "Retours & Remboursements",
         faqPageQ1: "Quel est le délai de livraison standard ?",
-        faqPageA1: "La livraison standard prend 3 à 5 jours ouvrés. La livraison express est disponible en 1 à 2 jours ouvrés pour un supplément de €6,99.",
+        faqPageA1: "La livraison standard coûte 5,99 € et prend 5 à 7 jours ouvrés ; elle est offerte dès 150 € d’achat. La livraison express coûte 14,99 € et prend 2 à 3 jours ouvrés. Le retrait en boutique à Gonesse (Click & Collect) est gratuit.",
         faqPageQ2: "Comment bénéficier de la livraison gratuite ?",
         faqPageA2: "La livraison est offerte pour toute commande de €150 ou plus. La valeur est calculée après application des remises.",
         faqPageQ3: "Puis-je modifier ou annuler ma commande ?",
@@ -871,7 +871,7 @@ export const translations = {
         faqPageA12: "Le remboursement est effectué dans un délai de 5 à 10 jours ouvrés après réception et vérification de votre retour, via le même moyen de paiement d'origine.",
         faqPageNeedHelpEyebrow: "Besoin d'aide ?",
         faqPageNeedHelpHeading: "Contactez Notre Équipe",
-        faqPageNeedHelpDesc: "Notre équipe est disponible du lundi au vendredi, 9h–17h.",
+        faqPageNeedHelpDesc: "Notre équipe est disponible du lundi au vendredi de 9h à 12h30 et de 13h30 à 17h30, et le samedi de 9h à 12h30 et de 13h30 à 16h.",
         faqPageNeedHelpLink: "Nous contacter",
 
         // ── New: translation_audit.md fix — checkout leftovers ──────────────
@@ -1742,7 +1742,7 @@ export const translations = {
         faqPageCategory3: "Machines",
         faqPageCategory4: "Returns & Refunds",
         faqPageQ1: "What is the standard delivery time?",
-        faqPageA1: "Standard delivery takes 3–5 working days. Express delivery is available in 1–2 working days for an additional €6.99.",
+        faqPageA1: "Standard delivery costs €5.99 and takes 5–7 working days; it is free on orders over €150. Express delivery costs €14.99 and takes 2–3 working days. Click & Collect from our Gonesse shop is free.",
         faqPageQ2: "How do I get free shipping?",
         faqPageA2: "Shipping is free on all orders of €150 or more. The value is calculated after discounts are applied.",
         faqPageQ3: "Can I modify or cancel my order?",
@@ -1767,7 +1767,7 @@ export const translations = {
         faqPageA12: "The refund is processed within 5–10 working days after receipt and verification of your return, via the same original payment method.",
         faqPageNeedHelpEyebrow: "Need help?",
         faqPageNeedHelpHeading: "Contact Our Team",
-        faqPageNeedHelpDesc: "Our team is available Monday to Friday, 9am–5pm.",
+        faqPageNeedHelpDesc: "Our team is available Monday to Friday 9am–12:30pm and 1:30–5:30pm, and Saturday 9am–12:30pm and 1:30–4pm.",
         faqPageNeedHelpLink: "Contact Us",
 
         // ── New: translation_audit.md fix — checkout leftovers ──────────────
@@ -2629,7 +2629,7 @@ export const translations = {
         faqPageCategory3: "Maschinen",
         faqPageCategory4: "Rücksendungen & Rückerstattungen",
         faqPageQ1: "Wie lange dauert die Standardlieferung?",
-        faqPageA1: "Die Standardlieferung dauert 3–5 Werktage. Der Expressversand ist in 1–2 Werktagen gegen einen Aufpreis von 6,99 € verfügbar.",
+        faqPageA1: "Die Standardlieferung kostet 5,99 € und dauert 5–7 Werktage; ab 150 € Bestellwert ist sie kostenlos. Der Expressversand kostet 14,99 € und dauert 2–3 Werktage. Die Abholung in unserem Geschäft in Gonesse (Click & Collect) ist kostenlos.",
         faqPageQ2: "Wie erhalte ich kostenlosen Versand?",
         faqPageA2: "Der Versand ist für alle Bestellungen ab 150 € kostenlos. Der Wert wird nach Anwendung der Rabatte berechnet.",
         faqPageQ3: "Kann ich meine Bestellung ändern oder stornieren?",
@@ -2654,7 +2654,7 @@ export const translations = {
         faqPageA12: "Die Rückerstattung erfolgt innerhalb von 5–10 Werktagen nach Erhalt und Prüfung Ihrer Rücksendung über dieselbe ursprüngliche Zahlungsmethode.",
         faqPageNeedHelpEyebrow: "Brauchen Sie Hilfe?",
         faqPageNeedHelpHeading: "Kontaktieren Sie Unser Team",
-        faqPageNeedHelpDesc: "Unser Team ist von Montag bis Freitag, 9–17 Uhr, erreichbar.",
+        faqPageNeedHelpDesc: "Unser Team ist Montag bis Freitag von 9–12:30 und 13:30–17:30 Uhr sowie samstags von 9–12:30 und 13:30–16 Uhr erreichbar.",
         faqPageNeedHelpLink: "Kontakt aufnehmen",
 
         // ── New: translation_audit.md fix — checkout leftovers ──────────────
@@ -3516,7 +3516,7 @@ export const translations = {
         faqPageCategory3: "Кофемашины",
         faqPageCategory4: "Возврат и возмещение",
         faqPageQ1: "Каков стандартный срок доставки?",
-        faqPageA1: "Стандартная доставка занимает 3–5 рабочих дней. Экспресс-доставка доступна за 1–2 рабочих дня за дополнительную плату в размере €6,99.",
+        faqPageA1: "Стандартная доставка стоит 5,99 € и занимает 5–7 рабочих дней; при заказе от 150 € она бесплатна. Экспресс-доставка стоит 14,99 € и занимает 2–3 рабочих дня. Самовывоз из нашего магазина в Гонесе (Click & Collect) бесплатный.",
         faqPageQ2: "Как получить бесплатную доставку?",
         faqPageA2: "Доставка бесплатна для заказов от €150. Сумма рассчитывается после применения скидок.",
         faqPageQ3: "Могу ли я изменить или отменить заказ?",
@@ -3541,7 +3541,7 @@ export const translations = {
         faqPageA12: "Возмещение производится в течение 5–10 рабочих дней после получения и проверки вашего возврата тем же способом оплаты, который использовался изначально.",
         faqPageNeedHelpEyebrow: "Нужна помощь?",
         faqPageNeedHelpHeading: "Свяжитесь с нашей командой",
-        faqPageNeedHelpDesc: "Наша команда доступна с понедельника по пятницу, с 9:00 до 17:00.",
+        faqPageNeedHelpDesc: "Наша команда доступна с понедельника по пятницу с 9:00 до 12:30 и с 13:30 до 17:30, а в субботу с 9:00 до 12:30 и с 13:30 до 16:00.",
         faqPageNeedHelpLink: "Связаться с нами",
 
         // ── New: translation_audit.md fix — checkout leftovers ──────────────
@@ -4403,7 +4403,7 @@ export const translations = {
         faqPageCategory3: "Machines",
         faqPageCategory4: "Retourneren & Terugbetaling",
         faqPageQ1: "Wat is de standaard levertijd?",
-        faqPageA1: "Standaardlevering duurt 3–5 werkdagen. Expreslevering is beschikbaar binnen 1–2 werkdagen voor een toeslag van €6,99.",
+        faqPageA1: "Standaardlevering kost € 5,99 en duurt 5–7 werkdagen; vanaf € 150 is ze gratis. Expreslevering kost € 14,99 en duurt 2–3 werkdagen. Afhalen in onze winkel in Gonesse (Click & Collect) is gratis.",
         faqPageQ2: "Hoe kom ik in aanmerking voor gratis verzending?",
         faqPageA2: "Verzending is gratis voor alle bestellingen vanaf €150. Het bedrag wordt berekend na toepassing van kortingen.",
         faqPageQ3: "Kan ik mijn bestelling wijzigen of annuleren?",
@@ -4428,7 +4428,7 @@ export const translations = {
         faqPageA12: "De terugbetaling wordt verwerkt binnen 5–10 werkdagen na ontvangst en controle van uw retour, via dezelfde oorspronkelijke betaalmethode.",
         faqPageNeedHelpEyebrow: "Hulp nodig?",
         faqPageNeedHelpHeading: "Neem Contact op met Ons Team",
-        faqPageNeedHelpDesc: "Ons team is beschikbaar van maandag tot vrijdag, 9.00–17.00 uur.",
+        faqPageNeedHelpDesc: "Ons team is bereikbaar van maandag tot vrijdag van 9.00–12.30 en 13.30–17.30 uur, en op zaterdag van 9.00–12.30 en 13.30–16.00 uur.",
         faqPageNeedHelpLink: "Contact opnemen",
 
         // ── New: translation_audit.md fix — checkout leftovers ──────────────

@@ -1,17 +1,20 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useId, useState } from 'react';
+import { motion } from 'framer-motion';
 import { ChevronDown, Search } from 'lucide-react';
 import Link from '@/components/LocaleLink';
 import { useLanguage } from '@/context/LanguageContext';
 
 function FaqItem({ q, a }: { q: string; a: string }) {
     const [open, setOpen] = useState(false);
+    const panelId = useId();
     return (
         <div className="border-b border-ink/10 last:border-0">
             <button
                 onClick={() => setOpen(p => !p)}
+                aria-expanded={open}
+                aria-controls={panelId}
                 className="w-full flex justify-between items-start py-5 text-left gap-4 group"
             >
                 <span className="font-semibold text-sm text-ink group-hover:text-gold transition-colors leading-relaxed">
@@ -21,19 +24,22 @@ function FaqItem({ q, a }: { q: string; a: string }) {
                     <ChevronDown size={18} className="text-ink/30" />
                 </motion.div>
             </button>
-            <AnimatePresence>
-                {open && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="overflow-hidden"
-                    >
-                        <p className="pb-5 text-sm text-ink/60 leading-relaxed pr-8">{a}</p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/*
+              The answer is always in the DOM and collapsed with CSS. It used to
+              be mounted only once opened, so the server HTML carried the
+              questions with no answers — which is all a crawler or an AI
+              answer engine (most of which never run JS) ever saw of this page.
+              `inert` keeps the collapsed answer out of the tab order.
+            */}
+            <div
+                id={panelId}
+                inert={!open}
+                className={`grid motion-safe:transition-[grid-template-rows,opacity] motion-safe:duration-300 ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+            >
+                <div className="overflow-hidden">
+                    <p className="pb-5 text-sm text-ink/60 leading-relaxed pr-8">{a}</p>
+                </div>
+            </div>
         </div>
     );
 }
