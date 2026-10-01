@@ -137,23 +137,28 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy-Report-Only", value: CSP_REPORT_ONLY },
         ],
       },
-      {
-        // Images in /public (hero, og-image, logo, cups). Next serves these
-        // with `max-age=0`, so every page view revalidated the 150KB hero.
-        // A week rather than `immutable`: these filenames are not hashed, so
-        // a replaced file must still be picked up eventually, and
-        // stale-while-revalidate keeps that refresh off the critical path.
-        // /_next/static is unaffected — Next pins its own immutable header.
-        //
-        // The pattern requires a literal dot before the extension. The
-        // commonly copied `/:all*(svg|jpg|png)` also matches any path that
-        // merely ENDS in those letters — a product slug like ".../lavazza-png"
-        // would have had its HTML cached for a week.
-        source: "/:path*/:file.:ext(svg|jpg|jpeg|png|webp|avif|ico)",
+      // Images in /public (hero, og-image, logo, cups). Next serves these
+      // with `max-age=0`, so every page view revalidated the 150KB hero.
+      // A week rather than `immutable`: these filenames are not hashed, so a
+      // replaced file must still be picked up eventually, and
+      // stale-while-revalidate keeps that refresh off the critical path.
+      // /_next/static is unaffected — Next pins its own immutable header.
+      //
+      // Deliberately plain patterns. `/:path*/:file.:ext(...)` matched the
+      // right files in isolation but broke route matching in `next dev`:
+      // every page below /[locale] returned the framework 404. And the
+      // commonly copied `/:all*(svg|jpg|png)` also matches paths that merely
+      // END in those letters, e.g. a product slug ".../lavazza-png".
+      ...[
+        "/:file([^/]+\\.(?:svg|jpg|jpeg|png|webp|avif|ico))",
+        "/assets/:path*",
+        "/images/:path*",
+      ].map(source => ({
+        source,
         headers: [
           { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
         ],
-      },
+      })),
     ];
   },
 };
