@@ -269,6 +269,13 @@ const baseMetadataShared: Metadata = {
             'cs7eUJ0hscfT6OXq6cH4MASeGmq6llEFkpYlTGeNToE',
             '0m5l-D9kMSwhAFccBs6j4WSnRc2iQjHznUV_6LDaCag',
         ],
+        // Meta Business Manager domain verification (Brand Safety → Domains).
+        // Required to configure Aggregated Event Measurement for iOS traffic.
+        // The DNS TXT method is preferable — it survives redeploys and needs no
+        // rebuild — this env var is the fallback when DNS is not reachable.
+        ...(process.env.NEXT_PUBLIC_META_DOMAIN_VERIFICATION
+            ? { other: { 'facebook-domain-verification': process.env.NEXT_PUBLIC_META_DOMAIN_VERIFICATION } }
+            : {}),
     },
 };
 
