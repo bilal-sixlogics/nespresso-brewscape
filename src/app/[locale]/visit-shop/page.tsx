@@ -163,7 +163,7 @@ export default function VisitShopPage() {
                         locale="fr"
                         heading="La boutique Cafrezzo à Gonesse"
                         intro={[
-                            'Notre boutique se trouve au 41 rue d’Aulnay, 95500 Gonesse, dans le Val-d’Oise, aux portes de Paris. Elle est ouverte du lundi au vendredi, de 9h à 17h.',
+                            'Notre boutique se trouve au 41 rue d’Aulnay, 95500 Gonesse, dans le Val-d’Oise, aux portes de Paris. Elle est ouverte du lundi au vendredi de 9h à 12h30 et de 13h30 à 17h30, et le samedi de 9h à 12h30 et de 13h30 à 16h.',
                             'Cafrezzo est grossiste et distributeur de café et de machines à café. La boutique reçoit aussi bien les particuliers que les professionnels — cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises — et sert de point de retrait pour les commandes passées en ligne.',
                         ]}
                         blocks={[

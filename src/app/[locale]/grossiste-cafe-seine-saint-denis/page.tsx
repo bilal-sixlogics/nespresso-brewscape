@@ -109,7 +109,7 @@ const CONTENT: LandingContent = {
         {
             question: 'Où se trouve votre boutique par rapport au 93 ?',
             answer:
-                'Notre boutique est au 41 rue d’Aulnay, 95500 Gonesse, immédiatement au nord de la Seine-Saint-Denis. Le retrait de commande (Click & Collect) y est gratuit, du lundi au vendredi de 9h à 17h.',
+                'Notre boutique est au 41 rue d’Aulnay, 95500 Gonesse, immédiatement au nord de la Seine-Saint-Denis. Le retrait de commande (Click & Collect) y est gratuit, du lundi au vendredi de 9h à 12h30 et de 13h30 à 17h30, et le samedi de 9h à 12h30 et de 13h30 à 16h.',
         },
     ],
     ctaHeading: 'Un projet café en Seine-Saint-Denis ?',

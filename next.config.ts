@@ -65,11 +65,11 @@ const SECURITY_HEADERS = [
  */
 const CSP_REPORT_ONLY = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://js.stripe.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://js.stripe.com https://connect.facebook.net",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
-    "connect-src 'self' https://api.cafrezzo.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://api.stripe.com",
+    "connect-src 'self' https://api.cafrezzo.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://api.stripe.com https://www.facebook.com https://connect.facebook.net",
     "frame-src https://js.stripe.com https://hooks.stripe.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -113,6 +113,16 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+    // AVIF first (~20-30% smaller than WebP for product photography), WebP
+    // for browsers without it. Default is WebP only.
+    formats: ["image/avif", "image/webp"],
+    // How long an optimised rendition is cached — on disk here, and in the
+    // browser via the Cache-Control it is served with. Default is 4 hours.
+    // Catalogue uploads are UUID-named (api.cafrezzo.com/storage/uploads/
+    // <uuid>.jpg): a new photo is a new URL, so a long TTL never serves a
+    // stale image. The upstream sends no Cache-Control at all, so without this
+    // every visitor re-downloads every product photo.
+    minimumCacheTTL: 2592000, // 30 days
   },
 
   async headers() {
@@ -127,6 +137,28 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy-Report-Only", value: CSP_REPORT_ONLY },
         ],
       },
+      // Images in /public (hero, og-image, logo, cups). Next serves these
+      // with `max-age=0`, so every page view revalidated the 150KB hero.
+      // A week rather than `immutable`: these filenames are not hashed, so a
+      // replaced file must still be picked up eventually, and
+      // stale-while-revalidate keeps that refresh off the critical path.
+      // /_next/static is unaffected — Next pins its own immutable header.
+      //
+      // Deliberately plain patterns. `/:path*/:file.:ext(...)` matched the
+      // right files in isolation but broke route matching in `next dev`:
+      // every page below /[locale] returned the framework 404. And the
+      // commonly copied `/:all*(svg|jpg|png)` also matches paths that merely
+      // END in those letters, e.g. a product slug ".../lavazza-png".
+      ...[
+        "/:file([^/]+\\.(?:svg|jpg|jpeg|png|webp|avif|ico))",
+        "/assets/:path*",
+        "/images/:path*",
+      ].map(source => ({
+        source,
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      })),
     ];
   },
 };

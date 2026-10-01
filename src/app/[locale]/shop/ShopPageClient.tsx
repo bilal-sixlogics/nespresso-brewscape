@@ -355,6 +355,7 @@ function ShopPageContent({ initialCategory, initialBrand, initialProducts }: Sho
                                         key={product.id}
                                         product={product}
                                         index={idx}
+                                        aboveTheFold={idx < 4}
                                         onClick={handleProductClick}
                                     />
                                 ))}

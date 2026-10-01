@@ -16,6 +16,19 @@ interface ConsentContextType {
 const ConsentContext = createContext<ConsentContextType | undefined>(undefined);
 
 /**
+ * Pushes a decision into Google Consent Mode for this page load. Layer 2 of
+ * the defence: even if a tag is present, `*_storage: denied` stops it writing
+ * cookies.
+ */
+function updateConsentMode(value: Exclude<ConsentState, 'unknown'>): void {
+    try {
+        window.gtag?.('consent', 'update', {
+            analytics_storage: value === 'granted' ? 'granted' : 'denied',
+        });
+    } catch { /* gtag not loaded — nothing to update */ }
+}
+
+/**
  * Analytics consent, opt-in by default.
  *
  * Starts as 'unknown' on every first render, including on the server, so no
@@ -32,7 +45,14 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved === 'granted' || saved === 'denied') setConsentState(saved);
+            if (saved === 'granted' || saved === 'denied') {
+                // A restored decision must reach Consent Mode too. Without this a
+                // returning visitor who had accepted got GA mounted while
+                // analytics_storage was still at its 'denied' default, so every
+                // repeat visit ran cookieless and fragmented into new users.
+                updateConsentMode(saved);
+                setConsentState(saved);
+            }
         } catch {
             // localStorage unavailable (private mode, blocked) — stay 'unknown',
             // which means analytics stay off. Failing closed is the safe default.
@@ -45,14 +65,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
         } catch { /* ignore */ }
         setConsentState(value);
 
-        // Tell Google Consent Mode about the change for this page load. Layer 2
-        // of the defence: even if a tag is present, analytics_storage=denied
-        // stops it writing cookies.
-        try {
-            window.gtag?.('consent', 'update', {
-                analytics_storage: value === 'granted' ? 'granted' : 'denied',
-            });
-        } catch { /* gtag not loaded — nothing to update */ }
+        updateConsentMode(value);
     }, []);
 
     const resetConsent = useCallback(() => {

@@ -1,8 +1,8 @@
 // ContactPage.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useId, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 type TFunc = ReturnType<typeof useLanguage>['t'];
 import { useSiteSettings } from '@/context/SiteSettingsContext';
@@ -43,10 +43,13 @@ interface StoreLocation {
 
 function FAQItem({ q, a }: { q: string; a: string }) {
     const [open, setOpen] = useState(false);
+    const panelId = useId();
     return (
         <div className="border-b border-sand/10 last:border-0">
             <button
                 onClick={() => setOpen(p => !p)}
+                aria-expanded={open}
+                aria-controls={panelId}
                 className="w-full flex justify-between items-center py-5 text-left group"
             >
                 <span className="font-bold text-sm text-sand group-hover:text-gold transition-colors pr-4">{q}</span>
@@ -54,19 +57,20 @@ function FAQItem({ q, a }: { q: string; a: string }) {
                     <ChevronDown size={18} className="text-cocoa/50 flex-shrink-0" />
                 </motion.div>
             </button>
-            <AnimatePresence>
-                {open && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="overflow-hidden"
-                    >
-                        <p className="text-sm text-sand/60 leading-relaxed pb-5 pr-8">{a}</p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/*
+              Always in the DOM, collapsed with CSS — same reasoning as the FAQ
+              page: a mount-on-open answer is absent from the server HTML, so
+              crawlers and AI answer engines only ever saw the questions.
+            */}
+            <div
+                id={panelId}
+                inert={!open}
+                className={`grid motion-safe:transition-[grid-template-rows,opacity] motion-safe:duration-300 ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+            >
+                <div className="overflow-hidden">
+                    <p className="text-sm text-sand/60 leading-relaxed pb-5 pr-8">{a}</p>
+                </div>
+            </div>
         </div>
     );
 }

@@ -9,6 +9,7 @@ import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
 import { useLanguage } from '@/context/LanguageContext';
+import { trackPurchase } from '@/lib/tracking';
 
 interface OrderShippingMethod {
     id: number;
@@ -83,6 +84,22 @@ function OrderSuccessContent() {
         const t = setTimeout(() => setShowConfetti(false), 3000);
         return () => clearTimeout(t);
     }, []);
+
+    // Purchase conversion. Reads the raw `total` param, never the '89.90'
+    // display fallback above — reporting a made-up order value to the ad
+    // platforms would corrupt ROAS. sessionStorage stops a refresh or a
+    // back-navigation from counting the same order twice.
+    useEffect(() => {
+        const rawTotal = searchParams.get('total');
+        const value = rawTotal ? Number(rawTotal) : NaN;
+        if (!orderId || !Number.isFinite(value)) return;
+        const key = `cafrezzo-purchase-tracked-${orderId}`;
+        try {
+            if (sessionStorage.getItem(key)) return;
+            sessionStorage.setItem(key, '1');
+        } catch { /* storage blocked — accept the small risk of a duplicate */ }
+        trackPurchase(orderId, value);
+    }, [orderId, searchParams]);
 
     // Fetch the real order so delivery estimate + shipping cost reflect this
     // specific order's shipping method, instead of a hardcoded "3 days" guess.

@@ -5,6 +5,7 @@ import { Product, SaleUnit } from '@/types';
 import { apiClient } from '@/lib/api/client';
 import { Endpoints } from '@/lib/api/endpoints';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
+import { toTrackedItem, trackAddToCart } from '@/lib/tracking';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -167,6 +168,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const addToCart = useCallback((product: Product, saleUnit: SaleUnit, quantity = 1) => {
         const maxStock = Number(saleUnit.stock) || 0;
         if (maxStock <= 0) return;
+
+        // Tracked here rather than at each button so quick-add on cards, the
+        // PDP and the side panel all report identically.
+        trackAddToCart(toTrackedItem(product, saleUnit, Math.min(quantity, maxStock)));
 
         setItems(prev => {
             const existingIdx = prev.findIndex(

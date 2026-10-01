@@ -20,6 +20,7 @@ import { getProductImage, Address } from '@/types';
 import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
+import { toTrackedItem, trackInitiateCheckout } from '@/lib/tracking';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '');
 
@@ -406,6 +407,16 @@ export default function CheckoutPage() {
         }, 1000);
         return () => clearInterval(interval);
     }, [accountResendTimer]);
+
+    // InitiateCheckout once per visit to the page. The cart rehydrates from
+    // storage after mount, so this waits for the first non-empty render
+    // instead of firing on mount with an empty basket.
+    const checkoutTracked = useRef(false);
+    useEffect(() => {
+        if (checkoutTracked.current || items.length === 0) return;
+        checkoutTracked.current = true;
+        trackInitiateCheckout(items.map(i => toTrackedItem(i.product, i.saleUnit, i.quantity)), total);
+    }, [items, total]);
 
     const markTouched = useCallback((field: string) => {
         setTouched(prev => ({ ...prev, [field]: true }));

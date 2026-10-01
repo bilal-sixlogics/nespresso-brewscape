@@ -111,7 +111,7 @@ const CONTENT: LandingContent = {
         {
             question: 'Où est basé Cafrezzo en Île-de-France ?',
             answer:
-                'Cafrezzo est établi au 41 rue d’Aulnay, 95500 Gonesse, dans le Val-d’Oise, aux portes de Paris. La boutique est ouverte du lundi au vendredi de 9h à 17h.',
+                'Cafrezzo est établi au 41 rue d’Aulnay, 95500 Gonesse, dans le Val-d’Oise, aux portes de Paris. La boutique est ouverte du lundi au vendredi de 9h à 12h30 et de 13h30 à 17h30, et le samedi de 9h à 12h30 et de 13h30 à 16h.',
         },
         {
             question: 'Quels départements desservez-vous ?',
