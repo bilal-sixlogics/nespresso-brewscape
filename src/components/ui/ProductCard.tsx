@@ -245,8 +245,13 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                     <div className="flex-1" />
 
                     {/* Price row + CTA */}
-                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-cocoa/15">
-                        <div className="flex items-baseline gap-1.5">
+                    {/* Sized by the card, not the viewport: the same card sits in
+                        5-up homepage grids and wider shop grids. Under 13rem the
+                        CTA drops below the price at full width instead of being
+                        squeezed (or pushed out by a struck-through price). */}
+                    <div className="@container pt-1 border-t border-cocoa/15">
+                    <div className="flex flex-col items-stretch gap-2 @[13rem]:flex-row @[13rem]:items-center @[13rem]:justify-between">
+                        <div className="flex flex-wrap items-baseline gap-x-1.5 min-w-0">
                             <span className="font-bold font-black text-black text-[1.15rem] sm:text-[1.25rem]  tracking-tight">
                                 {formatPrice(displayPrice)}
                             </span>
@@ -259,12 +264,12 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                         <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={(e) => { e.stopPropagation(); onClick(product); }}
-                            aria-label={`${t('ariaQuickLook')} ${product.name}`}
-                            className="min-h-[38px] min-w-[38px] flex items-center justify-center bg-gold text-ink rounded-full hover:bg-[#b8914d] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 px-4 text-[11px] font-black tracking-wide"
+                            aria-label={`${t('buyNow')} – ${product.name}`}
+                            className="shrink-0 whitespace-nowrap min-h-11 min-w-11 flex items-center justify-center bg-gold text-ink rounded-full hover:bg-[#b8914d] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 px-4 text-[11px] font-black tracking-wide"
                         >
-                            <span className="hidden sm:inline">{t('select')}</span>
-                            <span className="sm:hidden">→</span>
+                            {t('buyNow')}
                         </motion.button>
+                    </div>
                     </div>
                 </div>
             </div>

@@ -107,183 +107,187 @@ function CategoriesSection() {
 // Same curated roster shown on /our-origins (ORIGIN_BRANDS there) — keep in sync with that page.
 const CURATED_BRAND_SLUGS = ["bristot", "lavazza", "carte-noir", "covim", "kimbo", "ristora", "prolait", "delta"];
 
-// A single collage tile — brand logo (or wordmark fallback) in a softly rotated card
-// that straightens and lifts on hover. Shared by the left/right collage columns and
-// the compact mobile grid below.
-function BrandTile({ brand, className = '' }: { brand: ApiBrand; className?: string }) {
-  const { language } = useLanguage();
+// Point at the brand's own page where one exists.
+//
+// These tiles used to link to /shop?brand=<slug>, which is a filtered view
+// of the catalogue: it carries no brand copy, and now canonicalises to
+// /marques/<slug> and is marked noindex. Linking the tile straight to the
+// brand page instead means the homepage passes authority to the page built
+// to rank for "café Lavazza" rather than to a URL asking not to be indexed.
+//
+// Brand pages are published in French and English only, so the other three
+// locales keep the filtered-catalogue link — a working page beats a 404.
+function brandHref(slug: string, language: string) {
+  return language === 'fr' || language === 'en' ? `/marques/${slug}` : `/shop?brand=${slug}`;
+}
 
-  // Point at the brand's own page where one exists.
-  //
-  // These tiles used to link to /shop?brand=<slug>, which is a filtered view
-  // of the catalogue: it carries no brand copy, and now canonicalises to
-  // /marques/<slug> and is marked noindex. Linking the tile straight to the
-  // brand page instead means the homepage passes authority to the page built
-  // to rank for "café Lavazza" rather than to a URL asking not to be indexed.
-  //
-  // Brand pages are published in French and English only, so the other three
-  // locales keep the filtered-catalogue link — a working page beats a 404.
-  const href =
-    language === 'fr' || language === 'en'
-      ? `/marques/${brand.slug}`
-      : `/shop?brand=${brand.slug}`;
+// One tile of the logo wall. Every tile is the same cream plate at the same
+// ratio, so logos supplied on white, black or transparent grounds still read
+// as one set. mix-blend-multiply dissolves a logo's own white box into the
+// plate instead of leaving a lighter rectangle floating on it.
+function BrandTile({ brand }: { brand: ApiBrand }) {
+  const { language, t } = useLanguage();
+  const [logoFailed, setLogoFailed] = useState(false);
+  const showLogo = !!brand.logo && !logoFailed;
 
   return (
     <Link
-      href={href}
-      className={`group relative block rounded-2xl bg-sand border border-sand/60 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] hover:shadow-[0_18px_40px_-10px_rgba(201,160,90,0.4)] transition-all duration-500 cursor-pointer overflow-hidden hover:z-20 hover:rotate-0 hover:scale-[1.06] ${className}`}
+      href={brandHref(brand.slug, language)}
+      className="group relative flex flex-col h-full bg-sand rounded-[24px] overflow-hidden border border-sand/60 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.55)] hover:shadow-[0_22px_45px_-14px_rgba(201,160,90,0.45)] hover:-translate-y-1 transition-all duration-500 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-4"
     >
-      <div className="absolute inset-0 rounded-2xl border border-gold/0 group-hover:border-gold/50 transition-colors duration-500 pointer-events-none z-10" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        {brand.logo ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
+      <div className="relative aspect-[4/3] sm:aspect-[16/10]">
+        {showLogo ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={brand.logo}
+            src={brand.logo!}
             // Says what the image is. A bare brand name reads as the tile's
             // label rather than a description of the logo itself.
             alt={language === 'fr' ? `Logo ${brand.name}` : `${brand.name} logo`}
-            className="w-full h-full object-contain p-4 sm:p-5 opacity-85 group-hover:opacity-100 transition-opacity duration-500"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-              const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-              if (fallback) fallback.style.display = 'flex';
-            }}
+            loading="lazy"
+            onError={() => setLogoFailed(true)}
+            className="absolute inset-0 m-auto max-h-[62%] max-w-[72%] object-contain mix-blend-multiply opacity-90 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-500"
           />
-        ) : null}
-        {/* Premium typographic fallback — luxury brand wordmark style */}
-        <div
-          className="absolute inset-0 flex items-center justify-center px-3"
-          style={{ display: brand.logo ? 'none' : 'flex' }}
-        >
-          <span
-            className="text-[11px] font-black uppercase tracking-[0.2em] text-ink text-center leading-snug group-hover:text-gold transition-colors duration-500"
-            style={{ fontVariant: 'small-caps' }}
-          >
+        ) : (
+          /* Wordmark fallback for brands without an uploaded logo */
+          <span className="absolute inset-0 flex items-center justify-center px-4 font-display text-xl sm:text-2xl lg:text-[1.7rem] uppercase tracking-tight text-ink text-center leading-none group-hover:text-cocoa transition-colors duration-500">
             {brand.name}
           </span>
-        </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between gap-2 px-4 sm:px-5 py-3 border-t border-ink/10">
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-ink/60 group-hover:text-ink transition-colors truncate">
+          {brand.name}
+        </span>
+        <span className="sr-only">{t('brandsViewBrand')}</span>
+        <span className="w-7 h-7 shrink-0 rounded-full border border-ink/15 group-hover:border-gold group-hover:bg-gold flex items-center justify-center text-ink/60 group-hover:text-ink transition-all duration-300">
+          <ArrowRight size={12} aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-0.5" />
+        </span>
       </div>
     </Link>
   );
 }
 
 function BrandsShowcaseSection() {
-  const { language } = useLanguage();
-  const [apiBrands, setApiBrands] = useState<ApiBrand[]>([]);
+  const { language, t } = useLanguage();
+  const [allBrands, setAllBrands] = useState<ApiBrand[]>([]);
 
   useEffect(() => {
     fetch(Endpoints.brands)
       .then(r => r.json())
       .then(json => {
         const data: ApiBrand[] = Array.isArray(json) ? json : (json?.data ?? []);
-        // Show the same curated roster as /our-origins, in that page's order.
-        const curated = CURATED_BRAND_SLUGS
-          .map(slug => data.find(b => b.slug === slug))
-          .filter((b): b is ApiBrand => !!b);
-        if (curated.length > 0) setApiBrands(curated);
-        else if (data.length > 0) setApiBrands(data); // fallback: show whatever brands exist
+        setAllBrands(data);
       })
-      .catch(() => { /* keep empty, fallback renders nothing */ });
+      .catch(() => { /* keep empty, section renders nothing */ });
   }, []);
 
-  if (apiBrands.length === 0) return null;
+  // Wall: the curated roster in /our-origins order, falling back to whatever
+  // exists. Marquee + count: the full catalogue of brands.
+  const wall = useMemo(() => {
+    const curated = CURATED_BRAND_SLUGS
+      .map(slug => allBrands.find(b => b.slug === slug))
+      .filter((b): b is ApiBrand => !!b);
+    return (curated.length > 0 ? curated : allBrands).slice(0, 8);
+  }, [allBrands]);
 
-  const left = apiBrands.slice(0, 4);
-  const right = apiBrands.slice(4, 8);
-  // Alternating tilt per tile, mirrored on the right column, for a hand-arranged collage feel.
-  const tiltFor = (i: number, mirrored = false) => {
-    const deg = i % 2 === 0 ? -4 : 3;
-    return mirrored ? -deg : deg;
-  };
+  if (wall.length === 0) return null;
+
+  const ctaHref = language === 'fr' || language === 'en' ? '/marques' : '/our-origins';
 
   return (
-    <section className="bg-ink py-20 sm:py-24 md:py-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden grain-overlay">
-      <div className="absolute inset-0 opacity-[0.08] bg-[radial-gradient(ellipse_at_50%_50%,_#C9A05A,_transparent_70%)] pointer-events-none" />
+    <section className="bg-ink py-20 sm:py-24 md:py-28 relative overflow-hidden grain-overlay border-t border-sand/10">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(201,160,90,0.08),_transparent_60%)] pointer-events-none" />
 
-      <div className="max-w-[1500px] mx-auto relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
-
-          {/* Left collage — desktop only */}
-          <div className="hidden lg:grid grid-cols-2 grid-rows-2 gap-4 w-full lg:w-1/3 h-[420px]">
-            {left.map((brand, i) => (
-              <motion.div
-                key={brand.id}
-                initial={{ opacity: 0, y: 30, rotate: 0 }}
-                whileInView={{ opacity: 1, y: 0, rotate: tiltFor(i) }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className={i === 0 ? 'row-span-2' : ''}
-              >
-                <BrandTile brand={brand} className="w-full h-full" />
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Center content */}
-          <div className="w-full lg:w-1/3 text-center px-2 sm:px-6">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-5 h-px bg-gold/40" />
-              <span className="text-[9px] font-black tracking-[0.4em] uppercase text-sand/50">
-                {language === 'fr' ? 'Nos Partenaires' : 'Our Partners'}
-              </span>
-              <div className="w-5 h-px bg-gold/40" />
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-end mb-12 md:mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-7"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-px bg-gold" />
+              <span className="text-[9px] font-black tracking-[0.35em] uppercase text-gold">{t('brandsEyebrow')}</span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-sand uppercase leading-[0.95] mb-5">
-              {language === 'fr' ? (
-                <>Marques de<br /><span className="text-gold">Confiance</span></>
-              ) : (
-                <>Trusted<br /><span className="text-gold">Brands</span></>
-              )}
+            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-sand uppercase tracking-tight leading-[0.88] mb-6">
+              {t('brandsTitle1')}<br />
+              <span className="text-gold">{t('brandsTitle2')}</span>
             </h2>
-            <p className="text-sand/60 text-sm leading-relaxed max-w-xs mx-auto mb-8">
-              {language === 'fr'
-                ? 'Les grandes marques du café, toutes réunies sur notre plateforme.'
-                : 'World-renowned coffee brands, all available on our platform.'}
+            <p className="text-sand/60 text-sm sm:text-base leading-relaxed max-w-lg">
+              {t('brandsDesc')}
             </p>
-            {/* Was /our-origins, which is about coffee origins rather than the
-                brands this section is showing. /marques is the brand hub and
-                the correct destination for this anchor text; the other locales
-                keep the origins page, which is translated. */}
-            <Link
-              href={language === 'fr' || language === 'en' ? '/marques' : '/our-origins'}
-              className="inline-flex items-center gap-3 text-gold border border-gold/40 hover:border-gold hover:bg-gold hover:text-ink px-7 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300"
-            >
-              {language === 'fr' ? 'Découvrir Nos Marques' : 'Discover Our Brands'} <ArrowRight size={12} />
-            </Link>
-          </div>
+          </motion.div>
 
-          {/* Right collage — desktop only, mirrored */}
-          <div className="hidden lg:grid grid-cols-2 grid-rows-2 gap-4 w-full lg:w-1/3 h-[420px]">
-            {right.map((brand, i) => (
-              <motion.div
-                key={brand.id}
-                initial={{ opacity: 0, y: 30, rotate: 0 }}
-                whileInView={{ opacity: 1, y: 0, rotate: tiltFor(i, true) }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className={i === 3 ? 'row-span-2 row-start-1' : ''}
-              >
-                <BrandTile brand={brand} className="w-full h-full" />
-              </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-5 flex flex-wrap items-end lg:justify-end gap-x-10 gap-y-6"
+          >
+            <div className="flex items-baseline gap-3">
+              <span className="font-display text-5xl sm:text-6xl text-gold leading-none">{allBrands.length}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sand/50 max-w-[8rem] leading-snug">
+                {t('brandsCountLabel')}
+              </span>
+            </div>
+            <Link
+              href={ctaHref}
+              className="inline-flex items-center gap-2 min-h-11 text-[10px] font-black uppercase tracking-widest text-gold border border-gold hover:bg-gold hover:text-ink px-7 py-3.5 rounded-full transition-all duration-300"
+            >
+              {t('brandsCta')} <ArrowRight size={11} aria-hidden="true" />
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Logo wall */}
+        <ul className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+          {wall.map((brand, i) => (
+            <motion.li
+              key={brand.id}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.5, delay: (i % 4) * 0.07, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <BrandTile brand={brand} />
+            </motion.li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Name marquee — every brand carried. Decorative (the wall and CTA
+          carry the links), so hidden from assistive tech; .marquee-track
+          pauses on hover and stops under prefers-reduced-motion. */}
+      {allBrands.length > 0 && (
+        <div
+          aria-hidden="true"
+          className="relative z-10 mt-14 md:mt-20 overflow-hidden border-y border-sand/10 py-5 sm:py-6"
+          style={{
+            WebkitMaskImage: 'linear-gradient(90deg, transparent, black 8%, black 92%, transparent)',
+            maskImage: 'linear-gradient(90deg, transparent, black 8%, black 92%, transparent)',
+          }}
+        >
+          <div className="marquee-track" style={{ animationDuration: `${Math.max(30, allBrands.length * 3)}s` }}>
+            {[0, 1].map(copy => (
+              <div key={copy} className="flex items-center shrink-0">
+                {allBrands.map(brand => (
+                  <span key={`${copy}-${brand.id}`} className="flex items-center">
+                    <span className="font-display text-2xl sm:text-3xl md:text-4xl uppercase tracking-tight text-sand/25 whitespace-nowrap px-6 sm:px-8">
+                      {brand.name}
+                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-gold/60" />
+                  </span>
+                ))}
+              </div>
             ))}
           </div>
         </div>
-
-        {/* Compact grid — mobile/tablet, no room for the flanking collage columns */}
-        <div className="grid lg:hidden grid-cols-3 sm:grid-cols-4 gap-3 mt-12">
-          {apiBrands.map((brand, i) => (
-            <motion.div
-              key={brand.id}
-              initial={{ opacity: 0, y: 20, scale: 0.94 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.5, delay: (i % 4) * 0.08 }}
-            >
-              <BrandTile brand={brand} className="w-full h-24 sm:h-28" />
-            </motion.div>
-          ))}
-        </div>
-      </div>
+      )}
     </section>
   );
 }

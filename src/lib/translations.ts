@@ -1,6 +1,13 @@
 export const translations = {
     fr: {
         // ── Homepage sections & footer contact ──
+        brandsEyebrow: "Nos Partenaires",
+        brandsTitle1: "Marques de",
+        brandsTitle2: "Confiance",
+        brandsDesc: "Les grandes maisons de café italiennes, portugaises et françaises, réunies en un seul endroit — en grains, moulu et en capsules.",
+        brandsCta: "Découvrir Nos Marques",
+        brandsViewBrand: "Voir la marque",
+        brandsCountLabel: "marques distribuées",
         heroShopNow: "Acheter maintenant",
         bestSellingEyebrow: "Les Préférés de nos Clients",
         bestSellingLine1: "Meilleures",
@@ -131,7 +138,7 @@ export const translations = {
         aromaticProfile: "Profil Aromatique",
         availableIn: "Disponible en",
         selectPack: "Choisir le format",
-        select:"Sélectionner",
+        buyNow: "Acheter",
         addToCart: "Ajouter au Panier",
         quickAdd: "Ajouter Rapidement",
         viewFullExperience: "Voir la Fiche Complète & Avis",
@@ -930,6 +937,13 @@ export const translations = {
 
     en: {
         // ── Homepage sections & footer contact ──
+        brandsEyebrow: "Our Partners",
+        brandsTitle1: "Trusted",
+        brandsTitle2: "Brands",
+        brandsDesc: "The great Italian, Portuguese and French coffee houses, all in one place — whole bean, ground and capsules.",
+        brandsCta: "Discover Our Brands",
+        brandsViewBrand: "View brand",
+        brandsCountLabel: "brands distributed",
         heroShopNow: "Shop Now",
         bestSellingEyebrow: "Customer Favourites",
         bestSellingLine1: "Best",
@@ -1045,7 +1059,7 @@ export const translations = {
         aromaticProfile: "Aromatic Profile",
         availableIn: "Available In",
         selectPack: "Select Format",
-        select:"Select",
+        buyNow: "Buy Now",
         addToCart: "Add To Cart",
         quickAdd: "Quick Add",
         viewFullExperience: "Full Product Story & Reviews",
@@ -1844,6 +1858,13 @@ export const translations = {
 
     de: {
         // ── Homepage sections & footer contact ──
+        brandsEyebrow: "Unsere Partner",
+        brandsTitle1: "Starke",
+        brandsTitle2: "Marken",
+        brandsDesc: "Die großen italienischen, portugiesischen und französischen Kaffeehäuser an einem Ort — ganze Bohnen, gemahlen und Kapseln.",
+        brandsCta: "Unsere Marken entdecken",
+        brandsViewBrand: "Marke ansehen",
+        brandsCountLabel: "Marken im Sortiment",
         heroShopNow: "Jetzt einkaufen",
         bestSellingEyebrow: "Kundenlieblinge",
         bestSellingLine1: "Best",
@@ -2167,7 +2188,7 @@ export const translations = {
         body: "Körper",
         sweetness: "Süße",
         availableIn: "Erhältlich in",
-        select: "Auswählen",
+        buyNow: "Jetzt kaufen",
         viewFullExperience: "Vollständige Produktgeschichte & Bewertungen",
         unitPrice: "Stückpreis",
         discount: "Rabatt",
@@ -2749,6 +2770,13 @@ export const translations = {
 
     ru: {
         // ── Homepage sections & footer contact ──
+        brandsEyebrow: "Наши партнёры",
+        brandsTitle1: "Проверенные",
+        brandsTitle2: "Бренды",
+        brandsDesc: "Ведущие итальянские, португальские и французские кофейные дома в одном месте — зерно, молотый кофе и капсулы.",
+        brandsCta: "Все бренды",
+        brandsViewBrand: "Смотреть бренд",
+        brandsCountLabel: "брендов в ассортименте",
         heroShopNow: "Купить сейчас",
         bestSellingEyebrow: "Выбор покупателей",
         bestSellingLine1: "Хиты",
@@ -3072,7 +3100,7 @@ export const translations = {
         body: "Тело",
         sweetness: "Сладость",
         availableIn: "Доступно в",
-        select: "Выбрать",
+        buyNow: "Купить",
         viewFullExperience: "Полная история товара и отзывы",
         unitPrice: "Цена за единицу",
         discount: "Скидка",
@@ -3654,6 +3682,13 @@ export const translations = {
 
     nl: {
         // ── Homepage sections & footer contact ──
+        brandsEyebrow: "Onze Partners",
+        brandsTitle1: "Vertrouwde",
+        brandsTitle2: "Merken",
+        brandsDesc: "De grote Italiaanse, Portugese en Franse koffiehuizen op één plek — bonen, gemalen en capsules.",
+        brandsCta: "Ontdek onze merken",
+        brandsViewBrand: "Bekijk merk",
+        brandsCountLabel: "merken in ons assortiment",
         heroShopNow: "Nu winkelen",
         bestSellingEyebrow: "Favorieten van klanten",
         bestSellingLine1: "Best",
@@ -3977,7 +4012,7 @@ export const translations = {
         body: "Body",
         sweetness: "Zoetheid",
         availableIn: "Beschikbaar in",
-        select: "Selecteren",
+        buyNow: "Nu kopen",
         viewFullExperience: "Volledig productverhaal & beoordelingen",
         unitPrice: "Prijs per stuk",
         discount: "Korting",
