@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Star } from 'lucide-react';
 import { localePath } from '@/lib/i18n';
@@ -18,9 +19,24 @@ interface ProductCardProps {
     product: Product;
     onClick: (product: Product) => void;
     index: number;
+    /**
+     * First row of a listing that opens the page (the shop grid). Rendered
+     * visible in the server HTML instead of fading in after hydration, and the
+     * first two images are preloaded — they are the LCP element of an ad
+     * landing on /shop, and waiting for JS + an IntersectionObserver to reveal
+     * them cost the whole hydration time on a mid-range phone.
+     */
+    aboveTheFold?: boolean;
 }
 
-export function ProductCard({ product, onClick, index }: ProductCardProps) {
+/**
+ * Rendered width of a card per breakpoint, mirroring the listing grids
+ * (2 columns on phones, 3 at md, 4 at lg, 5 at 2xl). Lets next/image pick a
+ * ~400px rendition on mobile instead of shipping the multi-hundred-KB upload.
+ */
+const CARD_IMAGE_SIZES = '(max-width: 767px) 50vw, (max-width: 1023px) 33vw, (max-width: 1535px) 25vw, 20vw';
+
+export function ProductCard({ product, onClick, index, aboveTheFold = false }: ProductCardProps) {
     // `language` comes from the [locale] route segment on the server, so the
     // product href is deterministic during SSR rather than depending on
     // anything only available after hydration.
@@ -71,7 +87,7 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
         //
         // Rendering is unchanged: same element, same classes.
         <motion.div
-            initial={{ opacity: 0, y: 32 }}
+            initial={aboveTheFold ? false : { opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.5, delay: Math.min(index, 5) * 0.07, ease: [0.22, 1, 0.36, 1] }}
@@ -96,19 +112,39 @@ export function ProductCard({ product, onClick, index }: ProductCardProps) {
                     }}
                     onMouseLeave={() => setImgIdx(0)}
                 >
-                    <AnimatePresence mode="wait">
+                    {/*
+                      initial={false}: the first image renders at its resting
+                      state in the server HTML rather than at opacity 0 waiting
+                      for hydration. Hover swaps still cross-fade.
+                    */}
+                    <AnimatePresence mode="wait" initial={false}>
                         {currentImage ? (
-                            <motion.img
+                            <motion.div
                                 key={currentImage}
                                 initial={{ opacity: 0, scale: 1.04 }}
                                 animate={{ opacity: 1, scale: isHovered ? 1.06 : 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                                src={currentImage}
-                                alt={product.name}
-                                className="absolute inset-0 w-full h-full object-cover"
-                                draggable={false}
-                            />
+                                className="absolute inset-0"
+                            >
+                                {/*
+                                  next/image rather than a raw <img>: catalogue
+                                  uploads are full-size JPG/PNG (up to ~680KB
+                                  each, ~8.6MB across /shop). This serves a
+                                  resized AVIF/WebP per CARD_IMAGE_SIZES, lazy
+                                  below the fold, with the box reserved by the
+                                  4:3 container so nothing shifts.
+                                */}
+                                <Image
+                                    src={currentImage}
+                                    alt={product.name}
+                                    fill
+                                    sizes={CARD_IMAGE_SIZES}
+                                    preload={aboveTheFold && index < 2}
+                                    className="object-cover"
+                                    draggable={false}
+                                />
+                            </motion.div>
                         ) : (
                             /* Premium no-image placeholder */
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-sand to-[#ddc9a8]">

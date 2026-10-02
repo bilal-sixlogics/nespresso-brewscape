@@ -39,3 +39,8 @@ admin/
 
 # Claude memory
 .claude/
+
+# Brag launch-video output
+.brag/
+brag-output/
+brag-output-*/

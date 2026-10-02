@@ -19,6 +19,7 @@ const playfair = Playfair_Display({
 import { buildBaseMetadata, buildWebsiteSchema, organizationSchema } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+import { ConversionTracking } from '@/components/ConversionTracking';
 import { ConsentProvider } from '@/context/ConsentContext';
 import { CookieConsentBanner } from '@/components/ui/CookieConsentBanner';
 import { LOCALES, LOCALE_META, isLocale, type Locale } from '@/lib/i18n';
@@ -124,6 +125,7 @@ export default async function RootLayout({
           is granted, so on a first visit no request is made to Google.
         */}
         <GoogleAnalytics />
+        <ConversionTracking />
         <CookieConsentBanner />
         </ConsentProvider>
       </body>

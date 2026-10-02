@@ -65,7 +65,7 @@ const CONTENT: LandingContent = {
         {
             heading: 'Retrait en boutique à Gonesse, ou livraison dans le 95',
             body: [
-                'Le retrait en boutique (Click & Collect) est gratuit et disponible à Gonesse aux horaires d’ouverture, du lundi au vendredi de 9h à 17h. C’est l’option la plus rapide pour un établissement du Val-d’Oise, et la seule qui permette de repartir avec la marchandise le jour de la commande.',
+                'Le retrait en boutique (Click & Collect) est gratuit et disponible à Gonesse aux horaires d’ouverture, du lundi au vendredi de 9h à 12h30 et de 13h30 à 17h30, et le samedi de 9h à 12h30 et de 13h30 à 16h. C’est l’option la plus rapide pour un établissement du Val-d’Oise, et la seule qui permette de repartir avec la marchandise le jour de la commande.',
                 'La livraison standard est facturée 5,99 €, offerte à partir de 150 € de commande, en 5 à 7 jours ouvrés. Une livraison express en 2 à 3 jours ouvrés est également disponible. Pour les comptes professionnels réguliers du département, le rythme de réassort se cale sur votre consommation réelle plutôt que sur des commandes ponctuelles.',
                 'Nous livrons aussi dans le reste de l’Île-de-France, partout en France, ainsi qu’en Belgique, au Luxembourg et en Suisse — utile pour les structures du 95 dont les autres établissements sont hors département.',
             ],
@@ -115,7 +115,7 @@ const CONTENT: LandingContent = {
         {
             question: 'Puis-je retirer ma commande en boutique dans le 95 ?',
             answer:
-                'Oui. Le retrait en boutique (Click & Collect) est gratuit à Gonesse, du lundi au vendredi de 9h à 17h. C’est l’option la plus rapide pour un établissement du Val-d’Oise, puisqu’elle permet de repartir avec la marchandise sans attendre une livraison.',
+                'Oui. Le retrait en boutique (Click & Collect) est gratuit à Gonesse, du lundi au vendredi de 9h à 12h30 et de 13h30 à 17h30, et le samedi de 9h à 12h30 et de 13h30 à 16h. C’est l’option la plus rapide pour un établissement du Val-d’Oise, puisqu’elle permet de repartir avec la marchandise sans attendre une livraison.',
         },
         {
             question: 'Quelles villes du Val-d’Oise livrez-vous ?',

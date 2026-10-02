@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ChevronDown, ShoppingBag, Check, ArrowRight, Share2, Heart, ArrowLeft, X, Maximize2 } from 'lucide-react';
+import Image from 'next/image';
 import Link from '@/components/LocaleLink';
 import { useCart } from '@/store/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -19,6 +20,7 @@ import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
 import { IntensityBar } from '@/components/ui/IntensityBar';
 import { RichText } from '@/components/ui/RichText';
 import { TrustIndicators } from '@/components/ui/TrustIndicators';
+import { toTrackedItem, trackViewContent } from '@/lib/tracking';
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -140,6 +142,15 @@ export default function ProductDetailPageClient({
     const { products: relatedProductsRaw } = useProducts(relatedParams);
     const relatedProducts = relatedProductsRaw.filter(p => p.id !== product?.id).slice(0, 4);
 
+    // ViewContent once per product, not per re-render or refetch. The landing
+    // product of an ad click is the signal Meta optimises catalogue ads on.
+    const viewTrackedFor = useRef<number | null>(null);
+    useEffect(() => {
+        if (!product || viewTrackedFor.current === product.id) return;
+        viewTrackedFor.current = product.id;
+        trackViewContent(toTrackedItem(product, getDefaultUnit(product) ?? null));
+    }, [product]);
+
     // ── Early returns after all hooks ──────────────────────────────────────────
     if (productLoading) {
         return (
@@ -228,17 +239,31 @@ export default function ProductDetailPageClient({
                             className="absolute bottom-6 right-6 z-10 w-10 h-10 bg-ink/50 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <Maximize2 size={14} className="text-sand" />
                         </button>
-                        <AnimatePresence mode="wait">
-                            <motion.img
+                        {/*
+                          The LCP element of a product landing page. next/image
+                          serves a viewport-sized AVIF/WebP instead of the raw
+                          upload and preloads it; initial={false} renders it
+                          visible in the server HTML rather than at opacity 0
+                          until hydration. The lightbox keeps the original.
+                        */}
+                        <AnimatePresence mode="wait" initial={false}>
+                            <motion.div
                                 key={activeImg}
                                 initial={{ opacity: 0, scale: 1.04 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.97 }}
                                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                                src={images[activeImg]}
-                                alt={displayName}
-                                className="w-full h-full object-cover rounded-[inherit] drop-shadow-[0_40px_60px_rgba(0,0,0,0.2)]"
-                            />
+                                className="absolute inset-0 rounded-[inherit] drop-shadow-[0_40px_60px_rgba(0,0,0,0.2)]"
+                            >
+                                <Image
+                                    src={images[activeImg]}
+                                    alt={displayName}
+                                    fill
+                                    sizes="(max-width: 1023px) 100vw, 50vw"
+                                    preload={activeImg === 0}
+                                    className="object-cover rounded-[inherit]"
+                                />
+                            </motion.div>
                         </AnimatePresence>
                     </div>
 
@@ -251,7 +276,7 @@ export default function ProductDetailPageClient({
                                     onClick={() => setActiveImg(i)}
                                     className={`w-16 h-16 rounded-2xl overflow-hidden border-2 transition-all duration-200 ${i === activeImg ? 'border-gold shadow-lg shadow-gold/20' : 'border-sand/15 opacity-60 hover:opacity-100'}`}
                                 >
-                                    <img src={img} alt={`View ${i + 1}`} className="w-full h-full object-cover" />
+                                    <Image src={img} alt={`View ${i + 1}`} width={64} height={64} className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>
