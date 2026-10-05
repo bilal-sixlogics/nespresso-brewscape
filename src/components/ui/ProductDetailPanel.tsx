@@ -120,6 +120,12 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
         setMounted(true);
     }, []);
 
+    // Pending "added" reset / mobile auto-close, cleared if the product changes or we unmount
+    const addedTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+    React.useEffect(() => () => {
+        if (addedTimer.current) clearTimeout(addedTimer.current);
+    }, [product?.id]);
+
     // Reset state when product changes
     React.useEffect(() => {
         setQuantity(1);
@@ -174,7 +180,15 @@ export function ProductDetailPanel({ product, onClose }: ProductDetailPanelProps
     const handleAddToCart = () => {
         addToCart(product, effectiveUnit, quantity);
         setIsAdded(true);
-        setTimeout(() => setIsAdded(false), 1800);
+        if (addedTimer.current) clearTimeout(addedTimer.current);
+
+        // Below `sm` the panel covers the whole screen, so close it once the
+        // confirmation has registered and drop the user back where they were.
+        if (window.matchMedia('(max-width: 639px)').matches) {
+            addedTimer.current = setTimeout(onClose, 900);
+            return;
+        }
+        addedTimer.current = setTimeout(() => setIsAdded(false), 1800);
     };
 
     return createPortal(
