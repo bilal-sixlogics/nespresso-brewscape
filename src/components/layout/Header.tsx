@@ -14,8 +14,14 @@ import { localeFromPathname, localePath } from '@/lib/i18n';
 import { FlagIcon } from '@/components/ui/FlagIcon';
 import { useFormatPrice } from '@/context/SiteSettingsContext';
 import { useProducts } from '@/hooks/useProducts';
-import { CartDrawer } from '@/components/ui/CartDrawer';
+import dynamic from 'next/dynamic';
 import { Product, getProductImage, getDisplayPrice, getDefaultUnit } from '@/types';
+
+// Loaded on first open: the drawer (promo codes, quantity controls, free-
+// shipping meter) was in the first-load bundle of every page.
+const CartDrawer = dynamic(() => import('@/components/ui/CartDrawer').then(m => m.CartDrawer), {
+    ssr: false,
+});
 
 // ─── Type ─────────────────────────────────────────────────────────────────
 interface NavLink { href: string; labelKey: string; active?: boolean }
@@ -240,6 +246,9 @@ export function Header() {
     const { t, language } = useLanguage();
     const [searchOpen, setSearchOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
+    // Stays mounted after the first open so the drawer's exit animation runs.
+    const [cartLoaded, setCartLoaded] = useState(false);
+    if (cartOpen && !cartLoaded) setCartLoaded(true);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     // Portals require a DOM node — only available once mounted on the client.
     const [mounted, setMounted] = useState(false);
@@ -470,7 +479,7 @@ export function Header() {
                 {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
             </AnimatePresence>
 
-            <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+            {cartLoaded && <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />}
         </>
     );
 }

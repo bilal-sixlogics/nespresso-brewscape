@@ -9,6 +9,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { LandingPage, type LandingContent } from '@/components/seo/LandingPage';
+import { journalGuideLinks } from '@/lib/journal-links';
 import { getProductsInCategoryNamed } from '@/lib/api/server';
 import { FRENCH_ONLY, pageMetadata, wholesalerSchema } from '@/lib/seo';
 import { toLocale } from '@/lib/i18n';
@@ -138,9 +139,9 @@ export async function generateMetadata({
     const locale = toLocale((await params).locale);
     return pageMetadata({
         locale,
-        title: 'Machine à Café Professionnelle | Paris & Île-de-France',
+        title: 'Machine à Café Professionnelle | Paris & IDF',
         description:
-            'Machines à café professionnelles chez Cafrezzo : machines à grains, à capsules et automatiques pour cafés, restaurants, hôtels et bureaux. Conseil selon le volume servi, livraison en Île-de-France et en France.',
+            'Machines à grains, à capsules et automatiques pour cafés, restaurants, hôtels et bureaux. Conseil selon le volume servi, livraison en Île-de-France.',
         path: PATH,
         locales: FRENCH_ONLY,
     });
@@ -156,6 +157,13 @@ export default async function MachineProPage({
 
     const products = await getProductsInCategoryNamed('MACHINES', 8);
 
+    // Trade guides that go deeper on this page's subject.
+    const guides = await journalGuideLinks([
+        'prix-machine-a-cafe-professionnelle',
+        'fournisseur-cafe-entreprise',
+        'fournisseur-cafe-restaurant-paris',
+    ]);
+
     return (
         <LandingPage
             locale={locale}
@@ -163,6 +171,7 @@ export default async function MachineProPage({
             content={CONTENT}
             products={products}
             extraSchemas={[wholesalerSchema]}
+            guides={guides}
         />
     );
 }

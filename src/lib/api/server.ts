@@ -22,11 +22,19 @@ import type { Product } from '@/types';
 // hammering the API on every crawl.
 const REVALIDATE_SECONDS = 3600;
 
-async function getJson<T>(url: string, label: string): Promise<T | null> {
+// The journal is edited far more often than the catalogue, and a fresh article
+// should not sit invisible behind an hour of cache on publication day.
+const BLOG_REVALIDATE_SECONDS = 600;
+
+async function getJson<T>(
+    url: string,
+    label: string,
+    revalidate: number = REVALIDATE_SECONDS,
+): Promise<T | null> {
     try {
         const res = await fetch(url, {
             headers: { Accept: 'application/json' },
-            next: { revalidate: REVALIDATE_SECONDS },
+            next: { revalidate },
         });
         if (!res.ok) {
             // 404 is an expected outcome for an unknown slug, not a fault.
@@ -184,6 +192,7 @@ export async function getBlogPost(id: string): Promise<BlogPost | null> {
     const body = await getJson<{ data: BlogPost } | BlogPost>(
         Endpoints.blogPost(id),
         `blog:${id}`,
+        BLOG_REVALIDATE_SECONDS,
     );
     if (!body) return null;
     const post = (body as { data?: BlogPost }).data ?? (body as BlogPost);
@@ -210,7 +219,11 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     for (let page = 1; page <= MAX_BLOG_PAGES; page++) {
         const body = await getJson<
             { data?: BlogPost[]; meta?: { last_page?: number } } | BlogPost[]
-        >(`${Endpoints.blogPosts}?per_page=${BLOG_PAGE_SIZE}&page=${page}`, `blog list p${page}`);
+        >(
+            `${Endpoints.blogPosts}?per_page=${BLOG_PAGE_SIZE}&page=${page}`,
+            `blog list p${page}`,
+            BLOG_REVALIDATE_SECONDS,
+        );
         if (!body) break;
 
         const items = Array.isArray(body) ? body : body.data;

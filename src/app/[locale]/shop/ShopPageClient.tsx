@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, Clock, ChevronDown, RotateCcw } from 'lucide-react';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
+import { LazyProductDetailPanel as ProductDetailPanel } from '@/components/ui/LazyProductDetailPanel';
 import { FilterDrawer, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 import { Product, getProductImage, getDisplayPrice } from '@/types';

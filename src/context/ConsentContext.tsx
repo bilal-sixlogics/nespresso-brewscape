@@ -11,6 +11,11 @@ interface ConsentContextType {
     setConsent: (value: Exclude<ConsentState, 'unknown'>) => void;
     /** Re-opens the banner so a visitor can change their mind. */
     resetConsent: () => void;
+    /**
+     * True once the stored decision has been read. Until then 'unknown' only
+     * means "not looked yet", so the banner should not load on its strength.
+     */
+    resolved: boolean;
 }
 
 const ConsentContext = createContext<ConsentContextType | undefined>(undefined);
@@ -41,6 +46,7 @@ function updateConsentMode(value: Exclude<ConsentState, 'unknown'>): void {
  */
 export function ConsentProvider({ children }: { children: React.ReactNode }) {
     const [consent, setConsentState] = useState<ConsentState>('unknown');
+    const [resolved, setResolved] = useState(false);
 
     useEffect(() => {
         try {
@@ -57,6 +63,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
             // localStorage unavailable (private mode, blocked) — stay 'unknown',
             // which means analytics stay off. Failing closed is the safe default.
         }
+        setResolved(true);
     }, []);
 
     const setConsent = useCallback((value: Exclude<ConsentState, 'unknown'>) => {
@@ -76,7 +83,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     return (
-        <ConsentContext.Provider value={{ consent, setConsent, resetConsent }}>
+        <ConsentContext.Provider value={{ consent, setConsent, resetConsent, resolved }}>
             {children}
         </ConsentContext.Provider>
     );

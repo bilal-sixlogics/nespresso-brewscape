@@ -91,3 +91,40 @@ export function localeFromPathname(pathname: string): Locale {
  */
 export const FRENCH_ONLY: readonly Locale[] = ['fr'];
 export const FR_EN: readonly Locale[] = ['fr', 'en'];
+
+/**
+ * Locale-free paths of pages not published in every locale, with the locales
+ * they do exist in. Must match the `locales` each page passes to
+ * pageMetadata() and the notFound() guard it applies.
+ *
+ * Exists so code that builds links to these pages from another locale — the
+ * article body cleaner, the "read next" blocks — sends readers to a URL that
+ * resolves instead of a 404.
+ */
+const ROUTE_LOCALES: Record<string, readonly Locale[]> = {
+    '/professionnels': FR_EN,
+    '/marques': FR_EN,
+    '/grossiste-cafe-paris': FRENCH_ONLY,
+    '/grossiste-cafe-ile-de-france': FRENCH_ONLY,
+    '/grossiste-cafe-val-d-oise': FRENCH_ONLY,
+    '/grossiste-cafe-seine-saint-denis': FRENCH_ONLY,
+    '/grossiste-cafe-hauts-de-seine': FRENCH_ONLY,
+    '/grossiste-cafe-seine-et-marne': FRENCH_ONLY,
+    '/grossiste-machines-a-cafe': FRENCH_ONLY,
+    '/machine-a-cafe-professionnelle': FRENCH_ONLY,
+    '/cafe-en-grains': FRENCH_ONLY,
+    '/cafe-moulu': FRENCH_ONLY,
+    '/capsules-cafe': FRENCH_ONLY,
+};
+
+/**
+ * The locale to link to for `path` from a page in `locale`: the same locale
+ * when the page exists there, otherwise French. Brand pages (/marques/x)
+ * follow /marques.
+ */
+export function linkLocale(locale: Locale, path: string): Locale {
+    const base = path.split(/[?#]/)[0].replace(/\/+$/, '') || '/';
+    const key = base.startsWith('/marques/') ? '/marques' : base;
+    const available = ROUTE_LOCALES[key];
+    return !available || available.includes(locale) ? locale : DEFAULT_LOCALE;
+}

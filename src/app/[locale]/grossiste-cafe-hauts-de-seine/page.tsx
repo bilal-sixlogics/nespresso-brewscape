@@ -11,6 +11,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { LandingPage, type LandingContent } from '@/components/seo/LandingPage';
+import { journalGuideLinks } from '@/lib/journal-links';
 import { getProductsInCategoryNamed } from '@/lib/api/server';
 import { FRENCH_ONLY, pageMetadata, wholesalerSchema } from '@/lib/seo';
 import { toLocale } from '@/lib/i18n';
@@ -155,9 +156,9 @@ export async function generateMetadata({
     const locale = toLocale((await params).locale);
     return pageMetadata({
         locale,
-        title: 'Grossiste Café Hauts-de-Seine (92) | Café pour Entreprise',
+        title: 'Grossiste Café Hauts-de-Seine (92) | Entreprises',
         description:
-            'Cafrezzo, grossiste et fournisseur de café pour les entreprises des Hauts-de-Seine : La Défense, Boulogne, Issy, Levallois. Café en grains, capsules et machines à café. Tarifs dégressifs.',
+            'Café et machines pour les entreprises de La Défense, Boulogne, Issy et Levallois : grains, capsules, machines automatiques. Tarifs dégressifs.',
         path: PATH,
         locales: FRENCH_ONLY,
     });
@@ -173,6 +174,13 @@ export default async function GrossisteCafeHautsDeSeinePage({
 
     const products = await getProductsInCategoryNamed('GRAINS', 8);
 
+    // Trade guides that go deeper on this page's subject.
+    const guides = await journalGuideLinks([
+        'fournisseur-cafe-entreprise',
+        'prix-machine-a-cafe-professionnelle',
+        'prix-cafe-professionnel-cout-par-tasse',
+    ]);
+
     return (
         <LandingPage
             locale={locale}
@@ -180,6 +188,7 @@ export default async function GrossisteCafeHautsDeSeinePage({
             content={CONTENT}
             products={products}
             extraSchemas={[wholesalerSchema]}
+            guides={guides}
         />
     );
 }

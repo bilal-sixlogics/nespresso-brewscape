@@ -33,7 +33,7 @@ const CONTENT: LandingContent = {
             body: [
                 'La plupart des grossistes qui répondent à une recherche « fournisseur café Val-d’Oise » desservent le département depuis un entrepôt situé ailleurs. Cela fonctionne pour une commande planifiée ; cela fonctionne beaucoup moins bien le jour où il manque deux kilos de grains pour finir la semaine.',
                 'Notre boutique de Gonesse sert aussi de point de retrait. Les établissements de Sarcelles, Garges-lès-Gonesse, Villiers-le-Bel, Goussainville, Arnouville, Bonneuil-en-France ou Le Thillay sont à quelques minutes ; Cergy-Pontoise, Argenteuil, Ermont, Franconville, Taverny, Montmorency et Enghien-les-Bains sont sur la même logique départementale, avec une livraison qui ne quitte pas le 95.',
-                'Concrètement, cela veut dire un réassort possible en dépannage, un interlocuteur qui connaît votre établissement, et la possibilité de régler en direct les questions qui se règlent mal par email — un moulin qui dérive, une eau trop calcaire, une référence à remplacer parce que le fournisseur précédent l’a arrêtée.',
+                'Concrètement, cela veut dire un réassort que vous pouvez retirer vous-même en boutique, un interlocuteur qui connaît votre établissement, et la possibilité de régler en direct les questions qui se règlent mal par email — un moulin qui dérive, une eau trop calcaire, une référence à remplacer parce que le fournisseur précédent l’a arrêtée.',
             ],
             cards: [
                 {
@@ -170,9 +170,9 @@ export async function generateMetadata({
     const locale = toLocale((await params).locale);
     return pageMetadata({
         locale,
-        title: 'Grossiste Café Val-d’Oise (95) | Fournisseur Professionnel',
+        title: 'Grossiste Café Val-d’Oise (95) | Gonesse',
         description:
-            'Cafrezzo, grossiste et fournisseur de café professionnel dans le Val-d’Oise, basé à Gonesse (95500). Café en grains, moulu, capsules et machines à café. Retrait en boutique, tarifs dégressifs.',
+            'Boutique à Gonesse (95500) : café en grains, moulu, capsules et machines pour les professionnels du Val-d’Oise. Retrait sur place, tarifs dégressifs.',
         path: PATH,
         locales: FRENCH_ONLY,
     });

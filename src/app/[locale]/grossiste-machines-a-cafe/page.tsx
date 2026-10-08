@@ -10,6 +10,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { LandingPage, type LandingContent } from '@/components/seo/LandingPage';
+import { journalGuideLinks } from '@/lib/journal-links';
 import { getProductsInCategoryNamed } from '@/lib/api/server';
 import { FRENCH_ONLY, pageMetadata, wholesalerSchema } from '@/lib/seo';
 import { toLocale } from '@/lib/i18n';
@@ -140,7 +141,7 @@ export async function generateMetadata({
         locale,
         title: 'Grossiste Machines à Café pour Professionnels',
         description:
-            'Cafrezzo, grossiste et fournisseur de machines à café professionnelles : machines à grains, à capsules et automatiques. Café et machine chez le même fournisseur, tarifs dégressifs.',
+            'Machines à café professionnelles à grains, à capsules et automatiques, et le café qui va avec : un seul fournisseur, des tarifs dégressifs.',
         path: PATH,
         locales: FRENCH_ONLY,
     });
@@ -156,6 +157,13 @@ export default async function GrossisteMachinesPage({
 
     const products = await getProductsInCategoryNamed('MACHINES', 8);
 
+    // Trade guides that go deeper on this page's subject.
+    const guides = await journalGuideLinks([
+        'prix-machine-a-cafe-professionnelle',
+        'fournisseur-cafe-entreprise',
+        'fournisseur-cafe-coffee-shop',
+    ]);
+
     return (
         <LandingPage
             locale={locale}
@@ -163,6 +171,7 @@ export default async function GrossisteMachinesPage({
             content={CONTENT}
             products={products}
             extraSchemas={[wholesalerSchema]}
+            guides={guides}
         />
     );
 }

@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Share2, Bookmark, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, Calendar, Clock, Share2, Bookmark, Loader2 } from 'lucide-react';
 import Link from '@/components/LocaleLink';
 import DOMPurify from 'isomorphic-dompurify';
 import { Endpoints } from '@/lib/api/endpoints';
 import { useLanguage } from '@/context/LanguageContext';
+import { articleLocale, cleanArticleHtml, readingMinutes } from '@/lib/article-content';
+import { journalCategoryLabel } from '@/lib/journal-seo';
+import { LOCALE_META } from '@/lib/i18n';
 
 interface BlogPost {
     id: number; title: string; slug?: string; category?: string; excerpt?: string | null;
@@ -50,7 +53,7 @@ export default function BlogPostClient({
     slug: string;
     initialPost?: BlogPost | null;
 }) {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const [post, setPost] = useState<BlogPost | null>(initialPost);
     // Already have the article: nothing to wait for, nothing to fetch.
     const [loading, setLoading] = useState(!initialPost);
@@ -95,13 +98,29 @@ export default function BlogPostClient({
         );
     }
 
+    // The article's own language, which is also the page locale once the
+    // server has redirected any other-language URL.
+    const lang = articleLocale(post);
     const publishDate = post.published_at
-        ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        ? new Date(post.published_at).toLocaleDateString(LOCALE_META[language].hreflang, {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+          })
         : '';
+    // Idempotent, so the server-cleaned body passes through unchanged; this is
+    // for the client-fetch fallback, which receives raw CMS HTML.
+    const bodyHtml = post.body
+        ? demoteBodyHeadings(cleanArticleHtml(DOMPurify.sanitize(post.body), { title: post.title, locale: lang }))
+        : '';
+    const minutes = readingMinutes(post.body);
 
     return (
         <div className="w-full relative bg-ink text-sand overflow-x-hidden min-h-screen grain-overlay">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+            {/* No entrance animation: the wrapper used to start at opacity 0, so
+                the server-rendered article stayed invisible until JavaScript
+                had loaded and the fade had run — a full second added to LCP. */}
+            <div>
                 <div className="pt-20 lg:pt-32 px-4 lg:px-8 max-w-[1000px] mx-auto">
                     <Link href="/journal" className="inline-flex items-center text-xs font-bold tracking-widest uppercase text-cocoa hover:text-gold transition-colors mb-12 group">
                         <ArrowLeft size={16} className="mr-3 transform group-hover:-translate-x-2 transition-transform" />
@@ -109,8 +128,21 @@ export default function BlogPostClient({
                     </Link>
 
                     <div className="flex items-center gap-4 text-xs font-semibold text-cocoa mb-8 uppercase tracking-widest flex-wrap">
-                        <span className="text-gold bg-gold/15 px-3 py-1 rounded-full">{post.category}</span>
-                        {publishDate && <div className="flex items-center gap-1"><Calendar size={14} className="text-cocoa/50" /> {publishDate}</div>}
+                        {post.category && (
+                            <span className="text-gold bg-gold/15 px-3 py-1 rounded-full">
+                                {journalCategoryLabel(post.category, language)}
+                            </span>
+                        )}
+                        {publishDate && (
+                            <div className="flex items-center gap-1">
+                                <Calendar size={14} className="text-cocoa/50" />
+                                <time dateTime={post.published_at ?? undefined}>{publishDate}</time>
+                            </div>
+                        )}
+                        <div className="flex items-center gap-1">
+                            <Clock size={14} className="text-cocoa/50" />
+                            {t('readTimeMinutes').replace('{{min}}', String(minutes))}
+                        </div>
                         {post.author_name && (
                             <>
                                 <span className="w-1 h-1 rounded-full bg-sand/20" />
@@ -125,12 +157,21 @@ export default function BlogPostClient({
                 </div>
 
                 {post.featured_image && (
-                    <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }}
-                        className="w-full max-w-[1400px] mx-auto px-4 lg:px-8 mb-16">
+                    <div className="w-full max-w-[1400px] mx-auto px-4 lg:px-8 mb-16">
                         <div className="rounded-[40px] overflow-hidden aspect-[21/9] lg:aspect-[3/1] bg-sand/10 relative shadow-2xl">
-                            <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
+                            {/* The likely LCP element: optimised (AVIF/WebP,
+                                sized per viewport) and fetched at high priority
+                                instead of a raw 870px remote JPEG. */}
+                            <Image
+                                src={post.featured_image}
+                                alt={post.title}
+                                fill
+                                priority
+                                sizes="(min-width: 1400px) 1336px, (min-width: 1024px) calc(100vw - 64px), calc(100vw - 32px)"
+                                className="object-cover"
+                            />
                         </div>
-                    </motion.div>
+                    </div>
                 )}
 
                 <div className="max-w-[800px] mx-auto px-4 lg:px-8 pb-32">
@@ -155,9 +196,7 @@ export default function BlogPostClient({
                             {post.body ? (
                                 <div
                                     className="prose prose-lg prose-invert max-w-none text-sand/70 leading-[1.9] prose-headings:font-display prose-headings:uppercase prose-headings:tracking-tight prose-headings:text-sand prose-a:text-gold prose-blockquote:border-gold prose-blockquote:font-display prose-blockquote:italic prose-li:marker:text-gold"
-                                    dangerouslySetInnerHTML={{
-                                        __html: demoteBodyHeadings(DOMPurify.sanitize(post.body)),
-                                    }}
+                                    dangerouslySetInnerHTML={{ __html: bodyHtml }}
                                 />
                             ) : (
                                 <p className="text-cocoa italic">{t('noContentYet')}</p>
@@ -177,7 +216,7 @@ export default function BlogPostClient({
                         </div>
                     </div>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 }

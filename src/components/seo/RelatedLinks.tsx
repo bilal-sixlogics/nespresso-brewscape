@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { localePath, type Locale } from '@/lib/i18n';
+import { linkLocale, localePath, type Locale } from '@/lib/i18n';
 
 export interface RelatedLink {
     /** Locale-free path, e.g. '/professionnels'. */
@@ -38,10 +38,18 @@ export function RelatedLinks({
 }) {
     if (!links.length) return null;
 
+    // Derived from the heading so two blocks on one page get distinct ids.
+    const headingId = `related-${heading
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')}`;
+
     return (
-        <nav aria-labelledby="related-links-heading" className={`max-w-[1000px] mx-auto px-4 lg:px-8 pb-24 ${className}`}>
+        <nav aria-labelledby={headingId} className={`max-w-[1000px] mx-auto px-4 lg:px-8 pb-24 ${className}`}>
             <h2
-                id="related-links-heading"
+                id={headingId}
                 className="font-display text-2xl uppercase tracking-tight text-sand mb-8"
             >
                 {heading}
@@ -50,7 +58,7 @@ export function RelatedLinks({
                 {links.map(link => (
                     <li key={link.href}>
                         <Link
-                            href={localePath(locale, link.href)}
+                            href={localePath(linkLocale(locale, link.href), link.href)}
                             className="block rounded-2xl border border-sand/15 p-5 hover:border-gold transition-colors"
                         >
                             <span className="block text-sm font-bold uppercase tracking-widest text-gold">

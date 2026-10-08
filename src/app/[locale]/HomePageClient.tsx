@@ -7,7 +7,7 @@ import { AppConfig } from "@/lib/config";
 import { ArrowRight, Truck, CreditCard, ShieldCheck, Headphones, BookOpen, Calendar, MapPin, Briefcase, Globe2 } from "lucide-react";
 
 import { ProductCard } from "@/components/ui/ProductCard";
-import { ProductDetailPanel } from "@/components/ui/ProductDetailPanel";
+import { LazyProductDetailPanel as ProductDetailPanel } from "@/components/ui/LazyProductDetailPanel";
 import { TestimonialsSection } from '@/components/ui/TestimonialsSection';
 import { useLanguage } from "@/context/LanguageContext";
 import { Product, getProductImage } from "@/types";
@@ -536,29 +536,27 @@ export default function Home() {
               maskImage: 'radial-gradient(ellipse at left center, black 20%, transparent 70%)'
             }}
           >
-            <img src="/coffee-beans.webp" alt="" className="w-full h-full object-cover opacity-30" />
+            {/* Decorative, at 30% opacity: lazy so React does not preload it
+                ahead of the real hero content. */}
+            <img src="/coffee-beans.webp" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-30" />
           </div>
 
           <div className="max-w-[1700px] mx-auto px-4 sm:px-8 relative mb-6 sm:mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="flex justify-center items-center w-full relative z-0 mt-8 mb-4"
-            >
+            {/* CSS entrance, not Framer Motion: a motion.div starts at
+                opacity 0 in the server HTML and stays invisible until the page
+                hydrates, which made the hero logo — the LCP element — wait for
+                all of the page's JavaScript. A CSS animation runs from the
+                first paint. Reduced motion is handled in globals.css. */}
+            <div className="hero-rise flex justify-center items-center w-full relative z-0 mt-8 mb-4">
               <img
                 src="/assets/logo.svg"
                 alt={AppConfig.brand.name}
+                fetchPriority="high"
                 className="w-[80vw] sm:w-[78vw] lg:w-[75vw] xl:w-[72rem] opacity-[0.97]"
               />
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="flex justify-center mt-6 sm:mt-8"
-            >
+            <div className="hero-rise-late flex justify-center mt-6 sm:mt-8">
               <Link
                 href="/shop"
                 className="group inline-flex items-center gap-3 min-h-11 bg-gold text-ink px-9 sm:px-11 py-4 sm:py-5 rounded-full text-xs font-bold tracking-[0.25em] uppercase shadow-[0_18px_40px_-12px_rgba(201,160,90,0.55)] hover:bg-[#b8914d] hover:scale-[1.04] active:scale-95 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-4"
@@ -566,7 +564,7 @@ export default function Home() {
                 {t('heroShopNow')}
                 <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180" />
               </Link>
-            </motion.div>
+            </div>
 
             {/* Category strip — part of the hero composition, not its own band. */}
             <CategoriesSection />
@@ -717,8 +715,12 @@ export default function Home() {
                   <motion.img
                     animate={{ y: [0, -12, 0] }}
                     transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                    src="/cup5.png"
+                    src="/cup5.webp"
                     alt={t('icedCoffeeAlt')}
+                    width={800}
+                    height={800}
+                    loading="lazy"
+                    decoding="async"
                     className="relative object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)] w-[210px] sm:w-[280px] lg:w-[350px] xl:w-[400px] h-auto"
                   />
                 </motion.div>

@@ -21,7 +21,8 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { ConversionTracking } from '@/components/ConversionTracking';
 import { ConsentProvider } from '@/context/ConsentContext';
-import { CookieConsentBanner } from '@/components/ui/CookieConsentBanner';
+import { LazyCookieConsentBanner, LazyLoginModal } from '@/components/LazyOverlays';
+import { MotionProvider } from '@/components/MotionProvider';
 import { LOCALES, LOCALE_META, isLocale, type Locale } from '@/lib/i18n';
 
 import { CartProvider } from "@/store/CartContext";
@@ -32,7 +33,6 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
 import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
 import { SiteChrome } from "@/components/layout/SiteChrome";
-import { LoginModal } from "@/components/ui/LoginModal";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 
 // Pre-render the shell for all five locales.
@@ -98,6 +98,7 @@ export default async function RootLayout({
         <JsonLd schema={[organizationSchema, buildWebsiteSchema(locale as Locale)]} />
 
         <ConsentProvider>
+        <MotionProvider>
         <ThemeProvider>
           <SiteSettingsProvider>
           <AuthProvider>
@@ -109,7 +110,7 @@ export default async function RootLayout({
                       <SiteChrome>
                         {children}
                       </SiteChrome>
-                      <LoginModal />
+                      <LazyLoginModal />
                     </RecentlyViewedProvider>
                   </NotificationsProvider>
                 </WishlistProvider>
@@ -126,7 +127,8 @@ export default async function RootLayout({
         */}
         <GoogleAnalytics />
         <ConversionTracking />
-        <CookieConsentBanner />
+        <LazyCookieConsentBanner />
+        </MotionProvider>
         </ConsentProvider>
       </body>
     </html>
