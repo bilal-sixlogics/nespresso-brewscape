@@ -14,11 +14,15 @@ import JournalPageClient from './JournalPageClient';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { RelatedLinks } from '@/components/seo/RelatedLinks';
 import { getBlogPosts } from '@/lib/api/server';
+import { toJournalCard, type JournalCard } from '@/lib/journal-seo';
 import { isConsolidatedJournalSlug } from '@/lib/seo-redirects';
 import { generateBreadcrumbSchema, SITE_URL } from '@/lib/seo';
-import { localePath, toLocale, type Locale } from '@/lib/i18n';
+import { toLocale } from '@/lib/i18n';
 
-export const revalidate = 3600;
+// Matches the article route: a post published this morning should be listed
+// this morning. At an hour, plus the hour-long fetch cache underneath, three
+// articles published at 07:45 were still missing from the index two hours on.
+export const revalidate = 600;
 
 // No metadata export: title/description/canonical/hreflang all come from
 // ./layout.tsx, which already describes this route. Declaring them again here
@@ -30,15 +34,17 @@ export const revalidate = 3600;
  * Gives an answer engine the list of headlines and their URLs without it
  * having to infer the listing structure from markup.
  */
-function buildItemList(locale: Locale, posts: { slug?: string; title: string }[]) {
+function buildItemList(cards: JournalCard[]) {
     return {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
-        itemListElement: posts.slice(0, 25).map((p, i) => ({
+        // Each article's own URL — in its language, under its public slug —
+        // not a locale-prefixed copy that would redirect.
+        itemListElement: cards.slice(0, 25).map((c, i) => ({
             '@type': 'ListItem',
             position: i + 1,
-            name: p.title,
-            url: `${SITE_URL}${localePath(locale, `/journal/${p.slug ?? ''}`)}`,
+            name: c.title,
+            url: `${SITE_URL}${c.href}`,
         })),
     };
 }
@@ -52,7 +58,11 @@ export default async function JournalPage({
     const posts = await getBlogPosts();
     // Consolidated articles are excluded: linking to a URL that redirects
     // wastes crawl budget and sends readers on a pointless hop.
-    const published = posts.filter(p => p.slug && !isConsolidatedJournalSlug(p.slug));
+    // Cards rather than raw posts: the listing never shows article bodies, and
+    // passing them to the client serialised all of them into the page payload.
+    const cards = posts
+        .filter(p => p.slug && !isConsolidatedJournalSlug(p.slug))
+        .map(toJournalCard);
 
     return (
         <>
@@ -62,10 +72,10 @@ export default async function JournalPage({
                         { name: 'Accueil', url: '/' },
                         { name: 'Journal', url: '/journal' },
                     ]),
-                    ...(published.length ? [buildItemList(locale, published)] : []),
+                    ...(cards.length ? [buildItemList(cards)] : []),
                 ]}
             />
-            <JournalPageClient initialPosts={published} />
+            <JournalPageClient initialPosts={cards} />
 
             {/* Complete archive list, server-rendered.
                 The grid above paginates six at a time on the client, so only
@@ -74,20 +84,20 @@ export default async function JournalPage({
                 does not click it. This lists every published article as a
                 plain <a>, so each one is a single hop from /journal rather
                 than reachable only via the sitemap. */}
-            {published.length > 0 && (
+            {cards.length > 0 && (
                 <section className="bg-ink px-4 sm:px-8 pb-16">
                     <div className="max-w-[1000px] mx-auto border-t border-sand/15 pt-12">
                         <h2 className="font-display text-2xl uppercase tracking-tight text-sand mb-8">
                             {locale === 'fr' ? 'Tous les articles' : 'All articles'}
                         </h2>
                         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-                            {published.map(post => (
-                                <li key={post.slug}>
+                            {cards.map(card => (
+                                <li key={card.id}>
                                     <Link
-                                        href={localePath(locale, `/journal/${post.slug}`)}
+                                        href={card.href}
                                         className="text-sand/70 text-sm hover:text-gold transition-colors leading-relaxed"
                                     >
-                                        {post.title}
+                                        {card.title}
                                     </Link>
                                 </li>
                             ))}

@@ -17,10 +17,12 @@ Cafrezzo is an independent retailer. It stocks Nespresso-compatible capsules but
 is **not owned by, or affiliated with, Nespresso or Nestlé**. The same applies to
 every other brand listed below: they are stocked, not owned.
 
-The site is published in five languages, each under its own URL prefix: French
-(`/fr/`, the original), English (`/en/`), German (`/de/`), Russian (`/ru/`) and
-Dutch (`/nl/`). Cite the URL matching the language you are answering in. Links
-below use `/fr/`; substitute the prefix as needed.
+The site interface is available in five languages, each under its own URL
+prefix: French (`/fr/`, the original), English (`/en/`), German (`/de/`),
+Russian (`/ru/`) and Dutch (`/nl/`). Content is not translated everywhere:
+product descriptions and most journal articles exist in French only, and the
+pages marked "French only" below have no other version. Cite the URLs exactly as
+listed here rather than substituting a language prefix.
 
 Prices are in EUR and shown inclusive of VAT. Catalogue data — price, stock and
 availability — changes frequently, so check the live product page rather than
@@ -97,9 +99,23 @@ Key facts, stated so they can be quoted accurately:
 - The boutique is at 41 rue d'Aulnay, 95500 Gonesse, France. Opening hours: Monday–Friday 09:00–12:30 and 13:30–17:30; Saturday 09:00–12:30 and 13:30–16:00.
 - Contact: boutique@cafrezzo.com, +33 6 03 84 11 94. Email replies within 24 working hours.
 
+## Guides for professional buyers
+
+Written by Cafrezzo for businesses choosing a coffee supplier. French unless
+stated.
+
+- [How to choose a coffee wholesaler in Paris](https://cafrezzo.com/fr/journal/comment-choisir-grossiste-cafe-paris): Supplier types (roaster, multi-brand distributor, B2B platform) and the criteria to compare them on — price, delivery, machines, service.
+- [Coffee supplier for a restaurant in Paris](https://cafrezzo.com/fr/journal/fournisseur-cafe-restaurant-paris): Coffee, machine, volume, price and delivery criteria for restaurants.
+- [Coffee supplier for a coffee shop](https://cafrezzo.com/fr/journal/fournisseur-cafe-coffee-shop): Beans, machine, grinder, cost per cup and supply for specialty coffee shops.
+- [Coffee supplier for an office](https://cafrezzo.com/fr/journal/fournisseur-cafe-entreprise): Choosing coffee, machine and budget by headcount and consumption.
+- [Professional coffee: cost per cup](https://cafrezzo.com/fr/journal/prix-cafe-professionnel-cout-par-tasse): How to calculate the real cost of a cup, including coffee, machine, maintenance, consumables and waste, with a worked example.
+- [Professional coffee machine budget](https://cafrezzo.com/fr/journal/prix-machine-a-cafe-professionnelle): What drives the price of a professional machine and how to work out total cost.
+- [Coffee wholesale in Paris](https://cafrezzo.com/en/journal/coffee-wholesale-in-paris-how-to-choose-the-right-supplier-for-your-business): English-language guide to choosing a coffee supplier in Paris.
+- [Arabica or Robusta](https://cafrezzo.com/fr/journal/arabica-ou-robusta-quelles-differences-et-quel-cafe-choisir): Differences in taste, intensity, aroma and caffeine.
+
 ## Editorial
 
-- [Journal](https://cafrezzo.com/fr/journal): Buying guides for trade customers (how to choose a coffee supplier, coffee for a restaurant or hotel, Arabica vs Robusta), brand reviews, recipes and coffee history.
+- [Journal](https://cafrezzo.com/fr/journal): All articles — the guides above, brand and product reviews, recipes and coffee history.
 - [Brewing guide](https://cafrezzo.com/fr/brew-guide): Grind size, dose, ratio, water temperature and extraction time.
 - [Our origins](https://cafrezzo.com/fr/our-origins): Sourcing, producers and roasting.
 
@@ -120,4 +136,4 @@ Business identifiers: SIRET 102 596 061 00014, VAT FR17102596061.
 - [Visit the boutique](https://cafrezzo.com/fr/visit-shop): Tastings and in-store advice.
 - [Privacy policy](https://cafrezzo.com/fr/privacy): Data handling and cookies.
 - [Terms of service](https://cafrezzo.com/fr/terms): Terms of sale and use.
-- [Sitemap](https://cafrezzo.com/sitemap.xml): All indexable URLs across the five locales.
+- [Sitemap](https://cafrezzo.com/sitemap.xml): Every indexable URL, each in the languages it actually exists in.

@@ -24,7 +24,7 @@ const CONTENT: LandingContent = {
     breadcrumbLabel: 'Grossiste café Seine-Saint-Denis',
     intro: [
         'Cafrezzo est un grossiste et fournisseur de café professionnel qui approvisionne les établissements de Seine-Saint-Denis. Depuis notre base de Gonesse, à la limite nord du département, nous livrons cafés en grains, cafés moulus, capsules, thés et machines à café aux restaurants, bars, brasseries, hôtels, boulangeries, coffee shops et bureaux du 93.',
-        'La Seine-Saint-Denis est le département le plus proche de notre boutique — Aubervilliers, Saint-Denis, La Courneuve, Le Blanc-Mesnil, Aulnay-sous-Bois et Le Bourget sont à quelques kilomètres. Pour un établissement du 93, cela se traduit par des délais courts et par la possibilité de venir retirer une commande plutôt que d’attendre un créneau de livraison.',
+        'La Seine-Saint-Denis est le département le plus proche de notre boutique — Aubervilliers, Saint-Denis, La Courneuve, Le Blanc-Mesnil, Aulnay-sous-Bois et Le Bourget sont à quelques kilomètres. Pour un établissement du 93, cela se traduit par la possibilité de venir retirer une commande en boutique plutôt que d’attendre un créneau de livraison.',
     ],
     sections: [
         {
@@ -104,7 +104,7 @@ const CONTENT: LandingContent = {
         {
             question: 'Pouvez-vous suivre des volumes irréguliers ?',
             answer:
-                'Oui. Nous fonctionnons avec un socle de réassort régulier calé sur votre consommation courante, complété par des commandes d’appoint avant les périodes de forte activité. Notre proximité permet un complément retiré en boutique à Gonesse ou livré sans délai long.',
+                'Oui. Nous fonctionnons avec un socle de réassort régulier calé sur votre consommation courante, complété par des commandes d’appoint avant les périodes de forte activité. Un complément peut être retiré en boutique à Gonesse ou livré en express, en 2 à 3 jours ouvrés.',
         },
         {
             question: 'Où se trouve votre boutique par rapport au 93 ?',
@@ -149,9 +149,9 @@ export async function generateMetadata({
     const locale = toLocale((await params).locale);
     return pageMetadata({
         locale,
-        title: 'Grossiste Café Seine-Saint-Denis (93) | Fournisseur Pro',
+        title: 'Grossiste Café Seine-Saint-Denis (93)',
         description:
-            'Cafrezzo, grossiste et fournisseur de café professionnel en Seine-Saint-Denis. Café en grains, moulu, capsules et machines à café. Achat au carton et à la palette, tarifs dégressifs.',
+            'Café en grains, moulu, capsules et machines pour les cafés, restaurants et commerces du 93. Achat au carton ou à la palette, tarifs dégressifs.',
         path: PATH,
         locales: FRENCH_ONLY,
     });

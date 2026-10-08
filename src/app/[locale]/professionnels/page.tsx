@@ -16,6 +16,7 @@ import Link from 'next/link';
 
 import { JsonLd } from '@/components/seo/JsonLd';
 import { RelatedLinks } from '@/components/seo/RelatedLinks';
+import { journalGuideLinks } from '@/lib/journal-links';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 import { getBrands } from '@/lib/api/server';
 import {
@@ -74,9 +75,9 @@ interface Copy {
 
 const COPY: Record<'fr' | 'en', Copy> = {
     fr: {
-        title: 'Grossiste Café & Machines à Café pour Professionnels',
+        title: 'Grossiste Café & Machines pour Professionnels',
         description:
-            'Cafrezzo, grossiste et distributeur de café et de machines à café pour les professionnels : cafés, restaurants, hôtels, bars, coffee shops, bureaux et entreprises. Service en Île-de-France, livraison en France et en Europe.',
+            'Grossiste café et machines pour cafés, restaurants, hôtels, bars, coffee shops et bureaux. Boutique à Gonesse, livraison en France et en Europe.',
         h1: 'Grossiste Café & Machines à Café pour Professionnels',
         // The opening paragraph is written to be quotable on its own: an answer
         // engine extracting two sentences about Cafrezzo should come away with
@@ -198,7 +199,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
     en: {
         title: 'Coffee & Coffee Machine Wholesaler for Businesses',
         description:
-            'Cafrezzo is a coffee and coffee machine wholesaler supplying cafés, restaurants, hotels, bars, coffee shops and offices. Based near Paris, delivering across France and Europe.',
+            'Coffee and coffee machine wholesaler for cafés, restaurants, hotels, bars, coffee shops and offices. Based near Paris, delivering across France and Europe.',
         h1: 'Coffee & Coffee Machine Wholesaler for Businesses',
         intro: [
             'Cafrezzo is a coffee and coffee machine wholesaler and distributor based in Gonesse, on the edge of Paris. We supply businesses with coffee beans, ground coffee, capsules and coffee machines, alongside teas, instant drinks and accessories.',
@@ -349,6 +350,21 @@ export default async function ProfessionnelsPage({
 
     const copy = copyFor(locale);
     const brands = await getBrands();
+
+    // The trade guides, one per kind of establishment this page serves. They
+    // are only written in one language each, so each locale gets its own.
+    const guides = await journalGuideLinks(
+        locale === 'en'
+            ? ['coffee-wholesale-in-paris-how-to-choose-the-right-supplier-for-your-business']
+            : [
+                  'fournisseur-cafe-restaurant-paris',
+                  'fournisseur-cafe-coffee-shop',
+                  'fournisseur-cafe-entreprise',
+                  'prix-cafe-professionnel-cout-par-tasse',
+                  'prix-machine-a-cafe-professionnelle',
+                  'comment-choisir-grossiste-cafe-paris',
+              ],
+    );
 
     const faqSchema = generateFaqSchema(copy.faqs);
     const breadcrumbSchema = generateBreadcrumbSchema(locale, [
@@ -609,6 +625,13 @@ export default async function ProfessionnelsPage({
                     </div>
                 </div>
             </section>
+
+            <RelatedLinks
+                locale={locale}
+                heading={locale === 'en' ? 'Guides for businesses' : 'Guides pour les professionnels'}
+                links={guides}
+                className="pb-12"
+            />
 
             <RelatedLinks
                 locale={locale}

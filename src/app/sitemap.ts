@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next';
 import { Endpoints } from '@/lib/api/endpoints';
-import { FRENCH_ONLY, FR_EN, SITE_URL } from '@/lib/seo';
-import { isConsolidatedJournalSlug } from '@/lib/seo-redirects';
+import { articleLocale, isThinArticle } from '@/lib/article-content';
+import { FRENCH_ONLY, FR_EN, PRODUCT_CONTENT_LOCALE, SITE_URL } from '@/lib/seo';
+import { isConsolidatedJournalSlug, publicJournalSlug } from '@/lib/seo-redirects';
 import {
     DEFAULT_LOCALE,
     LOCALES,
@@ -46,6 +47,8 @@ interface ApiBrand {
 interface ApiBlogPost {
     id?: number | string;
     slug?: string;
+    title?: string;
+    body?: string | null;
     status?: string;
     updated_at?: string;
     published_at?: string;
@@ -148,8 +151,6 @@ function priority(value: number): number {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const now = new Date();
-
     // Locale-free paths with their crawl hints. Expanded across every locale
     // below, so a new locale needs no change here.
     const STATIC_PATHS: Array<{
@@ -297,17 +298,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         console.warn('[sitemap] brew-guides returned nothing — omitting /brew-guide');
     }
 
+    // One URL per product: the catalogue holds French copy only, and the other
+    // locales canonicalise to it (see PRODUCT_CONTENT_LOCALE in lib/seo.ts).
+    // Listing them would submit ~450 URLs that each declare themselves a copy.
     const productRoutes: MetadataRoute.Sitemap = products
         .filter(p => p.slug && p.status !== 'inactive' && p.status !== 'draft')
-        .flatMap(p =>
-            LOCALES.map(locale => ({
-                url: `${SITE_URL}${localePath(locale, `/shop/${p.slug}`)}`,
-                lastModified: parseDate(p.updated_at) ?? now,
+        .map(p => {
+            const modified = parseDate(p.updated_at);
+            return {
+                url: `${SITE_URL}${localePath(PRODUCT_CONTENT_LOCALE, `/shop/${p.slug}`)}`,
+                ...(modified ? { lastModified: modified } : {}),
                 changeFrequency: 'weekly' as const,
-                priority: locale === DEFAULT_LOCALE ? 0.85 : 0.76,
-                alternates: { languages: hreflangFor(`/shop/${p.slug}`) },
-            })),
-        );
+                priority: 0.85,
+                alternates: { languages: hreflangFor(`/shop/${p.slug}`, [PRODUCT_CONTENT_LOCALE]) },
+            };
+        });
 
     /**
      * Category listings (/shop?category=<slug>).
@@ -354,15 +359,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         // Consolidated articles now 308 to a commercial page; submitting a URL
         // that immediately redirects asks Google to index a redirect.
         .filter(p => p.slug && p.status !== 'draft' && !isConsolidatedJournalSlug(p.slug))
-        .flatMap(p =>
-            LOCALES.map(locale => ({
-                url: `${SITE_URL}${localePath(locale, `/journal/${p.slug}`)}`,
-                lastModified: parseDate(p.updated_at) ?? parseDate(p.published_at) ?? now,
+        // Thin posts are noindexed by their page; submitting them would ask
+        // Google to index URLs that decline to be indexed.
+        .filter(p => !isThinArticle(p))
+        // One URL per article, in the language it is written in and under its
+        // public slug. It used to be listed in all five locales, four of them
+        // copies of the same text tagged as translations.
+        .map(p => {
+            const lang = articleLocale(p);
+            const path = `/journal/${publicJournalSlug(p.slug as string)}`;
+            const modified = parseDate(p.updated_at) ?? parseDate(p.published_at);
+            return {
+                url: `${SITE_URL}${localePath(lang, path)}`,
+                ...(modified ? { lastModified: modified } : {}),
                 changeFrequency: 'monthly' as const,
-                priority: locale === DEFAULT_LOCALE ? 0.6 : 0.54,
-                alternates: { languages: hreflangFor(`/journal/${p.slug}`) },
-            })),
-        );
+                priority: 0.6,
+                alternates: { languages: hreflangFor(path, [lang]) },
+            };
+        });
 
     // Guard against a duplicate URL slipping in from any source.
     const all = [

@@ -4,6 +4,7 @@ import { AppConfig } from './config';
 
 import {
     DEFAULT_LOCALE,
+    FRENCH_ONLY,
     LOCALES,
     LOCALE_META,
     localePath,
@@ -106,8 +107,10 @@ const OG_IMAGE = '/og-image.jpg';
 const OG_IMAGE_WIDTH = 1200;
 const OG_IMAGE_HEIGHT = 630;
 
-// Organization logo for structured data. The previous /logo.png did not exist.
-const LOGO_URL = `${BASE_URL}/assets/logo.svg`;
+// Organization logo for structured data: the dark wordmark on a white
+// 512x512 canvas. Google's logo guidelines want a raster image that reads on
+// white; the SVG previously used here met neither condition.
+const LOGO_URL = `${BASE_URL}/assets/logo-512.png`;
 
 // Shared by Organization and Store so the two can never drift apart.
 const POSTAL_ADDRESS = {
@@ -322,6 +325,11 @@ export function pageMetadata(opts: {
      * names URLs that actually resolve.
      */
     locales?: readonly Locale[];
+    /**
+     * Marks the page as an article: `og:type=article` plus its publication
+     * dates and author, which link previews and some answer engines read.
+     */
+    article?: { publishedTime?: string; modifiedTime?: string; author?: string };
 }): Metadata {
     const {
         locale,
@@ -333,6 +341,7 @@ export function pageMetadata(opts: {
         titleKey2,
         descriptionKey,
         locales = LOCALES,
+        article,
     } = opts;
 
     const title = titleKey ? joinHeading(tr(locale, titleKey, opts.title), titleKey2 ? tr(locale, titleKey2, '') : '') : opts.title;
@@ -355,7 +364,14 @@ export function pageMetadata(opts: {
         title: { absolute: ownTitle, template: TITLE_TEMPLATE },
         description,
         openGraph: {
-            type: 'website',
+            ...(article
+                ? {
+                      type: 'article' as const,
+                      ...(article.publishedTime ? { publishedTime: article.publishedTime } : {}),
+                      ...(article.modifiedTime ? { modifiedTime: article.modifiedTime } : {}),
+                      ...(article.author ? { authors: [article.author] } : {}),
+                  }
+                : { type: 'website' as const }),
             url,
             siteName: 'Cafrezzo',
             locale: LOCALE_META[locale].ogLocale,
@@ -417,7 +433,9 @@ export function generateProductMetadata(product: {
         product.description?.slice(0, 155) ??
         PDP_FALLBACK_DESCRIPTION[product.locale](title);
     const path = `/shop/${product.slug}`;
-    const url = absoluteUrl(product.locale, path);
+    // See PRODUCT_CONTENT_LOCALE: every locale serves the same French product
+    // copy, so the French URL is the one canonical page.
+    const url = absoluteUrl(PRODUCT_CONTENT_LOCALE, path);
 
     return {
         title,
@@ -431,11 +449,23 @@ export function generateProductMetadata(product: {
             images: [{ url: product.image, width: 800, height: 800, alt: title }],
         },
         twitter: { card: 'summary_large_image', title, description, images: [product.image] },
-        // The same product exists under every locale — declare them as
-        // translations of one another rather than five near-duplicate pages.
-        alternates: { canonical: url, languages: hreflangAlternates(path) },
+        alternates: { canonical: url, languages: hreflangAlternates(path, FRENCH_ONLY) },
     };
 }
+
+/**
+ * The language product pages are written in.
+ *
+ * The catalogue API stores one French name and description per product and
+ * returns them for every locale. /en, /de, /ru and /nl product URLs stay up —
+ * they carry the shopping interface in the visitor's language — but they
+ * canonicalise to the French page, declare no translations, and are left out
+ * of the sitemap. Previously each product was published five times, with four
+ * copies claiming via hreflang to be translations that did not exist.
+ *
+ * When the catalogue gains per-locale copy, widen this per product.
+ */
+export const PRODUCT_CONTENT_LOCALE: Locale = DEFAULT_LOCALE;
 
 /**
  * JSON-LD structured data for the homepage (Organization + WebSite schema).
@@ -726,7 +756,8 @@ export function generateProductSchema(product: {
      */
     brand?: string;
 }) {
-    const url = absoluteUrl(product.locale, `/shop/${product.slug}`);
+    // The canonical URL, so the Product node and the page's canonical agree.
+    const url = absoluteUrl(PRODUCT_CONTENT_LOCALE, `/shop/${product.slug}`);
 
     // Only emit aggregateRating when there is a genuine rating behind it.
     // Inventing or defaulting ratings breaks Google's structured-data policy
@@ -777,7 +808,7 @@ export function generateProductSchema(product: {
             availability: product.inStock !== false
                 ? 'https://schema.org/InStock'
                 : 'https://schema.org/OutOfStock',
-            seller: { '@type': 'Organization', name: 'Cafrezzo', url: BASE_URL },
+            seller: { '@id': ORGANIZATION_ID },
             shippingDetails: SHIPPING_DETAILS,
             hasMerchantReturnPolicy: RETURN_POLICY,
         },
@@ -846,6 +877,7 @@ const RETURN_POLICY = {
  * author, dates and publisher are worth stating explicitly.
  */
 export function generateArticleSchema(post: {
+    /** The language the article is written in, which is also its URL locale. */
     locale: Locale;
     title: string;
     description?: string;
@@ -854,33 +886,56 @@ export function generateArticleSchema(post: {
     author?: string;
     publishedAt?: string;
     updatedAt?: string;
+    wordCount?: number;
 }) {
     const url = absoluteUrl(post.locale, `/journal/${post.slug}`);
+    const published = isoDate(post.publishedAt);
+    const modified = isoDate(post.updatedAt);
     return {
         '@context': 'https://schema.org',
         '@type': 'Article',
+        '@id': `${url}#article`,
         headline: post.title,
-        description: post.description ?? '',
-        image: post.image ? [post.image] : undefined,
-        url,
+        ...(post.description ? { description: post.description } : {}),
+        // Google requires an image for Article rich results; fall back to the
+        // site's share image rather than omitting the property.
+        image: [post.image || `${BASE_URL}${OG_IMAGE}`],
         mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-        author: { '@type': post.author ? 'Person' : 'Organization', name: post.author ?? 'Cafrezzo' },
-        publisher: {
-            '@type': 'Organization',
-            name: 'Cafrezzo',
-            logo: { '@type': 'ImageObject', url: LOGO_URL },
-        },
-        datePublished: post.publishedAt,
-        dateModified: post.updatedAt ?? post.publishedAt,
+        author: post.author
+            ? { '@type': 'Person', name: post.author }
+            : { '@id': ORGANIZATION_ID },
+        // Reference, not a copy: an inline Organization stub here was a second,
+        // anonymous Cafrezzo entity alongside the real one.
+        publisher: { '@id': ORGANIZATION_ID },
+        ...(published ? { datePublished: published } : {}),
+        // Emitted only when the CMS has a real modification time — copying
+        // datePublished into it would claim an edit that never happened.
+        ...(modified ? { dateModified: modified } : {}),
+        ...(post.wordCount ? { wordCount: post.wordCount } : {}),
+        isPartOf: { '@type': 'Blog', name: 'Journal Cafrezzo', url: absoluteUrl(post.locale, '/journal') },
         inLanguage: LOCALE_META[post.locale].hreflang,
     };
 }
 
 /**
+ * Normalises an API timestamp to ISO 8601 with milliseconds.
+ *
+ * Laravel serialises microseconds ("…T07:48:22.000000Z"), which is valid but
+ * unusual enough that some validators reject it.
+ */
+function isoDate(value?: string): string | undefined {
+    if (!value) return undefined;
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+}
+
+/**
  * JSON-LD FAQPage schema.
  *
- * The highest-value schema for answer engines: it maps a question directly to
- * its answer, which is exactly the unit an assistant needs to cite.
+ * Google retired FAQ rich results for all sites in May 2026, so this earns no
+ * search feature. It is kept because the Q&A is real, visible content and the
+ * markup states its structure explicitly; any benefit with answer engines is
+ * unconfirmed. Do not add it to new pages expecting a SERP gain.
  */
 export function generateFaqSchema(items: { question: string; answer: string }[]) {
     return {

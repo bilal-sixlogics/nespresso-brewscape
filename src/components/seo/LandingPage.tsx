@@ -63,6 +63,7 @@ export function LandingPage({
     content,
     products = [],
     extraSchemas = [],
+    guides = [],
 }: {
     locale: Locale;
     /** Locale-free path of this page, for the breadcrumb trail. */
@@ -70,6 +71,8 @@ export function LandingPage({
     content: LandingContent;
     /** Real catalogue items, so the page is a shop entry point, not just prose. */
     products?: Product[];
+    /** Journal guides that go deeper on this page's topic (see lib/journal-links). */
+    guides?: RelatedLink[];
     /**
      * Additional JSON-LD for this page — in practice `wholesalerSchema` on the
      * B2B pages, which is what states the supplier claim and the Île-de-France
@@ -285,6 +288,13 @@ export function LandingPage({
                     </div>
                 </div>
             </section>
+
+            <RelatedLinks
+                locale={locale}
+                heading="Guides pour les professionnels"
+                links={guides}
+                className="pb-12"
+            />
 
             <RelatedLinks
                 locale={locale}

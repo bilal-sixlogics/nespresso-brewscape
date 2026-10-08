@@ -9,15 +9,9 @@ import { Endpoints } from '@/lib/api/endpoints';
 import { LoadMoreButton } from '@/components/ui/LoadMoreButton';
 import { useLanguage } from '@/context/LanguageContext';
 import { CupSeparator } from '@/components/ui/CupSeparator';
-
-// Optional throughout so the server's `BlogPost` shape (lib/api/server.ts) can
-// be handed straight in without a cast — the API omits fields rather than
-// nulling them on some records.
-interface ApiBlogPost {
-    id: number; title: string; slug?: string; category?: string; excerpt?: string | null;
-    body?: string | null; featured_image?: string | null; status?: string;
-    is_featured?: boolean; author_name?: string | null; published_at?: string | null;
-}
+import { journalCategoryLabel, toJournalCard, type JournalCard } from '@/lib/journal-seo';
+import { isConsolidatedJournalSlug } from '@/lib/seo-redirects';
+import { LOCALE_META } from '@/lib/i18n';
 
 /**
  * @param initialPosts Posts fetched on the server by `page.tsx`.
@@ -33,10 +27,10 @@ interface ApiBlogPost {
 export default function JournalPageClient({
     initialPosts = [],
 }: {
-    initialPosts?: ApiBlogPost[];
+    initialPosts?: JournalCard[];
 }) {
-    const { t } = useLanguage();
-    const [allPosts, setAllPosts] = useState<ApiBlogPost[]>(initialPosts);
+    const { t, language } = useLanguage();
+    const [allPosts, setAllPosts] = useState<JournalCard[]>(initialPosts);
     const [apiLoading, setApiLoading] = useState(initialPosts.length === 0);
     const [page, setPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -49,17 +43,33 @@ export default function JournalPageClient({
 
         fetch(Endpoints.blogPosts + '?per_page=50')
             .then(r => r.json())
-            .then(json => setAllPosts(json?.data ?? []))
+            .then(json =>
+                setAllPosts(
+                    (json?.data ?? [])
+                        .filter((p: { slug?: string }) => p.slug && !isConsolidatedJournalSlug(p.slug))
+                        .map(toJournalCard),
+                ),
+            )
             .catch(() => setAllPosts([]))
             .finally(() => setApiLoading(false));
     }, [initialPosts]);
 
     // Map to display format
     const postsWithFeatured = allPosts.map((p, i) => ({
-        id: p.id, title: p.title, slug: p.slug, category: p.category,
-        excerpt: p.excerpt || '', image: p.featured_image || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop',
-        date: p.published_at ? new Date(p.published_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '',
-        featured: i === 0, readTime: t('readTimeMinutes').replace('{{min}}', '5'), author_name: p.author_name,
+        ...p,
+        image: p.image || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop',
+        // In the page's language, not a hardcoded en-GB.
+        date: p.publishedAt
+            ? new Date(p.publishedAt).toLocaleDateString(LOCALE_META[language].hreflang, {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+              })
+            : '',
+        categoryLabel: p.category ? journalCategoryLabel(p.category, language) : '',
+        featured: i === 0,
+        // Estimated from the body; every card used to say five minutes.
+        readTime: t('readTimeMinutes').replace('{{min}}', String(p.readMinutes)),
     }));
     const featuredPost = postsWithFeatured.find(p => p.featured) || postsWithFeatured[0];
     const standardPosts = postsWithFeatured.filter(p => !p.featured);
@@ -144,7 +154,7 @@ export default function JournalPageClient({
                                 <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent"></div>
                                 <div className="absolute bottom-6 left-6 flex gap-3">
                                     <span className="bg-sand/90 backdrop-blur-md text-ink text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full shadow-lg">
-                                        {featuredPost.category}
+                                        {featuredPost.categoryLabel}
                                     </span>
                                 </div>
                             </div>
@@ -165,7 +175,7 @@ export default function JournalPageClient({
                                     {featuredPost.excerpt}
                                 </p>
 
-                                <Link href={`/journal/${featuredPost.slug}`} className="inline-flex items-center justify-center bg-gold text-ink px-8 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-[#b8914d] transition-colors group/btn">
+                                <Link href={featuredPost.href} className="inline-flex items-center justify-center bg-gold text-ink px-8 py-4 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-[#b8914d] transition-colors group/btn">
                                     {t('readArticle')}
                                     <motion.div
                                         className="ml-3 bg-ink/15 rounded-full p-1"
@@ -194,7 +204,7 @@ export default function JournalPageClient({
                                     onClick={() => { setActiveFilter(cat); setPage(1); }}
                                     className={`text-xs font-bold tracking-widest uppercase pb-2 border-b-2 transition-colors ${activeFilter === cat ? 'border-gold text-gold' : 'border-transparent text-cocoa hover:text-sand'}`}
                                 >
-                                    {cat}
+                                    {journalCategoryLabel(cat, language)}
                                 </button>
                             ))}
                         </div>
@@ -210,7 +220,7 @@ export default function JournalPageClient({
                                 transition={{ delay: index * 0.1, duration: 0.5 }}
                                 className="group cursor-pointer flex flex-col h-full"
                             >
-                                <Link href={`/journal/${post.slug}`} className="flex flex-col h-full w-full">
+                                <Link href={post.href} className="flex flex-col h-full w-full">
                                     <div className="rounded-[30px] overflow-hidden mb-8 aspect-[4/3] relative shadow-lg">
                                         <img
                                             src={post.image}
@@ -219,7 +229,7 @@ export default function JournalPageClient({
                                         />
                                         <div className="absolute top-4 left-4">
                                             <span className="bg-sand/90 backdrop-blur-sm text-ink text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full">
-                                                {post.category}
+                                                {post.categoryLabel}
                                             </span>
                                         </div>
                                         <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/15 transition-colors duration-500"></div>

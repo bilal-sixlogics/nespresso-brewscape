@@ -149,9 +149,9 @@ export async function generateMetadata({
     const locale = toLocale((await params).locale);
     return pageMetadata({
         locale,
-        title: 'Grossiste Café Seine-et-Marne (77) | Fournisseur Pro',
+        title: 'Grossiste Café Seine-et-Marne (77)',
         description:
-            'Cafrezzo, grossiste et fournisseur de café professionnel en Seine-et-Marne : Meaux, Melun, Marne-la-Vallée, Fontainebleau. Café en grains, capsules et machines à café. Achat à la palette.',
+            'Meaux, Melun, Marne-la-Vallée, Fontainebleau : café en grains, capsules et machines pour les pros de Seine-et-Marne. Achat au carton ou à la palette.',
         path: PATH,
         locales: FRENCH_ONLY,
     });

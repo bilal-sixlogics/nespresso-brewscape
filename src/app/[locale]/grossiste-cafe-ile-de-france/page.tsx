@@ -11,6 +11,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { LandingPage, type LandingContent } from '@/components/seo/LandingPage';
+import { journalGuideLinks } from '@/lib/journal-links';
 import { getProductsInCategoryNamed } from '@/lib/api/server';
 import { FRENCH_ONLY, pageMetadata, wholesalerSchema } from '@/lib/seo';
 import { toLocale } from '@/lib/i18n';
@@ -171,9 +172,9 @@ export async function generateMetadata({
     const locale = toLocale((await params).locale);
     return pageMetadata({
         locale,
-        title: 'Grossiste Café en Île-de-France | Fournisseur Professionnel',
+        title: 'Grossiste Café Île-de-France | Fournisseur Pro',
         description:
-            'Cafrezzo, grossiste et distributeur de café en Île-de-France, basé à Gonesse (Val-d’Oise). Cafés en grains, moulus, capsules et machines à café pour les professionnels de toute la région.',
+            'Fournisseur de café des professionnels de toute l’Île-de-France depuis Gonesse (95) : grains, moulu, capsules et machines. Paris, 92, 93, 95, 77.',
         path: PATH,
         locales: FRENCH_ONLY,
     });
@@ -189,6 +190,13 @@ export default async function GrossisteCafeIdfPage({
 
     const products = await getProductsInCategoryNamed('GRAINS', 8);
 
+    // Trade guides that go deeper on this page's subject.
+    const guides = await journalGuideLinks([
+        'comment-choisir-grossiste-cafe-paris',
+        'fournisseur-cafe-entreprise',
+        'prix-cafe-professionnel-cout-par-tasse',
+    ]);
+
     return (
         <LandingPage
             locale={locale}
@@ -196,6 +204,7 @@ export default async function GrossisteCafeIdfPage({
             content={CONTENT}
             products={products}
             extraSchemas={[wholesalerSchema]}
+            guides={guides}
         />
     );
 }

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
+import { LazyProductDetailPanel as ProductDetailPanel } from '@/components/ui/LazyProductDetailPanel';
 import { FilterDrawer, DEFAULT_FILTERS, FilterState } from '@/components/ui/FilterDrawer';
 import { Product, hasTag, getTagLabels } from '@/types';
 import type { PaginationMeta } from '@/lib/api/types';

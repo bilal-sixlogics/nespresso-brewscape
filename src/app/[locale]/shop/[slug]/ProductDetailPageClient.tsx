@@ -16,7 +16,7 @@ import {
     isInStock, isNewProduct, hasTag,
 } from '@/types';
 import { ProductCard } from '@/components/ui/ProductCard';
-import { ProductDetailPanel } from '@/components/ui/ProductDetailPanel';
+import { LazyProductDetailPanel as ProductDetailPanel } from '@/components/ui/LazyProductDetailPanel';
 import { IntensityBar } from '@/components/ui/IntensityBar';
 import { RichText } from '@/components/ui/RichText';
 import { TrustIndicators } from '@/components/ui/TrustIndicators';

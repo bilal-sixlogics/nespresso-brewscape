@@ -12,6 +12,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { LandingPage, type LandingContent } from '@/components/seo/LandingPage';
+import { journalGuideLinks } from '@/lib/journal-links';
 import { getProductsInCategoryNamed } from '@/lib/api/server';
 import { FRENCH_ONLY, pageMetadata, wholesalerSchema } from '@/lib/seo';
 import { toLocale } from '@/lib/i18n';
@@ -25,7 +26,7 @@ const CONTENT: LandingContent = {
     breadcrumbLabel: 'Grossiste café à Paris',
     intro: [
         'Cafrezzo est un grossiste et distributeur de café qui approvisionne les professionnels de Paris. Installés au 41 rue d’Aulnay à Gonesse, aux portes de Paris, nous fournissons cafés en grains, cafés moulus, capsules et machines à café aux cafés, restaurants, hôtels, bars, coffee shops et bureaux parisiens.',
-        'Être implanté en limite nord de Paris plutôt qu’en province change une chose concrète : les réassorts sont courts. C’est ce qui compte pour un établissement parisien, où l’on stocke peu faute de place et où une rupture de café se voit dès le service suivant.',
+        'Être implanté aux portes de Paris, à Gonesse, plutôt qu’en province change une chose concrète : une commande urgente peut être retirée directement en boutique, sans attendre un transporteur. C’est ce qui compte pour un établissement parisien, où l’on stocke peu faute de place et où une rupture de café se voit dès le service suivant.',
     ],
     sections: [
         {
@@ -159,9 +160,9 @@ export async function generateMetadata({
     const locale = toLocale((await params).locale);
     return pageMetadata({
         locale,
-        title: 'Grossiste Café à Paris | Fournisseur pour Professionnels',
+        title: 'Grossiste Café Paris | Fournisseur Pro',
         description:
-            'Cafrezzo, grossiste et distributeur de café à Paris et en Île-de-France. Cafés en grains, moulus, capsules et machines à café pour cafés, restaurants, hôtels, bars et bureaux. Tarifs professionnels.',
+            'Café en grains, moulu, capsules et machines pour cafés, restaurants, hôtels et bureaux à Paris. Tarifs pros, retrait à Gonesse ou livraison.',
         path: PATH,
         locales: FRENCH_ONLY,
     });
@@ -179,6 +180,13 @@ export default async function GrossisteCafeParisPage({
     // instead of being prose with a contact form at the bottom.
     const products = await getProductsInCategoryNamed('GRAINS', 8);
 
+    // Trade guides that go deeper on this page's subject.
+    const guides = await journalGuideLinks([
+        'comment-choisir-grossiste-cafe-paris',
+        'fournisseur-cafe-restaurant-paris',
+        'prix-cafe-professionnel-cout-par-tasse',
+    ]);
+
     return (
         <LandingPage
             locale={locale}
@@ -186,6 +194,7 @@ export default async function GrossisteCafeParisPage({
             content={CONTENT}
             products={products}
             extraSchemas={[wholesalerSchema]}
+            guides={guides}
         />
     );
 }
