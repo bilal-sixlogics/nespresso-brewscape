@@ -75,10 +75,17 @@ interface Copy {
 
 const COPY: Record<'fr' | 'en', Copy> = {
     fr: {
-        title: 'Grossiste Café & Machines pour Professionnels',
+        // Leads with "fournisseur", not "grossiste". In the Search Console
+        // export of 14 Oct 2026 (3 months), the "fournisseur de café
+        // (pour) professionnel" family drew ~95 impressions across eight
+        // variants; "grossiste café pour professionnels" drew 4. The page
+        // never used the word in its title or H1, and the near-identical
+        // "Grossiste … pour Professionnels" title also collided with
+        // /grossiste-machines-a-cafe. "Grossiste" stays in the H1 and copy.
+        title: 'Fournisseur de Café pour Professionnels & CHR',
         description:
-            'Grossiste café et machines pour cafés, restaurants, hôtels, bars, coffee shops et bureaux. Boutique à Gonesse, livraison en France et en Europe.',
-        h1: 'Grossiste Café & Machines à Café pour Professionnels',
+            'Fournisseur de café des cafés, restaurants, hôtels, bars et bureaux : grains, moulu, capsules et machines. Tarifs pros dégressifs, livraison en IDF.',
+        h1: 'Fournisseur & Grossiste Café pour Professionnels',
         // The opening paragraph is written to be quotable on its own: an answer
         // engine extracting two sentences about Cafrezzo should come away with
         // the activity, the offer, the customer types and the location.
@@ -155,7 +162,7 @@ const COPY: Record<'fr' | 'en', Copy> = {
             'Vous recevez une proposition tarifaire professionnelle, dégressive selon les quantités.',
             'Nous mettons en place l’approvisionnement et le réassort selon votre rythme de consommation.',
         ],
-        ctaLabel: 'Demander une offre professionnelle',
+        ctaLabel: 'Recevoir mes tarifs professionnels',
         faqHeading: 'Questions fréquentes des professionnels',
         faqs: [
             {
@@ -393,7 +400,7 @@ export default async function ProfessionnelsPage({
                         ))}
                     </div>
                     <Link
-                        href={localePath(locale, '/contact')}
+                        href={localePath(locale, AppConfig.tradeContactPath)}
                         className="inline-block mt-10 bg-gold text-ink px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase hover:bg-[#b8914d] transition-colors shadow-lg"
                     >
                         {copy.ctaLabel}
@@ -600,6 +607,14 @@ export default async function ProfessionnelsPage({
                             </li>
                         ))}
                     </ol>
+                    {/* Step 1 is "contact us"; the steps used to end without a
+                        way to do it, leaving the hero as the page's only CTA. */}
+                    <Link
+                        href={localePath(locale, AppConfig.tradeContactPath)}
+                        className="inline-block mt-10 bg-gold text-ink px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase hover:bg-[#b8914d] transition-colors shadow-lg"
+                    >
+                        {copy.ctaLabel}
+                    </Link>
                 </div>
             </section>
 
@@ -655,7 +670,7 @@ export default async function ProfessionnelsPage({
                                   hint: 'How to choose coffee and machines for your business.',
                               },
                               {
-                                  href: '/contact',
+                                  href: AppConfig.tradeContactPath,
                                   label: 'Contact the trade team',
                                   hint: 'Gonesse shop, phone, email and opening hours.',
                               },
@@ -677,7 +692,7 @@ export default async function ProfessionnelsPage({
                                   hint: 'Comment choisir son café et sa machine selon son établissement.',
                               },
                               {
-                                  href: '/contact',
+                                  href: AppConfig.tradeContactPath,
                                   label: 'Contacter le service professionnel',
                                   hint: 'Boutique de Gonesse, téléphone, email et horaires.',
                               },

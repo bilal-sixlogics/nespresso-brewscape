@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { AppConfig } from '@/lib/config';
-import { DEFAULT_LOCALE, LOCALES, isLocale, type Locale } from '@/lib/i18n';
+import { DEFAULT_LOCALE, LOCALES, isLocale, linkLocale, localePath, type Locale } from '@/lib/i18n';
+import { isAliasedCmsJournalSlug, journalRedirectTarget, publicJournalSlug } from '@/lib/seo-redirects';
 
 /**
  * Locale routing.
@@ -140,6 +141,33 @@ export function middleware(request: NextRequest) {
 
     // Already correctly prefixed — only the host might still need fixing.
     if (isLocale(firstSegment)) {
+        // Journal slugs that moved: consolidated into a commercial page, or an
+        // old CMS slug (-1 … -5 suffixes) now published under its public slug.
+        // Both maps are static, so they are answered here rather than by the
+        // page. The page-level redirect for aliased slugs runs after an API
+        // fetch, and on the live site that response reached clients as a bare
+        // 308 with no Location header (verified 14 Oct 2026) — a redirect
+        // crawlers cannot follow. A middleware redirect always carries one,
+        // and folds the www → apex fix into the same hop.
+        const journal = pathname.match(/^\/[a-z]{2}\/journal\/([^/]+)\/?$/);
+        if (journal) {
+            const slug = decodeURIComponent(journal[1]);
+            const consolidated = journalRedirectTarget(slug);
+            // Aliased CMS slugs are all French articles: their one URL is /fr.
+            const target = consolidated
+                ? localePath(linkLocale(firstSegment, consolidated), consolidated)
+                : isAliasedCmsJournalSlug(slug)
+                  ? localePath(DEFAULT_LOCALE, `/journal/${publicJournalSlug(slug)}`)
+                  : null;
+            if (target) {
+                const url = request.nextUrl.clone();
+                url.pathname = target;
+                url.search = search;
+                if (needsHostFix) withCanonicalHost(url);
+                return NextResponse.redirect(url, 308);
+            }
+        }
+
         if (needsHostFix) {
             return NextResponse.redirect(withCanonicalHost(request.nextUrl.clone()), 308);
         }

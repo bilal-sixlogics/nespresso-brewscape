@@ -79,6 +79,8 @@ const CONTENT: LandingContent = {
     ctaBody:
         'Indiquez-nous le système de vos machines et vos volumes : nous vérifions la compatibilité et vous proposons une offre.',
     ctaLabel: 'Demander une offre professionnelle',
+    // Shoppers first: the product grid is this page's primary action.
+    heroCta: false,
     relatedHeading: 'Aller plus loin',
     related: [
         {
@@ -128,7 +130,7 @@ export default async function CapsulesCafePage({
     const locale = toLocale((await params).locale);
     if (!FRENCH_ONLY.includes(locale)) notFound();
 
-    const products = await getProductsInCategoryNamed('CAPSULES', 24);
+    const products = await getProductsInCategoryNamed('CAPSULES', 60);
 
     return (
         <LandingPage

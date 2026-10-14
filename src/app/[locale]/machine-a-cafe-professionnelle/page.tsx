@@ -49,7 +49,7 @@ const CONTENT: LandingContent = {
         {
             heading: 'Machine à grains, à capsules ou automatique ?',
             body: [
-                'Une machine à grains moud à la demande : c’est ce qui donne la meilleure tasse et le coût par kilo le plus bas, au prix d’un nettoyage quotidien du moulin et d’un minimum de savoir-faire. C’est le choix par défaut dès qu’il y a du volume et quelqu’un derrière le comptoir.',
+                'Une machine à grains moud à la demande : c’est ce qui donne la meilleure tasse et le coût par tasse le plus bas, au prix d’un nettoyage quotidien du moulin et d’un minimum de savoir-faire. C’est le choix par défaut dès qu’il y a du volume et quelqu’un derrière le comptoir.',
                 'Une machine automatique fait le même travail sans intervention : elle convient là où le café est servi en libre-service et où personne n’est formé à régler une mouture.',
                 'Une machine à capsules supprime le réglage, le nettoyage du moulin et la variabilité de dosage. Le coût par tasse est plus élevé, mais c’est la solution pertinente pour une chambre d’hôtel ou un point de consommation qui sert quelques cafés par jour.',
             ],
@@ -105,7 +105,7 @@ const CONTENT: LandingContent = {
     ctaHeading: 'Besoin d’un conseil sur le choix d’une machine ?',
     ctaBody:
         'Dites-nous le nombre de tasses servies par jour, le type d’établissement et la place disponible : nous vous orientons vers la machine et le café adaptés.',
-    ctaLabel: 'Demander conseil',
+    ctaLabel: 'Demander un devis machine + café',
     relatedHeading: 'Aller plus loin',
     related: [
         {
@@ -139,7 +139,11 @@ export async function generateMetadata({
     const locale = toLocale((await params).locale);
     return pageMetadata({
         locale,
-        title: 'Machine à Café Professionnelle | Paris & IDF',
+        // Use cases, not geography. None of the machine queries in the Search
+        // Console export (14 Oct 2026) carried "Paris" or "IDF"; several
+        // carried the establishment — "… restauration", "… pour bar",
+        // "… pour entreprise", "… pour restaurant", "… pour coffee shop".
+        title: 'Machine à Café Professionnelle Restaurant & Bureau',
         description:
             'Machines à grains, à capsules et automatiques pour cafés, restaurants, hôtels et bureaux. Conseil selon le volume servi, livraison en Île-de-France.',
         path: PATH,

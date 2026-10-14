@@ -45,6 +45,12 @@ export interface LandingContent {
     ctaHeading: string;
     ctaBody: string;
     ctaLabel: string;
+    /**
+     * Repeat the CTA under the intro. On by default for the B2B pages; the
+     * shop category pages (/cafe-en-grains, ...) turn it off, because their
+     * visitor came to buy and the product grid is the action above the fold.
+     */
+    heroCta?: boolean;
     relatedHeading: string;
     related: RelatedLink[];
     /** Heading for the product grid; omitted when no products are passed. */
@@ -112,6 +118,26 @@ export function LandingPage({
                             </p>
                         ))}
                     </div>
+                    {/* The closing CTA sits below every section and the FAQ —
+                        a buyer persuaded by the intro had to scroll the whole
+                        page to act. Same label and destination as the closing
+                        one, so the page still asks for one thing. */}
+                    {content.heroCta !== false && (
+                        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-x-8 gap-y-4">
+                            <Link
+                                href={localePath(locale, AppConfig.tradeContactPath)}
+                                className="inline-flex items-center justify-center min-h-11 bg-gold text-ink px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase hover:bg-[#b8914d] transition-colors shadow-lg text-center"
+                            >
+                                {content.ctaLabel}
+                            </Link>
+                            <a
+                                href={`tel:${AppConfig.brand.phone.replace(/\s/g, '')}`}
+                                className="inline-flex items-center min-h-11 text-sand hover:text-gold transition-colors font-bold tracking-wide text-sm"
+                            >
+                                {AppConfig.brand.phone}
+                            </a>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -252,7 +278,7 @@ export function LandingPage({
                     </h2>
                     <p className="text-sand/70 text-lg leading-relaxed mb-10">{content.ctaBody}</p>
                     <Link
-                        href={localePath(locale, '/contact')}
+                        href={localePath(locale, AppConfig.tradeContactPath)}
                         className="inline-block bg-gold text-ink px-10 py-4 rounded-full text-sm font-bold tracking-widest uppercase hover:bg-[#b8914d] transition-colors shadow-lg"
                     >
                         {content.ctaLabel}

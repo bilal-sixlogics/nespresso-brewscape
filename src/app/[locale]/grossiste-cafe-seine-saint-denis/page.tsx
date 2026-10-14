@@ -41,7 +41,7 @@ const CONTENT: LandingContent = {
                 },
                 {
                     name: 'Restauration indépendante',
-                    body: 'Grains 1 kg au meilleur rapport qualité-prix, avec une torréfaction constante d’une commande à l’autre.',
+                    body: 'Grains en 1 kg pour un coût par tasse maîtrisé, avec une torréfaction constante d’une commande à l’autre.',
                 },
                 {
                     name: 'Boulangeries et snacks',

@@ -35,10 +35,13 @@ export async function generateMetadata({
         locale,
         title: en
             ? 'Coffee Brands We Distribute'
-            : 'Marques de Café Distribuées | Grossiste & Distributeur',
+            // Was 65 characters with the suffix, and 180 for the description —
+            // both truncated in results. The brands lead because they are what
+            // gets searched ("lavazza café", "cafe delta", ...).
+            : 'Marques de Café : Lavazza, Delta, Bristot',
         description: en
             ? 'The coffee brands Cafrezzo distributes: Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, Kimbo, Covim, Caprimo and more. Available to home and trade customers near Paris.'
-            : 'Les marques de café distribuées par Cafrezzo : Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, Kimbo, Covim, Caprimo et plus. Disponibles aux particuliers et aux professionnels.',
+            : 'Lavazza, Delta Cafés, Bristot, Carte Noire, Mambo, Kimbo, Covim, Caprimo : les marques de café distribuées par Cafrezzo, aux particuliers et aux pros.',
         path: PATH,
         locales: FR_EN,
     });

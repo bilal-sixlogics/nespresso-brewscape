@@ -122,7 +122,7 @@ const CONTENT: LandingContent = {
     ctaHeading: 'Un projet café à Paris ?',
     ctaBody:
         'Dites-nous votre activité, votre volume de tasses et le matériel déjà en place : nous vous proposons les références et, si besoin, la machine adaptée.',
-    ctaLabel: 'Demander une offre professionnelle',
+    ctaLabel: 'Demander un devis café',
     relatedHeading: 'Aller plus loin',
     related: [
         {

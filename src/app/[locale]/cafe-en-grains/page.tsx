@@ -90,6 +90,8 @@ const CONTENT: LandingContent = {
     ctaBody:
         'Indiquez-nous votre activité, votre consommation et la machine en place : nous vous proposons les références adaptées et une offre tarifaire.',
     ctaLabel: 'Demander une offre professionnelle',
+    // Shoppers first: the product grid is this page's primary action.
+    heroCta: false,
     relatedHeading: 'Aller plus loin',
     related: [
         {
@@ -139,7 +141,7 @@ export default async function CafeEnGrainsPage({
     const locale = toLocale((await params).locale);
     if (!FRENCH_ONLY.includes(locale)) notFound();
 
-    const products = await getProductsInCategoryNamed('GRAINS', 24);
+    const products = await getProductsInCategoryNamed('GRAINS', 60);
 
     return (
         <LandingPage

@@ -31,9 +31,22 @@ describe('cleanArticleHtml', () => {
         expect(cleanArticleHtml(other, fr)).toBe(other);
     });
 
-    it('strips leading emoji from headings only', () => {
+    it('strips leading emoji from headings, paragraphs, list items and links', () => {
         const html = '<h2>🌿 1. Le café Arabica</h2><h3>🇮🇹 Naples</h3><p>☕ reste</p>';
-        expect(cleanArticleHtml(html, fr)).toBe('<h2>1. Le café Arabica</h2><h3>Naples</h3><p>☕ reste</p>');
+        expect(cleanArticleHtml(html, fr)).toBe('<h2>1. Le café Arabica</h2><h3>Naples</h3><p>reste</p>');
+
+        const cta =
+            '<p><a href="/fr/professionnels">👉 Découvrir l’offre</a></p><ul><li>☑ Volume</li></ul>' +
+            '<p><a href="/fr/machines"><strong>👉 Voir les machines</strong></a></p>';
+        expect(cleanArticleHtml(cta, fr)).toBe(
+            '<p><a href="/fr/professionnels">Découvrir l’offre</a></p><ul><li>Volume</li></ul>' +
+                '<p><a href="/fr/machines"><strong>Voir les machines</strong></a></p>',
+        );
+    });
+
+    it('keeps emoji that are not at the start of the text', () => {
+        const html = '<p>Un café ☕ bien dosé</p>';
+        expect(cleanArticleHtml(html, fr)).toBe(html);
     });
 
     it('rewrites source-page narration into plain statements', () => {

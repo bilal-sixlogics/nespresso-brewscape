@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
+import Image from 'next/image';
 import Link from '@/components/LocaleLink';
 import { AppConfig } from "@/lib/config";
 import { ArrowRight, Truck, CreditCard, ShieldCheck, Headphones, BookOpen, Calendar, MapPin, Briefcase, Globe2 } from "lucide-react";
@@ -82,11 +83,14 @@ function CategoriesSection() {
                     disc, which punched a bright hole in the dark hero. */}
                 <div className="relative w-full h-full rounded-full overflow-hidden bg-sand/[0.07] backdrop-blur-md border border-sand/15 group-hover:border-gold/70 flex items-center justify-center shadow-[0_14px_34px_-14px_rgba(0,0,0,0.65)] transition-all duration-500 group-hover:-translate-y-1">
                   {cat.icon_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    // Through the image optimiser: the admin uploads are raw
+                    // PNGs of 440–820 KB each, shown in a 64–96px circle.
+                    <Image
                       src={cat.icon_url}
                       alt={cat.name}
-                      className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                      fill
+                      sizes="(min-width: 1024px) 96px, (min-width: 640px) 80px, 64px"
+                      className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                     />
                   ) : (
                     <span className="text-2xl sm:text-3xl lg:text-4xl">{cat.icon || '☕'}</span>
@@ -536,9 +540,13 @@ export default function Home() {
               maskImage: 'radial-gradient(ellipse at left center, black 20%, transparent 70%)'
             }}
           >
-            {/* Decorative, at 30% opacity: lazy so React does not preload it
-                ahead of the real hero content. */}
-            <img src="/coffee-beans.webp" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-30" />
+            {/* Decorative, at 30% opacity — but it covers more pixels than the
+                wordmark, so Chrome reports it as the homepage LCP element.
+                Lazy-loading it made LCP wait for layout (7.1 s in a throttled
+                mobile run, 14 Oct 2026). Now a 600px, 55 KB rendition (was
+                1200px / 147 KB) fetched immediately at low priority, so it
+                paints early without competing with the logo. */}
+            <img src="/coffee-beans-hero.webp" alt="" width={600} height={600} fetchPriority="low" decoding="async" className="w-full h-full object-cover opacity-30" />
           </div>
 
           <div className="max-w-[1700px] mx-auto px-4 sm:px-8 relative mb-6 sm:mb-12">
@@ -548,21 +556,37 @@ export default function Home() {
                 all of the page's JavaScript. A CSS animation runs from the
                 first paint. Reduced motion is handled in globals.css. */}
             <div className="hero-rise flex justify-center items-center w-full relative z-0 mt-8 mb-4">
+              {/* width/height = the SVG's intrinsic 478×119, so the browser
+                  reserves the right height before it loads (h-auto keeps the
+                  CSS width in charge). Without them the hero grew when the
+                  SVG arrived and shifted everything below: CLS 0.154. */}
               <img
                 src="/assets/logo.svg"
                 alt={AppConfig.brand.name}
+                width={478}
+                height={119}
                 fetchPriority="high"
-                className="w-[80vw] sm:w-[78vw] lg:w-[75vw] xl:w-[72rem] opacity-[0.97]"
+                className="w-[80vw] sm:w-[78vw] lg:w-[75vw] xl:w-[72rem] h-auto opacity-[0.97]"
               />
             </div>
 
-            <div className="hero-rise-late flex justify-center mt-6 sm:mt-8">
+            {/* Two audiences, two doors: shoppers to the catalogue, trade
+                buyers straight to a quote request. The hero previously offered
+                only the shop, leaving professionals to find the B2B path in
+                the navigation. */}
+            <div className="hero-rise-late flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-6 sm:mt-8">
               <Link
                 href="/shop"
                 className="group inline-flex items-center gap-3 min-h-11 bg-gold text-ink px-9 sm:px-11 py-4 sm:py-5 rounded-full text-xs font-bold tracking-[0.25em] uppercase shadow-[0_18px_40px_-12px_rgba(201,160,90,0.55)] hover:bg-[#b8914d] hover:scale-[1.04] active:scale-95 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-4"
               >
                 {t('heroShopNow')}
                 <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180" />
+              </Link>
+              <Link
+                href={AppConfig.tradeContactPath}
+                className="inline-flex items-center min-h-11 border border-gold text-gold px-9 sm:px-11 py-4 sm:py-5 rounded-full text-xs font-bold tracking-[0.25em] uppercase hover:bg-gold hover:text-ink transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-4"
+              >
+                {t('heroQuoteCta')}
               </Link>
             </div>
 

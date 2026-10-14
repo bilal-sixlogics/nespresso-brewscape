@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AppConfig } from '@/lib/config';
+import { useOptionalLanguage } from '@/context/LanguageContext';
 
 interface SiteSettings {
     currency: string;
@@ -91,10 +92,18 @@ export function useSiteSettings() {
 /** Format a number as a price string using the site currency symbol. */
 export function useFormatPrice() {
     const { currency_symbol } = useSiteSettings();
+    const language = useOptionalLanguage();
     return (amount: number | string) => {
         const n = typeof amount === 'string' ? parseFloat(amount) : amount;
-        if (isNaN(n)) return `${currency_symbol}0.00`;
         // Clamp to 0 so float rounding error (e.g. -1e-10) never renders as "-0.00"
-        return `${currency_symbol}${Math.max(0, n).toFixed(2)}`;
+        const fixed = (isNaN(n) ? 0 : Math.max(0, n)).toFixed(2);
+        // English keeps "€25.00". Every other locale the site serves (fr, de,
+        // nl, ru) writes "25,00 €" — the French store showed "€25.00".
+        // Built by hand rather than with Intl so server and browser render the
+        // same characters (Intl's spacing varies by engine → hydration
+        // mismatch); no thousands separator, as before.
+        return !language || language === 'en'
+            ? `${currency_symbol}${fixed}`
+            : `${fixed.replace('.', ',')} ${currency_symbol}`;
     };
 }

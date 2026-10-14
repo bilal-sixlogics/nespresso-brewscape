@@ -11,7 +11,7 @@ import {
     getProductBySlug,
     probeApiReachable,
 } from '@/lib/api/server';
-import { generateProductMetadata, generateBreadcrumbSchema, generateProductSchema } from '@/lib/seo';
+import { PRODUCT_CONTENT_LOCALE, generateProductMetadata, generateBreadcrumbSchema, generateProductSchema } from '@/lib/seo';
 import { LOCALES, localePath, toLocale } from '@/lib/i18n';
 import { getProductImage, getDisplayPrice, isInStock, getDefaultUnit } from '@/types';
 
@@ -39,6 +39,25 @@ function toPlainText(html?: string | null): string | undefined {
     const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     return text || undefined;
 }
+
+/**
+ * Catalogue category (by admin name) → the canonical page for it.
+ *
+ * The breadcrumb used to link `/shop?category=<slug>`: a parameter URL whose
+ * canonical is /shop, built from admin slugs that do not match their names
+ * (GRAINS is `delta-caf-s-grain`, MACHINES is `machine-capsule-delta-q`), so a
+ * Lavazza machine's trail named a Delta Q category. Keyed by name, which is
+ * the field the admin actually keeps meaningful. Categories without a page of
+ * their own (thés, solubles, sucres, pods) get no category crumb.
+ */
+const CATEGORY_PAGES: Record<string, { name: string; url: string }> = {
+    GRAINS: { name: 'Café en grains', url: '/cafe-en-grains' },
+    MOULU: { name: 'Café moulu', url: '/cafe-moulu' },
+    CAPSULES: { name: 'Capsules de café', url: '/capsules-cafe' },
+    MACHINES: { name: 'Machines à café', url: '/machines' },
+    GOURMANDISES: { name: 'Gourmandises', url: '/sweets' },
+    ACCESSOIRES: { name: 'Accessoires', url: '/accessories' },
+};
 
 export async function generateMetadata({
     params,
@@ -100,6 +119,7 @@ export default async function ProductDetailPage({
 
     const image = getProductImage(product) ?? '/coffee-beans.jpg';
     const description = product.meta_description || toPlainText(product.description);
+    const categoryPage = product.category?.name ? CATEGORY_PAGES[product.category.name.trim().toUpperCase()] : undefined;
 
     const productSchema = {
         ...generateProductSchema({
@@ -126,15 +146,16 @@ export default async function ProductDetailPage({
             // deciding the brand instead of two.
             brand: product.brand?.name,
         }),
-        ...(product.category?.name ? { category: product.category.name } : {}),
+        ...(categoryPage ? { category: categoryPage.name } : {}),
     };
 
-    const breadcrumbSchema = generateBreadcrumbSchema(locale, [
+    // Built on the French URLs, like the Product node: every locale's copy of
+    // this page canonicalises to /fr, and the category pages are French-only,
+    // so a /de trail would link to URLs that 404.
+    const breadcrumbSchema = generateBreadcrumbSchema(PRODUCT_CONTENT_LOCALE, [
         { name: 'Accueil', url: '/' },
         { name: 'Boutique', url: '/shop' },
-        ...(product.category?.name
-            ? [{ name: product.category.name, url: `/shop?category=${product.category.slug}` }]
-            : []),
+        ...(categoryPage ? [categoryPage] : []),
         { name: product.name, url: `/shop/${product.slug}` },
     ]);
 

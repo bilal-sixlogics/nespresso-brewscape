@@ -229,7 +229,7 @@ function ShopPageContent({ initialCategory, initialBrand, initialProducts }: Sho
                                 {/* Filter button */}
                                 <button
                                     onClick={() => setFilterOpen(true)}
-                                    className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gold text-ink hover:bg-[#b8914d] transition-colors relative"
+                                    className="flex items-center gap-2 min-h-11 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-gold text-ink hover:bg-[#b8914d] transition-colors relative"
                                 >
                                     <SlidersHorizontal size={12} />
                                     <span className="hidden sm:inline">{t('filters')}</span>
@@ -242,7 +242,7 @@ function ShopPageContent({ initialCategory, initialBrand, initialProducts }: Sho
                                 <div className="relative">
                                     <button
                                         onClick={() => setSortOpen(!sortOpen)}
-                                        className="flex items-center gap-2 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sand/8 text-sand/70 border border-sand/10 hover:border-sand/25 transition-colors"
+                                        className="flex items-center gap-2 min-h-11 px-3 sm:px-6 py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-sand/8 text-sand/70 border border-sand/10 hover:border-sand/25 transition-colors"
                                     >
                                         {sortBy === 'relevance' && t('sortRelevance')}
                                         {sortBy === 'price_asc' && t('sortPriceLow')}
@@ -311,7 +311,7 @@ function ShopPageContent({ initialCategory, initialBrand, initialProducts }: Sho
                                 {/* All pill */}
                                 <button
                                     onClick={() => setFilters(f => ({ ...f, categories: [] }))}
-                                    className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${!activeCategory ? 'bg-gold text-ink shadow-xl shadow-gold/20' : 'bg-sand/8 text-sand/50 hover:bg-sand/14 hover:text-sand border border-sand/10 hover:border-sand/20'}`}
+                                    className={`flex-shrink-0 min-h-11 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${!activeCategory ? 'bg-gold text-ink shadow-xl shadow-gold/20' : 'bg-sand/8 text-sand/50 hover:bg-sand/14 hover:text-sand border border-sand/10 hover:border-sand/20'}`}
                                 >
                                     {t('allProducts')}
                                 </button>
@@ -319,7 +319,7 @@ function ShopPageContent({ initialCategory, initialBrand, initialProducts }: Sho
                                     <button
                                         key={cat.slug}
                                         onClick={() => handleCategoryPill(cat.name)}
-                                        className={`flex-shrink-0 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${activeCategory === cat.name ? 'bg-gold text-ink shadow-xl shadow-gold/20' : 'bg-sand/8 text-sand/50 hover:bg-sand/14 hover:text-sand border border-sand/10 hover:border-sand/20'}`}
+                                        className={`flex-shrink-0 min-h-11 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${activeCategory === cat.name ? 'bg-gold text-ink shadow-xl shadow-gold/20' : 'bg-sand/8 text-sand/50 hover:bg-sand/14 hover:text-sand border border-sand/10 hover:border-sand/20'}`}
                                     >
                                         {cat.name}
                                     </button>

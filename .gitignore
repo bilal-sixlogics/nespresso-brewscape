@@ -44,3 +44,8 @@ admin/
 .brag/
 brag-output/
 brag-output-*/
+
+# Search Console exports (contain site analytics; keep out of the repo)
+/https___*.xlsx
+/*-Coverage-*.xlsx
+/*-Performance-on-Search-*.xlsx

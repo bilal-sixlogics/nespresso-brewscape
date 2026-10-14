@@ -383,8 +383,12 @@ export default function ProductDetailPageClient({
                             disabled={isAdded}
                             className={`flex-1 flex justify-between items-center px-7 py-4 rounded-full shadow-lg transition-all duration-300 ${isAdded ? 'bg-sand text-ink' : 'bg-gold text-ink hover:bg-[#b8914d] shadow-gold/25'}`}
                         >
-                            <div>
-                                <p className="text-[8px] font-bold tracking-widest uppercase opacity-75">{isAdded ? t('addToCartSuccess') : t('total')}</p>
+                            {/* Names the action. The button read only "Total" +
+                                price + a bag icon, so neither shoppers, screen
+                                readers nor crawlers saw "Ajouter au panier"
+                                anywhere on a product page. */}
+                            <div className="text-left">
+                                <p className="text-[10px] font-bold tracking-widest uppercase">{isAdded ? t('addToCartSuccess') : t('addToCart')}</p>
                                 <p className="font-bold font-black text-black text-2xl leading-none">
                                     {isAdded ? '✓' : formatPrice(unitPrice * quantity)}
                                 </p>
@@ -410,7 +414,7 @@ export default function ProductDetailPageClient({
                     {/* Shipping note */}
                     <p className="text-xs text-cocoa text-center">
                         {language === 'fr'
-                            ? `🚚 Livraison offerte dès ${currency_symbol}150 · Retours sous 14 jours`
+                            ? `🚚 Livraison offerte dès 150 ${currency_symbol} · Retours sous 14 jours`
                             : `🚚 Free shipping from ${currency_symbol}150 · Returns within 14 days`}
                     </p>
 

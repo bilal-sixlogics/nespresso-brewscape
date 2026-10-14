@@ -35,8 +35,8 @@ const PRIVATE_PATHS = [
  * AI assistant crawlers, allowed deliberately.
  *
  * These are how Cafrezzo products get surfaced and cited inside ChatGPT,
- * Claude, Perplexity and Google AI Overviews. Blocking them removes the site
- * from those answers entirely — it does not protect pricing or catalogue data,
+ * Claude, Perplexity and Gemini. Blocking them removes the site from those
+ * answers entirely (Google AI Overviews follow Googlebot, not these tokens) — it does not protect pricing or catalogue data,
  * which is already public to Googlebot.
  *
  * Note the two distinct purposes:
@@ -63,7 +63,7 @@ const AI_CRAWLERS = [
     'MistralAI-User',
     // Meta AI (also the agent Meta uses to ground answers in its apps).
     'meta-externalagent',
-    // Google Gemini / AI Overviews grounding
+    // Gemini / Vertex AI training and grounding — not Search or AI Overviews
     'Google-Extended',
     // Apple Intelligence
     'Applebot-Extended',
