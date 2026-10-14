@@ -84,6 +84,11 @@ export function LanguageProvider({
     );
 }
 
+/** The current language, or undefined outside a LanguageProvider. Never throws. */
+export function useOptionalLanguage(): Language | undefined {
+    return useContext(LanguageContext)?.language;
+}
+
 export function useLanguage() {
     const context = useContext(LanguageContext);
     if (context === undefined) {

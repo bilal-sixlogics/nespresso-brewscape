@@ -13,6 +13,7 @@
 import { articleLocale, cleanArticleText, readingMinutes } from './article-content';
 import { localePath, type Locale } from './i18n';
 import { publicJournalSlug } from './seo-redirects';
+import { clip } from './utils';
 
 interface JournalSeoCopy {
     /** Replaces the headline on the page itself (the <h1>), not only in search. */
@@ -74,6 +75,13 @@ export const JOURNAL_SEO_COPY: Record<string, JournalSeoCopy> = {
     },
     'arabica-ou-robusta-quelles-differences-et-quel-cafe-choisir': {
         metaTitle: 'Arabica ou Robusta : différences et choix',
+    },
+    // Published 13 Oct 2026 with no CMS meta title, so <title> was the
+    // 76-character headline plus the suffix. Framed as the "how to choose"
+    // guide it is: the commercial "fournisseur de café professionnel" query
+    // belongs to /professionnels, which this article links to.
+    'comment-choisir-un-fournisseur-de-cafe-professionnel-7-criteres-essentiels': {
+        metaTitle: 'Choisir un fournisseur de café pro : 7 critères',
     },
 };
 
@@ -146,12 +154,6 @@ export function journalCategoryLabel(category: string, locale: Locale): string {
     return CATEGORY_LABELS[category.trim().toLowerCase()]?.[locale] ?? category;
 }
 
-/** Cuts text to `max` characters at a word boundary, adding an ellipsis. */
-function clip(text: string, max: number): string {
-    if (text.length <= max) return text;
-    const cut = text.slice(0, max - 1);
-    return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s,;:.–-]+$/, '')}…`;
-}
 
 /**
  * Headline, <title> and description for an article.

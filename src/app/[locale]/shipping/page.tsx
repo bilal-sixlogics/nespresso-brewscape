@@ -57,7 +57,7 @@ export default function ShippingPage() {
         subtitle: dayLabel(m.estimated_days_min, m.estimated_days_max),
         price: formatPrice(Number(m.base_price)),
         free: (m.free_shipping_threshold && i === 0)
-            ? tx(`Gratuit dès ${currency_symbol}${m.free_shipping_threshold}`, `Free from ${currency_symbol}${m.free_shipping_threshold}`)
+            ? tx(`Gratuit dès ${m.free_shipping_threshold} ${currency_symbol}`, `Free from ${currency_symbol}${m.free_shipping_threshold}`)
             : null,
         color: i === 0 ? 'bg-gold' : 'bg-sand',
         features: m.description ? [m.description] : [],
@@ -146,7 +146,7 @@ export default function ShippingPage() {
                         <Package size={28} className="text-ink flex-shrink-0" />
                         <p className="text-ink font-semibold text-sm">
                             {tx(
-                                `🎉 Livraison standard offerte pour toute commande de ${currency_symbol}${freeThreshold} ou plus !`,
+                                `🎉 Livraison standard offerte pour toute commande de ${freeThreshold} ${currency_symbol} ou plus !`,
                                 `🎉 Free standard shipping on all orders of ${currency_symbol}${freeThreshold} or more!`
                             )}
                         </p>

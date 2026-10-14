@@ -105,7 +105,7 @@ const CONTENT: LandingContent = {
     ctaHeading: 'Un projet d’équipement ?',
     ctaBody:
         'Indiquez-nous le nombre de tasses servies par jour, le nombre de sites à équiper et le café souhaité : nous vous proposons la configuration adaptée.',
-    ctaLabel: 'Demander une offre professionnelle',
+    ctaLabel: 'Demander un devis machine + café',
     relatedHeading: 'Aller plus loin',
     related: [
         {

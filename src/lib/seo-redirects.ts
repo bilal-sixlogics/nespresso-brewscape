@@ -49,6 +49,11 @@ export const JOURNAL_CONSOLIDATION: Record<string, string> = {
     // The machine piece → the machine selection page.
     'machine-a-cafe-professionnelle-a-paris-trouvez-la-solution-ideale-avec-cafrezzo':
         '/machine-a-cafe-professionnelle',
+
+    // Not a consolidation: this slug never existed in the CMS and returned
+    // 404, but it is the URL the 14 Oct 2026 SEO brief lists for the company
+    // article, so it may have been shared. Sends it to the article itself.
+    'fournisseur-cafe-entreprise-machine-a-cafe-bureau': '/journal/fournisseur-cafe-entreprise',
 };
 
 /**

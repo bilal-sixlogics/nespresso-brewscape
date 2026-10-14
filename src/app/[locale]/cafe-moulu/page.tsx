@@ -79,6 +79,8 @@ const CONTENT: LandingContent = {
     ctaBody:
         'Dites-nous votre activité, votre consommation et le matériel en place : nous vous proposons les références et une offre adaptée.',
     ctaLabel: 'Demander une offre professionnelle',
+    // Shoppers first: the product grid is this page's primary action.
+    heroCta: false,
     relatedHeading: 'Aller plus loin',
     related: [
         {

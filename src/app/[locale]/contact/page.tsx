@@ -11,6 +11,7 @@ import { apiClient } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/types';
 import { Endpoints } from '@/lib/api/endpoints';
 import { AppConfig } from '@/lib/config';
+import { trackLead } from '@/lib/tracking';
 import { CupSeparator } from '@/components/ui/CupSeparator';
 import { StoreGallery } from './StoreGallery';
 
@@ -187,8 +188,18 @@ function StoreCard({ store, index, t }: { store: StoreLocation; index: number; t
     );
 }
 
+/** Values of the subject <select>. `?subject=` may preselect any of these. */
+const SUBJECTS = ['order', 'product', 'return', 'wholesale', 'other'] as const;
+
+/**
+ * Subjects that are support requests about an existing order, not enquiries.
+ * A submission under these is not reported as a lead.
+ */
+const SUPPORT_SUBJECTS: readonly string[] = ['order', 'return'];
+
 export default function ContactPage() {
     const { t } = useLanguage();
+    const formId = useId();
     const {
         contact_email: contactEmail,
         contact_response_time: responseTime,
@@ -209,6 +220,17 @@ export default function ContactPage() {
         { q: t('contactFaqQ4'), a: t('contactFaqA4') },
     ];
 
+    // The trade CTAs link here with ?subject=wholesale (AppConfig.
+    // tradeContactPath), so the enquiry arrives labelled instead of blank.
+    // Read from location rather than useSearchParams, which would force a
+    // Suspense boundary around the whole page for one optional value.
+    useEffect(() => {
+        const requested = new URLSearchParams(window.location.search).get('subject');
+        if (requested && (SUBJECTS as readonly string[]).includes(requested)) {
+            setFormState(s => (s.subject ? s : { ...s, subject: requested }));
+        }
+    }, []);
+
     useEffect(() => {
         apiClient.get<{ data: StoreLocation[] }>(Endpoints.storeLocations)
             .then(res => {
@@ -226,7 +248,9 @@ export default function ContactPage() {
         ? locations
         : locations.filter(l => l.country === selectedCountry);
 
-    const handleSend = async () => {
+    const handleSend = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        if (isSending || sent) return;
         setSendError(null);
         if (!formState.firstName || !formState.email || !formState.message) {
             setSendError(t('contactRequiredFieldsError'));
@@ -240,6 +264,11 @@ export default function ContactPage() {
                 subject: formState.subject || undefined,
                 message: formState.message,
             });
+            // Only after the API accepted it: this is the confirmed lead, as
+            // opposed to the contact_click fired by tapping a phone number.
+            if (!SUPPORT_SUBJECTS.includes(formState.subject)) {
+                trackLead('contact', formState.subject || 'unspecified');
+            }
             setSent(true);
             setFormState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
         } catch (err) {
@@ -388,12 +417,17 @@ export default function ContactPage() {
                         className="bg-sand/8 border border-sand/10 rounded-3xl p-8 md:p-10"
                     >
                         <h2 className="font-display text-4xl uppercase mb-8 text-sand">{t('sendMessage')}</h2>
-                        <div className="space-y-6">
+                        {/* A real <form>: Enter submits, and the labels below are
+                            tied to their fields so screen readers announce them. */}
+                        <form onSubmit={handleSend} noValidate className="space-y-6">
                             <div className="grid grid-cols-2 gap-5">
                                 <div>
-                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('firstName')}</label>
+                                    <label htmlFor={`${formId}-first`} className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('firstName')}</label>
                                     <input
+                                        id={`${formId}-first`}
                                         type="text"
+                                        autoComplete="given-name"
+                                        required
                                         value={formState.firstName}
                                         onChange={e => setFormState(s => ({ ...s, firstName: e.target.value }))}
                                         className="w-full border-b-2 border-sand/15 py-3 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand placeholder:text-sand/30"
@@ -401,9 +435,11 @@ export default function ContactPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('lastName')}</label>
+                                    <label htmlFor={`${formId}-last`} className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('lastName')}</label>
                                     <input
+                                        id={`${formId}-last`}
                                         type="text"
+                                        autoComplete="family-name"
                                         value={formState.lastName}
                                         onChange={e => setFormState(s => ({ ...s, lastName: e.target.value }))}
                                         className="w-full border-b-2 border-sand/15 py-3 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand placeholder:text-sand/30"
@@ -412,9 +448,12 @@ export default function ContactPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('email')}</label>
+                                <label htmlFor={`${formId}-email`} className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('email')}</label>
                                 <input
+                                    id={`${formId}-email`}
                                     type="email"
+                                    autoComplete="email"
+                                    required
                                     value={formState.email}
                                     onChange={e => setFormState(s => ({ ...s, email: e.target.value }))}
                                     className="w-full border-b-2 border-sand/15 py-3 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand placeholder:text-sand/30"
@@ -422,9 +461,10 @@ export default function ContactPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('subjectLabel')}</label>
+                                <label htmlFor={`${formId}-subject`} className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('subjectLabel')}</label>
                                 <div className="relative">
                                     <select
+                                        id={`${formId}-subject`}
                                         value={formState.subject}
                                         onChange={e => setFormState(s => ({ ...s, subject: e.target.value }))}
                                         className="w-full appearance-none border-b-2 border-sand/15 py-3 pr-8 focus:border-gold focus:outline-none transition-colors bg-transparent text-sm font-medium text-sand/70"
@@ -440,8 +480,10 @@ export default function ContactPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('message')}</label>
+                                <label htmlFor={`${formId}-message`} className="block text-[9px] font-bold tracking-widest uppercase text-cocoa mb-2">{t('message')}</label>
                                 <textarea
+                                    id={`${formId}-message`}
+                                    required
                                     rows={5}
                                     value={formState.message}
                                     onChange={e => setFormState(s => ({ ...s, message: e.target.value }))}
@@ -449,8 +491,11 @@ export default function ContactPage() {
                                     placeholder={t('contactMessagePlaceholder')}
                                 />
                             </div>
+                            {/* The confirmation otherwise only swaps the button
+                                label, which assistive tech does not announce. */}
+                            <p role="status" className="sr-only">{sent ? t('messageSentConfirm') : ''}</p>
                             {sendError && (
-                                <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/25 rounded-2xl px-4 py-3">
+                                <div role="alert" className="flex items-start gap-2 bg-red-500/10 border border-red-500/25 rounded-2xl px-4 py-3">
                                     <AlertCircle size={15} className="text-red-400 shrink-0 mt-0.5" />
                                     <p className="text-red-300 text-xs leading-snug">{sendError}</p>
                                 </div>
@@ -458,14 +503,14 @@ export default function ContactPage() {
                             <motion.button
                                 whileHover={{ scale: isSending || sent ? 1 : 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={handleSend}
+                                type="submit"
                                 disabled={isSending || sent}
                                 className={`w-full flex justify-between items-center px-8 py-5 rounded-full font-bold tracking-widest uppercase text-sm shadow-lg transition-all duration-300 disabled:cursor-not-allowed ${sent ? 'bg-sand text-ink' : 'bg-gold text-ink hover:bg-[#b8914d] shadow-gold/25 disabled:opacity-60'}`}
                             >
                                 <span>{sent ? t('messageSentConfirm') : t('sendMessage')}</span>
                                 {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                             </motion.button>
-                        </div>
+                        </form>
                     </motion.div>
                 </div>
             </section>

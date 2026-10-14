@@ -68,10 +68,15 @@ export async function generateStaticParams() {
  * the whole catalogue without hand-maintenance.
  */
 const BRAND_SEO: Record<string, { title: string; description: string }> = {
+    // Revised 14 Oct 2026. Adds "moulu": ~17 of the ~65 Lavazza impressions
+    // in the 3-month Search Console export were ground-coffee queries
+    // ("café lavazza moulu" and variants). Drops "au Meilleur Prix", a price
+    // claim nothing on the page substantiates, and "Qualità Oro", which the
+    // catalogue does not stock; the ranges named below are all listed.
     lavazza: {
-        title: 'Café en Grains & Capsules Lavazza au Meilleur Prix',
+        title: 'Café Lavazza en Grains, Moulu & Capsules',
         description:
-            'Achetez votre café italien Lavazza chez Cafrezzo à Gonesse. Large choix de café en grains, Qualità Oro, Crema e Aroma. Particuliers et professionnels, livraison rapide.',
+            'Café Lavazza en grains (Crema e Aroma, Super Crema, Gold Selection…), moulu et capsules. Formats 1 kg pour les pros, livraison offerte dès 150 €.',
     },
     delta: {
         title: 'Café en Grains Portugais Delta Cafés en Ligne',

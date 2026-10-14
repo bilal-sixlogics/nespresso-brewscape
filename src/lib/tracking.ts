@@ -194,10 +194,31 @@ export function trackPurchase(orderId: string, value: number, items: TrackedItem
 }
 
 /**
- * A visitor reached out (tap-to-call, email). For the B2B side of the
- * business this IS the conversion — trade buyers phone, they rarely check out.
+ * A visitor tapped a phone, email or WhatsApp link.
+ *
+ * That is intent, not a lead: nothing confirms the call connected or the email
+ * was sent. It used to be reported to GA4 as `generate_lead`, which counted
+ * every tap — including misclicks and repeat taps — as a lead, while actual
+ * form enquiries were not tracked at all. It is now the custom `contact_click`
+ * event; mark it as a secondary conversion in GA4/Ads if wanted, but keep it
+ * apart from `generate_lead` (see trackLead).
+ *
+ * Meta keeps `Contact`, whose definition is exactly this ("a telephone, email,
+ * chat or other contact between a customer and your business").
  */
 export function trackContact(method: 'phone' | 'email' | 'whatsapp'): void {
     fbq('track', 'Contact', { content_category: method });
-    gtagEvent('generate_lead', { method });
+    gtagEvent('contact_click', { method });
+}
+
+/**
+ * An enquiry the server accepted — call only after the submission succeeds.
+ *
+ * This is the lead. `subject` is the enquiry type the visitor picked
+ * ("wholesale", "product", ...) so trade enquiries can be reported apart from
+ * the rest.
+ */
+export function trackLead(form: string, subject: string): void {
+    fbq('track', 'Lead', { content_name: form, content_category: subject });
+    gtagEvent('generate_lead', { form_name: form, lead_type: subject });
 }

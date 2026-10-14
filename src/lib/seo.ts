@@ -11,6 +11,7 @@ import {
     type Locale,
 } from './i18n';
 import { translations, type TranslationKey } from './translations';
+import { clip } from './utils';
 
 /**
  * Canonical origin for every absolute URL the site emits — metadataBase,
@@ -429,8 +430,10 @@ export function generateProductMetadata(product: {
     category?: string;
 }): Metadata {
     const title = product.nameEn ?? product.name;
+    // Clipped at a word boundary. A raw slice(0, 155) ended 54 of the 113
+    // catalogue descriptions mid-word in results ("… qualité constan").
     const description =
-        product.description?.slice(0, 155) ??
+        (product.description ? clip(product.description, 155) : undefined) ??
         PDP_FALLBACK_DESCRIPTION[product.locale](title);
     const path = `/shop/${product.slug}`;
     // See PRODUCT_CONTENT_LOCALE: every locale serves the same French product
@@ -809,7 +812,7 @@ export function generateProductSchema(product: {
                 ? 'https://schema.org/InStock'
                 : 'https://schema.org/OutOfStock',
             seller: { '@id': ORGANIZATION_ID },
-            shippingDetails: SHIPPING_DETAILS,
+            shippingDetails: shippingDetailsFor(product.price),
             hasMerchantReturnPolicy: RETURN_POLICY,
         },
     };
@@ -824,15 +827,27 @@ export function generateProductSchema(product: {
  * omitting it is one of the few merchant-listing warnings that actually costs
  * click-through on a price-comparison query.
  *
- * Standard delivery: €5.99, free above €150, 5–7 business days in transit.
+ * Standard delivery: €5.99, free from €150, 5–7 business days in transit.
  */
+const FREE_SHIPPING_THRESHOLD = 150;
+
+/**
+ * The rate a one-item order of this product actually pays.
+ *
+ * It was a flat €5.99 on every product, so the LB300 machine (€170) and every
+ * other item at or above the threshold advertised a shipping charge it never
+ * incurs — the figure Google shows next to the price in product results.
+ */
+function shippingDetailsFor(price: number) {
+    const free = price >= FREE_SHIPPING_THRESHOLD;
+    return {
+        ...SHIPPING_DETAILS,
+        shippingRate: { '@type': 'MonetaryAmount', value: free ? '0' : '5.99', currency: 'EUR' },
+    };
+}
+
 const SHIPPING_DETAILS = {
     '@type': 'OfferShippingDetails',
-    shippingRate: {
-        '@type': 'MonetaryAmount',
-        value: '5.99',
-        currency: 'EUR',
-    },
     shippingDestination: ['FR', 'BE', 'LU', 'CH'].map(country => ({
         '@type': 'DefinedRegion',
         addressCountry: country,

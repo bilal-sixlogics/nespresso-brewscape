@@ -35,6 +35,12 @@ export const AppConfig = {
     // Social links now live in admin-configurable site settings (see
     // SiteSettingsContext + Footer.tsx) instead of being hardcoded here.
 
+    // Locale-free path every "devis / tarifs professionnels" CTA points at.
+    // The contact page preselects the matching subject from `?subject=`, so a
+    // trade enquiry arrives labelled as one — and is counted as a lead — instead
+    // of landing on a blank form. Canonical stays /contact (set in its layout).
+    tradeContactPath: '/contact?subject=wholesale',
+
     supportLinks: [
         { label: 'Contact & Boutiques', url: '/contact' },
         { label: 'FAQ', url: '/faq' },

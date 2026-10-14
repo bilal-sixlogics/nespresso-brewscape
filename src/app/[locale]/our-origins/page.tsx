@@ -138,7 +138,7 @@ export default function OurOriginsPage() {
                         {t("originHeroEyebrow")}
                     </p>
                     <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase text-sand mb-6">
-                        {t("originHeroHeading1")}<span className="text-gold block">{t("originHeroHeading2")}</span>
+                        {t("originHeroHeading1")}{' '}<span className="text-gold block">{t("originHeroHeading2")}</span>
                     </h1>
                     <p className="text-sand/60 text-base max-w-2xl mx-auto">
                         {t("originHeroIntro")}

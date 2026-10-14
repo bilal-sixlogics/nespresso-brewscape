@@ -18,12 +18,23 @@ export async function generateMetadata({
     //
     // The other four locales keep the translated keys, which are correct for
     // them; only French is being targeted here.
+    //
+    // Revised 14 Oct 2026. The previous title, "Machines à Café
+    // Professionnelles — Grossiste", was the union of the two machine landing
+    // pages' titles (/machine-a-cafe-professionnelle, /grossiste-machines-a-cafe),
+    // so three URLs asked to rank for one query. This page is the catalogue:
+    // it now claims the purchase intent ("achat machine à café", 9 impressions
+    // at position 4.3 in the 3-month export) and leaves advice and trade supply
+    // to the landing pages. The description also promised bean-to-cup and
+    // automatic machines; every machine the catalogue lists is a capsule
+    // machine (Lavazza BLUE, A Modo Mio, Delta Q), and it ran to 226
+    // characters. Revisit if non-capsule machines are added to the catalogue.
     if (locale === 'fr') {
         return pageMetadata({
             locale,
-            title: 'Machines à Café Professionnelles — Grossiste',
+            title: 'Acheter une Machine à Café : Lavazza, Delta Q',
             description:
-                'Machines à café professionnelles : à grains, à capsules et automatiques. Cafrezzo, grossiste et distributeur à Gonesse près de Paris, équipe restaurants, hôtels, bureaux et entreprises en Île-de-France et dans toute la France.',
+                'Machines à café à capsules Lavazza BLUE, A Modo Mio et Delta Q pour le bureau, le commerce ou la maison. Prix affichés, livraison offerte dès 150 €.',
             path: '/machines',
         });
     }

@@ -110,7 +110,8 @@ function headingSimilarity(a: string, b: string): number {
  * - Rewrites "la fiche produit explique que…" narration into plain statements.
  * - Drops the body's opening heading when it restates the page title. The page
  *   already renders the title as the <h1>; the editor pastes it in again.
- * - Strips emoji from the start of headings, which otherwise lead every entry
+ * - Strips emoji from the start of headings, paragraphs, list items and links;
+ *   in headings they would otherwise lead every entry
  *   in the outline search engines and answer engines extract.
  * - Points links to cafrezzo.com at the article's own locale, as relative
  *   paths. Product pieces linked French readers to /en/shop/….
@@ -133,11 +134,19 @@ export function cleanArticleHtml(html: string, opts: { title: string; locale: Lo
         out = out.slice(opening[0].length);
     }
 
-    out = out.replace(/(<h[1-6][^>]*>)([\s\S]*?)(<\/h[1-6]>)/g, (_m, open, inner, close) => {
-        // Emoji can sit inside a leading <strong>; strip them there too.
+    // Headings, and also the start of paragraphs, list items and links: the
+    // CMS pieces open their calls to action with "👉", list checklists with
+    // "☑" and contact lines with "📍". In a link that emoji becomes part of
+    // the anchor text, which is a topic signal for the destination page.
+    out = out.replace(/(<(h[1-6]|p|li|a)\b[^>]*>)([\s\S]*?)(<\/\2>)/g, (_m, open, _tag, inner, close) => {
+        // Emoji can sit behind leading tags (<a><strong>\ud83d\udc49 \u2026); strip them there
+        // too. The lookahead means nothing changes when no emoji follows.
         const cleaned = inner
             .replace(LEADING_EMOJI, '')
-            .replace(/^(<[^>]+>)\s*((?:[\p{Extended_Pictographic}\p{Regional_Indicator}\u200d\ufe0f]|\s)+)/u, '$1');
+            .replace(
+                /^((?:\s*<[^>]+>)+)\s*(?=[\p{Extended_Pictographic}\p{Regional_Indicator}])(?:[\p{Extended_Pictographic}\p{Regional_Indicator}\u200d\ufe0f]|\s)+/u,
+                '$1',
+            );
         return `${open}${cleaned}${close}`;
     });
 
