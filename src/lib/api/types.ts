@@ -68,7 +68,11 @@ export interface ProductQueryParams extends PaginationParams {
     intensity_max?: number;
     featured?: boolean;
     storefront_page?: string;  // e.g. "/shop", "/machines"
+    collection?: ProductCollection; // backend-curated list; sorting and stock rules are server-side
 }
+
+/** Curated home page lists — the backend only returns in-stock products for these. */
+export type ProductCollection = 'best-sellers' | 'new-arrivals';
 
 export interface BlogQueryParams extends PaginationParams {
     category?: string;

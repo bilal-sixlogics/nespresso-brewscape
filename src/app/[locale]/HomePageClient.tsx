@@ -490,8 +490,8 @@ export default function Home() {
   const { t, language } = useLanguage();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const { products: bestSellers, isLoading: bestSellersLoading } = useProducts({ sort_by: 'best_selling', per_page: HOME_GRID_COUNT });
-  const { products: newArrivals, isLoading: newArrivalsLoading } = useProducts({ sort_by: 'newest', per_page: HOME_GRID_COUNT });
+  const { products: bestSellers, isLoading: bestSellersLoading } = useProducts({ collection: 'best-sellers', per_page: HOME_GRID_COUNT });
+  const { products: newArrivals, isLoading: newArrivalsLoading } = useProducts({ collection: 'new-arrivals', per_page: HOME_GRID_COUNT });
 
   // Daily pick — fetched from admin-configured section config
   const [dailyPick, setDailyPick] = useState<{ product: Product | null; label: string | null }>({ product: null, label: null });

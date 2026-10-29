@@ -21,6 +21,7 @@ export const Endpoints = {
 
     // ── Products ─────────────────────────────────────────────────────────
     products: `${API_BASE}/products`,
+    productCollection: (key: string) => `${API_BASE}/products/${key}`,
     product: (slug: string) => `${API_BASE}/products/${slug}`,
     productReviews: (slug: string) => `${API_BASE}/products/${slug}/reviews`,
 

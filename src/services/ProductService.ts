@@ -35,7 +35,8 @@ export const ProductService = {
         if (params.featured) apiParams.featured = true;
         if (params.storefront_page) apiParams.storefront_page = params.storefront_page;
 
-        return apiClient.get<PaginatedResponse<Product>>(Endpoints.products, { params: apiParams });
+        const url = params.collection ? Endpoints.productCollection(params.collection) : Endpoints.products;
+        return apiClient.get<PaginatedResponse<Product>>(url, { params: apiParams });
     },
 
     /**
